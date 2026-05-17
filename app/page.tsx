@@ -1,12 +1,19 @@
 ﻿import Image from "next/image";
 
-const navItems = ["All Players", "Rankings", "Lineups", "About", "Sign In"];
+const navItems = [
+  { label: "Home", href: "/" },
+  { label: "All Players", href: "/all-players" },
+  { label: "Rankings", href: "/rankings" },
+  { label: "Lineups", href: "/lineups" },
+  { label: "About", href: "/about" },
+  //{ label: "Sign In", href: "/sign-in" }, // Future: button instead of nav item
+];
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <header className="border-b border-[#092C4E] bg-[#07111f]/95 shadow-sm shadow-black/20">
-        <div className="mx-auto flex h-16 w-full  items-center justify-between px-3 sm:px-3">
+        <div className="grid h-16 w-full grid-cols-3 items-center justify-between px-3 sm:px-3">
           <a
             href="#"
             className="flex items-center gap-3"
@@ -24,6 +31,22 @@ export default function Home() {
               STATCOURT
             </span>
           </a>
+
+          <div className="hidden md:flex items-center gap-6 justify-self-center">
+            <span className="text-base font-anton text-white">
+              {" "}
+              ALL PLAYERS
+            </span>
+            <span className="text-base font-anton text-white"> RANKINGS</span>
+            <span className="text-base font-anton text-white"> LINEUPS</span>
+            <span className="text-base font-anton text-white"> ABOUT</span>
+          </div>
+
+          <div className="justify-self-end">
+            <button className="flex items-center rounded-md bg-[#347A99] px-4 py-2 text-base font-anton text-white">
+              SIGN IN
+            </button>
+          </div>
         </div>
       </header>
     </main>
