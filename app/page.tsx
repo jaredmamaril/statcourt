@@ -12,7 +12,18 @@ const navItems = [
 export default function Home() {
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-[#092C4E] bg-[#07111f]/95 shadow-sm shadow-black/20">
+      <video
+        className="absolute inset-0 h-full w-full object-cover"
+        src="/court-background.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+      />
+
+      <div className="absolute inset-0 bg-black/65" />
+
+      <header className="relative z-10 border-bbg-transparent">
         <div className="grid h-16 w-full grid-cols-3 items-center justify-between px-3 sm:px-3">
           <a
             href="#"
@@ -27,23 +38,32 @@ export default function Home() {
               priority
               className="h-11 w-11 rounded-md"
             />
-            <span className="text-xl font-semibold font-anton text-white sm:text-2xl tracking-wide antialiased">
+            <span className="text-xl font-semibold font-michroma text-white sm:text-2xl tracking-wide antialiased">
               STATCOURT
             </span>
           </a>
 
           <div className="hidden md:flex items-center gap-6 justify-self-center">
-            <span className="text-base font-anton text-white">
+            <span className="text-base font-michroma text-white/90">
               {" "}
               ALL PLAYERS
             </span>
-            <span className="text-base font-anton text-white"> RANKINGS</span>
-            <span className="text-base font-anton text-white"> LINEUPS</span>
-            <span className="text-base font-anton text-white"> ABOUT</span>
+            <span className="text-base font-michroma text-white/90">
+              {" "}
+              RANKINGS
+            </span>
+            <span className="text-base font-michroma text-white/90">
+              {" "}
+              LINEUPS
+            </span>
+            <span className="text-base font-michroma text-white/90">
+              {" "}
+              ABOUT
+            </span>
           </div>
 
           <div className="justify-self-end">
-            <button className="flex items-center rounded-md bg-[#347A99] px-4 py-2 text-base font-anton text-white">
+            <button className="flex items-center rounded-md bg-[#347A99] px-4 py-2 text-base font-michroma text-white">
               SIGN IN
             </button>
           </div>

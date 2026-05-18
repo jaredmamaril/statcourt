@@ -1,10 +1,10 @@
 ﻿import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Anton } from "next/font/google";
+import { Michroma } from "next/font/google";
 import "./globals.css";
 
-const anton = Anton({
-  variable: "--font-anton",
+const michroma = Michroma({
+  variable: "--font-michroma",
   subsets: ["latin"],
   weight: "400",
 });
@@ -32,7 +32,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${anton.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${michroma.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
