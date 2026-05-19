@@ -1,6 +1,7 @@
 ﻿"use client";
 
-import { useRef, useState } from "react";
+import { use, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 {
@@ -15,12 +16,23 @@ const navItems = [
 ];
 
 export default function Home() {
+  {
+    /* Future: consider using a more robust state management solution if the app grows in complexity, especially for handling user authentication and global state */
+  }
   const videoRef = useRef<HTMLVideoElement>(null);
   const [showEnterButton, setShowEnterButton] = useState(false);
   const showButtonAtSecond = 4; // Show button after 4 seconds
 
+  {
+    /* Future: add error handling for video loading issues, such as displaying a fallback image or message if the video fails to load or play */
+  }
+  const router = useRouter();
+  const [isLeaving, setIsLeaving] = useState(false);
+
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main
+      className={`min-h-screen bg-background text-foreground transition-opacity duration-700 ${isLeaving ? "opacity-0" : "opacity-100"}`}
+    >
       {/*Background video with overlay */}
       <video
         ref={videoRef}
@@ -92,7 +104,14 @@ export default function Home() {
       <section className="relative z-10 flex min-h-[calc(100vh-4rem)] -translate-y-10 items-center justify-center text-center">
         {/* Enter the Court button */}
         <button
-          className={`mt-8 rounded-md bg-[#347A99] px-6 py-3 text-base font-michroma text-white transition-all duration-700 ${showEnterButton ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0"}`}
+          onClick={() => {
+            setIsLeaving(true);
+
+            setTimeout(() => {
+              router.push("/court");
+            }, 700); // Match the duration of the fade-out transition
+          }}
+          className={`mt-8 cursor-pointer rounded-md bg-[#347A99] px-6 py-3 text-base font-michroma text-white transition-all duration-700 ${showEnterButton ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0"}`}
         >
           ENTER THE COURT
         </button>
