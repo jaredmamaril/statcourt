@@ -19,14 +19,21 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      // Background video with overlay
+      {/*Background video with overlay */}
       <video
+        ref={videoRef}
         className="absolute inset-0 h-full w-full object-cover"
         src="/court-background.mp4"
         autoPlay
         loop
         muted
         playsInline
+        onTimeUpdate={() => {
+          const video = videoRef.current;
+          if (video && video.currentTime >= showButtonAtSecond) {
+            setShowEnterButton(true);
+          }
+        }}
       />
       // Semi-transparent overlay for better text visibility
       <div className="absolute inset-0 bg-black/65" />
@@ -78,6 +85,13 @@ export default function Home() {
               SIGN IN
             </button>
           </div>
+          <button
+            className={
+              'mt-8 rounded-md bg-[#347A99] px-6 py-3 text-base font-michroma text-white transition-all duration-700 ${showEnterButton ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0"}'
+            }
+          >
+            ENTER THE COURT
+          </button>
         </div>
       </header>
     </main>
