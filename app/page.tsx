@@ -3,18 +3,21 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 
-{/* Future: extract nav items to a separate component and map over them for cleaner code */ }
+{
+  /* Future: extract nav items to a separate component and map over them for cleaner code */
+}
 const navItems = [
   { label: "Home", href: "/" },
   { label: "All Players", href: "/all-players" },
   { label: "Rankings", href: "/rankings" },
   { label: "Lineups", href: "/lineups" },
   { label: "About", href: "/about" },
+];
 
 export default function Home() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [showEnterButton, setShowEnterButton] = useState(false);
-  const showButtonAtSecond = 3; // Show button after 3 seconds
+  const showButtonAtSecond = 4; // Show button after 4 seconds
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -84,16 +87,16 @@ export default function Home() {
               SIGN IN
             </button>
           </div>
-          {/* Enter the Court button */}
-          <button
-            className={
-              'mt-8 rounded-md bg-transparent px-6 py-3 text-base font-michroma text-white transition-all duration-700 ${showEnterButton ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0"}'
-            }
-          >
-            ENTER THE COURT
-          </button>
         </div>
       </header>
+      <section className="relative z-10 flex min-h-[calc(100vh-4rem)] -translate-y-10 items-center justify-center text-center">
+        {/* Enter the Court button */}
+        <button
+          className={`mt-8 rounded-md bg-[#347A99] px-6 py-3 text-base font-michroma text-white transition-all duration-700 ${showEnterButton ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0"}`}
+        >
+          ENTER THE COURT
+        </button>
+      </section>
     </main>
   );
 }
