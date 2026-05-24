@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { use, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -78,7 +78,7 @@ export default function Home() {
           <div className="hidden md:flex items-center gap-6 justify-self-center">
             <span className="text-base font-michroma text-white/90">
               {" "}
-              ALL PLAYERS
+              PLAYERS
             </span>
             <span className="text-base font-michroma text-white/90">
               {" "}
