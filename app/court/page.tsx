@@ -87,6 +87,41 @@ export default function Court() {
     (player) => player.value === rightPlayer,
   );
 
+  const radarData = [
+    {
+      stat: "PPG",
+      playerOne: selectedLeftPlayer ? selectedLeftPlayer.stats.ppg : 0,
+      playerTwo: selectedRightPlayer ? selectedRightPlayer.stats.ppg : 0,
+    },
+    {
+      stat: "RPG",
+      playerOne: selectedLeftPlayer ? selectedLeftPlayer.stats.rpg : 0,
+      playerTwo: selectedRightPlayer ? selectedRightPlayer.stats.rpg : 0,
+    },
+    {
+      stat: "APG",
+      playerOne: selectedLeftPlayer ? selectedLeftPlayer.stats.apg : 0,
+      playerTwo: selectedRightPlayer ? selectedRightPlayer.stats.apg : 0,
+    },
+    {
+      stat: "FG%",
+      playerOne: selectedLeftPlayer ? selectedLeftPlayer.stats.fgPercent : 0,
+      playerTwo: selectedRightPlayer ? selectedRightPlayer.stats.fgPercent : 0,
+    },
+    {
+      stat: "3PT%",
+      playerOne: selectedLeftPlayer ? selectedLeftPlayer.stats.threePercent : 0,
+      playerTwo: selectedRightPlayer
+        ? selectedRightPlayer.stats.threePercent
+        : 0,
+    },
+    {
+      stat: "FT%",
+      playerOne: selectedLeftPlayer ? selectedLeftPlayer.stats.ftPercent : 0,
+      playerTwo: selectedRightPlayer ? selectedRightPlayer.stats.ftPercent : 0,
+    },
+  ];
+
   return (
     <main className="min-h-screen bg-[#07111f] text-white">
       <section className="relative flex min-h-screen items-center justify-between bg-[url('/court.svg')] bg-cover bg-center bg-no-repeat px-6 sm:px-10">
@@ -142,6 +177,128 @@ export default function Court() {
               )}
             </div>
           </div>
+        </div>
+
+        <div className="absolute left-1/2 top-1/2 z-10 flex h-114 w-130 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-black/20 backdrop-blur-sm">
+          <svg viewBox="0 0 300 300" className="h-full w-full">
+            {/* outer radar shape */}
+            <polygon
+              points="150,25 258,88 258,212 150,275 42,212 42,88"
+              fill="none"
+              stroke="#347A99"
+              strokeWidth="2"
+            />
+
+            {/* middle radar shape */}
+            <polygon
+              points="150,65 223,108 223,192 150,235 77,192 77,108"
+              fill="none"
+              stroke="rgba(255,255,255,0.35)"
+              strokeWidth="1"
+            />
+
+            {/* inner radar shape */}
+            <polygon
+              points="150,105 188,128 188,172 150,195 112,172 112,128"
+              fill="none"
+              stroke="rgba(255,255,255,0.25)"
+              strokeWidth="1"
+            />
+
+            {/* axis lines */}
+            <line
+              x1="150"
+              y1="150"
+              x2="150"
+              y2="25"
+              stroke="rgba(255,255,255,0.25)"
+            />
+            <line
+              x1="150"
+              y1="150"
+              x2="258"
+              y2="88"
+              stroke="rgba(255,255,255,0.25)"
+            />
+            <line
+              x1="150"
+              y1="150"
+              x2="258"
+              y2="212"
+              stroke="rgba(255,255,255,0.25)"
+            />
+            <line
+              x1="150"
+              y1="150"
+              x2="150"
+              y2="275"
+              stroke="rgba(255,255,255,0.25)"
+            />
+            <line
+              x1="150"
+              y1="150"
+              x2="42"
+              y2="212"
+              stroke="rgba(255,255,255,0.25)"
+            />
+            <line
+              x1="150"
+              y1="150"
+              x2="42"
+              y2="88"
+              stroke="rgba(255,255,255,0.25)"
+            />
+
+            {/* stat labels */}
+            <text
+              x="150"
+              y="16"
+              textAnchor="middle"
+              className="fill-white text-[10px] font-michroma font-bold"
+            >
+              PPG
+            </text>
+            <text
+              x="270"
+              y="88"
+              textAnchor="start"
+              className="fill-white text-[10px] font-michroma font-bold"
+            >
+              RPG
+            </text>
+            <text
+              x="270"
+              y="216"
+              textAnchor="start"
+              className="fill-white text-[10px] font-michroma font-bold"
+            >
+              APG
+            </text>
+            <text
+              x="150"
+              y="295"
+              textAnchor="middle"
+              className="fill-white text-[10px] font-michroma font-bold"
+            >
+              FG%
+            </text>
+            <text
+              x="30"
+              y="216"
+              textAnchor="end"
+              className="fill-white text-[10px] font-michroma font-bold"
+            >
+              3PT%
+            </text>
+            <text
+              x="30"
+              y="88"
+              textAnchor="end"
+              className="fill-white text-[10px] font-michroma font-bold"
+            >
+              FT%
+            </text>
+          </svg>
         </div>
 
         <div className="absolute right-0 top-0 z-10 flex h-full w-1/2 justify-end pr-3 pt-35">
