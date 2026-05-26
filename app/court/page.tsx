@@ -122,6 +122,68 @@ export default function Court() {
     },
   ];
 
+  const statMaxValues = {
+    ppg: 35,
+    rpg: 15,
+    apg: 12,
+    fgPercent: 60,
+    threePercent: 50,
+    ftPercent: 95,
+  };
+
+  function getRadarPoints(player: Player | undefined) {
+    if (!player) return "";
+    const centerX = 150;
+    const centerY = 150;
+    const maxRadius = 125;
+
+    const stats = [
+      {
+        value: player.stats.ppg,
+        max: statMaxValues.ppg,
+        angle: -90,
+      },
+      {
+        value: player.stats.rpg,
+        max: statMaxValues.rpg,
+        angle: -30,
+      },
+      {
+        value: player.stats.apg,
+        max: statMaxValues.apg,
+        angle: 30,
+      },
+      {
+        value: player.stats.fgPercent,
+        max: statMaxValues.fgPercent,
+        angle: 90,
+      },
+      {
+        value: player.stats.threePercent,
+        max: statMaxValues.threePercent,
+        angle: 150,
+      },
+      {
+        value: player.stats.ftPercent,
+        max: statMaxValues.ftPercent,
+        angle: 210,
+      },
+    ];
+
+    return stats
+      .map((stat) => {
+        const percentage = stat.value / stat.max;
+        const radius = percentage * maxRadius;
+        const angleInRadians = (stat.angle * Math.PI) / 180;
+
+        const x = centerX + radius * Math.cos(angleInRadians);
+        const y = centerY + radius * Math.sin(angleInRadians);
+
+        return `${x},${y}`;
+      })
+      .join(" ");
+  }
+
   return (
     <main className="min-h-screen bg-[#07111f] text-white">
       <section className="relative flex min-h-screen items-center justify-between bg-[url('/court.svg')] bg-cover bg-center bg-no-repeat px-6 sm:px-10">
@@ -179,7 +241,7 @@ export default function Court() {
           </div>
         </div>
 
-        <div className="absolute left-1/2 top-1/2 z-10 flex h-114 w-130 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-black/20 backdrop-blur-sm">
+        <div className="absolute left-1/2 top-1/2 z-10 flex h-120 w-130 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-black/7 backdrop-blur-lg">
           <svg viewBox="0 0 300 300" className="h-full w-full">
             {/* outer radar shape */}
             <polygon
@@ -252,14 +314,14 @@ export default function Court() {
             {/* stat labels */}
             <text
               x="150"
-              y="16"
+              y="20"
               textAnchor="middle"
               className="fill-white text-[10px] font-michroma font-bold"
             >
               PPG
             </text>
             <text
-              x="270"
+              x="265"
               y="88"
               textAnchor="start"
               className="fill-white text-[10px] font-michroma font-bold"
@@ -267,7 +329,7 @@ export default function Court() {
               RPG
             </text>
             <text
-              x="270"
+              x="265"
               y="216"
               textAnchor="start"
               className="fill-white text-[10px] font-michroma font-bold"
@@ -276,14 +338,14 @@ export default function Court() {
             </text>
             <text
               x="150"
-              y="295"
+              y="290"
               textAnchor="middle"
               className="fill-white text-[10px] font-michroma font-bold"
             >
               FG%
             </text>
             <text
-              x="30"
+              x="35"
               y="216"
               textAnchor="end"
               className="fill-white text-[10px] font-michroma font-bold"
@@ -291,7 +353,7 @@ export default function Court() {
               3PT%
             </text>
             <text
-              x="30"
+              x="35"
               y="88"
               textAnchor="end"
               className="fill-white text-[10px] font-michroma font-bold"
