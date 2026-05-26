@@ -28,10 +28,13 @@ export default function Court() {
   ];
 
   const [leftPlayer, setLeftPlayer] = useState("");
+  const [isLeftDropdownOpen, setIsLeftDropdownOpen] = useState(false);
   const selectedLeftPlayer = players.find(
     (player) => player.value === leftPlayer,
   );
+
   const [rightPlayer, setRightPlayer] = useState("");
+  const [isRightDropdownOpen, setIsRightDropdownOpen] = useState(false);
   const selectedRightPlayer = players.find(
     (player) => player.value === rightPlayer,
   );
@@ -45,7 +48,7 @@ export default function Court() {
               CHOOSE YOUR PLAYER
             </h1>
 
-            <div className="mt-6 flex h-56 w-56 items-center justify-center rounded-md border border-white/30 bg-black/30 text-sm text-white/60 backdrop-blur-sm ">
+            <div className="mt-6 flex h-56 w-56 items-center justify-center rounded-md border border-[#347A99]/50 bg-black/30 text-sm text-white/60 backdrop-blur-sm ">
               {selectedLeftPlayer ? (
                 <Image
                   src={selectedLeftPlayer.image}
@@ -59,18 +62,37 @@ export default function Court() {
               )}
             </div>
 
-            <select
-              value={leftPlayer}
-              onChange={(e) => setLeftPlayer(e.target.value)}
-              className="mt-8 w-56 rounded-md border border-white/30 bg-black/30 px-4 py-3 font-michroma text-white outline-none backdrop-blur-sm"
-            >
-              <option value=""> Choose Player</option>
-              {players.map((player) => (
-                <option key={player.value} value={player.value}>
-                  {player.label}
-                </option>
-              ))}
-            </select>
+            <div className="relative mt-8 w-56">
+              <button
+                type="button"
+                onClick={() => setIsLeftDropdownOpen(!isLeftDropdownOpen)}
+                className="flex cursor-pointer w-full items-center justify-between rounded-md border border-[#347A99]/50 bg-black/30 px-4 py-3 font-michroma text-white outline-none backdrop-blur-sm"
+              >
+                <span>
+                  {selectedLeftPlayer
+                    ? selectedLeftPlayer.label
+                    : "Choose Player"}
+                </span>
+              </button>
+
+              {isLeftDropdownOpen && (
+                <div className="absolute left-0 top-full z-20 mt-2 max-h-40 w-full overflow-y-auto rounded-md border border-white/30 bg-black/30 py-2 text-sm text-white shadow-xl">
+                  {players.map((player) => (
+                    <button
+                      key={player.value}
+                      type="button"
+                      onClick={() => {
+                        setLeftPlayer(player.value);
+                        setIsLeftDropdownOpen(false);
+                      }}
+                      className="block w-full px-4 py-3 text-left font-michroma text-sm text-white hover:bg-white/10"
+                    >
+                      {player.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -80,7 +102,7 @@ export default function Court() {
               CHOOSE YOUR PLAYER
             </h1>
 
-            <div className="mt-6 flex h-56 w-56 items-center justify-center rounded-md border border-white/30 bg-black/30 text-sm text-white/60 backdrop-blur-sm ">
+            <div className="mt-6 flex h-56 w-56 items-center justify-center rounded-md border border-[#347A99]/50 bg-black/30 text-sm text-white/60 backdrop-blur-sm ">
               {selectedRightPlayer ? (
                 <Image
                   src={selectedRightPlayer.image}
@@ -94,18 +116,37 @@ export default function Court() {
               )}
             </div>
 
-            <select
-              value={rightPlayer}
-              onChange={(e) => setRightPlayer(e.target.value)}
-              className="mt-8 w-56 rounded-md border border-white/30 bg-black/30 px-4 py-3 font-michroma text-white outline-none backdrop-blur-sm"
-            >
-              <option value=""> Choose Player</option>
-              {players.map((player) => (
-                <option key={player.value} value={player.value}>
-                  {player.label}
-                </option>
-              ))}
-            </select>
+            <div className="relative mt-8 w-56">
+              <button
+                type="button"
+                onClick={() => setIsRightDropdownOpen(!isRightDropdownOpen)}
+                className="flex cursor-pointer w-full items-center justify-between rounded-md border border-[#347A99]/50 bg-black/30 px-4 py-3 font-michroma text-white outline-none backdrop-blur-sm"
+              >
+                <span>
+                  {selectedRightPlayer
+                    ? selectedRightPlayer.label
+                    : "Choose Player"}
+                </span>
+              </button>
+
+              {isRightDropdownOpen && (
+                <div className="absolute left-0 top-full z-20 mt-2 max-h-40 w-full overflow-y-auto rounded-md border border-white/30 bg-black/30 py-2 text-sm text-white shadow-xl">
+                  {players.map((player) => (
+                    <button
+                      key={player.value}
+                      type="button"
+                      onClick={() => {
+                        setRightPlayer(player.value);
+                        setIsRightDropdownOpen(false);
+                      }}
+                      className="block w-full px-4 py-3 text-left font-michroma text-sm text-white hover:bg-white/10"
+                    >
+                      {player.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </section>
