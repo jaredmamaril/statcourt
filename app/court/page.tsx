@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
+import type { TooltipContentProps } from "recharts";
 
 export default function Court() {
   type PlayerStats = {
@@ -216,26 +217,37 @@ export default function Court() {
     },
   ];
 
-  type CustomTooltipProps = {
-    active?: boolean;
-    payload?: {
-      payload: radarStatRow;
-    }[];
-    label?: string;
-  };
-
-  function customTooltip({ active, payload, label }: CustomTooltipProps) {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
+  function customTooltip({ active, payload, label }: TooltipContentProps) {
+    if (!active || !payload || !payload.length) {
+      return null;
     }
-    return null;
+
+    if (active && payload && payload.length) {
+      const data = payload[0].payload as radarStatRow;
+
+      return (
+        <div className="rounded-md border border-[#347A99]/50 bg-[#07111f]/80 px-4 py-3 text-sm shadow-lg">
+          <p className="font-michroma text-base font-bold text-[#1bc2ec]">
+            {label}
+          </p>
+          <p className=" text-[#F4BB44] mt-2 font-michroma">
+            {selectedLeftPlayer ? selectedLeftPlayer.label : "Player 1"}:{" "}
+            {data.playerOneActual}
+          </p>
+          <p className=" text-[#50b4de] mt-2 font-michroma">
+            {selectedRightPlayer ? selectedRightPlayer.label : "Player 2"}:{" "}
+            {data.playerTwoActual}
+          </p>
+        </div>
+      );
+    }
   }
 
   return (
     <main className="h-screen overflow-hidden bg-[#07111f] text-white">
       <section className="relative flex h-screen overflow-hidden items-center justify-between bg-[url('/court.svg')] bg-cover bg-center bg-no-repeat px-6 sm:px-10">
-        <div className="absolute left-0 top-0 z-10 flex h-full w-1/2 justify-start pl-3 pt-35">
-          <div className="flex flex-col items-center">
+        <div className="pointer-events-none absolute left-0 top-0 z-10 flex h-full w-1/2 justify-start pl-3 pt-35">
+          <div className="pointer-events-auto flex flex-col items-center">
             <h1 className="font-michroma text-xl text-white font-bold">
               CHOOSE YOUR PLAYER
             </h1>
@@ -289,7 +301,7 @@ export default function Court() {
           </div>
         </div>
 
-        <div className="absolute left-1/2 top-1/2 z-10 flex h-120 w-130 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-black/7 backdrop-blur-lg">
+        <div className="absolute left-1/2 top-1/2 z-20 flex h-120 w-130 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-black/7 backdrop-blur-lg">
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart data={radarData}>
               <PolarGrid stroke="rgba(255,255,255,0.25)" />
@@ -303,7 +315,7 @@ export default function Court() {
                 tick={false}
                 axisLine={false}
               />
-              <Tooltip />
+              <Tooltip content={customTooltip} />
               <Radar
                 name={
                   selectedLeftPlayer ? selectedLeftPlayer.label : "Player One"
@@ -313,6 +325,7 @@ export default function Court() {
                 strokeWidth={2}
                 fill="#F4BB44"
                 fillOpacity={0.14}
+                dot={{ r: 2, fill: "#F4BB44" }}
               />
               <Radar
                 name={
@@ -323,13 +336,14 @@ export default function Court() {
                 strokeWidth={2}
                 fill="#347A99"
                 fillOpacity={0.22}
+                dot={{ r: 2, fill: "#347A99" }}
               />
             </RadarChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="absolute right-0 top-0 z-10 flex h-full w-1/2 justify-end pr-3 pt-35">
-          <div className="flex flex-col items-center">
+        <div className="pointer-events-none absolute right-0 top-0 z-10 flex h-full w-1/2 justify-end pr-3 pt-35">
+          <div className="pointer-events-auto flex flex-col items-center">
             <h1 className="font-michroma text-xl font-bold text-white">
               CHOOSE YOUR PLAYER
             </h1>
