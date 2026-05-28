@@ -243,6 +243,15 @@ export default function Court() {
     }
   }
 
+  const [leftSearch, setLeftSearch] = useState("");
+  const [rightSearch, setRightSearch] = useState("");
+  const filteredLeftPlayers = players.filter((player) =>
+    player.label.toLowerCase().includes(leftSearch.toLowerCase()),
+  );
+  const filteredRightPlayers = players.filter((player) =>
+    player.label.toLowerCase().includes(rightSearch.toLowerCase()),
+  );
+
   return (
     <main className="h-screen overflow-hidden bg-[#07111f] text-white">
       <section className="relative flex h-screen overflow-hidden items-center justify-between bg-[url('/court.svg')] bg-cover bg-center bg-no-repeat px-6 sm:px-10">
@@ -282,15 +291,22 @@ export default function Court() {
 
               {isLeftDropdownOpen && (
                 <div className="absolute left-0 top-full z-20 mt-2 max-h-32 w-full overflow-y-auto rounded-md border border-white/30 bg-black/30 py-2 text-sm text-white shadow-xl">
-                  {players.map((player) => (
+                  <input
+                    value={leftSearch}
+                    onChange={(e) => setLeftSearch(e.target.value)}
+                    placeholder="Search Player..."
+                    className="mx-2 mb-2 w-[calc(100%-1rem)] rounded-md border border-white/30 bg-black/40 px-3 py-2 text-white placeholder:text-[#2da6c4] font-michroma backdrop-blur-sm"
+                  />
+                  {filteredLeftPlayers.map((player) => (
                     <button
                       key={player.value}
                       type="button"
                       onClick={() => {
                         setLeftPlayer(player.value);
                         setIsLeftDropdownOpen(false);
+                        setLeftSearch("");
                       }}
-                      className="block w-full px-4 py-3 text-left font-michroma text-sm text-white hover:bg-white/10"
+                      className="cursor-pointer block w-full px-4 py-3 text-left font-michroma text-sm text-white hover:bg-white/10"
                     >
                       {player.label}
                     </button>
@@ -378,15 +394,22 @@ export default function Court() {
 
               {isRightDropdownOpen && (
                 <div className="absolute left-0 top-full z-20 mt-2 max-h-32 w-full overflow-y-auto rounded-md border border-white/30 bg-black/30 py-2 text-sm text-white shadow-xl">
-                  {players.map((player) => (
+                  <input
+                    value={rightSearch}
+                    onChange={(e) => setRightSearch(e.target.value)}
+                    placeholder="Search Player..."
+                    className="mx-2 mb-2 w-[calc(100%-1rem)] rounded-md border border-white/30 bg-black/40 px-3 py-2 text-white placeholder:text-[#2da6c4] font-michroma backdrop-blur-sm"
+                  />
+                  {filteredRightPlayers.map((player) => (
                     <button
                       key={player.value}
                       type="button"
                       onClick={() => {
                         setRightPlayer(player.value);
                         setIsRightDropdownOpen(false);
+                        setRightSearch("");
                       }}
-                      className="block w-full px-4 py-3 text-left font-michroma text-sm text-white hover:bg-white/10"
+                      className="cursor-pointer block w-full px-4 py-3 text-left font-michroma text-sm text-white hover:bg-white/10"
                     >
                       {player.label}
                     </button>
