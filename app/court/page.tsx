@@ -5,7 +5,7 @@ import {
   statMaxValues,
   normalizeStat,
   type RadarStatRow,
-} from "./court-data";
+} from "../components/court-data";
 import Image from "next/image";
 import { useState } from "react";
 import {
