@@ -1,3 +1,6 @@
+// This file contains the data and types related to players and their stats for the court page.
+
+// Future: fetching this data from an API or database for scalability and easier updates, especially if the player list grows significantly or if stats need to be updated frequently.
 type PlayerStats = {
   ppg: number; // Points Per Game
   rpg: number; // Rebounds Per Game
@@ -7,6 +10,7 @@ type PlayerStats = {
   ftPercent: number; // Free Throw Percentage
 };
 
+// Future: adding more stats or player attributes as needed, such as player position, team, or career highlights, to enhance the user experience and provide more comprehensive information about each player.
 type Player = {
   value: string;
   label: string;
@@ -14,6 +18,7 @@ type Player = {
   stats: PlayerStats;
 };
 
+// Future: database for player data could be implemented with APIs
 export const players: Player[] = [
   {
     value: "lebron-james",
@@ -69,6 +74,7 @@ export const players: Player[] = [
   },
 ];
 
+// Future: these max values could be dynamically calculated based on the player data or fetched from an API to ensure they remain accurate and relevant as new players are added or stats are updated.
 export const statMaxValues = {
   ppg: 35,
   rpg: 15,
@@ -82,6 +88,7 @@ export function normalizeStat(value: number, max: number) {
   return Math.min((value / max) * 100, 100);
 }
 
+// Future: this type can be expanded to include more stats or player attributes as needed, and can be used to structure the data for the radar chart or other visualizations on the court page.
 export type RadarStatRow = {
   stat: string;
   playerOne: number;
