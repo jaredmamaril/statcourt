@@ -20,18 +20,21 @@ import {
 import type { TooltipContentProps } from "recharts";
 
 export default function Court() {
+  // State for left player selection
   const [leftPlayer, setLeftPlayer] = useState("");
   const [isLeftDropdownOpen, setIsLeftDropdownOpen] = useState(false);
   const selectedLeftPlayer = players.find(
     (player) => player.value === leftPlayer,
   );
 
+  // State for right player selection
   const [rightPlayer, setRightPlayer] = useState("");
   const [isRightDropdownOpen, setIsRightDropdownOpen] = useState(false);
   const selectedRightPlayer = players.find(
     (player) => player.value === rightPlayer,
   );
 
+  // Prepare radar chart data
   const radarData: RadarStatRow[] = [
     {
       stat: "PPG",
@@ -131,6 +134,7 @@ export default function Court() {
     },
   ];
 
+  // Custom tooltip for radar chart stats
   function customTooltip({ active, payload, label }: TooltipContentProps) {
     if (!active || !payload || !payload.length) {
       return null;
@@ -157,8 +161,10 @@ export default function Court() {
     }
   }
 
+  // Search states for dropdowns
   const [leftSearch, setLeftSearch] = useState("");
   const [rightSearch, setRightSearch] = useState("");
+  // Filtered player lists based on search input
   const filteredLeftPlayers = players.filter((player) =>
     player.label.toLowerCase().includes(leftSearch.toLowerCase()),
   );
@@ -167,14 +173,18 @@ export default function Court() {
   );
 
   return (
+    // Main container with background and full screen height
     <main className="h-screen overflow-hidden bg-[#07111f] text-white">
       <section className="relative flex h-screen overflow-hidden items-center justify-between bg-[url('/court.svg')] bg-cover bg-center bg-no-repeat px-6 sm:px-10">
+        {/* Left player selection */}
         <div className="pointer-events-none absolute left-0 top-0 z-10 flex h-full w-1/2 justify-start pl-3 pt-35">
           <div className="pointer-events-auto flex flex-col items-center">
+            {/* Heading for player selection */}
             <h1 className="font-michroma text-xl text-white font-bold">
               CHOOSE YOUR PLAYER
             </h1>
 
+            {/* Player image container with conditional rendering */}
             <div className="mt-6 flex h-56 w-56 items-center justify-center rounded-md border border-[#347A99]/50 bg-black/30 text-sm text-white/60 backdrop-blur-sm ">
               {selectedLeftPlayer ? (
                 <Image
@@ -189,6 +199,7 @@ export default function Court() {
               )}
             </div>
 
+            {/* Dropdown for left player selection */}
             <div className="relative mt-8 w-56">
               <button
                 type="button"
@@ -203,14 +214,17 @@ export default function Court() {
                 <span className="text-[#347A99]">▾</span>
               </button>
 
+              {/* Dropdown menu for left player selection, conditionally rendered based on state */}
               {isLeftDropdownOpen && (
                 <div className="absolute left-0 top-full z-20 mt-2 max-h-32 w-full overflow-y-auto rounded-md border border-white/30 bg-black/30 py-2 text-sm text-white shadow-xl">
+                  {/* Search input for filtering players in the dropdown */}
                   <input
                     value={leftSearch}
                     onChange={(e) => setLeftSearch(e.target.value)}
                     placeholder="Search Player..."
                     className="mx-2 mb-2 w-[calc(100%-1rem)] rounded-md border border-white/30 bg-black/40 px-3 py-2 text-white placeholder:text-[#2da6c4] font-michroma backdrop-blur-sm"
                   />
+                  {/* List of players filtered based on search input, rendered as buttons in the dropdown */}
                   {filteredLeftPlayers.map((player) => (
                     <button
                       key={player.value}
@@ -231,21 +245,29 @@ export default function Court() {
           </div>
         </div>
 
+        {/* Radar chart container, centered on the court background */}
         <div className="absolute left-1/2 top-1/2 z-20 flex h-120 w-130 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-black/7 backdrop-blur-lg">
+          {/* Responsive container for the radar chart, ensuring it scales properly within the available space */}
           <ResponsiveContainer width="100%" height="100%">
+            {/* Main radar chart component */}
             <RadarChart data={radarData}>
+              {/* Grid lines */}
               <PolarGrid stroke="rgba(255,255,255,0.25)" />
+              {/* Stat labels */}
               <PolarAngleAxis
                 dataKey="stat"
                 tick={{ fill: "white", fontSize: 14, fontFamily: "Michroma" }}
               />
+              {/* Radial axis, hidden for cleaner look */}
               <PolarRadiusAxis
-                angle={50}
+                angle={90}
                 domain={[0, 100]}
                 tick={false}
                 axisLine={false}
               />
+              {/* Custom tooltip for displaying actual stat values on hover */}
               <Tooltip content={customTooltip} />
+              {/* Radar area for left player */}
               <Radar
                 name={
                   selectedLeftPlayer ? selectedLeftPlayer.label : "Player One"
@@ -257,6 +279,7 @@ export default function Court() {
                 fillOpacity={0.14}
                 dot={{ r: 2, fill: "#F4BB44" }}
               />
+              {/* Radar area for right player */}
               <Radar
                 name={
                   selectedRightPlayer ? selectedRightPlayer.label : "Player Two"
@@ -271,13 +294,15 @@ export default function Court() {
             </RadarChart>
           </ResponsiveContainer>
         </div>
-
+        {/* Right player selection */}
         <div className="pointer-events-none absolute right-0 top-0 z-10 flex h-full w-1/2 justify-end pr-3 pt-35">
           <div className="pointer-events-auto flex flex-col items-center">
+            {/* Heading for player selection */}
             <h1 className="font-michroma text-xl font-bold text-white">
               CHOOSE YOUR PLAYER
             </h1>
 
+            {/* Player image container with conditional rendering */}
             <div className="mt-6 flex h-56 w-56 items-center justify-center rounded-md border border-[#347A99]/50 bg-black/30 text-sm text-white/60 backdrop-blur-sm ">
               {selectedRightPlayer ? (
                 <Image
@@ -292,6 +317,7 @@ export default function Court() {
               )}
             </div>
 
+            {/* Dropdown for right player selection */}
             <div className="relative mt-8 w-56">
               <button
                 type="button"
@@ -306,14 +332,17 @@ export default function Court() {
                 <span className="text-[#347A99]">▾</span>
               </button>
 
+              {/* Dropdown menu for right player selection, conditionally rendered based on state */}
               {isRightDropdownOpen && (
                 <div className="absolute left-0 top-full z-20 mt-2 max-h-32 w-full overflow-y-auto rounded-md border border-white/30 bg-black/30 py-2 text-sm text-white shadow-xl">
+                  {/* Search input for filtering players in the dropdown */}
                   <input
                     value={rightSearch}
                     onChange={(e) => setRightSearch(e.target.value)}
                     placeholder="Search Player..."
                     className="mx-2 mb-2 w-[calc(100%-1rem)] rounded-md border border-white/30 bg-black/40 px-3 py-2 text-white placeholder:text-[#2da6c4] font-michroma backdrop-blur-sm"
                   />
+                  {/* List of players filtered based on search input, rendered as buttons in the dropdown */}
                   {filteredRightPlayers.map((player) => (
                     <button
                       key={player.value}
