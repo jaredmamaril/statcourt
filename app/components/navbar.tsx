@@ -3,13 +3,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useLocation } from "react-router-dom";
 
+{
+  /* Future: consider adding a mobile menu for smaller screens, and implementing user authentication to conditionally show different nav items or a user profile dropdown when signed in */
+}
 type NavItem = {
   label: string;
   href: string;
 };
-
+{
+  /* Nav items | Future: generated from API or database in the future for easier maintenance and scalability */
+}
 const navItems: NavItem[] = [
   { label: "COURT", href: "/court" },
   { label: "PLAYERS", href: "/players" },
@@ -25,6 +29,7 @@ export default function Navbar() {
   return (
     <header className="relative z-50 border-b border-transparent bg-background backdrop-blur-sm">
       <div className="grid h-16 w-full grid-cols-3 items-center px-3">
+        {/* Logo and site name on the left */}
         <Link href="/" className="flex items-center gap-3">
           <Image
             src="/statcourt-logo.png"
@@ -37,6 +42,7 @@ export default function Navbar() {
           <span className="font-michroma text-xl text-white">STATCOURT</span>
         </Link>
         <nav className="hidden items-center justify-center gap-6 md:flex">
+          {/* Navigation links */}
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -51,6 +57,7 @@ export default function Navbar() {
           })}
         </nav>
         <div className="justify-self-end">
+          {/* Future: this button could open a sign-in modal or redirect to a sign-in page, and could be conditionally rendered based on user authentication state */}
           <button className="cursor-pointer rounded-md bg-[#347A99] px-4 py-2 text-base font-michroma text-white">
             SIGN IN
           </button>

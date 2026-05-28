@@ -173,7 +173,6 @@ export default function Court() {
   );
 
   return (
-    // Main container with background and full screen height
     <main className="h-screen overflow-hidden bg-[#07111f] text-white">
       <section className="relative flex h-screen overflow-hidden items-center justify-between bg-[url('/court.svg')] bg-cover bg-center bg-no-repeat px-6 sm:px-10">
         {/* Left player selection */}
