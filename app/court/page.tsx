@@ -2,6 +2,15 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import {
+  PolarAngleAxis,
+  PolarGrid,
+  PolarRadiusAxis,
+  Radar,
+  RadarChart,
+  ResponsiveContainer,
+  Tooltip,
+} from "recharts";
 
 export default function Court() {
   type PlayerStats = {
@@ -87,106 +96,144 @@ export default function Court() {
     (player) => player.value === rightPlayer,
   );
 
-  const radarData = [
+  const statMaxValues = {
+    ppg: 35,
+    rpg: 15,
+    apg: 12,
+    fgPercent: 65,
+    threePercent: 45,
+    ftPercent: 95,
+  };
+
+  function normalizeStat(value: number, max: number) {
+    return Math.min((value / max) * 100, 100);
+  }
+
+  type radarStatRow = {
+    stat: string;
+    playerOne: number;
+    playerTwo: number;
+    playerOneActual: number;
+    playerTwoActual: number;
+  };
+
+  const radarData: radarStatRow[] = [
     {
       stat: "PPG",
-      playerOne: selectedLeftPlayer ? selectedLeftPlayer.stats.ppg : 0,
-      playerTwo: selectedRightPlayer ? selectedRightPlayer.stats.ppg : 0,
+      playerOne: selectedLeftPlayer
+        ? normalizeStat(selectedLeftPlayer.stats.ppg, statMaxValues.ppg)
+        : 0,
+      playerTwo: selectedRightPlayer
+        ? normalizeStat(selectedRightPlayer.stats.ppg, statMaxValues.ppg)
+        : 0,
+      playerOneActual: selectedLeftPlayer ? selectedLeftPlayer.stats.ppg : 0,
+      playerTwoActual: selectedRightPlayer ? selectedRightPlayer.stats.ppg : 0,
     },
     {
       stat: "RPG",
-      playerOne: selectedLeftPlayer ? selectedLeftPlayer.stats.rpg : 0,
-      playerTwo: selectedRightPlayer ? selectedRightPlayer.stats.rpg : 0,
+      playerOne: selectedLeftPlayer
+        ? normalizeStat(selectedLeftPlayer.stats.rpg, statMaxValues.rpg)
+        : 0,
+      playerTwo: selectedRightPlayer
+        ? normalizeStat(selectedRightPlayer.stats.rpg, statMaxValues.rpg)
+        : 0,
+      playerOneActual: selectedLeftPlayer ? selectedLeftPlayer.stats.rpg : 0,
+      playerTwoActual: selectedRightPlayer ? selectedRightPlayer.stats.rpg : 0,
     },
     {
       stat: "APG",
-      playerOne: selectedLeftPlayer ? selectedLeftPlayer.stats.apg : 0,
-      playerTwo: selectedRightPlayer ? selectedRightPlayer.stats.apg : 0,
+      playerOne: selectedLeftPlayer
+        ? normalizeStat(selectedLeftPlayer.stats.apg, statMaxValues.apg)
+        : 0,
+      playerTwo: selectedRightPlayer
+        ? normalizeStat(selectedRightPlayer.stats.apg, statMaxValues.apg)
+        : 0,
+      playerOneActual: selectedLeftPlayer ? selectedLeftPlayer.stats.apg : 0,
+      playerTwoActual: selectedRightPlayer ? selectedRightPlayer.stats.apg : 0,
     },
     {
       stat: "FG%",
-      playerOne: selectedLeftPlayer ? selectedLeftPlayer.stats.fgPercent : 0,
-      playerTwo: selectedRightPlayer ? selectedRightPlayer.stats.fgPercent : 0,
+      playerOne: selectedLeftPlayer
+        ? normalizeStat(
+            selectedLeftPlayer.stats.fgPercent,
+            statMaxValues.fgPercent,
+          )
+        : 0,
+      playerTwo: selectedRightPlayer
+        ? normalizeStat(
+            selectedRightPlayer.stats.fgPercent,
+            statMaxValues.fgPercent,
+          )
+        : 0,
+      playerOneActual: selectedLeftPlayer
+        ? selectedLeftPlayer.stats.fgPercent
+        : 0,
+      playerTwoActual: selectedRightPlayer
+        ? selectedRightPlayer.stats.fgPercent
+        : 0,
     },
     {
       stat: "3PT%",
-      playerOne: selectedLeftPlayer ? selectedLeftPlayer.stats.threePercent : 0,
+      playerOne: selectedLeftPlayer
+        ? normalizeStat(
+            selectedLeftPlayer.stats.threePercent,
+            statMaxValues.threePercent,
+          )
+        : 0,
       playerTwo: selectedRightPlayer
+        ? normalizeStat(
+            selectedRightPlayer.stats.threePercent,
+            statMaxValues.threePercent,
+          )
+        : 0,
+      playerOneActual: selectedLeftPlayer
+        ? selectedLeftPlayer.stats.threePercent
+        : 0,
+      playerTwoActual: selectedRightPlayer
         ? selectedRightPlayer.stats.threePercent
         : 0,
     },
     {
       stat: "FT%",
-      playerOne: selectedLeftPlayer ? selectedLeftPlayer.stats.ftPercent : 0,
-      playerTwo: selectedRightPlayer ? selectedRightPlayer.stats.ftPercent : 0,
+      playerOne: selectedLeftPlayer
+        ? normalizeStat(
+            selectedLeftPlayer.stats.ftPercent,
+            statMaxValues.ftPercent,
+          )
+        : 0,
+      playerTwo: selectedRightPlayer
+        ? normalizeStat(
+            selectedRightPlayer.stats.ftPercent,
+            statMaxValues.ftPercent,
+          )
+        : 0,
+      playerOneActual: selectedLeftPlayer
+        ? selectedLeftPlayer.stats.ftPercent
+        : 0,
+      playerTwoActual: selectedRightPlayer
+        ? selectedRightPlayer.stats.ftPercent
+        : 0,
     },
   ];
 
-  const statMaxValues = {
-    ppg: 35,
-    rpg: 15,
-    apg: 12,
-    fgPercent: 60,
-    threePercent: 50,
-    ftPercent: 95,
+  type CustomTooltipProps = {
+    active?: boolean;
+    payload?: {
+      payload: radarStatRow;
+    }[];
+    label?: string;
   };
 
-  function getRadarPoints(player: Player | undefined) {
-    if (!player) return "";
-    const centerX = 150;
-    const centerY = 150;
-    const maxRadius = 125;
-
-    const stats = [
-      {
-        value: player.stats.ppg,
-        max: statMaxValues.ppg,
-        angle: -90,
-      },
-      {
-        value: player.stats.rpg,
-        max: statMaxValues.rpg,
-        angle: -30,
-      },
-      {
-        value: player.stats.apg,
-        max: statMaxValues.apg,
-        angle: 30,
-      },
-      {
-        value: player.stats.fgPercent,
-        max: statMaxValues.fgPercent,
-        angle: 90,
-      },
-      {
-        value: player.stats.threePercent,
-        max: statMaxValues.threePercent,
-        angle: 150,
-      },
-      {
-        value: player.stats.ftPercent,
-        max: statMaxValues.ftPercent,
-        angle: 210,
-      },
-    ];
-
-    return stats
-      .map((stat) => {
-        const percentage = stat.value / stat.max;
-        const radius = percentage * maxRadius;
-        const angleInRadians = (stat.angle * Math.PI) / 180;
-
-        const x = centerX + radius * Math.cos(angleInRadians);
-        const y = centerY + radius * Math.sin(angleInRadians);
-
-        return `${x},${y}`;
-      })
-      .join(" ");
+  function customTooltip({ active, payload, label }: CustomTooltipProps) {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+    }
+    return null;
   }
 
   return (
-    <main className="min-h-screen bg-[#07111f] text-white">
-      <section className="relative flex min-h-screen items-center justify-between bg-[url('/court.svg')] bg-cover bg-center bg-no-repeat px-6 sm:px-10">
+    <main className="h-screen overflow-hidden bg-[#07111f] text-white">
+      <section className="relative flex h-screen overflow-hidden items-center justify-between bg-[url('/court.svg')] bg-cover bg-center bg-no-repeat px-6 sm:px-10">
         <div className="absolute left-0 top-0 z-10 flex h-full w-1/2 justify-start pl-3 pt-35">
           <div className="flex flex-col items-center">
             <h1 className="font-michroma text-xl text-white font-bold">
@@ -218,10 +265,11 @@ export default function Court() {
                     ? selectedLeftPlayer.label
                     : "Choose Player"}
                 </span>
+                <span className="text-[#347A99]">▾</span>
               </button>
 
               {isLeftDropdownOpen && (
-                <div className="absolute left-0 top-full z-20 mt-2 max-h-40 w-full overflow-y-auto rounded-md border border-white/30 bg-black/30 py-2 text-sm text-white shadow-xl">
+                <div className="absolute left-0 top-full z-20 mt-2 max-h-32 w-full overflow-y-auto rounded-md border border-white/30 bg-black/30 py-2 text-sm text-white shadow-xl">
                   {players.map((player) => (
                     <button
                       key={player.value}
@@ -242,125 +290,42 @@ export default function Court() {
         </div>
 
         <div className="absolute left-1/2 top-1/2 z-10 flex h-120 w-130 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-black/7 backdrop-blur-lg">
-          <svg viewBox="0 0 300 300" className="h-full w-full">
-            {/* outer radar shape */}
-            <polygon
-              points="150,25 258,88 258,212 150,275 42,212 42,88"
-              fill="none"
-              stroke="#347A99"
-              strokeWidth="2"
-            />
-
-            {/* middle radar shape */}
-            <polygon
-              points="150,65 223,108 223,192 150,235 77,192 77,108"
-              fill="none"
-              stroke="rgba(255,255,255,0.35)"
-              strokeWidth="1"
-            />
-
-            {/* inner radar shape */}
-            <polygon
-              points="150,105 188,128 188,172 150,195 112,172 112,128"
-              fill="none"
-              stroke="rgba(255,255,255,0.25)"
-              strokeWidth="1"
-            />
-
-            {/* axis lines */}
-            <line
-              x1="150"
-              y1="150"
-              x2="150"
-              y2="25"
-              stroke="rgba(255,255,255,0.25)"
-            />
-            <line
-              x1="150"
-              y1="150"
-              x2="258"
-              y2="88"
-              stroke="rgba(255,255,255,0.25)"
-            />
-            <line
-              x1="150"
-              y1="150"
-              x2="258"
-              y2="212"
-              stroke="rgba(255,255,255,0.25)"
-            />
-            <line
-              x1="150"
-              y1="150"
-              x2="150"
-              y2="275"
-              stroke="rgba(255,255,255,0.25)"
-            />
-            <line
-              x1="150"
-              y1="150"
-              x2="42"
-              y2="212"
-              stroke="rgba(255,255,255,0.25)"
-            />
-            <line
-              x1="150"
-              y1="150"
-              x2="42"
-              y2="88"
-              stroke="rgba(255,255,255,0.25)"
-            />
-
-            {/* stat labels */}
-            <text
-              x="150"
-              y="20"
-              textAnchor="middle"
-              className="fill-white text-[10px] font-michroma font-bold"
-            >
-              PPG
-            </text>
-            <text
-              x="265"
-              y="88"
-              textAnchor="start"
-              className="fill-white text-[10px] font-michroma font-bold"
-            >
-              RPG
-            </text>
-            <text
-              x="265"
-              y="216"
-              textAnchor="start"
-              className="fill-white text-[10px] font-michroma font-bold"
-            >
-              APG
-            </text>
-            <text
-              x="150"
-              y="290"
-              textAnchor="middle"
-              className="fill-white text-[10px] font-michroma font-bold"
-            >
-              FG%
-            </text>
-            <text
-              x="35"
-              y="216"
-              textAnchor="end"
-              className="fill-white text-[10px] font-michroma font-bold"
-            >
-              3PT%
-            </text>
-            <text
-              x="35"
-              y="88"
-              textAnchor="end"
-              className="fill-white text-[10px] font-michroma font-bold"
-            >
-              FT%
-            </text>
-          </svg>
+          <ResponsiveContainer width="100%" height="100%">
+            <RadarChart data={radarData}>
+              <PolarGrid stroke="rgba(255,255,255,0.25)" />
+              <PolarAngleAxis
+                dataKey="stat"
+                tick={{ fill: "white", fontSize: 14, fontFamily: "Michroma" }}
+              />
+              <PolarRadiusAxis
+                angle={50}
+                domain={[0, 100]}
+                tick={false}
+                axisLine={false}
+              />
+              <Tooltip />
+              <Radar
+                name={
+                  selectedLeftPlayer ? selectedLeftPlayer.label : "Player One"
+                }
+                dataKey="playerOne"
+                stroke="#F4BB44"
+                strokeWidth={2}
+                fill="#F4BB44"
+                fillOpacity={0.14}
+              />
+              <Radar
+                name={
+                  selectedRightPlayer ? selectedRightPlayer.label : "Player Two"
+                }
+                dataKey="playerTwo"
+                stroke="#347A99"
+                strokeWidth={2}
+                fill="#347A99"
+                fillOpacity={0.22}
+              />
+            </RadarChart>
+          </ResponsiveContainer>
         </div>
 
         <div className="absolute right-0 top-0 z-10 flex h-full w-1/2 justify-end pr-3 pt-35">
@@ -394,10 +359,11 @@ export default function Court() {
                     ? selectedRightPlayer.label
                     : "Choose Player"}
                 </span>
+                <span className="text-[#347A99]">▾</span>
               </button>
 
               {isRightDropdownOpen && (
-                <div className="absolute left-0 top-full z-20 mt-2 max-h-40 w-full overflow-y-auto rounded-md border border-white/30 bg-black/30 py-2 text-sm text-white shadow-xl">
+                <div className="absolute left-0 top-full z-20 mt-2 max-h-32 w-full overflow-y-auto rounded-md border border-white/30 bg-black/30 py-2 text-sm text-white shadow-xl">
                   {players.map((player) => (
                     <button
                       key={player.value}
