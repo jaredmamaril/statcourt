@@ -50,7 +50,7 @@ export default function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`font-michroma text-base transition-colors duration-200 ${isActive ? "text-[#347A99] text-xl" : "text-white/90 hover:text-[#347A99]"}`}
+                className={`font-michroma text-base transition-colors duration-200 ${isActive ? "text-[#347A99] text-lg font-bold" : "text-white/90 hover:text-[#347A99]"}`}
               >
                 {item.label}
               </Link>
