@@ -24,14 +24,14 @@ export default function Court() {
   const [leftPlayer, setLeftPlayer] = useState("");
   const [isLeftDropdownOpen, setIsLeftDropdownOpen] = useState(false);
   const selectedLeftPlayer = players.find(
-    (player) => player.value === leftPlayer,
+    (player) => player.name === leftPlayer,
   );
 
   // State for right player selection
   const [rightPlayer, setRightPlayer] = useState("");
   const [isRightDropdownOpen, setIsRightDropdownOpen] = useState(false);
   const selectedRightPlayer = players.find(
-    (player) => player.value === rightPlayer,
+    (player) => player.name === rightPlayer,
   );
 
   // Prepare radar chart data
@@ -149,11 +149,11 @@ export default function Court() {
             {label}
           </p>
           <p className=" text-[#F4BB44] mt-2 font-michroma">
-            {selectedLeftPlayer ? selectedLeftPlayer.label : "Player 1"}:{" "}
+            {selectedLeftPlayer ? selectedLeftPlayer.name : "Player 1"}:{" "}
             {data.playerOneActual}
           </p>
           <p className=" text-[#50b4de] mt-2 font-michroma">
-            {selectedRightPlayer ? selectedRightPlayer.label : "Player 2"}:{" "}
+            {selectedRightPlayer ? selectedRightPlayer.name : "Player 2"}:{" "}
             {data.playerTwoActual}
           </p>
         </div>
@@ -166,10 +166,10 @@ export default function Court() {
   const [rightSearch, setRightSearch] = useState("");
   // Filtered player lists based on search input
   const filteredLeftPlayers = players.filter((player) =>
-    player.label.toLowerCase().includes(leftSearch.toLowerCase()),
+    player.name.toLowerCase().includes(leftSearch.toLowerCase()),
   );
   const filteredRightPlayers = players.filter((player) =>
-    player.label.toLowerCase().includes(rightSearch.toLowerCase()),
+    player.name.toLowerCase().includes(rightSearch.toLowerCase()),
   );
 
   return (
@@ -188,7 +188,7 @@ export default function Court() {
               {selectedLeftPlayer ? (
                 <Image
                   src={selectedLeftPlayer.image}
-                  alt={selectedLeftPlayer.label}
+                  alt={selectedLeftPlayer.name}
                   width={200}
                   height={200}
                   className="rounded-md object-cover h-full w-full"
@@ -207,7 +207,7 @@ export default function Court() {
               >
                 <span>
                   {selectedLeftPlayer
-                    ? selectedLeftPlayer.label
+                    ? selectedLeftPlayer.name
                     : "Choose Player"}
                 </span>
                 <span className="text-[#347A99]">▾</span>
@@ -219,23 +219,23 @@ export default function Court() {
                   {/* Search input for filtering players in the dropdown */}
                   <input
                     value={leftSearch}
-                    onChange={(e) => setLeftSearch(e.target.value)}
+                    onChange={(e) => setLeftSearch(e.target.name)}
                     placeholder="Search Player..."
                     className="mx-2 mb-2 w-[calc(100%-1rem)] rounded-md border border-white/30 bg-black/40 px-3 py-2 text-white placeholder:text-[#2da6c4] font-michroma backdrop-blur-sm"
                   />
                   {/* List of players filtered based on search input, rendered as buttons in the dropdown */}
                   {filteredLeftPlayers.map((player) => (
                     <button
-                      key={player.value}
+                      key={player.id}
                       type="button"
                       onClick={() => {
-                        setLeftPlayer(player.value);
+                        setLeftPlayer(player.name);
                         setIsLeftDropdownOpen(false);
                         setLeftSearch("");
                       }}
                       className="cursor-pointer block w-full px-4 py-3 text-left font-michroma text-sm text-white hover:bg-white/10"
                     >
-                      {player.label}
+                      {player.name}
                     </button>
                   ))}
                 </div>
@@ -269,7 +269,7 @@ export default function Court() {
               {/* Radar area for left player */}
               <Radar
                 name={
-                  selectedLeftPlayer ? selectedLeftPlayer.label : "Player One"
+                  selectedLeftPlayer ? selectedLeftPlayer.name : "Player One"
                 }
                 dataKey="playerOne"
                 stroke="#F4BB44"
@@ -281,7 +281,7 @@ export default function Court() {
               {/* Radar area for right player */}
               <Radar
                 name={
-                  selectedRightPlayer ? selectedRightPlayer.label : "Player Two"
+                  selectedRightPlayer ? selectedRightPlayer.name : "Player Two"
                 }
                 dataKey="playerTwo"
                 stroke="#347A99"
@@ -306,7 +306,7 @@ export default function Court() {
               {selectedRightPlayer ? (
                 <Image
                   src={selectedRightPlayer.image}
-                  alt={selectedRightPlayer.label}
+                  alt={selectedRightPlayer.name}
                   width={200}
                   height={200}
                   className="rounded-md object-cover h-full w-full"
@@ -325,7 +325,7 @@ export default function Court() {
               >
                 <span>
                   {selectedRightPlayer
-                    ? selectedRightPlayer.label
+                    ? selectedRightPlayer.name
                     : "Choose Player"}
                 </span>
                 <span className="text-[#347A99]">▾</span>
@@ -337,23 +337,23 @@ export default function Court() {
                   {/* Search input for filtering players in the dropdown */}
                   <input
                     value={rightSearch}
-                    onChange={(e) => setRightSearch(e.target.value)}
+                    onChange={(e) => setRightSearch(e.target.name)}
                     placeholder="Search Player..."
                     className="mx-2 mb-2 w-[calc(100%-1rem)] rounded-md border border-white/30 bg-black/40 px-3 py-2 text-white placeholder:text-[#2da6c4] font-michroma backdrop-blur-sm"
                   />
                   {/* List of players filtered based on search input, rendered as buttons in the dropdown */}
                   {filteredRightPlayers.map((player) => (
                     <button
-                      key={player.value}
+                      key={player.id}
                       type="button"
                       onClick={() => {
-                        setRightPlayer(player.value);
+                        setRightPlayer(player.name);
                         setIsRightDropdownOpen(false);
                         setRightSearch("");
                       }}
                       className="cursor-pointer block w-full px-4 py-3 text-left font-michroma text-sm text-white hover:bg-white/10"
                     >
-                      {player.label}
+                      {player.name}
                     </button>
                   ))}
                 </div>
