@@ -12,8 +12,8 @@ type PlayerStats = {
 
 // Future: adding more stats or player attributes as needed, such as player position, team, or career highlights, to enhance the user experience and provide more comprehensive information about each player.
 type Player = {
-  value: string;
-  label: string;
+  id: number;
+  name: string;
   image: string;
   stats: PlayerStats;
 };
@@ -21,8 +21,8 @@ type Player = {
 // Future: database for player data could be implemented with APIs
 export const players: Player[] = [
   {
-    value: "lebron-james",
-    label: "LeBron James",
+    id: 1,
+    name: "LeBron James",
     image: "/temp-players/lebron-james.png",
     stats: {
       ppg: 27.0,
@@ -34,8 +34,8 @@ export const players: Player[] = [
     },
   },
   {
-    value: "michael-jordan",
-    label: "Michael Jordan",
+    id: 2,
+    name: "Michael Jordan",
     image: "/temp-players/michael-jordan.jpg",
     stats: {
       ppg: 30.1,
@@ -47,8 +47,8 @@ export const players: Player[] = [
     },
   },
   {
-    value: "kobe-bryant",
-    label: "Kobe Bryant",
+    id: 3,
+    name: "Kobe Bryant",
     image: "/temp-players/kobe-bryant.jpg",
     stats: {
       ppg: 25.0,
@@ -60,8 +60,8 @@ export const players: Player[] = [
     },
   },
   {
-    value: "stephen-curry",
-    label: "Stephen Curry",
+    id: 4,
+    name: "Stephen Curry",
     image: "/temp-players/stephen-curry.png",
     stats: {
       ppg: 24.2,
