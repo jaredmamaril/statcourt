@@ -26,6 +26,7 @@ export default function Navbar() {
   if (pathname === "/") {
     return null; // Don't render the navbar on the homepage
   }
+
   return (
     <header className="relative z-50 border-b border-transparent bg-background backdrop-blur-sm">
       <div className="grid h-16 w-full grid-cols-3 items-center px-3">
@@ -39,7 +40,7 @@ export default function Navbar() {
             priority
             className="rounded-md h-11 w-11"
           />
-          <span className="font-michroma text-xl text-white">STATCOURT</span>
+          <span className="font-michroma text-2xl text-white">STATCOURT</span>
         </Link>
         <nav className="hidden items-center justify-center gap-6 md:flex">
           {/* Navigation links */}
@@ -49,7 +50,7 @@ export default function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`font-michroma text-base transition-colors ${isActive ? "text-[#347A99]" : "text-white/90 hover:text-white/90"}`}
+                className={`font-michroma text-base transition-colors duration-200 ${isActive ? "text-[#347A99] text-xl" : "text-white/90 hover:text-[#347A99]"}`}
               >
                 {item.label}
               </Link>
