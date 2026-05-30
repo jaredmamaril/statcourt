@@ -16,12 +16,12 @@ export default function Players() {
       <section className="min-h-screen container mx-auto px-6 pt-10 pb-12 flex flex-col items-center relative">
         {/* Wrapper that slides everything */}
         <div
-          className={`flex flex-col items-center transition-transform duration-3000 ease-out ${
-            currentPlayer ? "translate-x-[-180%]" : "translate-x-0"
+          className={`flex flex-col items-center transition-transform duration-2000 ease-out ${
+            currentPlayer ? "translate-x-[-180%] blur-xs" : "translate-x-0"
           }`}
         >
           {/* Header section */}
-          <div className="flex flex-col items-center justify-between gap-3 mb-6">
+          <div className="flex flex-col items-center justify-between gap-2 mb-2">
             <h1 className="font-michroma text-lg font-bold tracking-wide text-[#1bc2ec]">
               CHOOSE A PLAYER
             </h1>
@@ -32,6 +32,24 @@ export default function Players() {
               placeholder="Search for a Player..."
               className="w-full sm:w-64 rounded-md border border-white/30 bg-black/40 px-4 py-2 text-white/80 placeholder:text-[#2da6c4]/80 font-michroma text-sm backdrop-blur-sm outline-none focus:border-white text-center"
             />
+          </div>
+
+          <p className="font-michroma text-sm font-medium tracking-wider text-white/80 mb-2">
+            {" "}
+            Filters
+          </p>
+
+          {/* Filter buttons row */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
+            {/* Favorites filter */}
+            <button
+              type="button"
+              // onClick
+              className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-michroma text-xs transition-all duration-200 ${2}`}
+            >
+              <span>★☆</span>
+              Favorites
+            </button>
           </div>
 
           {/* Player list */}
