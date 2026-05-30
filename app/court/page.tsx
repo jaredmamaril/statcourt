@@ -173,8 +173,8 @@ export default function Court() {
   );
 
   return (
-    <main className="h-screen overflow-hidden bg-[#07111f] text-white">
-      <section className="relative flex h-screen overflow-hidden items-center justify-between bg-[url('/court.svg')] bg-cover bg-center bg-no-repeat px-6 sm:px-10">
+    <main className="min-h-screen overflow-hidden bg-[#07111f] text-white">
+      <section className="relative flex min-h-screen overflow-hidden items-center justify-between bg-[url('/court.svg')] bg-cover bg-center bg-no-repeat px-6 sm:px-10">
         {/* Left player selection */}
         <div className="pointer-events-none absolute left-0 top-0 z-10 flex h-full w-1/2 justify-start pl-3 pt-35">
           <div className="pointer-events-auto flex flex-col items-center">
@@ -219,9 +219,9 @@ export default function Court() {
                   {/* Search input for filtering players in the dropdown */}
                   <input
                     value={leftSearch}
-                    onChange={(e) => setLeftSearch(e.target.name)}
+                    onChange={(e) => setLeftSearch(e.target.value)}
                     placeholder="Search Player..."
-                    className="mx-2 mb-2 w-[calc(100%-1rem)] rounded-md border border-white/30 bg-black/40 px-3 py-2 text-white placeholder:text-[#2da6c4] font-michroma backdrop-blur-sm"
+                    className="mx-2 mb-2 w-[calc(100%-1rem)] rounded-md border border-white/30 bg-black/40 px-3 py-2 text-white/80 placeholder:text-[#2da6c4] font-michroma backdrop-blur-sm"
                   />
                   {/* List of players filtered based on search input, rendered as buttons in the dropdown */}
                   {filteredLeftPlayers.map((player) => (
@@ -229,11 +229,13 @@ export default function Court() {
                       key={player.id}
                       type="button"
                       onClick={() => {
-                        setLeftPlayer(player.name);
+                        setLeftPlayer(
+                          leftPlayer === player.name ? "" : player.name,
+                        );
                         setIsLeftDropdownOpen(false);
                         setLeftSearch("");
                       }}
-                      className="cursor-pointer block w-full px-4 py-3 text-left font-michroma text-sm text-white hover:bg-white/10"
+                      className={`cursor-pointer block w-full px-4 py-3 text-left font-michroma text-sm text-white hover:bg-white/10 transition-all duration-200 ${leftPlayer === player.name ? "border-[#178aa7] bg-[#1bc2ec]/30 text-[#1bc2ec]" : "border-white/10 bg-black/20 text-white/90 hover:bg-white/5 hover:border-white/30"}`}
                     >
                       {player.name}
                     </button>
@@ -276,7 +278,6 @@ export default function Court() {
                 strokeWidth={2}
                 fill="#F4BB44"
                 fillOpacity={0.14}
-                dot={{ r: 2, fill: "#F4BB44" }}
               />
               {/* Radar area for right player */}
               <Radar
@@ -288,7 +289,6 @@ export default function Court() {
                 strokeWidth={2}
                 fill="#347A99"
                 fillOpacity={0.22}
-                dot={{ r: 2, fill: "#347A99" }}
               />
             </RadarChart>
           </ResponsiveContainer>
@@ -337,7 +337,7 @@ export default function Court() {
                   {/* Search input for filtering players in the dropdown */}
                   <input
                     value={rightSearch}
-                    onChange={(e) => setRightSearch(e.target.name)}
+                    onChange={(e) => setRightSearch(e.target.value)}
                     placeholder="Search Player..."
                     className="mx-2 mb-2 w-[calc(100%-1rem)] rounded-md border border-white/30 bg-black/40 px-3 py-2 text-white placeholder:text-[#2da6c4] font-michroma backdrop-blur-sm"
                   />
@@ -347,11 +347,13 @@ export default function Court() {
                       key={player.id}
                       type="button"
                       onClick={() => {
-                        setRightPlayer(player.name);
+                        setRightPlayer(
+                          rightPlayer === player.name ? "" : player.name,
+                        );
                         setIsRightDropdownOpen(false);
                         setRightSearch("");
                       }}
-                      className="cursor-pointer block w-full px-4 py-3 text-left font-michroma text-sm text-white hover:bg-white/10"
+                      className={`cursor-pointer block w-full px-4 py-3 text-left font-michroma text-sm text-white hover:bg-white/10 transition-all duration-200 ${rightPlayer === player.name ? "border-[#178aa7] bg-[#1bc2ec]/30 text-[#1bc2ec]" : "border-white/10 bg-black/20 text-white/90 hover:bg-white/5 hover:border-white/30"}`}
                     >
                       {player.name}
                     </button>
