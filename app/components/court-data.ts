@@ -272,6 +272,7 @@ export const positions = positionOrder.filter((position) =>
   players.some((player) => player.position === position),
 );
 
+// Options to sort data from
 export const sortOptions = [
   { label: "None", value: "" },
   { label: "Name", value: "name" },
