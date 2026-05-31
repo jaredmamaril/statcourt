@@ -44,6 +44,7 @@ export default function Players() {
               CHOOSE A PLAYER
             </h1>
 
+            {/* Search bar */}
             <input
               value={playerSearch}
               onChange={(e) => setPlayerSearch(e.target.value)}
@@ -94,36 +95,47 @@ export default function Players() {
                 const isSelected = player.name === currentPlayer;
                 const isFavorite = favorites.includes(player.name);
                 return (
-                  <button
+                  <div
                     key={player.id}
-                    type="button"
-                    onClick={() =>
-                      setCurrentPlayer(
-                        currentPlayer === player.name ? "" : player.name,
-                      )
-                    }
-                    className={`cursor-pointer flex items-center w-full px-4 py-4 text-left font-michroma text-xs rounded-md border transition-all duration-200
-                    ${
+                    className={`flex w-full items-stretch text-left font-michroma text-xs rounded-md border transition-all duration-200 ${
                       isSelected
                         ? "border-[#178aa7] bg-[#1bc2ec]/10 text-[#1bc2ec]"
                         : "border-white/10 bg-black/20 text-white/90 hover:bg-white/5 hover:border-white/30"
                     }`}
                   >
-                    {/* Favorite star */}
-                    <span
-                      role="button"
-                      tabIndex={1}
-                      onClick={(e) => {
-                        e.stopPropagation();
+                    {/* Favorite star button */}
+                    <button
+                      type="button"
+                      onClick={() => {
                         toggleFavorite(player.name);
                       }}
-                      className={`text-sm mr-1 -ml-1.5 transition-colors duration-200 shrink-0 ${isFavorite ? "text-[#1bc2ec]" : "text-white/20 hover:text-[#1bc2ec]/60"}`}
+                      aria-label={
+                        isFavorite
+                          ? `Remove ${player.name} from favorites`
+                          : `Add ${player.name} to favorites`
+                      }
+                      className={`cursor-pointer px-1.5 py-1 text-sm transition-colors duration-200 shrink-0 ${
+                        isFavorite
+                          ? "text-[#1bc2ec]"
+                          : "text-white/20 hover:text-[#1bc2ec]/60"
+                      }`}
                     >
                       {isFavorite ? "★" : "☆"}
-                    </span>
+                    </button>
 
-                    <span className="flex-1 truncate">{player.name}</span>
-                  </button>
+                    {/* Select player button */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCurrentPlayer(
+                          currentPlayer === player.name ? "" : player.name,
+                        );
+                      }}
+                      className="min-w-0 flex-1 cursor-pointer px-1 py-3.5 text-left font-michroma text-xs"
+                    >
+                      <span className="block truncate">{player.name}</span>
+                    </button>
+                  </div>
                 );
               })
             )}
