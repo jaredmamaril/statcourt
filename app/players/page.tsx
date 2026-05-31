@@ -1,6 +1,11 @@
 "use client";
 
-import { players, positions, teams } from "../components/court-data";
+import {
+  players,
+  positions,
+  teams,
+  sortOptions,
+} from "../components/court-data";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -69,16 +74,6 @@ export default function Players() {
     }
   }
 
-  const sortOptions = [
-    { label: "None", value: "" },
-    { label: "Name", value: "name" },
-    { label: "Points", value: "ppg" },
-    { label: "Rebounds", value: "rpg" },
-    { label: "Assists", value: "apg" },
-    { label: "Field Goal %", value: "fgPercent" },
-    { label: "3 Point %", value: "threePercent" },
-    { label: "Free Throw %", value: "ftPercent" },
-  ];
   const selectedSortOption = sortOptions.find(
     (option) => option.value === sortBy,
   );
