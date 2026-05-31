@@ -1,7 +1,8 @@
 "use client";
 
-import { players } from "../components/court-data";
+import { players, teams } from "../components/court-data";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export default function Players() {
@@ -9,6 +10,8 @@ export default function Players() {
   const [playerSearch, setPlayerSearch] = useState("");
   const [favorites, setFavorites] = useState<string[]>([]);
   const [showFavorites, setShowFavorites] = useState(false);
+  const [filteredTeam, setFilteredTeam] = useState("");
+  const [isTeamDropdownOpen, setIsTeamDropdownOpen] = useState(false);
 
   const filteredPlayers = players.filter((player) => {
     const matchesSearch = player.name
@@ -17,8 +20,9 @@ export default function Players() {
     const matchesFavorites = showFavorites
       ? favorites.includes(player.name)
       : true;
+    const matchesTeam = filteredTeam ? player.team === filteredTeam : true;
 
-    return matchesSearch && matchesFavorites;
+    return matchesSearch && matchesFavorites && matchesTeam;
   });
 
   const toggleFavorite = (playerName: string) => {
@@ -78,6 +82,47 @@ export default function Players() {
                 </span>
               )}
             </button>
+
+            {/* Team filter */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsTeamDropdownOpen(!isTeamDropdownOpen)}
+                className="flex cursor-pointer items-center gap-2 rounded-md border border-white/20 bg-black/10 px-2 py-1 font-michroma text-xs text-white/60 transition-all duration-200 hover:border-white/60"
+              >
+                <span>{filteredTeam ? filteredTeam : "All Teams"}</span>
+                <span className="text-[#1bc2ec]">▾</span>
+              </button>
+
+              {isTeamDropdownOpen && (
+                <div className="absolute left-0 top-full z-30 mt-2 max-h-40 w-36 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFilteredTeam("");
+                      setIsTeamDropdownOpen(false);
+                    }}
+                    className="block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs text-white/70 hover:bg-white/10"
+                  >
+                    All Teams
+                  </button>
+
+                  {teams.map((team) => (
+                    <button
+                      key={team}
+                      type="button"
+                      onClick={() => {
+                        setFilteredTeam(team);
+                        setIsTeamDropdownOpen(false);
+                      }}
+                      className="block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs text-white/70 hover:bg-white/10"
+                    >
+                      {team}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Player list */}
