@@ -1,4 +1,6 @@
-// This file contains the data and types related to players and their stats for the court page.
+// This file contains the data and types related to players and their stats for the different pages.
+
+// Global components
 
 // Future: fetching this data from an API or database for scalability and easier updates, especially if the player list grows significantly or if stats need to be updated frequently.
 type PlayerStats = {
@@ -233,15 +235,7 @@ export const players: Player[] = [
   },
 ];
 
-// All unique teams in data
-export const teams = Array.from(
-  new Set(players.map((player) => player.team)),
-).sort();
-// All unique positions in data
-const positionOrder = ["PG", "SG", "SF", "PF", "C"];
-export const positions = positionOrder.filter((position) =>
-  players.some((player) => player.position === position),
-);
+// Components for court page
 
 // Future: these max values could be dynamically calculated based on the player data or fetched from an API to ensure they remain accurate and relevant as new players are added or stats are updated.
 export const statMaxValues = {
@@ -265,3 +259,26 @@ export type RadarStatRow = {
   playerOneActual: number;
   playerTwoActual: number;
 };
+
+// Components for players page
+
+// All unique teams in data
+export const teams = Array.from(
+  new Set(players.map((player) => player.team)),
+).sort();
+// All unique positions in data
+const positionOrder = ["PG", "SG", "SF", "PF", "C"];
+export const positions = positionOrder.filter((position) =>
+  players.some((player) => player.position === position),
+);
+
+export const sortOptions = [
+  { label: "None", value: "" },
+  { label: "Name", value: "name" },
+  { label: "Points", value: "ppg" },
+  { label: "Rebounds", value: "rpg" },
+  { label: "Assists", value: "apg" },
+  { label: "Field Goal %", value: "fgPercent" },
+  { label: "3 Point %", value: "threePercent" },
+  { label: "Free Throw %", value: "ftPercent" },
+];
