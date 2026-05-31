@@ -233,7 +233,15 @@ export const players: Player[] = [
   },
 ];
 
-export const teams = Array.from(new Set(players.map((player) => player.team)));
+// All unique teams in data
+export const teams = Array.from(
+  new Set(players.map((player) => player.team)),
+).sort();
+// All unique positions in data
+const positionOrder = ["PG", "SG", "SF", "PF", "C"];
+export const positions = positionOrder.filter((position) =>
+  players.some((player) => player.position === position),
+);
 
 // Future: these max values could be dynamically calculated based on the player data or fetched from an API to ensure they remain accurate and relevant as new players are added or stats are updated.
 export const statMaxValues = {
