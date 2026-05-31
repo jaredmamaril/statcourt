@@ -1,8 +1,7 @@
 "use client";
 
-import { players, teams } from "../components/court-data";
+import { players, positions, teams } from "../components/court-data";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export default function Players() {
@@ -12,6 +11,8 @@ export default function Players() {
   const [showFavorites, setShowFavorites] = useState(false);
   const [filteredTeam, setFilteredTeam] = useState("");
   const [isTeamDropdownOpen, setIsTeamDropdownOpen] = useState(false);
+  const [filteredPosition, setFilteredPosition] = useState("");
+  const [isPositionDropdownOpen, setIsPositionDropdownOpen] = useState(false);
 
   const filteredPlayers = players.filter((player) => {
     const matchesSearch = player.name
@@ -21,8 +22,11 @@ export default function Players() {
       ? favorites.includes(player.name)
       : true;
     const matchesTeam = filteredTeam ? player.team === filteredTeam : true;
+    const matchesPosition = filteredPosition
+      ? player.position === filteredPosition
+      : true;
 
-    return matchesSearch && matchesFavorites && matchesTeam;
+    return matchesSearch && matchesFavorites && matchesTeam && matchesPosition;
   });
 
   const toggleFavorite = (playerName: string) => {
@@ -118,6 +122,51 @@ export default function Players() {
                       className="block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs text-white/70 hover:bg-white/10"
                     >
                       {team}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Position filter */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() =>
+                  setIsPositionDropdownOpen(!isPositionDropdownOpen)
+                }
+                className="flex cursor-pointer items-center gap-2 rounded-md border border-white/20 bg-black/10 px-2 py-1 font-michroma text-xs text-white/60 transition-all duration-200 hover:border-white/60"
+              >
+                <span>
+                  {filteredPosition ? filteredPosition : "All Positions"}
+                </span>
+                <span className="text-[#1bc2ec]">▾</span>
+              </button>
+
+              {isPositionDropdownOpen && (
+                <div className="absolute left-0 top-full z-30 mt-2 max-h-40 w-36 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFilteredPosition("");
+                      setIsPositionDropdownOpen(false);
+                    }}
+                    className="block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs text-white/70 hover:bg-white/10"
+                  >
+                    All Positions
+                  </button>
+
+                  {positions.map((position) => (
+                    <button
+                      key={position}
+                      type="button"
+                      onClick={() => {
+                        setFilteredPosition(position);
+                        setIsPositionDropdownOpen(false);
+                      }}
+                      className="block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs text-white/70 hover:bg-white/10"
+                    >
+                      {position}
                     </button>
                   ))}
                 </div>
