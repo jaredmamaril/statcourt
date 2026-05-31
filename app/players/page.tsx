@@ -59,6 +59,14 @@ export default function Players() {
       return sortDirection === "primary" ? result : -result;
     });
 
+  const toggleFavorite = (playerName: string) => {
+    setFavorites((prev) =>
+      prev.includes(playerName)
+        ? prev.filter((name) => name !== playerName)
+        : [...prev, playerName],
+    );
+  };
+
   function handleSortClick(sortValue: string) {
     if (sortValue === "") {
       setSortBy("");
@@ -78,13 +86,17 @@ export default function Players() {
     (option) => option.value === sortBy,
   );
 
-  const toggleFavorite = (playerName: string) => {
-    setFavorites((prev) =>
-      prev.includes(playerName)
-        ? prev.filter((name) => name !== playerName)
-        : [...prev, playerName],
-    );
-  };
+  const hasActiveFilters =
+    playerSearch || showFavorites || filteredTeam || filteredPosition || sortBy;
+  function resetAllFilters() {
+    setPlayerSearch("");
+    setShowFavorites(false);
+    setFilteredTeam("");
+    setFilteredPosition("");
+    setSortBy("");
+    setSortDirection("primary");
+    setOpenDropdown(null);
+  }
 
   return (
     <main className="min-h-screen overflow-hidden text-white overflow-y-auto">
@@ -291,6 +303,17 @@ export default function Players() {
                 </div>
               )}
             </div>
+
+            {/* Reset filters button */}
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={resetAllFilters}
+                className="cursor-pointer rounded-md border border-white/20 bg-black/10 px-2 py-1 font-michroma text-xs text-white/60 transition-all duration-200 hover:border-red-700/60 hover:text-red-700"
+              >
+                Reset Filters
+              </button>
+            )}
           </div>
 
           {/* Player list */}
