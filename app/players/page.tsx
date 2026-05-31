@@ -13,21 +13,75 @@ export default function Players() {
   const [isTeamDropdownOpen, setIsTeamDropdownOpen] = useState(false);
   const [filteredPosition, setFilteredPosition] = useState("");
   const [isPositionDropdownOpen, setIsPositionDropdownOpen] = useState(false);
+  const [sortBy, setSortBy] = useState("");
+  const [sortDirection, setSortDirection] = useState<"primary" | "reverse">(
+    "primary",
+  );
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
 
-  const filteredPlayers = players.filter((player) => {
-    const matchesSearch = player.name
-      .toLowerCase()
-      .includes(playerSearch.toLowerCase());
-    const matchesFavorites = showFavorites
-      ? favorites.includes(player.name)
-      : true;
-    const matchesTeam = filteredTeam ? player.team === filteredTeam : true;
-    const matchesPosition = filteredPosition
-      ? player.position === filteredPosition
-      : true;
+  const filteredPlayers = players
+    .filter((player) => {
+      const matchesSearch = player.name
+        .toLowerCase()
+        .includes(playerSearch.toLowerCase());
+      const matchesFavorites = showFavorites
+        ? favorites.includes(player.name)
+        : true;
+      const matchesTeam = filteredTeam ? player.team === filteredTeam : true;
+      const matchesPosition = filteredPosition
+        ? player.position === filteredPosition
+        : true;
 
-    return matchesSearch && matchesFavorites && matchesTeam && matchesPosition;
-  });
+      return (
+        matchesSearch && matchesFavorites && matchesTeam && matchesPosition
+      );
+    })
+    .sort((a, b) => {
+      if (!sortBy) return 0;
+
+      let result = 0;
+      if (sortBy === "name") result = a.name.localeCompare(b.name);
+      if (sortBy === "ppg") result = b.stats.ppg - a.stats.ppg;
+      if (sortBy === "rpg") result = b.stats.rpg - a.stats.rpg;
+      if (sortBy === "apg") result = b.stats.apg - a.stats.apg;
+      if (sortBy === "fgPercent")
+        result = b.stats.fgPercent - a.stats.fgPercent;
+      if (sortBy === "threePercent")
+        result = b.stats.threePercent - a.stats.threePercent;
+      if (sortBy === "ftPercent")
+        result = b.stats.ftPercent - a.stats.ftPercent;
+
+      return sortDirection === "primary" ? result : -result;
+    });
+
+  function handleSortClick(sortValue: string) {
+    if (sortValue === "") {
+      setSortBy("");
+      setSortDirection("primary");
+      return;
+    }
+
+    if (sortBy === sortValue) {
+      setSortDirection(sortDirection === "primary" ? "reverse" : "primary");
+    } else {
+      setSortBy(sortValue);
+      setSortDirection("primary");
+    }
+  }
+
+  const sortOptions = [
+    { label: "None", value: "" },
+    { label: "Name", value: "name" },
+    { label: "Points", value: "ppg" },
+    { label: "Rebounds", value: "rpg" },
+    { label: "Assists", value: "apg" },
+    { label: "Field Goal %", value: "fgPercent" },
+    { label: "3 Point %", value: "threePercent" },
+    { label: "Free Throw %", value: "ftPercent" },
+  ];
+  const selectedSortOption = sortOptions.find(
+    (option) => option.value === sortBy,
+  );
 
   const toggleFavorite = (playerName: string) => {
     setFavorites((prev) =>
@@ -43,7 +97,7 @@ export default function Players() {
         {/* Wrapper that slides everything */}
         <div
           className={`flex flex-col items-center transition-transform duration-2000 ease-out ${
-            currentPlayer ? "translate-x-[-120%] blur-xs" : "translate-x-0"
+            currentPlayer ? "translate-x-[-75%] blur-xs" : "translate-x-0"
           }`}
         >
           {/* Header section */}
@@ -92,7 +146,11 @@ export default function Players() {
               <button
                 type="button"
                 onClick={() => setIsTeamDropdownOpen(!isTeamDropdownOpen)}
-                className="flex cursor-pointer items-center gap-2 rounded-md border border-white/20 bg-black/10 px-2 py-1 font-michroma text-xs text-white/60 transition-all duration-200 hover:border-white/60"
+                className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
+                  filteredTeam
+                    ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]"
+                    : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
+                }`}
               >
                 <span>{filteredTeam ? filteredTeam : "All Teams"}</span>
                 <span className="text-[#1bc2ec]">▾</span>
@@ -119,7 +177,11 @@ export default function Players() {
                         setFilteredTeam(team);
                         setIsTeamDropdownOpen(false);
                       }}
-                      className="block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs text-white/70 hover:bg-white/10"
+                      className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs ${
+                        filteredTeam === team
+                          ? "bg-[#1bc2ec]/10 text-[#1bc2ec]"
+                          : "text-white/70 hover:bg-white/10"
+                      }`}
                     >
                       {team}
                     </button>
@@ -135,7 +197,11 @@ export default function Players() {
                 onClick={() =>
                   setIsPositionDropdownOpen(!isPositionDropdownOpen)
                 }
-                className="flex cursor-pointer items-center gap-2 rounded-md border border-white/20 bg-black/10 px-2 py-1 font-michroma text-xs text-white/60 transition-all duration-200 hover:border-white/60"
+                className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
+                  filteredPosition
+                    ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]"
+                    : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
+                }`}
               >
                 <span>
                   {filteredPosition ? filteredPosition : "All Positions"}
@@ -164,9 +230,57 @@ export default function Players() {
                         setFilteredPosition(position);
                         setIsPositionDropdownOpen(false);
                       }}
-                      className="block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs text-white/70 hover:bg-white/10"
+                      className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs ${
+                        filteredPosition === position
+                          ? "bg-[#1bc2ec]/10 text-[#1bc2ec]"
+                          : "text-white/70 hover:bg-white/10"
+                      }`}
                     >
                       {position}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Sort by ... */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
+                  sortBy
+                    ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]"
+                    : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
+                }`}
+              >
+                <span>
+                  Sort: {selectedSortOption ? selectedSortOption.label : "None"}{" "}
+                  {sortBy &&
+                    (sortBy === "name"
+                      ? sortDirection === "primary"
+                        ? "A-Z"
+                        : "Z-A"
+                      : sortDirection === "primary"
+                        ? "High-Low"
+                        : "Low-High")}
+                </span>
+                <span className="text-[#1bc2ec]">▾</span>
+              </button>
+
+              {isSortDropdownOpen && (
+                <div className="absolute left-0 top-full z-30 mt-2 max-h-52 w-44 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
+                  {sortOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => {
+                        handleSortClick(option.value);
+                        setIsSortDropdownOpen(false);
+                      }}
+                      className="block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs text-white/70 hover:bg-white/10"
+                    >
+                      {option.label}
                     </button>
                   ))}
                 </div>
