@@ -43,7 +43,7 @@ export default function Players() {
         {/* Wrapper that slides everything */}
         <div
           className={`flex flex-col items-center transition-transform duration-2000 ease-out ${
-            currentPlayer ? "translate-x-[-180%] blur-xs" : "translate-x-0"
+            currentPlayer ? "translate-x-[-120%] blur-xs" : "translate-x-0"
           }`}
         >
           {/* Header section */}
