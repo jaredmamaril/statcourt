@@ -7,9 +7,27 @@ import { useState } from "react";
 export default function Players() {
   const [currentPlayer, setCurrentPlayer] = useState("");
   const [playerSearch, setPlayerSearch] = useState("");
-  const filteredPlayers = players.filter((player) =>
-    player.name.toLowerCase().includes(playerSearch.toLowerCase()),
-  );
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [showFavorites, setShowFavorites] = useState(false);
+
+  const filteredPlayers = players.filter((player) => {
+    const matchesSearch = player.name
+      .toLowerCase()
+      .includes(playerSearch.toLowerCase());
+    const matchesFavorites = showFavorites
+      ? favorites.includes(player.name)
+      : true;
+
+    return matchesSearch && matchesFavorites;
+  });
+
+  const toggleFavorite = (playerName: string) => {
+    setFavorites((prev) =>
+      prev.includes(playerName)
+        ? prev.filter((name) => name !== playerName)
+        : [...prev, playerName],
+    );
+  };
 
   return (
     <main className="min-h-screen overflow-hidden text-white overflow-y-auto">
@@ -44,38 +62,71 @@ export default function Players() {
             {/* Favorites filter */}
             <button
               type="button"
-              // onClick
-              className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-michroma text-xs transition-all duration-200 ${2}`}
+              onClick={() => setShowFavorites(!showFavorites)}
+              className={`cursor-pointer flex items-center gap-1.5 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
+                showFavorites
+                  ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]/90"
+                  : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
+              }`}
             >
-              <span>★☆</span>
+              <span>☆</span>
               Favorites
+              {favorites.length > 0 && (
+                <span className="ml-0.5 text-10px opacity-70">
+                  ({favorites.length})
+                </span>
+              )}
             </button>
           </div>
 
           {/* Player list */}
           <div className="flex flex-col w-full max-w-100 gap-1 max-h-[70vh] overflow-y-auto pr-2">
-            {filteredPlayers.map((player) => {
-              const isSelected = player.name === currentPlayer;
-              return (
-                <button
-                  key={player.id}
-                  type="button"
-                  onClick={() =>
-                    setCurrentPlayer(
-                      currentPlayer === player.name ? "" : player.name,
-                    )
-                  }
-                  className={`cursor-pointer flex items-center w-full px-4 py-4 text-left font-michroma text-xs rounded-md border transition-all duration-200
+            {/* No player(s) cases */}
+            {filteredPlayers.length === 0 ? (
+              <p className="text-center text-white/40 font-michroma text-xs py-8">
+                {showFavorites
+                  ? "No favorites yet. Click ☆ to add a player."
+                  : "No players found."}
+              </p>
+            ) : (
+              /* Filter based on chosen filters */
+              filteredPlayers.map((player) => {
+                const isSelected = player.name === currentPlayer;
+                const isFavorite = favorites.includes(player.name);
+                return (
+                  <button
+                    key={player.id}
+                    type="button"
+                    onClick={() =>
+                      setCurrentPlayer(
+                        currentPlayer === player.name ? "" : player.name,
+                      )
+                    }
+                    className={`cursor-pointer flex items-center w-full px-4 py-4 text-left font-michroma text-xs rounded-md border transition-all duration-200
                     ${
                       isSelected
                         ? "border-[#178aa7] bg-[#1bc2ec]/10 text-[#1bc2ec]"
                         : "border-white/10 bg-black/20 text-white/90 hover:bg-white/5 hover:border-white/30"
                     }`}
-                >
-                  {player.name}
-                </button>
-              );
-            })}
+                  >
+                    {/* Favorite star */}
+                    <span
+                      role="button"
+                      tabIndex={1}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(player.name);
+                      }}
+                      className={`text-sm mr-1 -ml-1.5 transition-colors duration-200 shrink-0 ${isFavorite ? "text-[#1bc2ec]" : "text-white/20 hover:text-[#1bc2ec]/60"}`}
+                    >
+                      {isFavorite ? "★" : "☆"}
+                    </span>
+
+                    <span className="flex-1 truncate">{player.name}</span>
+                  </button>
+                );
+              })
+            )}
           </div>
         </div>
       </section>
