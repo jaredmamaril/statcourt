@@ -10,14 +10,14 @@ export default function Players() {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [showFavorites, setShowFavorites] = useState(false);
   const [filteredTeam, setFilteredTeam] = useState("");
-  const [isTeamDropdownOpen, setIsTeamDropdownOpen] = useState(false);
   const [filteredPosition, setFilteredPosition] = useState("");
-  const [isPositionDropdownOpen, setIsPositionDropdownOpen] = useState(false);
   const [sortBy, setSortBy] = useState("");
   const [sortDirection, setSortDirection] = useState<"primary" | "reverse">(
     "primary",
   );
-  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<
+    "team" | "position" | "sort" | null
+  >(null);
 
   const filteredPlayers = players
     .filter((player) => {
@@ -145,7 +145,9 @@ export default function Players() {
             <div className="relative">
               <button
                 type="button"
-                onClick={() => setIsTeamDropdownOpen(!isTeamDropdownOpen)}
+                onClick={() =>
+                  setOpenDropdown(openDropdown === "team" ? null : "team")
+                }
                 className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
                   filteredTeam
                     ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]"
@@ -156,13 +158,13 @@ export default function Players() {
                 <span className="text-[#1bc2ec]">▾</span>
               </button>
 
-              {isTeamDropdownOpen && (
+              {openDropdown === "team" && (
                 <div className="absolute left-0 top-full z-30 mt-2 max-h-40 w-36 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
                   <button
                     type="button"
                     onClick={() => {
                       setFilteredTeam("");
-                      setIsTeamDropdownOpen(false);
+                      setOpenDropdown(null);
                     }}
                     className="block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs text-white/70 hover:bg-white/10"
                   >
@@ -175,7 +177,7 @@ export default function Players() {
                       type="button"
                       onClick={() => {
                         setFilteredTeam(team);
-                        setIsTeamDropdownOpen(false);
+                        setOpenDropdown(null);
                       }}
                       className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs ${
                         filteredTeam === team
@@ -195,7 +197,9 @@ export default function Players() {
               <button
                 type="button"
                 onClick={() =>
-                  setIsPositionDropdownOpen(!isPositionDropdownOpen)
+                  setOpenDropdown(
+                    openDropdown === "position" ? null : "position",
+                  )
                 }
                 className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
                   filteredPosition
@@ -209,13 +213,13 @@ export default function Players() {
                 <span className="text-[#1bc2ec]">▾</span>
               </button>
 
-              {isPositionDropdownOpen && (
+              {openDropdown === "position" && (
                 <div className="absolute left-0 top-full z-30 mt-2 max-h-40 w-36 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
                   <button
                     type="button"
                     onClick={() => {
                       setFilteredPosition("");
-                      setIsPositionDropdownOpen(false);
+                      setOpenDropdown(null);
                     }}
                     className="block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs text-white/70 hover:bg-white/10"
                   >
@@ -228,7 +232,7 @@ export default function Players() {
                       type="button"
                       onClick={() => {
                         setFilteredPosition(position);
-                        setIsPositionDropdownOpen(false);
+                        setOpenDropdown(null);
                       }}
                       className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs ${
                         filteredPosition === position
@@ -247,7 +251,9 @@ export default function Players() {
             <div className="relative">
               <button
                 type="button"
-                onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                onClick={() =>
+                  setOpenDropdown(openDropdown === "sort" ? null : "sort")
+                }
                 className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
                   sortBy
                     ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]"
@@ -268,7 +274,7 @@ export default function Players() {
                 <span className="text-[#1bc2ec]">▾</span>
               </button>
 
-              {isSortDropdownOpen && (
+              {openDropdown === "sort" && (
                 <div className="absolute left-0 top-full z-30 mt-2 max-h-52 w-44 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
                   {sortOptions.map((option) => (
                     <button
@@ -276,9 +282,13 @@ export default function Players() {
                       type="button"
                       onClick={() => {
                         handleSortClick(option.value);
-                        setIsSortDropdownOpen(false);
+                        setOpenDropdown(null);
                       }}
-                      className="block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs text-white/70 hover:bg-white/10"
+                      className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs ${
+                        sortBy === option.value
+                          ? "bg-[#1bc2ec]/10 text-[#1bc2ec]"
+                          : "text-white/70 hover:bg-white/10"
+                      }`}
                     >
                       {option.label}
                     </button>
