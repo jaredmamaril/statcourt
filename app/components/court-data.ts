@@ -2,16 +2,6 @@
 
 // Global components
 
-// Future: fetching this data from an API or database for scalability and easier updates, especially if the player list grows significantly or if stats need to be updated frequently.
-export type PlayerStats = {
-  ppg: number; // Points Per Game
-  rpg: number; // Rebounds Per Game
-  apg: number; // Assists Per Game
-  fgPercent: number; // Field Goal Percentage
-  threePercent: number; // Three Point Percentage
-  ftPercent: number; // Free Throw Percentage
-};
-
 // Types for player positions and teams
 export type Position = "PG" | "SG" | "SF" | "PF" | "C";
 export type Team =
@@ -78,6 +68,16 @@ export const teamColors: Record<Team, string> = {
   TOR: "#ce1141",
   UTA: "#002b5c",
   WAS: "#002b5c",
+};
+
+// Future: fetching this data from an API or database for scalability and easier updates, especially if the player list grows significantly or if stats need to be updated frequently.
+export type PlayerStats = {
+  ppg: number; // Points Per Game
+  rpg: number; // Rebounds Per Game
+  apg: number; // Assists Per Game
+  fgPercent: number; // Field Goal Percentage
+  threePercent: number; // Three Point Percentage
+  ftPercent: number; // Free Throw Percentage
 };
 
 // Future: adding more stats or player attributes as needed, such as player position, team, or career highlights, to enhance the user experience and provide more comprehensive information about each player.
