@@ -5,6 +5,10 @@ import {
   positions,
   teams,
   sortOptions,
+  SortValue,
+  Team,
+  Position,
+  SortDirection,
 } from "../components/court-data";
 import Image from "next/image";
 import { useState } from "react";
@@ -14,12 +18,10 @@ export default function Players() {
   const [playerSearch, setPlayerSearch] = useState("");
   const [favorites, setFavorites] = useState<string[]>([]);
   const [showFavorites, setShowFavorites] = useState(false);
-  const [filteredTeam, setFilteredTeam] = useState("");
-  const [filteredPosition, setFilteredPosition] = useState("");
-  const [sortBy, setSortBy] = useState("");
-  const [sortDirection, setSortDirection] = useState<"primary" | "reverse">(
-    "primary",
-  );
+  const [filteredTeam, setFilteredTeam] = useState<Team | "">("");
+  const [filteredPosition, setFilteredPosition] = useState<Position | "">("");
+  const [sortBy, setSortBy] = useState<SortValue>("");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("primary");
   const [openDropdown, setOpenDropdown] = useState<
     "team" | "position" | "sort" | null
   >(null);
@@ -75,7 +77,7 @@ export default function Players() {
     );
   };
 
-  function handleSortClick(sortValue: string) {
+  function handleSortClick(sortValue: SortValue) {
     if (sortValue === "") {
       setSortBy("");
       setSortDirection("primary");
@@ -378,8 +380,13 @@ export default function Players() {
                       className="min-w-0 flex-1 cursor-pointer px-1 py-3.5 text-left font-michroma text-xs"
                     >
                       <span className="block truncate">{player.name}</span>
-                      <span className="mt-0.5 block text-10px text-white/40">
-                        {player.team} · {player.position}
+                      <span className="mt-1 flex items-center gap-1.5">
+                        <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
+                          {player.team}
+                        </span>
+                        <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
+                          {player.position}
+                        </span>
                       </span>
                     </button>
                   </div>
