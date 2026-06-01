@@ -45,7 +45,15 @@ export default function Players() {
       if (!sortBy) return 0;
 
       let result = 0;
-      if (sortBy === "name") result = a.name.localeCompare(b.name);
+      const aSpaceIndex = a.name.indexOf(" ");
+      const aFirstName = a.name.slice(0, aSpaceIndex);
+      const aLastName = a.name.slice(aSpaceIndex + 1);
+      const bSpaceIndex = b.name.indexOf(" ");
+      const bFirstName = b.name.slice(0, bSpaceIndex);
+      const bLastName = b.name.slice(bSpaceIndex + 1);
+      if (sortBy === "first-name")
+        result = aFirstName.localeCompare(bFirstName);
+      if (sortBy === "last-name") result = aLastName.localeCompare(bLastName);
       if (sortBy === "ppg") result = b.stats.ppg - a.stats.ppg;
       if (sortBy === "rpg") result = b.stats.rpg - a.stats.rpg;
       if (sortBy === "apg") result = b.stats.apg - a.stats.apg;
@@ -270,13 +278,13 @@ export default function Players() {
                 <span>
                   Sort: {selectedSortOption ? selectedSortOption.label : "None"}{" "}
                   {sortBy &&
-                    (sortBy === "name"
+                    (sortBy === "first-name" || sortBy === "last-name"
                       ? sortDirection === "primary"
                         ? "A-Z"
                         : "Z-A"
                       : sortDirection === "primary"
-                        ? "High-Low"
-                        : "Low-High")}
+                        ? "Hi-Lo"
+                        : "Lo-Hi")}
                 </span>
                 <span className="text-[#1bc2ec]">▾</span>
               </button>
