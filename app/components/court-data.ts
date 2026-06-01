@@ -263,6 +263,7 @@ export type RadarStatRow = {
 // Components for players page
 
 // All unique teams in data
+
 export const teams = Array.from(
   new Set(players.map((player) => player.team)),
 ).sort();
@@ -273,7 +274,11 @@ export const positions = positionOrder.filter((position) =>
 );
 
 // Options to sort data from
-export const sortOptions = [
+type SortOption = {
+  label: string;
+  value: string;
+};
+export const sortOptions: SortOption[] = [
   { label: "None", value: "" },
   { label: "First Name", value: "first-name" },
   { label: "Last Name", value: "last-name" },
