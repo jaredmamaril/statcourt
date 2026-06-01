@@ -11,7 +11,7 @@ import {
   SortDirection,
 } from "../components/court-data";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function Players() {
   const [currentPlayer, setCurrentPlayer] = useState("");
@@ -108,6 +108,25 @@ export default function Players() {
     setOpenDropdown(null);
   }
 
+  // Close dropdown when clicking outside
+  const filtersRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (!(event.target instanceof Node)) {
+        return;
+      }
+      const target = event.target;
+      if (filtersRef.current && !filtersRef.current.contains(target)) {
+        setOpenDropdown(null);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
     <main className="min-h-screen overflow-hidden text-white overflow-y-auto">
       <section className="min-h-screen container mx-auto px-6 pt-10 pb-12 flex flex-col items-center relative">
@@ -138,7 +157,10 @@ export default function Players() {
           </p>
 
           {/* Filter buttons row */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
+          <div
+            ref={filtersRef}
+            className="flex flex-wrap items-center justify-center gap-2 mb-4"
+          >
             {/* Favorites filter */}
             <button
               type="button"
