@@ -176,7 +176,7 @@ export default function Court() {
     <main className="min-h-screen overflow-hidden bg-[#07111f] text-white">
       <section className="relative flex min-h-screen overflow-hidden items-center justify-between bg-[url('/court.svg')] bg-cover bg-center bg-no-repeat px-6 sm:px-10">
         {/* Left player selection */}
-        <div className="pointer-events-none absolute left-0 top-0 z-10 flex h-full w-1/2 justify-start pl-3 pt-35">
+        <div className="pointer-events-none absolute left-0 top-0 z-10 flex h-full w-1/2 justify-start pl-3 pt-20">
           <div className="pointer-events-auto flex flex-col items-center">
             {/* Heading for player selection */}
             <h1 className="font-michroma text-xl text-white font-bold">
@@ -184,7 +184,7 @@ export default function Court() {
             </h1>
 
             {/* Player image container with conditional rendering */}
-            <div className="mt-6 flex h-56 w-56 items-center justify-center rounded-md border border-[#347A99]/50 bg-black/30 text-sm text-white/60 backdrop-blur-sm ">
+            <div className="mt-2 flex h-64 w-64 items-center justify-center rounded-md border border-[#347A99]/50 bg-black/30 text-sm text-white/60 backdrop-blur-sm ">
               {selectedLeftPlayer ? (
                 <Image
                   src={selectedLeftPlayer.image}
@@ -199,11 +199,11 @@ export default function Court() {
             </div>
 
             {/* Dropdown for left player selection */}
-            <div className="relative mt-8 w-56">
+            <div className="relative mt-2 w-56">
               <button
                 type="button"
                 onClick={() => setIsLeftDropdownOpen(!isLeftDropdownOpen)}
-                className="flex cursor-pointer w-full items-center justify-between rounded-md border border-[#347A99]/50 bg-black/30 px-4 py-3 font-michroma text-white outline-none backdrop-blur-sm"
+                className="flex cursor-pointer w-full items-center justify-between rounded-md border border-[#347A99]/50 bg-black/30 px-4 py-2 font-michroma text-white outline-none backdrop-blur-sm"
               >
                 <span>
                   {selectedLeftPlayer
@@ -215,13 +215,13 @@ export default function Court() {
 
               {/* Dropdown menu for left player selection, conditionally rendered based on state */}
               {isLeftDropdownOpen && (
-                <div className="absolute left-0 top-full z-20 mt-2 max-h-32 w-full overflow-y-auto rounded-md border border-white/30 bg-black/30 py-2 text-sm text-white shadow-xl">
+                <div className="absolute left-0 top-full z-20 mt-2 max-h-51 w-full overflow-y-auto rounded-md border border-white/30 bg-black/30 py-2 text-xs text-white shadow-xl">
                   {/* Search input for filtering players in the dropdown */}
                   <input
                     value={leftSearch}
                     onChange={(e) => setLeftSearch(e.target.value)}
                     placeholder="Search Player..."
-                    className="mx-2 mb-2 w-[calc(100%-1rem)] rounded-md border border-white/30 bg-black/40 px-3 py-2 text-white/80 placeholder:text-[#2da6c4] font-michroma backdrop-blur-sm"
+                    className="mx-2 mb-2 w-[calc(100%-1rem)] rounded-md border border-white/30 bg-black/40 px-3 py-1.5 text-white/80 placeholder:text-[#2da6c4] font-michroma backdrop-blur-sm"
                   />
                   {/* List of players filtered based on search input, rendered as buttons in the dropdown */}
                   {filteredLeftPlayers.map((player) => (
@@ -235,9 +235,15 @@ export default function Court() {
                         setIsLeftDropdownOpen(false);
                         setLeftSearch("");
                       }}
-                      className={`cursor-pointer block w-full px-4 py-3 text-left font-michroma text-sm text-white hover:bg-white/10 transition-all duration-200 ${leftPlayer === player.name ? "border-[#178aa7] bg-[#1bc2ec]/30 text-[#1bc2ec]" : "border-white/10 bg-black/20 text-white/90 hover:bg-white/5 hover:border-white/30"}`}
+                      className={`cursor-pointer flex w-full items-center gap-1 px-4 py-3 text-left font-michroma text-xs text-white hover:bg-white/10 transition-all duration-200 ${leftPlayer === player.name ? "border-[#178aa7] bg-[#1bc2ec]/30 text-[#1bc2ec]" : "border-white/10 bg-black/20 text-white/90 hover:bg-white/5 hover:border-white/30"}`}
                     >
-                      {player.name}
+                      <span className="block flex-1">{player.name}</span>
+                      <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1 py-0.5 text-[10px] text-white/60">
+                        {player.team}
+                      </span>
+                      <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
+                        {player.position}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -294,7 +300,7 @@ export default function Court() {
           </ResponsiveContainer>
         </div>
         {/* Right player selection */}
-        <div className="pointer-events-none absolute right-0 top-0 z-10 flex h-full w-1/2 justify-end pr-3 pt-35">
+        <div className="pointer-events-none absolute right-0 top-0 z-10 flex h-full w-1/2 justify-end pr-3 pt-20">
           <div className="pointer-events-auto flex flex-col items-center">
             {/* Heading for player selection */}
             <h1 className="font-michroma text-xl font-bold text-white">
@@ -302,7 +308,7 @@ export default function Court() {
             </h1>
 
             {/* Player image container with conditional rendering */}
-            <div className="mt-6 flex h-56 w-56 items-center justify-center rounded-md border border-[#347A99]/50 bg-black/30 text-sm text-white/60 backdrop-blur-sm ">
+            <div className="mt-2 flex h-64 w-64 items-center justify-center rounded-md border border-[#347A99]/50 bg-black/30 text-sm text-white/60 backdrop-blur-sm ">
               {selectedRightPlayer ? (
                 <Image
                   src={selectedRightPlayer.image}
@@ -317,11 +323,11 @@ export default function Court() {
             </div>
 
             {/* Dropdown for right player selection */}
-            <div className="relative mt-8 w-56">
+            <div className="relative mt-2 w-56">
               <button
                 type="button"
                 onClick={() => setIsRightDropdownOpen(!isRightDropdownOpen)}
-                className="flex cursor-pointer w-full items-center justify-between rounded-md border border-[#347A99]/50 bg-black/30 px-4 py-3 font-michroma text-white outline-none backdrop-blur-sm"
+                className="flex cursor-pointer w-full items-center justify-between rounded-md border border-[#347A99]/50 bg-black/30 px-4 py-2 font-michroma text-white outline-none backdrop-blur-sm"
               >
                 <span>
                   {selectedRightPlayer
@@ -333,13 +339,13 @@ export default function Court() {
 
               {/* Dropdown menu for right player selection, conditionally rendered based on state */}
               {isRightDropdownOpen && (
-                <div className="absolute left-0 top-full z-20 mt-2 max-h-32 w-full overflow-y-auto rounded-md border border-white/30 bg-black/30 py-2 text-sm text-white shadow-xl">
+                <div className="absolute left-0 top-full z-20 mt-2 max-h-51 w-full overflow-y-auto rounded-md border border-white/30 bg-black/30 py-2 text-xs text-white shadow-xl">
                   {/* Search input for filtering players in the dropdown */}
                   <input
                     value={rightSearch}
                     onChange={(e) => setRightSearch(e.target.value)}
                     placeholder="Search Player..."
-                    className="mx-2 mb-2 w-[calc(100%-1rem)] rounded-md border border-white/30 bg-black/40 px-3 py-2 text-white placeholder:text-[#2da6c4] font-michroma backdrop-blur-sm"
+                    className="mx-2 mb-2 w-[calc(100%-1rem)] rounded-md border border-white/30 bg-black/40 px-3 py-1.5 text-white/80 placeholder:text-[#2da6c4] font-michroma backdrop-blur-sm"
                   />
                   {/* List of players filtered based on search input, rendered as buttons in the dropdown */}
                   {filteredRightPlayers.map((player) => (
@@ -353,9 +359,15 @@ export default function Court() {
                         setIsRightDropdownOpen(false);
                         setRightSearch("");
                       }}
-                      className={`cursor-pointer block w-full px-4 py-3 text-left font-michroma text-sm text-white hover:bg-white/10 transition-all duration-200 ${rightPlayer === player.name ? "border-[#178aa7] bg-[#1bc2ec]/30 text-[#1bc2ec]" : "border-white/10 bg-black/20 text-white/90 hover:bg-white/5 hover:border-white/30"}`}
+                      className={`cursor-pointer flex w-full items-center gap-1 px-4 py-3 text-left font-michroma text-xs text-white hover:bg-white/10 transition-all duration-200 ${rightPlayer === player.name ? "border-[#178aa7] bg-[#1bc2ec]/30 text-[#1bc2ec]" : "border-white/10 bg-black/20 text-white/90 hover:bg-white/5 hover:border-white/30"}`}
                     >
-                      {player.name}
+                      <span className="block flex-1">{player.name}</span>
+                      <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1 py-0.5 text-[10px] text-white/60">
+                        {player.team}
+                      </span>
+                      <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
+                        {player.position}
+                      </span>
                     </button>
                   ))}
                 </div>
