@@ -7,7 +7,7 @@ import {
   type RadarStatRow,
 } from "../components/court-data";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -172,6 +172,35 @@ export default function Court() {
     player.name.toLowerCase().includes(rightSearch.toLowerCase()),
   );
 
+  // Close dropdown when clicking outside
+  const leftDropdownRef = useRef<HTMLDivElement>(null);
+  const rightDropdownRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (!(event.target instanceof Node)) {
+        return;
+      }
+      const target = event.target;
+      if (
+        leftDropdownRef.current &&
+        !leftDropdownRef.current.contains(target)
+      ) {
+        setIsLeftDropdownOpen(false);
+      }
+      if (
+        rightDropdownRef.current &&
+        !rightDropdownRef.current.contains(target)
+      ) {
+        setIsRightDropdownOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
     <main className="min-h-screen overflow-hidden bg-[#07111f] text-white">
       <section className="relative flex min-h-screen overflow-hidden items-center justify-between bg-[url('/court.svg')] bg-cover bg-center bg-no-repeat px-6 sm:px-10">
@@ -199,7 +228,7 @@ export default function Court() {
             </div>
 
             {/* Dropdown for left player selection */}
-            <div className="relative mt-2 w-56">
+            <div ref={leftDropdownRef} className="relative mt-2 w-56">
               <button
                 type="button"
                 onClick={() => setIsLeftDropdownOpen(!isLeftDropdownOpen)}
@@ -323,7 +352,7 @@ export default function Court() {
             </div>
 
             {/* Dropdown for right player selection */}
-            <div className="relative mt-2 w-56">
+            <div ref={rightDropdownRef} className="relative mt-2 w-56">
               <button
                 type="button"
                 onClick={() => setIsRightDropdownOpen(!isRightDropdownOpen)}
