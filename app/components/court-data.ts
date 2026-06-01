@@ -45,6 +45,41 @@ export type Team =
   | "TOR"
   | "UTA"
   | "WAS";
+
+// Team colors
+export const teamColors: Record<Team, string> = {
+  ATL: "#e03a3e",
+  BKN: "#000000",
+  BOS: "#007a33",
+  CHA: "#1d1160",
+  CHI: "#ce1141",
+  CLE: "#860038",
+  DAL: "#00538c",
+  DEN: "#fec524",
+  DET: "#c8102e",
+  GSW: "#1d428a",
+  HOU: "#ce1141",
+  IND: "#002d62",
+  LAC: "#c8102e",
+  LAL: "#552583",
+  MEM: "#002b5c",
+  MIA: "#98002e",
+  MIL: "#00471b",
+  MIN: "#006633",
+  NOP: "#000000",
+  NYK: "#003da5",
+  OKC: "#007ac1",
+  ORL: "#0077c8",
+  PHI: "#006633",
+  PHX: "#e21836",
+  POR: "#e21836",
+  SAC: "#5a2d82",
+  SAS: "#c4ced4",
+  TOR: "#ce1141",
+  UTA: "#002b5c",
+  WAS: "#002b5c",
+};
+
 // Future: adding more stats or player attributes as needed, such as player position, team, or career highlights, to enhance the user experience and provide more comprehensive information about each player.
 export type Player = {
   id: number;
