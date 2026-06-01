@@ -172,7 +172,7 @@ export default function Court() {
     player.name.toLowerCase().includes(rightSearch.toLowerCase()),
   );
 
-  // Close dropdown when clicking outside
+  // Function to close dropdown when clicking outside
   const leftDropdownRef = useRef<HTMLDivElement>(null);
   const rightDropdownRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
