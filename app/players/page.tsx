@@ -6,6 +6,8 @@ import {
   teams,
   teamColors,
   sortOptions,
+} from "../components/court-data";
+import type {
   SortValue,
   Team,
   Position,
@@ -373,7 +375,7 @@ export default function Players() {
               filteredPlayers.map((player) => {
                 const isSelected = player.name === currentPlayer;
                 const isFavorite = favorites.includes(player.name);
-                const teamColor = teamColors[player.team] || "#888"; // Default color if team not found
+                const teamColor = teamColors[player.team];
                 const selectedStatValue =
                   sortBy && sortBy !== "first-name" && sortBy !== "last-name"
                     ? player.stats[sortBy]
@@ -433,7 +435,7 @@ export default function Players() {
                         </span>
                         {/* Show value of currently selected sorting stat */}
                         {selectedStatValue !== null && (
-                          <span className="shrink-0 rounded border border-[#1bc2ec]}/30 bg-[#1bc2ec]/10 px-1.5 py-0.5 text-10px text-[#1bc2ec]">
+                          <span className="shrink-0 rounded border border-[#1bc2ec]/30 bg-[#1bc2ec]/10 px-1.5 py-0.5 text-10px text-[#1bc2ec]">
                             {selectedStatValue}{" "}
                             {sortBy === "fgPercent" ||
                             sortBy === "threePercent" ||
