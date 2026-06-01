@@ -4,6 +4,7 @@ import {
   players,
   positions,
   teams,
+  teamColors,
   sortOptions,
   SortValue,
   Team,
@@ -372,6 +373,7 @@ export default function Players() {
               filteredPlayers.map((player) => {
                 const isSelected = player.name === currentPlayer;
                 const isFavorite = favorites.includes(player.name);
+                const teamColor = teamColors[player.team] || "#888"; // Default color if team not found
                 return (
                   <div
                     key={player.id}
@@ -413,7 +415,13 @@ export default function Players() {
                     >
                       <span className="block truncate">{player.name}</span>
                       <span className="mt-1 flex items-center gap-1.5">
-                        <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
+                        <span
+                          className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/80"
+                          style={{
+                            backgroundColor: teamColor,
+                            borderColor: teamColor,
+                          }}
+                        >
                           {player.team}
                         </span>
                         <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
