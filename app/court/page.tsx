@@ -5,6 +5,7 @@ import {
   statMaxValues,
   normalizeStat,
   type RadarStatRow,
+  teamColors,
 } from "../components/court-data";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
@@ -267,7 +268,13 @@ export default function Court() {
                       className={`cursor-pointer flex w-full items-center gap-1 px-4 py-3 text-left font-michroma text-xs text-white hover:bg-white/10 transition-all duration-200 ${leftPlayer === player.name ? "border-[#178aa7] bg-[#1bc2ec]/30 text-[#1bc2ec]" : "border-white/10 bg-black/20 text-white/90 hover:bg-white/5 hover:border-white/30"}`}
                     >
                       <span className="block flex-1">{player.name}</span>
-                      <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1 py-0.5 text-[10px] text-white/60">
+                      <span
+                        className="shrink-0 rounded border border-white/10 bg-white/5 px-1 py-0.5 text-[10px] text-white/60"
+                        style={{
+                          backgroundColor: teamColors[player.team],
+                          borderColor: teamColors[player.team],
+                        }}
+                      >
                         {player.team}
                       </span>
                       <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
@@ -391,7 +398,13 @@ export default function Court() {
                       className={`cursor-pointer flex w-full items-center gap-1 px-4 py-3 text-left font-michroma text-xs text-white hover:bg-white/10 transition-all duration-200 ${rightPlayer === player.name ? "border-[#178aa7] bg-[#1bc2ec]/30 text-[#1bc2ec]" : "border-white/10 bg-black/20 text-white/90 hover:bg-white/5 hover:border-white/30"}`}
                     >
                       <span className="block flex-1">{player.name}</span>
-                      <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1 py-0.5 text-[10px] text-white/60">
+                      <span
+                        className="shrink-0 rounded border border-white/10 bg-white/5 px-1 py-0.5 text-[10px] text-white/80"
+                        style={{
+                          backgroundColor: teamColors[player.team],
+                          borderColor: teamColors[player.team],
+                        }}
+                      >
                         {player.team}
                       </span>
                       <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
