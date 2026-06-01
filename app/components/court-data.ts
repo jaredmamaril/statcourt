@@ -275,7 +275,8 @@ export const positions = positionOrder.filter((position) =>
 // Options to sort data from
 export const sortOptions = [
   { label: "None", value: "" },
-  { label: "Name", value: "name" },
+  { label: "First Name", value: "first-name" },
+  { label: "Last Name", value: "last-name" },
   { label: "Points", value: "ppg" },
   { label: "Rebounds", value: "rpg" },
   { label: "Assists", value: "apg" },
