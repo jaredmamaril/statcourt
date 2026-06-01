@@ -3,7 +3,7 @@
 // Global components
 
 // Future: fetching this data from an API or database for scalability and easier updates, especially if the player list grows significantly or if stats need to be updated frequently.
-type PlayerStats = {
+export type PlayerStats = {
   ppg: number; // Points Per Game
   rpg: number; // Rebounds Per Game
   apg: number; // Assists Per Game
@@ -12,13 +12,46 @@ type PlayerStats = {
   ftPercent: number; // Free Throw Percentage
 };
 
+// Types for player positions and teams
+export type Position = "PG" | "SG" | "SF" | "PF" | "C";
+export type Team =
+  | "ATL"
+  | "BKN"
+  | "BOS"
+  | "CHA"
+  | "CHI"
+  | "CLE"
+  | "DAL"
+  | "DEN"
+  | "DET"
+  | "GSW"
+  | "HOU"
+  | "IND"
+  | "LAC"
+  | "LAL"
+  | "MEM"
+  | "MIA"
+  | "MIL"
+  | "MIN"
+  | "NOP"
+  | "NYK"
+  | "OKC"
+  | "ORL"
+  | "PHI"
+  | "PHX"
+  | "POR"
+  | "SAC"
+  | "SAS"
+  | "TOR"
+  | "UTA"
+  | "WAS";
 // Future: adding more stats or player attributes as needed, such as player position, team, or career highlights, to enhance the user experience and provide more comprehensive information about each player.
-type Player = {
+export type Player = {
   id: number;
   name: string;
   image: string;
-  team: string;
-  position: string;
+  team: Team;
+  position: Position;
   jerseyNumber: number;
   stats: PlayerStats;
 };
@@ -237,8 +270,10 @@ export const players: Player[] = [
 
 // Components for court page
 
+// Type for keys of PlayerStats
+export type StatKey = keyof PlayerStats;
 // Future: these max values could be dynamically calculated based on the player data or fetched from an API to ensure they remain accurate and relevant as new players are added or stats are updated.
-export const statMaxValues = {
+export const statMaxValues: Record<StatKey, number> = {
   ppg: 35,
   rpg: 15,
   apg: 12,
@@ -247,6 +282,7 @@ export const statMaxValues = {
   ftPercent: 95,
 };
 
+// Normalizes a stat value to a percentage based on the maximum value for that stat, ensuring that all stats can be compared on a common scale for the radar chart.
 export function normalizeStat(value: number, max: number) {
   return Math.min((value / max) * 100, 100);
 }
@@ -263,22 +299,19 @@ export type RadarStatRow = {
 // Components for players page
 
 // All unique teams in data
-
-export const teams = Array.from(
+export const teams: Team[] = Array.from(
   new Set(players.map((player) => player.team)),
 ).sort();
 // All unique positions in data
-const positionOrder = ["PG", "SG", "SF", "PF", "C"];
+const positionOrder: Position[] = ["PG", "SG", "SF", "PF", "C"];
 export const positions = positionOrder.filter((position) =>
   players.some((player) => player.position === position),
 );
 
 // Options to sort data from
-type SortOption = {
-  label: string;
-  value: string;
-};
-export const sortOptions: SortOption[] = [
+export type SortValue = "" | "first-name" | "last-name" | StatKey;
+export type SortDirection = "primary" | "reverse";
+export const sortOptions: { label: string; value: SortValue }[] = [
   { label: "None", value: "" },
   { label: "First Name", value: "first-name" },
   { label: "Last Name", value: "last-name" },
