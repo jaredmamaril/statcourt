@@ -378,6 +378,9 @@ export default function Players() {
                       className="min-w-0 flex-1 cursor-pointer px-1 py-3.5 text-left font-michroma text-xs"
                     >
                       <span className="block truncate">{player.name}</span>
+                      <span className="mt-0.5 block text-10px text-white/40">
+                        {player.team} · {player.position}
+                      </span>
                     </button>
                   </div>
                 );
