@@ -14,6 +14,7 @@ import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 
 export default function Players() {
+  // State for filters and dropdowns
   const [currentPlayer, setCurrentPlayer] = useState("");
   const [playerSearch, setPlayerSearch] = useState("");
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -26,6 +27,7 @@ export default function Players() {
     "team" | "position" | "sort" | null
   >(null);
 
+  // Filter and sort players based on search input, favorites toggle, team and position filters, and sorting options
   const filteredPlayers = players
     .filter((player) => {
       const matchesSearch = player.name
@@ -43,10 +45,12 @@ export default function Players() {
         matchesSearch && matchesFavorites && matchesTeam && matchesPosition
       );
     })
+    // Sort players based on selected sorting option and direction
     .sort((a, b) => {
       if (!sortBy) return 0;
 
       let result = 0;
+      // For name sorting, split the name into first and last to allow sorting by either, while for stat sorting, compare the relevant stat values directly.
       const aSpaceIndex = a.name.indexOf(" ");
       const aFirstName = a.name.slice(0, aSpaceIndex);
       const aLastName = a.name.slice(aSpaceIndex + 1);
@@ -66,9 +70,11 @@ export default function Players() {
       if (sortBy === "ftPercent")
         result = b.stats.ftPercent - a.stats.ftPercent;
 
+      // If sort direction is reverse, invert the result
       return sortDirection === "primary" ? result : -result;
     });
 
+  // Function to toggle a player as a favorite, adding them to the favorites list if they're not already in it or removing them if they are
   const toggleFavorite = (playerName: string) => {
     setFavorites((prev) =>
       prev.includes(playerName)
@@ -77,6 +83,7 @@ export default function Players() {
     );
   };
 
+  // Function to close dropdown when clicking outside
   function handleSortClick(sortValue: SortValue) {
     if (sortValue === "") {
       setSortBy("");
@@ -92,12 +99,15 @@ export default function Players() {
     }
   }
 
+  // Get label for currently selected sort option
   const selectedSortOption = sortOptions.find(
     (option) => option.value === sortBy,
   );
 
+  // Determine if any filters are active to show reset button
   const hasActiveFilters =
     playerSearch || showFavorites || filteredTeam || filteredPosition || sortBy;
+  // Function to reset all filters and put sorting options to default setting when button is clicked
   function resetAllFilters() {
     setPlayerSearch("");
     setShowFavorites(false);
