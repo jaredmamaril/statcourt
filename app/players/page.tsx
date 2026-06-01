@@ -374,6 +374,10 @@ export default function Players() {
                 const isSelected = player.name === currentPlayer;
                 const isFavorite = favorites.includes(player.name);
                 const teamColor = teamColors[player.team] || "#888"; // Default color if team not found
+                const selectedStatValue =
+                  sortBy && sortBy !== "first-name" && sortBy !== "last-name"
+                    ? player.stats[sortBy]
+                    : null;
                 return (
                   <div
                     key={player.id}
@@ -427,6 +431,17 @@ export default function Players() {
                         <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
                           {player.position}
                         </span>
+                        {/* Show value of currently selected sorting stat */}
+                        {selectedStatValue !== null && (
+                          <span className="shrink-0 rounded border border-[#1bc2ec]}/30 bg-[#1bc2ec]/10 px-1.5 py-0.5 text-10px text-[#1bc2ec]">
+                            {selectedStatValue}{" "}
+                            {sortBy === "fgPercent" ||
+                            sortBy === "threePercent" ||
+                            sortBy === "ftPercent"
+                              ? "%"
+                              : ""}
+                          </span>
+                        )}
                       </span>
                     </button>
                   </div>
