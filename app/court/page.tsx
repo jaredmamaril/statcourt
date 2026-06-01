@@ -4,9 +4,9 @@ import {
   players,
   statMaxValues,
   normalizeStat,
-  type RadarStatRow,
   teamColors,
 } from "../components/court-data";
+import { RadarStatRow } from "../components/court-data";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import {
