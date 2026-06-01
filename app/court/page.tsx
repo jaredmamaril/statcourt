@@ -280,6 +280,9 @@ export default function Court() {
                       <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
                         {player.position}
                       </span>
+                      <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
+                        #{player.jerseyNumber}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -409,6 +412,9 @@ export default function Court() {
                       </span>
                       <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
                         {player.position}
+                      </span>
+                      <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
+                        #{player.jerseyNumber}
                       </span>
                     </button>
                   ))}

@@ -433,6 +433,9 @@ export default function Players() {
                         <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
                           {player.position}
                         </span>
+                        <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
+                          #{player.jerseyNumber}
+                        </span>
                         {/* Show value of currently selected sorting stat */}
                         {selectedStatValue !== null && (
                           <span className="shrink-0 rounded border border-[#1bc2ec]/30 bg-[#1bc2ec]/10 px-1.5 py-0.5 text-10px text-[#1bc2ec]">
