@@ -469,6 +469,19 @@ export default function Players() {
             )}
           </div>
         </div>
+
+        {/* Player card section */}
+        {selectedPlayer && (
+          <div className="absolute right-8 top-10 w-175 rounded-md border border-[#1bc2ec]/10 bg-black-30 p-4 font-michroma text-white backdrop-blur-sm">
+            <Image
+              src={selectedPlayer.image}
+              alt={selectedPlayer.name}
+              width={144}
+              height={144}
+              className="mx-auto h-52 w-52 rounded-md object-cover"
+            />
+          </div>
+        )}
       </section>
     </main>
   );
