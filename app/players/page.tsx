@@ -5,6 +5,7 @@ import {
   positions,
   teams,
   teamColors,
+  teamLogos,
   sortOptions,
 } from "../components/court-data";
 import type {
@@ -207,10 +208,25 @@ export default function Players() {
                 }
                 className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
                   filteredTeam
-                    ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]"
+                    ? "bg-[#1bc2ec]/10"
                     : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
                 }`}
+                style={{
+                  color: filteredTeam ? teamColors[filteredTeam] : undefined,
+                  borderColor: filteredTeam
+                    ? teamColors[filteredTeam]
+                    : undefined,
+                }}
               >
+                {filteredTeam && (
+                  <Image
+                    src={teamLogos[filteredTeam]}
+                    alt={`${filteredTeam} logo`}
+                    width={16}
+                    height={16}
+                    className="h-4 w-4 shrink-0 object-contain"
+                  />
+                )}
                 <span>{filteredTeam ? filteredTeam : "All Teams"}</span>
                 <span className="text-[#1bc2ec]">▾</span>
               </button>
