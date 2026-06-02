@@ -77,6 +77,11 @@ export default function Players() {
       return sortDirection === "primary" ? result : -result;
     });
 
+  // Get selected player for player card display
+  const selectedPlayer = players.find(
+    (player) => player.name === currentPlayer,
+  );
+
   // Function to toggle a player as a favorite, adding them to the favorites list if they're not already in it or removing them if they are
   const toggleFavorite = (playerName: string) => {
     setFavorites((prev) =>
