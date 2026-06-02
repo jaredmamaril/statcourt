@@ -422,36 +422,45 @@ export default function Players() {
                           currentPlayer === player.name ? "" : player.name,
                         );
                       }}
-                      className="min-w-0 flex-1 cursor-pointer px-1 py-3.5 text-left font-michroma text-xs"
+                      className="flex min-w-0 flex-1 cursor-pointer px-1 py-3.5 text-left font-michroma text-xs"
                     >
-                      <span className="block truncate">{player.name}</span>
-                      <span className="mt-1 flex items-center gap-1.5">
-                        <span
-                          className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/80"
-                          style={{
-                            backgroundColor: teamColor,
-                            borderColor: teamColor,
-                          }}
-                        >
-                          {player.team}
-                        </span>
-                        <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
-                          {player.position}
-                        </span>
-                        <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
-                          #{player.jerseyNumber}
-                        </span>
-                        {/* Show value of currently selected sorting stat */}
-                        {selectedStatValue !== null && (
-                          <span className="shrink-0 rounded border border-[#1bc2ec]/30 bg-[#1bc2ec]/10 px-1.5 py-0.5 text-10px text-[#1bc2ec]">
-                            {selectedStatValue}{" "}
-                            {sortBy === "fgPercent" ||
-                            sortBy === "threePercent" ||
-                            sortBy === "ftPercent"
-                              ? "%"
-                              : ""}
+                      <Image
+                        src={player.image}
+                        alt={player.name}
+                        width={40}
+                        height={40}
+                        className="h-10 w-10 shrink-0 *:rounded-md object-cover mr-2"
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate">{player.name}</span>
+                        <span className="mt-1 flex items-center gap-1.5">
+                          <span
+                            className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/80"
+                            style={{
+                              backgroundColor: teamColor,
+                              borderColor: teamColor,
+                            }}
+                          >
+                            {player.team}
                           </span>
-                        )}
+                          <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
+                            {player.position}
+                          </span>
+                          <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
+                            #{player.jerseyNumber}
+                          </span>
+                          {/* Show value of currently selected sorting stat */}
+                          {selectedStatValue !== null && (
+                            <span className="shrink-0 rounded border border-[#1bc2ec]/30 bg-[#1bc2ec]/10 px-1.5 py-0.5 text-10px text-[#1bc2ec]">
+                              {selectedStatValue}{" "}
+                              {sortBy === "fgPercent" ||
+                              sortBy === "threePercent" ||
+                              sortBy === "ftPercent"
+                                ? "%"
+                                : ""}
+                            </span>
+                          )}
+                        </span>
                       </span>
                     </button>
                   </div>
