@@ -5,6 +5,7 @@ import {
   statMaxValues,
   normalizeStat,
   teamColors,
+  teamLogos,
 } from "../components/court-data";
 import { RadarStatRow } from "../components/court-data";
 import Image from "next/image";
@@ -214,7 +215,7 @@ export default function Court() {
             </h1>
 
             {/* Player image container with conditional rendering */}
-            <div className="mt-2 flex h-64 w-64 items-center justify-center rounded-md border border-[#347A99]/50 bg-black/30 text-sm text-white/60 backdrop-blur-sm ">
+            <div className="mt-2 flex h-64 w-64 items-center justify-center rounded-md border border-[#347A99]/50 bg-black/5 text-sm text-white/70">
               {selectedLeftPlayer ? (
                 <Image
                   src={selectedLeftPlayer.image}
@@ -233,7 +234,7 @@ export default function Court() {
               <button
                 type="button"
                 onClick={() => setIsLeftDropdownOpen(!isLeftDropdownOpen)}
-                className="flex cursor-pointer w-full items-center justify-between rounded-md border border-[#347A99]/50 bg-black/30 px-4 py-2 font-michroma text-white outline-none backdrop-blur-sm"
+                className="flex cursor-pointer w-full items-center justify-between rounded-md border border-[#347A99]/50 bg-black/60 px-4 py-2 font-michroma text-white outline-none"
               >
                 <span>
                   {selectedLeftPlayer
@@ -251,7 +252,7 @@ export default function Court() {
                     value={leftSearch}
                     onChange={(e) => setLeftSearch(e.target.value)}
                     placeholder="Search Player..."
-                    className="mx-2 mb-2 w-[calc(100%-1rem)] rounded-md border border-white/30 bg-black/40 px-3 py-1.5 text-white/80 placeholder:text-[#2da6c4] font-michroma backdrop-blur-sm"
+                    className="mx-2 mb-2 w-[calc(100%-1rem)] rounded-md border border-white/30 bg-black/40 px-3 py-1.5 text-white/80 placeholder:text-[#2da6c4] font-michroma"
                   />
                   {/* List of players filtered based on search input, rendered as buttons in the dropdown */}
                   {filteredLeftPlayers.map((player) => (
@@ -277,10 +278,10 @@ export default function Court() {
                       >
                         {player.team}
                       </span>
-                      <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
+                      <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1 py-0.5 text-[10px] text-white/60">
                         {player.position}
                       </span>
-                      <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
+                      <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1 py-0.5 text-[10px] text-white/60">
                         #{player.jerseyNumber}
                       </span>
                     </button>
@@ -292,7 +293,7 @@ export default function Court() {
         </div>
 
         {/* Radar chart container, centered on the court background */}
-        <div className="absolute left-1/2 top-1/2 z-20 flex h-120 w-130 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-black/7 backdrop-blur-lg">
+        <div className="absolute left-1/2 top-1/2 z-20 flex h-120 w-130 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 backdrop">
           {/* Responsive container for the radar chart, ensuring it scales properly within the available space */}
           <ResponsiveContainer width="100%" height="100%">
             {/* Main radar chart component */}
@@ -323,6 +324,9 @@ export default function Court() {
                 strokeWidth={2}
                 fill="#F4BB44"
                 fillOpacity={0.14}
+                isAnimationActive={true}
+                animationDuration={900}
+                animationEasing="ease-out"
               />
               {/* Radar area for right player */}
               <Radar
@@ -334,6 +338,10 @@ export default function Court() {
                 strokeWidth={2}
                 fill="#347A99"
                 fillOpacity={0.22}
+                isAnimationActive={true}
+                animationBegin={250}
+                animationDuration={900}
+                animationEasing="ease-out"
               />
             </RadarChart>
           </ResponsiveContainer>
@@ -347,7 +355,7 @@ export default function Court() {
             </h1>
 
             {/* Player image container with conditional rendering */}
-            <div className="mt-2 flex h-64 w-64 items-center justify-center rounded-md border border-[#347A99]/50 bg-black/30 text-sm text-white/60 backdrop-blur-sm ">
+            <div className="mt-2 flex h-64 w-64 items-center justify-center rounded-md border border-[#347A99]/50 bg-black/5 text-sm text-white/70">
               {selectedRightPlayer ? (
                 <Image
                   src={selectedRightPlayer.image}
@@ -366,7 +374,7 @@ export default function Court() {
               <button
                 type="button"
                 onClick={() => setIsRightDropdownOpen(!isRightDropdownOpen)}
-                className="flex cursor-pointer w-full items-center justify-between rounded-md border border-[#347A99]/50 bg-black/30 px-4 py-2 font-michroma text-white outline-none backdrop-blur-sm"
+                className="flex cursor-pointer w-full items-center justify-between rounded-md border border-[#347A99]/50 bg-black/60 px-4 py-2 font-michroma text-white outline-none"
               >
                 <span>
                   {selectedRightPlayer
@@ -384,7 +392,7 @@ export default function Court() {
                     value={rightSearch}
                     onChange={(e) => setRightSearch(e.target.value)}
                     placeholder="Search Player..."
-                    className="mx-2 mb-2 w-[calc(100%-1rem)] rounded-md border border-white/30 bg-black/40 px-3 py-1.5 text-white/80 placeholder:text-[#2da6c4] font-michroma backdrop-blur-sm"
+                    className="mx-2 mb-2 w-[calc(100%-1rem)] rounded-md border border-white/30 bg-black/40 px-3 py-1.5 text-white/80 placeholder:text-[#2da6c4] font-michroma"
                   />
                   {/* List of players filtered based on search input, rendered as buttons in the dropdown */}
                   {filteredRightPlayers.map((player) => (
@@ -410,10 +418,10 @@ export default function Court() {
                       >
                         {player.team}
                       </span>
-                      <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
+                      <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1 py-0.5 text-[10px] text-white/60">
                         {player.position}
                       </span>
-                      <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
+                      <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1 py-0.5 text-[10px] text-white/60">
                         #{player.jerseyNumber}
                       </span>
                     </button>
