@@ -31,7 +31,7 @@ export default function Navbar() {
     <header className="relative z-50 border-b border-transparent bg-background backdrop-blur-sm">
       <div className="grid h-16 w-full grid-cols-3 items-center px-3">
         {/* Logo and site name on the left */}
-        <Link href="/" className="flex items-center gap-3">
+        <Link href="/" className="flex w-fit items-center gap-3">
           <Image
             src="/statcourt-logo.png"
             alt="StatCourt Logo"
