@@ -152,7 +152,7 @@ export default function Players() {
         {/* Wrapper that slides everything */}
         <div
           className={`flex flex-col items-center transition-transform duration-2000 ease-out ${
-            currentPlayer ? "translate-x-[-75%] blur-xs" : "translate-x-0"
+            currentPlayer ? "translate-x-[-75%] opacity-10" : "translate-x-0"
           }`}
         >
           {/* Header section */}
@@ -166,7 +166,7 @@ export default function Players() {
               value={playerSearch}
               onChange={(e) => setPlayerSearch(e.target.value)}
               placeholder="Search for a Player..."
-              className="w-full sm:w-64 rounded-md border border-white/30 bg-black/40 px-4 py-2 text-white/80 placeholder:text-[#2da6c4]/80 font-michroma text-sm backdrop-blur-sm outline-none focus:border-white text-center"
+              className="w-full sm:w-64 rounded-md border border-white/30 bg-black/40 px-4 py-2 text-white/80 placeholder:text-[#2da6c4]/80 font-michroma text-sm outline-none focus:border-white text-center"
             />
           </div>
 
@@ -440,13 +440,6 @@ export default function Players() {
                       }}
                       className="flex min-w-0 flex-1 cursor-pointer px-1 py-3.5 text-left font-michroma text-xs"
                     >
-                      <Image
-                        src={player.image}
-                        alt={player.name}
-                        width={40}
-                        height={40}
-                        className="h-10 w-10 shrink-0 *:rounded-md object-cover mr-2"
-                      />
                       <span className="min-w-0 flex-1">
                         <span className="block truncate">{player.name}</span>
                         <span className="mt-1 flex items-center gap-1.5">
@@ -488,7 +481,7 @@ export default function Players() {
 
         {/* Player card section */}
         {selectedPlayer && (
-          <div className="absolute right-8 top-10 w-175 rounded-md border border-[#1bc2ec]/10 bg-black-30 p-4 font-michroma text-white backdrop-blur-sm">
+          <div className="absolute right-8 top-10 w-175 rounded-md border border-[#1bc2ec]/10 bg-black-30 p-4 font-michroma text-white">
             <Image
               src={selectedPlayer.image}
               alt={selectedPlayer.name}
