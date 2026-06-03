@@ -481,7 +481,10 @@ export default function Players() {
 
         {/* Player card section */}
         {selectedPlayer && (
-          <div className="absolute right-8 top-10 w-175 rounded-md border border-[#1bc2ec]/10 bg-black-30 p-4 font-michroma text-white">
+          <div
+            key={selectedPlayer.id}
+            className="absolute right-8 top-10 w-175 rounded-md border border-[#1bc2ec]/10 bg-black-30 p-4 font-michroma text-white animate-[cardIn_2000ms_ease-out]"
+          >
             <Image
               src={selectedPlayer.image}
               alt={selectedPlayer.name}
