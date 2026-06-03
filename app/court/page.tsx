@@ -5,7 +5,6 @@ import {
   statMaxValues,
   normalizeStat,
   teamColors,
-  teamLogos,
 } from "../components/court-data";
 import { RadarStatRow } from "../components/court-data";
 import Image from "next/image";
@@ -339,7 +338,6 @@ export default function Court() {
                 fill="#347A99"
                 fillOpacity={0.22}
                 isAnimationActive={true}
-                animationBegin={250}
                 animationDuration={900}
                 animationEasing="ease-out"
               />
