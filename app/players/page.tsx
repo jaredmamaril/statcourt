@@ -501,7 +501,7 @@ export default function Players() {
             {selectedPlayer && (
               <div
                 key={selectedPlayer.id}
-                className="relative w-full max-w-lg min-h-144 overflow-hidden rounded-3xl border border-[#1bc2ec]/10 bg-black/30 p-6 font-michroma text-white animate-[cardIn_2000ms_ease-out]"
+                className="relative w-full max-w-md min-h-144 overflow-hidden rounded-3xl border border-[#1bc2ec]/10 bg-black/30 p-6 font-michroma text-white animate-[cardIn_2000ms_ease-out]"
               >
                 {/* Team-colored card border */}
                 <svg
@@ -514,7 +514,7 @@ export default function Players() {
                     <mask id={`team-frame-mask-${selectedPlayer.id}`}>
                       <rect width="100" height="100" fill="white" />
                       <polygon
-                        points="10,10 80,10 90,20 90,90 20,90 10,80"
+                        points="8,8 82,8 92,18 92,92 18,92 8,82"
                         fill="black"
                       />
                     </mask>
@@ -532,7 +532,7 @@ export default function Players() {
 
                   {/* Inner white trim */}
                   <polygon
-                    points="10,10 80,10 90,20 90,90 20,90 10,80"
+                    points="8,8 82,8 92,18 92,92 18,92 8,82"
                     fill="none"
                     stroke="white"
                     strokeWidth="3"
