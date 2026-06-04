@@ -496,12 +496,12 @@ export default function Players() {
             </div>
           </div>
 
-          <div className="flex items-center justify-center">
+          <div className="flex items-start justify-center">
             {/* Player card section */}
             {selectedPlayer && (
               <div
                 key={selectedPlayer.id}
-                className="relative w-full max-w-md min-h-144 overflow-hidden rounded-3xl border border-[#1bc2ec]/10 bg-black/30 p-6 font-michroma text-white animate-[cardIn_2000ms_ease-out]"
+                className="relative w-full max-w-md min-h-144 overflow-hidden rounded-3xl border border-[#1bc2ec]/10 bg-black/30 p-6 text-white animate-[cardIn_2000ms_ease-out]"
               >
                 {/* Team-colored card border */}
                 <svg
@@ -539,23 +539,57 @@ export default function Players() {
                     vectorEffect="non-scaling-stroke"
                   />
                 </svg>
+                {/* Card background (court) */}
+                <div className="absolute -inset-30 z-10 transform rotate-90 opacity-50">
+                  <Image
+                    src={"/court.svg"}
+                    alt={"Court background"}
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+                {/* Jersey number and position - top right corner */}
+                <div
+                  className="absolute top-18 right-14 z-30"
+                  style={{ color: teamColors[selectedPlayer.team] }}
+                >
+                  <div className="flex flex-col items-center">
+                    <span className="text-3xl font-bold font-michroma opacity-70">
+                      #{selectedPlayer.jerseyNumber}
+                    </span>
+                    <span className="text-white text-2xl font-bold font-michroma opacity-70">
+                      {selectedPlayer.position}
+                    </span>
+                  </div>
+                </div>
 
-                {/* Background radar */}
-                <Image
-                  src={"/radar-graph.svg"}
-                  alt="Radar Graph"
-                  fill
-                  className="scale-165 object-cover object-center opacity-60 blur-xs"
-                />
+                {/* Team logo - top left corner */}
+                <div className="absolute top-18 left-10 z-30 opacity-70">
+                  <Image
+                    src={teamLogos[selectedPlayer.team]}
+                    alt={`${selectedPlayer.team} logo`}
+                    width={32}
+                    height={32}
+                    className="h-20 w-20 object-contain"
+                  />
+                </div>
+
                 {/* Player image */}
-                <div className="absolute inset-0 z-10 flex items-center justify-center">
+                <div className="absolute inset-0 z-20 flex items-center justify-center -top-18">
                   <Image
                     src={selectedPlayer.image}
                     alt={selectedPlayer.name}
                     width={144}
                     height={144}
-                    className="h-64 w-64 rounded-md object-cover"
+                    className="h-84 w-84 rounded-md object-cover"
                   />
+                </div>
+
+                {/* Player name */}
+                <div className="absolute bottom-8 left-0 right-0 z-30 flex items-center justify-center px-4 text-center">
+                  <span className="px-3 py-14 text-2xl font-bold font-michroma uppercase text-white tracking-wider">
+                    {selectedPlayer.name}
+                  </span>
                 </div>
               </div>
             )}
