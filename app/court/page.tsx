@@ -145,7 +145,7 @@ export default function Court() {
       const data = payload[0].payload as RadarStatRow;
 
       return (
-        <div className="rounded-md border border-[#347A99]/50 bg-[#07111f]/80 px-4 py-3 text-sm shadow-lg">
+        <div className="rounded-md border border-[#347A99]/50 bg-[#07111f]/80 px-4 py-3 text-sm">
           <p className="font-michroma text-base font-bold text-[#1bc2ec]">
             {label}
           </p>
@@ -245,7 +245,7 @@ export default function Court() {
 
               {/* Dropdown menu for left player selection, conditionally rendered based on state */}
               {isLeftDropdownOpen && (
-                <div className="absolute left-0 top-full z-20 mt-2 max-h-51 w-full overflow-y-auto rounded-md border border-white/30 bg-black/30 py-2 text-xs text-white shadow-xl">
+                <div className="absolute left-0 top-full z-20 mt-2 max-h-51 w-full overflow-y-auto rounded-md border border-white/30 bg-black/30 py-2 text-xs text-white">
                   {/* Search input for filtering players in the dropdown */}
                   <input
                     value={leftSearch}
@@ -384,7 +384,7 @@ export default function Court() {
 
               {/* Dropdown menu for right player selection, conditionally rendered based on state */}
               {isRightDropdownOpen && (
-                <div className="absolute left-0 top-full z-20 mt-2 max-h-51 w-full overflow-y-auto rounded-md border border-white/30 bg-black/30 py-2 text-xs text-white shadow-xl">
+                <div className="absolute left-0 top-full z-20 mt-2 max-h-51 w-full overflow-y-auto rounded-md border border-white/30 bg-black/30 py-2 text-xs text-white">
                   {/* Search input for filtering players in the dropdown */}
                   <input
                     value={rightSearch}
