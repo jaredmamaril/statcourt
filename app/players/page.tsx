@@ -483,15 +483,62 @@ export default function Players() {
         {selectedPlayer && (
           <div
             key={selectedPlayer.id}
-            className="absolute right-8 top-10 w-175 rounded-md border border-[#1bc2ec]/10 bg-black-30 p-4 font-michroma text-white animate-[cardIn_2000ms_ease-out]"
+            className="absolute right-6 top-10 w-175 h-125 overflow-hidden rounded-md border border-[#1bc2ec]/10 bg-black-30 p-4 font-michroma text-white animate-[cardIn_2000ms_ease-out]"
           >
+            {/* Team-colored card border */}
+            <svg
+              className="pointer-events-none absolute inset-0 z-20 h-full w-full"
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+            >
+              <defs>
+                {/* Mask */}
+                <mask id={`team-frame-mask-${selectedPlayer.id}`}>
+                  <rect width="100" height="100" fill="white" />
+                  <polygon
+                    points="6,6 86,6 94,14 94,94 14,94 6,86"
+                    fill="black"
+                  />
+                </mask>
+              </defs>
+
+              {/* Base team color frame */}
+              <rect
+                x="0"
+                y="0"
+                width="100"
+                height="100"
+                fill={teamColors[selectedPlayer.team]}
+                mask={`url(#team-frame-mask-${selectedPlayer.id})`}
+              />
+
+              {/* Inner white trim */}
+              <polygon
+                points="6,6 86,6 94,14 94,94 14,94 6,86"
+                fill="none"
+                stroke="white"
+                strokeWidth="3"
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
+
+            {/* Background radar */}
             <Image
-              src={selectedPlayer.image}
-              alt={selectedPlayer.name}
-              width={144}
-              height={144}
-              className="mx-auto h-52 w-52 rounded-md object-cover"
+              src={"/radar-graph.svg"}
+              alt="Radar Graph"
+              fill
+              className="scale-165 object-cover object-center opacity-40 blur-xs"
             />
+            {/* Player image */}
+            <div className="absolute inset-0 z-10 flex items-center justify-center">
+              <Image
+                src={selectedPlayer.image}
+                alt={selectedPlayer.name}
+                width={144}
+                height={144}
+                className="h-64 w-64 rounded-md object-cover"
+              />
+            </div>
           </div>
         )}
       </section>
