@@ -148,399 +148,419 @@ export default function Players() {
 
   return (
     <main className="min-h-screen overflow-hidden text-white overflow-y-auto">
-      <section className="min-h-screen container mx-auto px-6 pt-10 pb-12 flex flex-col items-center relative">
-        {/* Wrapper that slides everything */}
+      <section className="w-full max-w-6xl mx-auto px-6 pt-4 pb-12 relative">
         <div
-          className={`flex flex-col items-center transition-transform duration-2000 ease-out ${
-            currentPlayer ? "translate-x-[-75%] opacity-10" : "translate-x-0"
-          }`}
+          className={
+            selectedPlayer
+              ? "relative w-full grid gap-10 lg:grid-cols-[46%_1fr]"
+              : "relative w-full max-w-3xl mx-auto"
+          }
         >
-          {/* Header section */}
-          <div className="flex flex-col items-center justify-between gap-2 mb-2">
-            <h1 className="font-michroma text-lg font-bold tracking-wide text-[#1bc2ec]">
-              CHOOSE A PLAYER
-            </h1>
-
-            {/* Search bar */}
-            <input
-              value={playerSearch}
-              onChange={(e) => setPlayerSearch(e.target.value)}
-              placeholder="Search for a Player..."
-              className="w-full sm:w-64 rounded-md border border-white/30 bg-black/40 px-4 py-2 text-white/80 placeholder:text-[#2da6c4]/80 font-michroma text-sm outline-none focus:border-white text-center"
-            />
-          </div>
-
-          <p className="font-michroma text-sm font-medium tracking-wider text-white/80 mb-2">
-            {" "}
-            Filters
-          </p>
-
-          {/* Filter buttons row */}
+          {/* Wrapper that contains the left controls */}
           <div
-            ref={filtersRef}
-            className="flex flex-wrap items-center justify-center gap-2 mb-4"
+            className={
+              selectedPlayer
+                ? "relative w-full transition-all duration-2000 ease-out opacity-10 lg:-translate-x-1/6"
+                : "relative w-full transition-all duration-2000 ease-out opacity-100 translate-x-0"
+            }
           >
-            {/* Favorites filter */}
-            <button
-              type="button"
-              onClick={() => setShowFavorites(!showFavorites)}
-              className={`cursor-pointer flex items-center gap-1.5 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
-                showFavorites
-                  ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]/90"
-                  : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
-              }`}
+            {/* Header section */}
+            <div className="flex flex-col items-center justify-between gap-2 mb-2">
+              <h1 className="font-michroma text-lg font-bold tracking-wide text-[#1bc2ec]">
+                CHOOSE A PLAYER
+              </h1>
+
+              {/* Search bar */}
+              <input
+                value={playerSearch}
+                onChange={(e) => setPlayerSearch(e.target.value)}
+                placeholder="Search for a Player..."
+                className="w-full sm:w-64 rounded-md border border-white/30 bg-black/40 px-4 py-2 text-white/80 placeholder:text-[#2da6c4]/80 font-michroma text-sm outline-none focus:border-white text-center"
+              />
+            </div>
+            <div className="flex items-center justify-center">
+              <p className="font-michroma text-sm font-medium tracking-wider text-white/80 mb-2">
+                {" "}
+                Filters
+              </p>
+            </div>
+
+            {/* Filter buttons row */}
+            <div
+              ref={filtersRef}
+              className="flex flex-wrap items-center justify-center gap-2 mb-4"
             >
-              <span>☆</span>
-              Favorites
-              {favorites.length > 0 && (
-                <span className="ml-0.5 text-10px opacity-70">
-                  ({favorites.length})
-                </span>
-              )}
-            </button>
-
-            {/* Team filter */}
-            <div className="relative">
+              {/* Favorites filter */}
               <button
                 type="button"
-                onClick={() =>
-                  setOpenDropdown(openDropdown === "team" ? null : "team")
-                }
-                className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
-                  filteredTeam
-                    ? "bg-[#1bc2ec]/10"
+                onClick={() => setShowFavorites(!showFavorites)}
+                className={`cursor-pointer flex items-center gap-1.5 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
+                  showFavorites
+                    ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]/90"
                     : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
                 }`}
-                style={{
-                  color: filteredTeam ? teamColors[filteredTeam] : undefined,
-                  borderColor: filteredTeam
-                    ? teamColors[filteredTeam]
-                    : undefined,
-                }}
               >
-                {filteredTeam && (
-                  <Image
-                    src={teamLogos[filteredTeam]}
-                    alt={`${filteredTeam} logo`}
-                    width={16}
-                    height={16}
-                    className="h-4 w-4 shrink-0 object-contain"
-                  />
+                <span>☆</span>
+                Favorites
+                {favorites.length > 0 && (
+                  <span className="ml-0.5 text-10px opacity-70">
+                    ({favorites.length})
+                  </span>
                 )}
-                <span>{filteredTeam ? filteredTeam : "All Teams"}</span>
-                <span className="text-[#1bc2ec]">▾</span>
               </button>
 
-              {openDropdown === "team" && (
-                <div className="absolute left-0 top-full z-30 mt-2 max-h-40 w-36 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setFilteredTeam("");
-                      setOpenDropdown(null);
-                    }}
-                    className="block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs text-white/70 hover:bg-white/10"
-                  >
-                    All Teams
-                  </button>
+              {/* Team filter */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOpenDropdown(openDropdown === "team" ? null : "team")
+                  }
+                  className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
+                    filteredTeam
+                      ? "bg-[#1bc2ec]/10"
+                      : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
+                  }`}
+                  style={{
+                    color: filteredTeam ? teamColors[filteredTeam] : undefined,
+                    borderColor: filteredTeam
+                      ? teamColors[filteredTeam]
+                      : undefined,
+                  }}
+                >
+                  {filteredTeam && (
+                    <Image
+                      src={teamLogos[filteredTeam]}
+                      alt={`${filteredTeam} logo`}
+                      width={16}
+                      height={16}
+                      className="h-4 w-4 shrink-0 object-contain"
+                    />
+                  )}
+                  <span>{filteredTeam ? filteredTeam : "All Teams"}</span>
+                  <span className="text-[#1bc2ec]">▾</span>
+                </button>
 
-                  {teams.map((team) => (
+                {openDropdown === "team" && (
+                  <div className="absolute left-0 top-full z-30 mt-2 max-h-40 w-36 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
                     <button
-                      key={team}
                       type="button"
                       onClick={() => {
-                        setFilteredTeam(team);
+                        setFilteredTeam("");
                         setOpenDropdown(null);
                       }}
-                      className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs ${
-                        filteredTeam === team
-                          ? "bg-[#1bc2ec]/10 text-[#1bc2ec]"
-                          : "text-white/70 hover:bg-white/10"
-                      }`}
+                      className="block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs text-white/70 hover:bg-white/10"
                     >
-                      {team}
+                      All Teams
                     </button>
-                  ))}
-                </div>
+
+                    {teams.map((team) => (
+                      <button
+                        key={team}
+                        type="button"
+                        onClick={() => {
+                          setFilteredTeam(team);
+                          setOpenDropdown(null);
+                        }}
+                        className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs ${
+                          filteredTeam === team
+                            ? "bg-[#1bc2ec]/10 text-[#1bc2ec]"
+                            : "text-white/70 hover:bg-white/10"
+                        }`}
+                      >
+                        {team}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Position filter */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOpenDropdown(
+                      openDropdown === "position" ? null : "position",
+                    )
+                  }
+                  className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
+                    filteredPosition
+                      ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]"
+                      : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
+                  }`}
+                >
+                  <span>
+                    {filteredPosition ? filteredPosition : "All Positions"}
+                  </span>
+                  <span className="text-[#1bc2ec]">▾</span>
+                </button>
+
+                {openDropdown === "position" && (
+                  <div className="absolute left-0 top-full z-30 mt-2 max-h-40 w-36 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFilteredPosition("");
+                        setOpenDropdown(null);
+                      }}
+                      className="block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs text-white/70 hover:bg-white/10"
+                    >
+                      All Positions
+                    </button>
+
+                    {positions.map((position) => (
+                      <button
+                        key={position}
+                        type="button"
+                        onClick={() => {
+                          setFilteredPosition(position);
+                          setOpenDropdown(null);
+                        }}
+                        className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs ${
+                          filteredPosition === position
+                            ? "bg-[#1bc2ec]/10 text-[#1bc2ec]"
+                            : "text-white/70 hover:bg-white/10"
+                        }`}
+                      >
+                        {position}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Sort by ... */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOpenDropdown(openDropdown === "sort" ? null : "sort")
+                  }
+                  className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
+                    sortBy
+                      ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]"
+                      : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
+                  }`}
+                >
+                  <span>
+                    Sort:{" "}
+                    {selectedSortOption ? selectedSortOption.label : "None"}{" "}
+                    {sortBy &&
+                      (sortBy === "first-name" || sortBy === "last-name"
+                        ? sortDirection === "primary"
+                          ? "A-Z"
+                          : "Z-A"
+                        : sortDirection === "primary"
+                          ? "Hi-Lo"
+                          : "Lo-Hi")}
+                  </span>
+                  <span className="text-[#1bc2ec]">▾</span>
+                </button>
+
+                {openDropdown === "sort" && (
+                  <div className="absolute left-0 top-full z-30 mt-2 max-h-52 w-44 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
+                    {sortOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => {
+                          handleSortClick(option.value);
+                          setOpenDropdown(null);
+                        }}
+                        className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs ${
+                          sortBy === option.value
+                            ? "bg-[#1bc2ec]/10 text-[#1bc2ec]"
+                            : "text-white/70 hover:bg-white/10"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Reset filters button */}
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={resetAllFilters}
+                  className="cursor-pointer rounded-md border border-white/20 bg-black/10 px-2 py-1 font-michroma text-xs text-white/60 transition-all duration-200 hover:border-red-700/60 hover:text-red-700"
+                >
+                  Reset Filters
+                </button>
               )}
             </div>
 
-            {/* Position filter */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() =>
-                  setOpenDropdown(
-                    openDropdown === "position" ? null : "position",
-                  )
-                }
-                className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
-                  filteredPosition
-                    ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]"
-                    : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
-                }`}
-              >
-                <span>
-                  {filteredPosition ? filteredPosition : "All Positions"}
-                </span>
-                <span className="text-[#1bc2ec]">▾</span>
-              </button>
+            {/* Player list */}
+            <div className="flex items-center justify-center">
+              <div className="flex flex-col w-full max-w-100 gap-1 max-h-[70vh] overflow-y-auto pr-2">
+                {/* No player(s) cases */}
+                {filteredPlayers.length === 0 ? (
+                  <p className="text-center text-white/40 font-michroma text-xs py-8">
+                    {showFavorites
+                      ? "No favorites yet. Click ☆ to add a player."
+                      : "No players found."}
+                  </p>
+                ) : (
+                  /* Filter based on chosen filters */
+                  filteredPlayers.map((player) => {
+                    const isSelected = player.name === currentPlayer;
+                    const isFavorite = favorites.includes(player.name);
+                    const teamColor = teamColors[player.team];
+                    const selectedStatValue =
+                      sortBy &&
+                      sortBy !== "first-name" &&
+                      sortBy !== "last-name"
+                        ? player.stats[sortBy]
+                        : null;
+                    return (
+                      <div
+                        key={player.id}
+                        className={`flex w-full items-stretch text-left font-michroma text-xs rounded-md border transition-all duration-200 ${
+                          isSelected
+                            ? "border-[#178aa7] bg-[#1bc2ec]/10 text-[#1bc2ec]"
+                            : "border-white/10 bg-black/20 text-white/90 hover:bg-white/5 hover:border-white/30"
+                        }`}
+                      >
+                        {/* Favorite star button */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            toggleFavorite(player.name);
+                          }}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${player.name} from favorites`
+                              : `Add ${player.name} to favorites`
+                          }
+                          className={`cursor-pointer px-1.5 py-1 text-sm transition-colors duration-200 shrink-0 ${
+                            isFavorite
+                              ? "text-[#1bc2ec]"
+                              : "text-white/20 hover:text-[#1bc2ec]/60"
+                          }`}
+                        >
+                          {isFavorite ? "★" : "☆"}
+                        </button>
 
-              {openDropdown === "position" && (
-                <div className="absolute left-0 top-full z-30 mt-2 max-h-40 w-36 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setFilteredPosition("");
-                      setOpenDropdown(null);
-                    }}
-                    className="block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs text-white/70 hover:bg-white/10"
-                  >
-                    All Positions
-                  </button>
-
-                  {positions.map((position) => (
-                    <button
-                      key={position}
-                      type="button"
-                      onClick={() => {
-                        setFilteredPosition(position);
-                        setOpenDropdown(null);
-                      }}
-                      className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs ${
-                        filteredPosition === position
-                          ? "bg-[#1bc2ec]/10 text-[#1bc2ec]"
-                          : "text-white/70 hover:bg-white/10"
-                      }`}
-                    >
-                      {position}
-                    </button>
-                  ))}
-                </div>
-              )}
+                        {/* Select player button */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCurrentPlayer(
+                              currentPlayer === player.name ? "" : player.name,
+                            );
+                          }}
+                          className="flex min-w-0 flex-1 cursor-pointer px-1 py-3.5 text-left font-michroma text-xs"
+                        >
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate">
+                              {player.name}
+                            </span>
+                            <span className="mt-1 flex items-center gap-1.5">
+                              <span
+                                className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/80"
+                                style={{
+                                  backgroundColor: teamColor,
+                                  borderColor: teamColor,
+                                }}
+                              >
+                                {player.team}
+                              </span>
+                              <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
+                                {player.position}
+                              </span>
+                              <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
+                                #{player.jerseyNumber}
+                              </span>
+                              {/* Show value of currently selected sorting stat */}
+                              {selectedStatValue !== null && (
+                                <span className="shrink-0 rounded border border-[#1bc2ec]/30 bg-[#1bc2ec]/10 px-1.5 py-0.5 text-10px text-[#1bc2ec]">
+                                  {selectedStatValue}{" "}
+                                  {sortBy === "fgPercent" ||
+                                  sortBy === "threePercent" ||
+                                  sortBy === "ftPercent"
+                                    ? "%"
+                                    : ""}
+                                </span>
+                              )}
+                            </span>
+                          </span>
+                        </button>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
             </div>
-
-            {/* Sort by ... */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() =>
-                  setOpenDropdown(openDropdown === "sort" ? null : "sort")
-                }
-                className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
-                  sortBy
-                    ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]"
-                    : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
-                }`}
-              >
-                <span>
-                  Sort: {selectedSortOption ? selectedSortOption.label : "None"}{" "}
-                  {sortBy &&
-                    (sortBy === "first-name" || sortBy === "last-name"
-                      ? sortDirection === "primary"
-                        ? "A-Z"
-                        : "Z-A"
-                      : sortDirection === "primary"
-                        ? "Hi-Lo"
-                        : "Lo-Hi")}
-                </span>
-                <span className="text-[#1bc2ec]">▾</span>
-              </button>
-
-              {openDropdown === "sort" && (
-                <div className="absolute left-0 top-full z-30 mt-2 max-h-52 w-44 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
-                  {sortOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => {
-                        handleSortClick(option.value);
-                        setOpenDropdown(null);
-                      }}
-                      className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs ${
-                        sortBy === option.value
-                          ? "bg-[#1bc2ec]/10 text-[#1bc2ec]"
-                          : "text-white/70 hover:bg-white/10"
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Reset filters button */}
-            {hasActiveFilters && (
-              <button
-                type="button"
-                onClick={resetAllFilters}
-                className="cursor-pointer rounded-md border border-white/20 bg-black/10 px-2 py-1 font-michroma text-xs text-white/60 transition-all duration-200 hover:border-red-700/60 hover:text-red-700"
-              >
-                Reset Filters
-              </button>
-            )}
           </div>
 
-          {/* Player list */}
-          <div className="flex flex-col w-full max-w-100 gap-1 max-h-[70vh] overflow-y-auto pr-2">
-            {/* No player(s) cases */}
-            {filteredPlayers.length === 0 ? (
-              <p className="text-center text-white/40 font-michroma text-xs py-8">
-                {showFavorites
-                  ? "No favorites yet. Click ☆ to add a player."
-                  : "No players found."}
-              </p>
-            ) : (
-              /* Filter based on chosen filters */
-              filteredPlayers.map((player) => {
-                const isSelected = player.name === currentPlayer;
-                const isFavorite = favorites.includes(player.name);
-                const teamColor = teamColors[player.team];
-                const selectedStatValue =
-                  sortBy && sortBy !== "first-name" && sortBy !== "last-name"
-                    ? player.stats[sortBy]
-                    : null;
-                return (
-                  <div
-                    key={player.id}
-                    className={`flex w-full items-stretch text-left font-michroma text-xs rounded-md border transition-all duration-200 ${
-                      isSelected
-                        ? "border-[#178aa7] bg-[#1bc2ec]/10 text-[#1bc2ec]"
-                        : "border-white/10 bg-black/20 text-white/90 hover:bg-white/5 hover:border-white/30"
-                    }`}
-                  >
-                    {/* Favorite star button */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        toggleFavorite(player.name);
-                      }}
-                      aria-label={
-                        isFavorite
-                          ? `Remove ${player.name} from favorites`
-                          : `Add ${player.name} to favorites`
-                      }
-                      className={`cursor-pointer px-1.5 py-1 text-sm transition-colors duration-200 shrink-0 ${
-                        isFavorite
-                          ? "text-[#1bc2ec]"
-                          : "text-white/20 hover:text-[#1bc2ec]/60"
-                      }`}
-                    >
-                      {isFavorite ? "★" : "☆"}
-                    </button>
+          <div className="flex items-center justify-center">
+            {/* Player card section */}
+            {selectedPlayer && (
+              <div
+                key={selectedPlayer.id}
+                className="relative w-full max-w-lg min-h-144 overflow-hidden rounded-3xl border border-[#1bc2ec]/10 bg-black/30 p-6 font-michroma text-white animate-[cardIn_2000ms_ease-out]"
+              >
+                {/* Team-colored card border */}
+                <svg
+                  className="pointer-events-none absolute inset-0 z-20 h-full w-full"
+                  viewBox="0 0 100 100"
+                  preserveAspectRatio="none"
+                >
+                  <defs>
+                    {/* Mask */}
+                    <mask id={`team-frame-mask-${selectedPlayer.id}`}>
+                      <rect width="100" height="100" fill="white" />
+                      <polygon
+                        points="10,10 80,10 90,20 90,90 20,90 10,80"
+                        fill="black"
+                      />
+                    </mask>
+                  </defs>
 
-                    {/* Select player button */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCurrentPlayer(
-                          currentPlayer === player.name ? "" : player.name,
-                        );
-                      }}
-                      className="flex min-w-0 flex-1 cursor-pointer px-1 py-3.5 text-left font-michroma text-xs"
-                    >
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate">{player.name}</span>
-                        <span className="mt-1 flex items-center gap-1.5">
-                          <span
-                            className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/80"
-                            style={{
-                              backgroundColor: teamColor,
-                              borderColor: teamColor,
-                            }}
-                          >
-                            {player.team}
-                          </span>
-                          <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
-                            {player.position}
-                          </span>
-                          <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
-                            #{player.jerseyNumber}
-                          </span>
-                          {/* Show value of currently selected sorting stat */}
-                          {selectedStatValue !== null && (
-                            <span className="shrink-0 rounded border border-[#1bc2ec]/30 bg-[#1bc2ec]/10 px-1.5 py-0.5 text-10px text-[#1bc2ec]">
-                              {selectedStatValue}{" "}
-                              {sortBy === "fgPercent" ||
-                              sortBy === "threePercent" ||
-                              sortBy === "ftPercent"
-                                ? "%"
-                                : ""}
-                            </span>
-                          )}
-                        </span>
-                      </span>
-                    </button>
-                  </div>
-                );
-              })
+                  {/* Base team color frame */}
+                  <rect
+                    x="0"
+                    y="0"
+                    width="100"
+                    height="100"
+                    fill={teamColors[selectedPlayer.team]}
+                    mask={`url(#team-frame-mask-${selectedPlayer.id})`}
+                  />
+
+                  {/* Inner white trim */}
+                  <polygon
+                    points="10,10 80,10 90,20 90,90 20,90 10,80"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="3"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                </svg>
+
+                {/* Background radar */}
+                <Image
+                  src={"/radar-graph.svg"}
+                  alt="Radar Graph"
+                  fill
+                  className="scale-165 object-cover object-center opacity-60 blur-xs"
+                />
+                {/* Player image */}
+                <div className="absolute inset-0 z-10 flex items-center justify-center">
+                  <Image
+                    src={selectedPlayer.image}
+                    alt={selectedPlayer.name}
+                    width={144}
+                    height={144}
+                    className="h-64 w-64 rounded-md object-cover"
+                  />
+                </div>
+              </div>
             )}
           </div>
         </div>
-
-        {/* Player card section */}
-        {selectedPlayer && (
-          <div
-            key={selectedPlayer.id}
-            className="absolute right-6 top-10 w-175 h-125 overflow-hidden rounded-md border border-[#1bc2ec]/10 bg-black-30 p-4 font-michroma text-white animate-[cardIn_2000ms_ease-out]"
-          >
-            {/* Team-colored card border */}
-            <svg
-              className="pointer-events-none absolute inset-0 z-20 h-full w-full"
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-            >
-              <defs>
-                {/* Mask */}
-                <mask id={`team-frame-mask-${selectedPlayer.id}`}>
-                  <rect width="100" height="100" fill="white" />
-                  <polygon
-                    points="6,6 86,6 94,14 94,94 14,94 6,86"
-                    fill="black"
-                  />
-                </mask>
-              </defs>
-
-              {/* Base team color frame */}
-              <rect
-                x="0"
-                y="0"
-                width="100"
-                height="100"
-                fill={teamColors[selectedPlayer.team]}
-                mask={`url(#team-frame-mask-${selectedPlayer.id})`}
-              />
-
-              {/* Inner white trim */}
-              <polygon
-                points="6,6 86,6 94,14 94,94 14,94 6,86"
-                fill="none"
-                stroke="white"
-                strokeWidth="3"
-                vectorEffect="non-scaling-stroke"
-              />
-            </svg>
-
-            {/* Background radar */}
-            <Image
-              src={"/radar-graph.svg"}
-              alt="Radar Graph"
-              fill
-              className="scale-165 object-cover object-center opacity-40 blur-xs"
-            />
-            {/* Player image */}
-            <div className="absolute inset-0 z-10 flex items-center justify-center">
-              <Image
-                src={selectedPlayer.image}
-                alt={selectedPlayer.name}
-                width={144}
-                height={144}
-                className="h-64 w-64 rounded-md object-cover"
-              />
-            </div>
-          </div>
-        )}
       </section>
     </main>
   );
