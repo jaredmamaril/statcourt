@@ -32,6 +32,11 @@ export default function Players() {
   >(null);
   const [isCardFlipped, setIsCardFlipped] = useState(false);
 
+  // Reset flip to front whenever the selected player changes
+  useEffect(() => {
+    setIsCardFlipped(false);
+  }, [currentPlayer]);
+
   // Filter and sort players based on search input, favorites toggle, team and position filters, and sorting options
   const filteredPlayers = players
     .filter((player) => {
@@ -500,136 +505,147 @@ export default function Players() {
           <div className="flex items-start justify-center">
             {/* Player card section */}
             {selectedPlayer && (
-              // Outer wrapper: perspective so 3D flip works, overflow-hidden to clip corners
-              <div
-                key={selectedPlayer.id}
-                className="relative w-full max-w-md min-h-144 overflow-hidden rounded-3xl cursor-pointer animate-[cardIn_2000ms_ease-out]"
-                style={{ perspective: "1000px" }}
-                onClick={() => setIsCardFlipped((prev) => !prev)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setIsCardFlipped((prev) => !prev);
-                  }
-                }}
-                role="button"
-                tabIndex={0}
-                aria-label={`${selectedPlayer.name} player card — click to flip`}
-              >
-                {/* Rotating container */}
-                <div
-                  className="relative w-full min-h-144"
-                  style={{
-                    transformStyle: "preserve-3d",
-                    transition: "transform 1s ease-out",
-                    transform: isCardFlipped
-                      ? "rotateY(180deg)"
-                      : "rotateY(0deg)",
-                  }}
+              <div className="flex flex-col items-start gap-2 w-full max-w-md">
+                {/* Back button */}
+                <button
+                  type="button"
+                  onClick={() => setCurrentPlayer("")}
+                  className="flex items-center gap-1 font-michroma text-xs text-white/50 hover:text-white transition-colors duration-200 cursor-pointer"
                 >
-                  {/* Front face */}
+                  ← Back
+                </button>
+                
+                <div
+                  key={selectedPlayer.id}
+                  className="relative w-full max-w-md min-h-144 overflow-hidden rounded-3xl cursor-pointer animate-[cardIn_2000ms_ease-out]"
+                  style={{ perspective: "1000px" }}
+                  onClick={() => setIsCardFlipped((prev) => !prev)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setIsCardFlipped((prev) => !prev);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${selectedPlayer.name} player card — click to flip`}
+                >
+                  {/* Rotating container */}
                   <div
-                    className="absolute inset-0 min-h-144 border border-[#1bc2ec]/10 bg-black/30 p-6 rounded-3xl"
-                    style={{ backfaceVisibility: "hidden" }}
+                    className="relative w-full min-h-144"
+                    style={{
+                      transformStyle: "preserve-3d",
+                      transition: "transform 0.6s ease-out",
+                      transform: isCardFlipped
+                        ? "rotateY(180deg)"
+                        : "rotateY(0deg)",
+                    }}
                   >
-                    {/* Team-colored card border */}
-                    <svg
-                      className="pointer-events-none absolute inset-0 z-20 h-full w-full"
-                      viewBox="0 0 100 100"
-                      preserveAspectRatio="none"
-                    >
-                      <defs>
-                        {/* Mask */}
-                        <mask id={`team-frame-mask-${selectedPlayer.id}`}>
-                          <rect width="100" height="100" fill="white" />
-                          <polygon
-                            points="8,8 82,8 92,18 92,92 18,92 8,82"
-                            fill="black"
-                          />
-                        </mask>
-                      </defs>
-
-                      {/* Base team color frame */}
-                      <rect
-                        x="0"
-                        y="0"
-                        width="100"
-                        height="100"
-                        fill={teamColors[selectedPlayer.team]}
-                        mask={`url(#team-frame-mask-${selectedPlayer.id})`}
-                      />
-
-                      {/* Inner white trim */}
-                      <polygon
-                        points="8,8 82,8 92,18 92,92 18,92 8,82"
-                        fill="none"
-                        stroke="white"
-                        strokeWidth="3"
-                        vectorEffect="non-scaling-stroke"
-                      />
-                    </svg>
-                    {/* Card background (court) */}
-                    <div className="absolute -inset-30 z-10 transform rotate-90 opacity-50">
-                      <Image
-                        src={"/court.svg"}
-                        alt={"Court background"}
-                        fill
-                        className="object-contain"
-                      />
-                    </div>
-                    {/* Jersey number and position - top right corner */}
+                    {/* Front face */}
                     <div
-                      className="absolute top-18 right-14 z-30"
-                      style={{ color: teamColors[selectedPlayer.team] }}
+                      className="absolute inset-0 min-h-144 border border-[#1bc2ec]/10 bg-black/30 p-6 rounded-3xl"
+                      style={{ backfaceVisibility: "hidden" }}
                     >
-                      <div className="flex flex-col items-center">
-                        <span className="text-3xl font-bold font-michroma opacity-70">
-                          #{selectedPlayer.jerseyNumber}
-                        </span>
-                        <span className="text-white text-2xl font-bold font-michroma opacity-70">
-                          {selectedPlayer.position}
+                      {/* Team-colored card border */}
+                      <svg
+                        className="pointer-events-none absolute inset-0 z-20 h-full w-full"
+                        viewBox="0 0 100 100"
+                        preserveAspectRatio="none"
+                      >
+                        <defs>
+                          {/* Mask */}
+                          <mask id={`team-frame-mask-${selectedPlayer.id}`}>
+                            <rect width="100" height="100" fill="white" />
+                            <polygon
+                              points="8,8 82,8 92,18 92,92 18,92 8,82"
+                              fill="black"
+                            />
+                          </mask>
+                        </defs>
+
+                        {/* Base team color frame */}
+                        <rect
+                          x="0"
+                          y="0"
+                          width="100"
+                          height="100"
+                          fill={teamColors[selectedPlayer.team]}
+                          mask={`url(#team-frame-mask-${selectedPlayer.id})`}
+                        />
+
+                        {/* Inner white trim */}
+                        <polygon
+                          points="8,8 82,8 92,18 92,92 18,92 8,82"
+                          fill="none"
+                          stroke="white"
+                          strokeWidth="3"
+                          vectorEffect="non-scaling-stroke"
+                        />
+                      </svg>
+                      {/* Card background (court) */}
+                      <div className="absolute -inset-30 z-10 transform rotate-90 opacity-50">
+                        <Image
+                          src={"/court.svg"}
+                          alt={"Court background"}
+                          fill
+                          className="object-contain"
+                        />
+                      </div>
+                      {/* Jersey number and position - top right corner */}
+                      <div
+                        className="absolute top-18 right-14 z-30"
+                        style={{ color: teamColors[selectedPlayer.team] }}
+                      >
+                        <div className="flex flex-col items-center">
+                          <span className="text-3xl font-bold font-michroma opacity-70">
+                            #{selectedPlayer.jerseyNumber}
+                          </span>
+                          <span className="text-white text-2xl font-bold font-michroma opacity-70">
+                            {selectedPlayer.position}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Team logo - top left corner */}
+                      <div className="absolute top-18 left-10 z-30 opacity-70">
+                        <Image
+                          src={teamLogos[selectedPlayer.team]}
+                          alt={`${selectedPlayer.team} logo`}
+                          width={32}
+                          height={32}
+                          className="h-20 w-20 object-contain"
+                        />
+                      </div>
+
+                      {/* Player image */}
+                      <div className="absolute inset-0 z-20 flex items-center justify-center -top-18">
+                        <Image
+                          src={selectedPlayer.image}
+                          alt={selectedPlayer.name}
+                          width={144}
+                          height={144}
+                          className="h-84 w-84 rounded-md object-cover"
+                        />
+                      </div>
+
+                      {/* Player name */}
+                      <div className="absolute bottom-8 left-0 right-0 z-30 flex items-center justify-center px-4 text-center">
+                        <span className="px-3 py-14 text-2xl font-bold font-michroma uppercase text-white tracking-wider">
+                          {selectedPlayer.name}
                         </span>
                       </div>
                     </div>
 
-                    {/* Team logo - top left corner */}
-                    <div className="absolute top-18 left-10 z-30 opacity-70">
-                      <Image
-                        src={teamLogos[selectedPlayer.team]}
-                        alt={`${selectedPlayer.team} logo`}
-                        width={32}
-                        height={32}
-                        className="h-20 w-20 object-contain"
-                      />
-                    </div>
-
-                    {/* Player image */}
-                    <div className="absolute inset-0 z-20 flex items-center justify-center -top-18">
-                      <Image
-                        src={selectedPlayer.image}
-                        alt={selectedPlayer.name}
-                        width={144}
-                        height={144}
-                        className="h-84 w-84 rounded-md object-cover"
-                      />
-                    </div>
-
-                    {/* Player name */}
-                    <div className="absolute bottom-8 left-0 right-0 z-30 flex items-center justify-center px-4 text-center">
-                      <span className="px-3 py-14 text-2xl font-bold font-michroma uppercase text-white tracking-wider">
-                        {selectedPlayer.name}
-                      </span>
-                    </div>
+                    {/* Back face */}
+                    <div
+                      className="absolute inset-0 min-h-144 rounded-3xl border bg-black/30"
+                      style={{
+                        backfaceVisibility: "hidden",
+                        transform: "rotateY(180deg)",
+                        borderColor: teamColors[selectedPlayer.team],
+                      }}
+                    ></div>
                   </div>
-
-                  {/* Back face — empty for now */}
-                  <div
-                    className="absolute inset-0 min-h-144 rounded-3xl border border-[#1bc2ec]/10 bg-black/30"
-                    style={{
-                      backfaceVisibility: "hidden",
-                      transform: "rotateY(180deg)",
-                    }}
-                  />
                 </div>
               </div>
             )}
