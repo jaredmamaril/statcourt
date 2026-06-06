@@ -355,10 +355,25 @@ export function normalizeStat(value: number, max: number) {
 }
 
 // Get player insights based on their stats per game
-type Insight = { label: string; score: number };
+type InsightTier = "core" | "supporting" | "bonus" | "weakness";
 
-export function getPlayerInsights(player: Player): string[] {
+type Insight = {
+  label: string;
+  score: number;
+  tier: InsightTier;
+};
+
+export type PlayerInsightResult = {
+  archetype: string | null;
+  traits: string[];
+};
+
+export function getPlayerInsights(player: Player): PlayerInsightResult {
   const insights: Insight[] = [];
+
+  function addInsight(label: string, score: number, tier: InsightTier) {
+    insights.push({ label, score, tier });
+  }
 
   // Derived values
   const scoringLoad =
@@ -370,7 +385,7 @@ export function getPlayerInsights(player: Player): string[] {
   const isTwoWayThreat = player.stats.ppg >= 22 && player.stats.rpg >= 7;
   const isFloorGeneral = player.stats.apg >= 8 && player.stats.fgPercent >= 48;
   const isPaintDominator =
-    player.stats.rpg >= 10 && player.stats.fgPercent >= 52;
+    player.stats.rpg >= 10 && player.stats.fgPercent >= 50;
   const isStretchBig = player.stats.rpg >= 8 && player.stats.threePercent >= 33;
   const isTripleDoubleMachine =
     player.stats.ppg >= 20 && player.stats.rpg >= 7 && player.stats.apg >= 7;
@@ -382,169 +397,197 @@ export function getPlayerInsights(player: Player): string[] {
     player.stats.ftPercent >= 75;
   const isVolumeScorer = player.stats.ppg >= 25 && player.stats.fgPercent < 46;
   const isPostUpSpecialist =
-    player.stats.fgPercent >= 52 &&
+    player.stats.fgPercent >= 50 &&
     player.stats.threePercent < 25 &&
     player.stats.rpg >= 8;
   const isPurePointGuard = player.stats.apg >= 8 && player.stats.ppg < 18;
+  const isInteriorAnchor =
+    player.stats.rpg >= 10 &&
+    player.stats.fgPercent >= 50 &&
+    player.stats.threePercent < 25;
 
-  if (isTripleDoubleMachine)
-    insights.push({ label: "Triple-Double Machine", score: 1.0 });
-  if (isPaintDominator)
-    insights.push({ label: "Paint Dominator", score: 0.97 });
+  if (isTripleDoubleMachine) addInsight("Triple-Double Machine", 1.0, "core");
+  if (isPaintDominator) addInsight("Paint Dominator", 0.97, "core");
   if (isPrimaryScoringEngine)
-    insights.push({ label: "Primary Scoring Engine", score: 0.95 });
-  if (isTwoWayThreat) insights.push({ label: "Two-Way Threat", score: 0.93 });
-  if (isFloorGeneral) insights.push({ label: "Floor General", score: 0.92 });
-  if (isBalancedStar) insights.push({ label: "Balanced Star", score: 0.91 });
-  if (isPostUpSpecialist)
-    insights.push({ label: "Post-Up Specialist", score: 0.9 });
-  if (isStretchBig) insights.push({ label: "Stretch Big", score: 0.89 });
-  if (isVolumeScorer) insights.push({ label: "Volume Scorer", score: 0.88 });
-  if (isPurePointGuard)
-    insights.push({ label: "Pure Point Guard", score: 0.87 });
+    addInsight("Primary Scoring Engine", 0.95, "core");
+  if (isTwoWayThreat) addInsight("Two-Way Threat", 0.93, "core");
+  if (isFloorGeneral) addInsight("Floor General", 0.92, "core");
+  if (isBalancedStar) addInsight("Balanced Star", 0.91, "core");
+  if (isPostUpSpecialist) addInsight("Post-Up Specialist", 0.9, "core");
+  if (isStretchBig) addInsight("Stretch Big", 0.89, "core");
+  if (isVolumeScorer) addInsight("Volume Scorer", 0.88, "core");
+  if (isPurePointGuard) addInsight("Pure Point Guard", 0.87, "core");
+  if (isInteriorAnchor) addInsight("Interior Anchor", 0.94, "core");
+
   if (scoringLoad > 3.5)
-    insights.push({ label: "High-Usage Offensive Focus", score: 0.88 });
+    addInsight("High-Usage Offensive Focus", 0.88, "supporting");
   if (player.stats.ppg >= 24 && player.stats.fgPercent >= 44)
-    insights.push({ label: "Elite Shot Creator", score: 0.9 });
+    addInsight("Elite Shot Creator", 0.9, "core");
   if (isPreThreeEra && player.stats.ppg >= 20)
-    insights.push({ label: "Pre-3PT Era Dominant Big", score: 0.86 });
+    addInsight("Pre-3PT Era Dominant Big", 0.86, "supporting");
 
   // Position-aware rules
   if (player.position === "C" || player.position === "PF") {
-    if (player.stats.apg >= 4)
-      insights.push({ label: "Passing Big", score: 0.85 });
+    if (player.stats.apg >= 4) addInsight("Passing Big", 0.85, "supporting");
     if (player.stats.threePercent >= 35)
-      insights.push({ label: "Floor-Spacing Big", score: 0.84 });
+      addInsight("Floor-Spacing Big", 0.84, "supporting");
   }
 
   if (player.position === "PG") {
     if (player.stats.rpg >= 6)
-      insights.push({ label: "Rebounding Guard", score: 0.84 });
+      addInsight("Rebounding Guard", 0.84, "supporting");
     if (player.stats.ppg >= 22 && player.stats.apg >= 6)
-      insights.push({ label: "Scoring Point Guard", score: 0.86 });
+      addInsight("Scoring Point Guard", 0.86, "supporting");
   }
 
   if (player.position === "SG" || player.position === "SF") {
     if (player.stats.apg >= 6 && player.stats.ppg >= 20)
-      insights.push({ label: "Wing Playmaker", score: 0.85 });
+      addInsight("Wing Playmaker", 0.85, "supporting");
     if (player.stats.rpg >= 8 && player.stats.ppg >= 20)
-      insights.push({ label: "Versatile Wing", score: 0.84 });
+      addInsight("Versatile Wing", 0.84, "supporting");
   }
 
   // Role player / lower tier rules
   if (player.stats.ppg >= 15 && player.stats.ppg < 20)
-    insights.push({ label: "Consistent Contributor", score: 0.5 });
+    addInsight("Consistent Contributor", 0.5, "bonus");
   if (player.stats.ppg >= 10 && player.stats.ppg < 15)
-    insights.push({ label: "Reliable Role Player", score: 0.35 });
+    addInsight("Reliable Role Player", 0.35, "bonus");
   if (player.stats.rpg >= 6 && player.stats.rpg < 7)
-    insights.push({ label: "Active on the Boards", score: 0.4 });
+    addInsight("Active on the Boards", 0.4, "bonus");
   if (player.stats.apg >= 4 && player.stats.apg < 5)
-    insights.push({ label: "Capable Ball Handler", score: 0.38 });
+    addInsight("Capable Ball Handler", 0.38, "bonus");
   if (player.stats.fgPercent >= 48 && player.stats.fgPercent < 52)
-    insights.push({ label: "Solid Efficiency", score: 0.42 });
+    addInsight("Solid Efficiency", 0.42, "bonus");
   if (player.stats.threePercent >= 35 && player.stats.threePercent < 38)
-    insights.push({ label: "Reliable from Deep", score: 0.4 });
+    addInsight("Reliable from Deep", 0.4, "bonus");
   if (player.stats.ftPercent >= 80 && player.stats.ftPercent < 85)
-    insights.push({ label: "Steady at the Line", score: 0.38 });
+    addInsight("Steady at the Line", 0.38, "bonus");
 
   // Stat-based strengths
   if (player.stats.ppg >= 28)
-    insights.push({
-      label: "Generational Scorer",
-      score: normalizeStat(player.stats.ppg, statMaxValues.ppg),
-    });
+    addInsight(
+      "Generational Scorer",
+      normalizeStat(player.stats.ppg, statMaxValues.ppg),
+      "core",
+    );
   else if (player.stats.ppg >= 25)
-    insights.push({
-      label: "Elite Scorer",
-      score: normalizeStat(player.stats.ppg, statMaxValues.ppg),
-    });
+    addInsight(
+      "Elite Scorer",
+      normalizeStat(player.stats.ppg, statMaxValues.ppg),
+      "core",
+    );
   else if (player.stats.ppg >= 20)
-    insights.push({
-      label: "Reliable Offensive Threat",
-      score: normalizeStat(player.stats.ppg, statMaxValues.ppg),
-    });
+    addInsight(
+      "Reliable Offensive Threat",
+      normalizeStat(player.stats.ppg, statMaxValues.ppg),
+      "supporting",
+    );
 
   if (player.stats.rpg >= 15)
-    insights.push({
-      label: "Historic Rebounding Presence",
-      score: normalizeStat(player.stats.rpg, statMaxValues.rpg),
-    });
+    addInsight(
+      "Historic Rebounding",
+      normalizeStat(player.stats.rpg, statMaxValues.rpg),
+      "core",
+    );
   else if (player.stats.rpg >= 10)
-    insights.push({
-      label: "Dominant Rebounder",
-      score: normalizeStat(player.stats.rpg, statMaxValues.rpg),
-    });
+    addInsight(
+      "Dominant Rebounder",
+      normalizeStat(player.stats.rpg, statMaxValues.rpg),
+      "supporting",
+    );
   else if (player.stats.rpg >= 7)
-    insights.push({
-      label: "Strong Rebounding Impact",
-      score: normalizeStat(player.stats.rpg, statMaxValues.rpg),
-    });
+    addInsight(
+      "Strong Rebounding Impact",
+      normalizeStat(player.stats.rpg, statMaxValues.rpg),
+      "supporting",
+    );
 
   if (player.stats.apg >= 10)
-    insights.push({
-      label: "Generational Playmaker",
-      score: normalizeStat(player.stats.apg, statMaxValues.apg),
-    });
+    addInsight(
+      "Generational Playmaker",
+      normalizeStat(player.stats.apg, statMaxValues.apg),
+      "core",
+    );
   else if (player.stats.apg >= 7)
-    insights.push({
-      label: "Elite Facilitator",
-      score: normalizeStat(player.stats.apg, statMaxValues.apg),
-    });
+    addInsight(
+      "Elite Facilitator",
+      normalizeStat(player.stats.apg, statMaxValues.apg),
+      "supporting",
+    );
   else if (player.stats.apg >= 5)
-    insights.push({
-      label: "Strong Playmaking Ability",
-      score: normalizeStat(player.stats.apg, statMaxValues.apg),
-    });
+    addInsight(
+      "Strong Playmaking Ability",
+      normalizeStat(player.stats.apg, statMaxValues.apg),
+      "supporting",
+    );
 
   if (player.stats.fgPercent >= 57)
-    insights.push({
-      label: "Exceptional Efficiency",
-      score: normalizeStat(player.stats.fgPercent, statMaxValues.fgPercent),
-    });
+    addInsight(
+      "Exceptional Efficiency",
+      normalizeStat(player.stats.fgPercent, statMaxValues.fgPercent),
+      "supporting",
+    );
   else if (player.stats.fgPercent >= 52)
-    insights.push({
-      label: "Highly Efficient Scorer",
-      score: normalizeStat(player.stats.fgPercent, statMaxValues.fgPercent),
-    });
+    addInsight(
+      "Highly Efficient Scorer",
+      normalizeStat(player.stats.fgPercent, statMaxValues.fgPercent),
+      "supporting",
+    );
 
   if (player.stats.threePercent >= 42)
-    insights.push({
-      label: "Elite Perimeter Shooter",
-      score: normalizeStat(
-        player.stats.threePercent,
-        statMaxValues.threePercent,
-      ),
-    });
+    addInsight(
+      "Elite Perimeter Shooter",
+      normalizeStat(player.stats.threePercent, statMaxValues.threePercent),
+      "supporting",
+    );
   else if (player.stats.threePercent >= 38)
-    insights.push({
-      label: "High-Level Shooter",
-      score: normalizeStat(
-        player.stats.threePercent,
-        statMaxValues.threePercent,
-      ),
-    });
+    addInsight(
+      "High-Level Shooter",
+      normalizeStat(player.stats.threePercent, statMaxValues.threePercent),
+      "supporting",
+    );
 
   if (player.stats.ftPercent >= 90)
-    insights.push({
-      label: "Automatic at the Line",
-      score: normalizeStat(player.stats.ftPercent, statMaxValues.ftPercent),
-    });
+    addInsight(
+      "Automatic at the Line",
+      normalizeStat(player.stats.ftPercent, statMaxValues.ftPercent),
+      "supporting",
+    );
   else if (player.stats.ftPercent >= 85)
-    insights.push({
-      label: "Elite Free Throw Shooter",
-      score: normalizeStat(player.stats.ftPercent, statMaxValues.ftPercent),
-    });
+    addInsight(
+      "Elite Free Throw Shooter",
+      normalizeStat(player.stats.ftPercent, statMaxValues.ftPercent),
+      "supporting",
+    );
 
-  // Weakness labels
-  if (player.stats.ftPercent < 60)
-    insights.push({ label: "FT Liability", score: -0.1 });
+  if (player.stats.ftPercent < 60) addInsight("FT Liability", -0.1, "weakness");
   if (player.stats.threePercent < 25 && !isPreThreeEra)
-    insights.push({ label: "Limited Range", score: -0.1 });
+    addInsight("Limited Range", -0.1, "weakness");
 
-  return insights
-    .sort((a, b) => b.score - a.score)
+  // Ranks for each type of label
+  const tierRank: Record<InsightTier, number> = {
+    core: 3,
+    supporting: 2,
+    bonus: 1,
+    weakness: 0,
+  };
+
+  // Get archetype by highest score of core insight
+  const archetype = insights
+    .filter((insight) => insight.tier === "core")
+    .sort((a, b) => b.score - a.score)[0];
+
+  // Get remaining traits
+  const traits = insights
+    .filter((insight) => insight.label !== archetype?.label)
+    .sort((a, b) => tierRank[b.tier] - tierRank[a.tier] || b.score - a.score)
     .slice(0, 4)
     .map((insight) => insight.label);
+
+  return {
+    archetype: archetype?.label ?? null,
+    traits,
+  };
 }
 
 // Future: this type can be expanded to include more stats or player attributes as needed, and can be used to structure the data for the radar chart or other visualizations on the court page.
