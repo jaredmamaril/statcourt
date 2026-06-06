@@ -40,12 +40,23 @@ export default function Players() {
   const [openDropdown, setOpenDropdown] = useState<
     "team" | "position" | "sort" | null
   >(null);
-  const [isCardFlipped, setIsCardFlipped] = useState(false);
 
+  const [isCardFlipped, setIsCardFlipped] = useState(false);
   // Reset flip to front whenever the selected player changes
   useEffect(() => {
     setIsCardFlipped(false);
   }, [currentPlayer]);
+
+  const [showBackContent, setShowBackContent] = useState(false);
+  useEffect(() => {
+    if (isCardFlipped) {
+      // Wait for flip animation to finish (0.01s) then trigger radar animation
+      const timer = setTimeout(() => setShowBackContent(true), 10);
+      return () => clearTimeout(timer);
+    } else {
+      setShowBackContent(false);
+    }
+  }, [isCardFlipped]);
 
   // Filter and sort players based on search input, favorites toggle, team and position filters, and sorting options
   const filteredPlayers = players
@@ -683,86 +694,173 @@ export default function Players() {
                       </div>
 
                       {/* Player stats radar chart */}
-                      <div
-                        className="relative z-10 w-full h-48 mt-2"
-                        onClick={(e) => e.stopPropagation()}
-                        onMouseDown={(e) => e.stopPropagation()}
-                      >
-                        <ResponsiveContainer width="100%" height="100%">
-                          <RadarChart
-                            data={[
-                              {
-                                stat: "PPG",
-                                value: normalizeStat(
-                                  selectedPlayer.stats.ppg,
-                                  statMaxValues.ppg,
-                                ),
-                              },
-                              {
-                                stat: "RPG",
-                                value: normalizeStat(
-                                  selectedPlayer.stats.rpg,
-                                  statMaxValues.rpg,
-                                ),
-                              },
-                              {
-                                stat: "APG",
-                                value: normalizeStat(
-                                  selectedPlayer.stats.apg,
-                                  statMaxValues.apg,
-                                ),
-                              },
-                              {
-                                stat: "FG%",
-                                value: normalizeStat(
-                                  selectedPlayer.stats.fgPercent,
-                                  statMaxValues.fgPercent,
-                                ),
-                              },
-                              {
-                                stat: "3PT%",
-                                value: normalizeStat(
-                                  selectedPlayer.stats.threePercent,
-                                  statMaxValues.threePercent,
-                                ),
-                              },
-                              {
-                                stat: "FT%",
-                                value: normalizeStat(
-                                  selectedPlayer.stats.ftPercent,
-                                  statMaxValues.ftPercent,
-                                ),
-                              },
-                            ]}
-                          >
-                            <PolarGrid stroke="rgba(255,255,255,0.2)" />
-                            <PolarAngleAxis
-                              dataKey="stat"
-                              tick={{
-                                fill: "white",
-                                fontSize: 10,
-                                fontFamily: "Michroma",
-                              }}
-                            />
-                            <PolarRadiusAxis
-                              domain={[0, 100]}
-                              tick={false}
-                              axisLine={false}
-                            />
-                            <Radar
-                              dataKey="value"
-                              stroke={teamColors[selectedPlayer.team]}
-                              strokeWidth={2}
-                              fill={teamColors[selectedPlayer.team]}
-                              fillOpacity={0.2}
-                              isAnimationActive={true}
-                              animationBegin={500}
-                              animationDuration={900}
-                              animationEasing="ease-out"
-                            />
-                          </RadarChart>
-                        </ResponsiveContainer>
-                      </div>
+                      {showBackContent && (
+                        <div
+                          className="relative z-10 w-full h-48 mt-2"
+                          onClick={(e) => e.stopPropagation()}
+                          onMouseDown={(e) => e.stopPropagation()}
+                        >
+                          {/* Left side stats — FG%, 3PT%, FT% */}
+                          <div className="absolute left-0 top-0 h-full flex flex-col justify-around py-2 z-10 ml-6">
+                            <div className="flex flex-col items-start">
+                              <span className="font-michroma text-[10px] text-white">
+                                FG%
+                              </span>
+                              <span
+                                className="font-michroma text-xs font-bold"
+                                style={{
+                                  color: teamColors[selectedPlayer.team],
+                                }}
+                              >
+                                {selectedPlayer.stats.fgPercent}
+                              </span>
+                            </div>
+                            <div className="flex flex-col items-start">
+                              <span className="font-michroma text-[10px] text-white">
+                                3PT%
+                              </span>
+                              <span
+                                className="font-michroma text-xs font-bold"
+                                style={{
+                                  color: teamColors[selectedPlayer.team],
+                                }}
+                              >
+                                {selectedPlayer.stats.threePercent}
+                              </span>
+                            </div>
+                            <div className="flex flex-col items-start">
+                              <span className="font-michroma text-[10px] text-white">
+                                FT%
+                              </span>
+                              <span
+                                className="font-michroma text-xs font-bold"
+                                style={{
+                                  color: teamColors[selectedPlayer.team],
+                                }}
+                              >
+                                {selectedPlayer.stats.ftPercent}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Right side stats — PPG, RPG, APG */}
+                          <div className="absolute right-0 top-0 h-full flex flex-col justify-around py-2 z-10 mr-6">
+                            <div className="flex flex-col items-end">
+                              <span className="font-michroma text-[10px] text-white">
+                                PPG
+                              </span>
+                              <span
+                                className="font-michroma text-xs font-bold"
+                                style={{
+                                  color: teamColors[selectedPlayer.team],
+                                }}
+                              >
+                                {selectedPlayer.stats.ppg}
+                              </span>
+                            </div>
+                            <div className="flex flex-col items-end">
+                              <span className="font-michroma text-[10px] text-white">
+                                RPG
+                              </span>
+                              <span
+                                className="font-michroma text-xs font-bold"
+                                style={{
+                                  color: teamColors[selectedPlayer.team],
+                                }}
+                              >
+                                {selectedPlayer.stats.rpg}
+                              </span>
+                            </div>
+                            <div className="flex flex-col items-end">
+                              <span className="font-michroma text-[10px] text-white">
+                                APG
+                              </span>
+                              <span
+                                className="font-michroma text-xs font-bold"
+                                style={{
+                                  color: teamColors[selectedPlayer.team],
+                                }}
+                              >
+                                {selectedPlayer.stats.apg}
+                              </span>
+                            </div>
+                          </div>
+                          <ResponsiveContainer width="100%" height="100%">
+                            <RadarChart
+                              data={[
+                                {
+                                  stat: "PPG",
+                                  value: normalizeStat(
+                                    selectedPlayer.stats.ppg,
+                                    statMaxValues.ppg,
+                                  ),
+                                },
+                                {
+                                  stat: "RPG",
+                                  value: normalizeStat(
+                                    selectedPlayer.stats.rpg,
+                                    statMaxValues.rpg,
+                                  ),
+                                },
+                                {
+                                  stat: "APG",
+                                  value: normalizeStat(
+                                    selectedPlayer.stats.apg,
+                                    statMaxValues.apg,
+                                  ),
+                                },
+                                {
+                                  stat: "FG%",
+                                  value: normalizeStat(
+                                    selectedPlayer.stats.fgPercent,
+                                    statMaxValues.fgPercent,
+                                  ),
+                                },
+                                {
+                                  stat: "3PT%",
+                                  value: normalizeStat(
+                                    selectedPlayer.stats.threePercent,
+                                    statMaxValues.threePercent,
+                                  ),
+                                },
+                                {
+                                  stat: "FT%",
+                                  value: normalizeStat(
+                                    selectedPlayer.stats.ftPercent,
+                                    statMaxValues.ftPercent,
+                                  ),
+                                },
+                              ]}
+                            >
+                              <PolarGrid stroke="rgba(255,255,255,0.2)" />
+                              <PolarAngleAxis
+                                dataKey="stat"
+                                tick={{
+                                  fill: "white",
+                                  fontSize: 10,
+                                  fontFamily: "Michroma",
+                                }}
+                              />
+                              <PolarRadiusAxis
+                                domain={[0, 100]}
+                                tick={false}
+                                axisLine={false}
+                              />
+                              <Radar
+                                dataKey="value"
+                                stroke={teamColors[selectedPlayer.team]}
+                                strokeWidth={2}
+                                fill={teamColors[selectedPlayer.team]}
+                                fillOpacity={0.2}
+                                isAnimationActive={true}
+                                animationBegin={500}
+                                animationDuration={900}
+                                animationEasing="ease-out"
+                              />
+                            </RadarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
