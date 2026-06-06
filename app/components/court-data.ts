@@ -337,8 +337,6 @@ export const players: Player[] = [
   },
 ];
 
-// Components for court page
-
 // Type for keys of PlayerStats
 export type StatKey = keyof PlayerStats;
 // Future: these max values could be dynamically calculated based on the player data or fetched from an API to ensure they remain accurate and relevant as new players are added or stats are updated.
@@ -364,8 +362,6 @@ export type RadarStatRow = {
   playerOneActual: number;
   playerTwoActual: number;
 };
-
-// Components for players page
 
 // All unique teams in data
 export const teams: Team[] = Array.from(
