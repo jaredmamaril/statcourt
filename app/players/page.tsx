@@ -648,8 +648,8 @@ export default function Players() {
                       </div>
 
                       {/* Player name */}
-                      <div className="absolute bottom-8 left-0 right-0 z-30 flex items-center justify-center px-4 text-center">
-                        <span className="px-3 py-14 text-2xl font-bold font-michroma uppercase text-white tracking-wider">
+                      <div className="absolute bottom-8 left-0 right-0 z-30 flex items-center justify-center px-6 text-center">
+                        <span className="py-14 text-xl font-bold font-michroma uppercase text-white tracking-wide wrap-break-word w-full">
                           {selectedPlayer.name}
                         </span>
                       </div>
@@ -665,9 +665,9 @@ export default function Players() {
                       }}
                     >
                       {/* Card background (court) */}
-                      <div className="absolute -inset-25 z-0 opacity-50">
+                      <div className="absolute -inset-1 z-0 opacity-50">
                         <Image
-                          src={"/court.svg"}
+                          src={"/court-pattern.svg"}
                           alt={"Court background"}
                           fill
                           className="object-cover"
