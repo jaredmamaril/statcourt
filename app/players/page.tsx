@@ -111,6 +111,11 @@ export default function Players() {
     (player) => player.name === currentPlayer,
   );
 
+  // Get player insights of selected player
+  const playerInsights = selectedPlayer
+    ? getPlayerInsights(selectedPlayer)
+    : null;
+
   // Function to toggle a player as a favorite, adding them to the favorites list if they're not already in it or removing them if they are
   const toggleFavorite = (playerName: string) => {
     setFavorites((prev) =>
@@ -862,22 +867,42 @@ export default function Players() {
                           </ResponsiveContainer>
                         </div>
                       )}
+
                       {/* Player insights */}
-                      {getPlayerInsights(selectedPlayer).length > 0 && (
-                        <div className="flex flex-col gap-1 mt-2">
-                          {getPlayerInsights(selectedPlayer).map((insight) => (
-                            <span
-                              key={insight}
-                              className="font-michroma text-[8px] px-1.5 py-0.5 rounded border w-fit"
+                      {playerInsights && (
+                        <div className="mt-4 ml-4 flex w-fit flex-col items-center gap-1">
+                          <span className="font-michroma text-[10px] uppercase tracking-wide text-white">
+                            Insights
+                          </span>
+                          {/* Core label */}
+                          {playerInsights.archetype && (
+                            <div
+                              className="w-fit rounded border px-2 py-1 font-michroma text-[11px] font-bold uppercase tracking-wide text-[#EFBF04]"
                               style={{
-                                color: teamColors[selectedPlayer.team],
-                                borderColor: `${teamColors[selectedPlayer.team]}50`,
-                                backgroundColor: `${teamColors[selectedPlayer.team]}15`,
+                                borderColor: "EFBF04",
+                                backgroundColor: "#EFBF0499",
                               }}
                             >
-                              {insight}
-                            </span>
-                          ))}
+                              {playerInsights.archetype}
+                            </div>
+                          )}
+
+                          {/* Supporting labels and bonus labels */}
+                          <div className="flex flex-col items-center gap-1">
+                            {playerInsights.traits.map((trait) => (
+                              <span
+                                key={trait}
+                                className="w-fit rounded border px-1.5 py-0.5 font-michroma text-[10px] font-semibold text-white/95"
+                                style={{
+                                  borderColor: teamColors[selectedPlayer.team],
+                                  backgroundColor: `${teamColors[selectedPlayer.team]}45`,
+                                  textShadow: "0 1px 2px rgba(0,0,0,0.75)",
+                                }}
+                              >
+                                {trait}
+                              </span>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>
