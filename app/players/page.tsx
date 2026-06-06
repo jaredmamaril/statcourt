@@ -9,6 +9,7 @@ import {
   sortOptions,
   normalizeStat,
   statMaxValues,
+  getPlayerInsights,
 } from "../components/court-data";
 import type {
   SortValue,
@@ -859,6 +860,24 @@ export default function Players() {
                               />
                             </RadarChart>
                           </ResponsiveContainer>
+                        </div>
+                      )}
+                      {/* Player insights */}
+                      {getPlayerInsights(selectedPlayer).length > 0 && (
+                        <div className="flex flex-col gap-1 mt-2">
+                          {getPlayerInsights(selectedPlayer).map((insight) => (
+                            <span
+                              key={insight}
+                              className="font-michroma text-[8px] px-1.5 py-0.5 rounded border w-fit"
+                              style={{
+                                color: teamColors[selectedPlayer.team],
+                                borderColor: `${teamColors[selectedPlayer.team]}50`,
+                                backgroundColor: `${teamColors[selectedPlayer.team]}15`,
+                              }}
+                            >
+                              {insight}
+                            </span>
+                          ))}
                         </div>
                       )}
                     </div>
