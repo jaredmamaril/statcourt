@@ -7,6 +7,8 @@ import {
   teamColors,
   teamLogos,
   sortOptions,
+  normalizeStat,
+  statMaxValues,
 } from "../components/court-data";
 import type {
   SortValue,
@@ -14,6 +16,14 @@ import type {
   Position,
   SortDirection,
 } from "../components/court-data";
+import {
+  PolarAngleAxis,
+  PolarGrid,
+  PolarRadiusAxis,
+  Radar,
+  RadarChart,
+  ResponsiveContainer,
+} from "recharts";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 
@@ -166,8 +176,8 @@ export default function Players() {
           <div
             className={
               selectedPlayer
-                ? "relative w-full transition-all duration-2000 ease-out opacity-10 lg:-translate-x-1/6"
-                : "relative w-full transition-all duration-2000 ease-out opacity-100 translate-x-0"
+                ? "relative w-full transition-all duration-1000 ease-out opacity-10 lg:-translate-x-1/6"
+                : "relative w-full transition-all duration-1000 ease-out opacity-100 translate-x-0"
             }
           >
             {/* Header section */}
@@ -301,7 +311,6 @@ export default function Players() {
                   </span>
                   <span className="text-[#1bc2ec]">▾</span>
                 </button>
-
                 {openDropdown === "position" && (
                   <div className="absolute left-0 top-full z-30 mt-2 max-h-40 w-36 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
                     <button
@@ -314,7 +323,6 @@ export default function Players() {
                     >
                       All Positions
                     </button>
-
                     {positions.map((position) => (
                       <button
                         key={position}
@@ -514,10 +522,10 @@ export default function Players() {
                 >
                   ← Back
                 </button>
-                
+
                 <div
                   key={selectedPlayer.id}
-                  className="relative w-full max-w-md min-h-144 overflow-hidden rounded-3xl cursor-pointer animate-[cardIn_2000ms_ease-out]"
+                  className="relative w-full max-w-md min-h-144 overflow-hidden rounded-3xl cursor-pointer animate-[cardIn_750ms_ease-out]"
                   style={{ perspective: "1000px" }}
                   onClick={() => setIsCardFlipped((prev) => !prev)}
                   onKeyDown={(e) => {
@@ -644,7 +652,118 @@ export default function Players() {
                         transform: "rotateY(180deg)",
                         borderColor: teamColors[selectedPlayer.team],
                       }}
-                    ></div>
+                    >
+                      {/* Card background (court) */}
+                      <div className="absolute -inset-25 z-0 opacity-50">
+                        <Image
+                          src={"/court.svg"}
+                          alt={"Court background"}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-center gap-2 font-michroma uppercase pt-1">
+                        {/* Player headshot */}
+                        <Image
+                          src={selectedPlayer.image}
+                          alt={selectedPlayer.name}
+                          width={96}
+                          height={96}
+                          className="rounded-md object-contain z-10"
+                        />
+                        {/* Player info */}
+                        <span className="font-bold z-10">
+                          {selectedPlayer.name}
+                        </span>
+                        <span className="text-xs opacity-80 z-10">
+                          {selectedPlayer.position} • {selectedPlayer.team} • #
+                          {selectedPlayer.jerseyNumber}
+                        </span>
+                      </div>
+
+                      {/* Player stats radar chart */}
+                      <div
+                        className="relative z-10 w-full h-48 mt-2"
+                        onClick={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => e.stopPropagation()}
+                      >
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RadarChart
+                            data={[
+                              {
+                                stat: "PPG",
+                                value: normalizeStat(
+                                  selectedPlayer.stats.ppg,
+                                  statMaxValues.ppg,
+                                ),
+                              },
+                              {
+                                stat: "RPG",
+                                value: normalizeStat(
+                                  selectedPlayer.stats.rpg,
+                                  statMaxValues.rpg,
+                                ),
+                              },
+                              {
+                                stat: "APG",
+                                value: normalizeStat(
+                                  selectedPlayer.stats.apg,
+                                  statMaxValues.apg,
+                                ),
+                              },
+                              {
+                                stat: "FG%",
+                                value: normalizeStat(
+                                  selectedPlayer.stats.fgPercent,
+                                  statMaxValues.fgPercent,
+                                ),
+                              },
+                              {
+                                stat: "3PT%",
+                                value: normalizeStat(
+                                  selectedPlayer.stats.threePercent,
+                                  statMaxValues.threePercent,
+                                ),
+                              },
+                              {
+                                stat: "FT%",
+                                value: normalizeStat(
+                                  selectedPlayer.stats.ftPercent,
+                                  statMaxValues.ftPercent,
+                                ),
+                              },
+                            ]}
+                          >
+                            <PolarGrid stroke="rgba(255,255,255,0.2)" />
+                            <PolarAngleAxis
+                              dataKey="stat"
+                              tick={{
+                                fill: "white",
+                                fontSize: 10,
+                                fontFamily: "Michroma",
+                              }}
+                            />
+                            <PolarRadiusAxis
+                              domain={[0, 100]}
+                              tick={false}
+                              axisLine={false}
+                            />
+                            <Radar
+                              dataKey="value"
+                              stroke={teamColors[selectedPlayer.team]}
+                              strokeWidth={2}
+                              fill={teamColors[selectedPlayer.team]}
+                              fillOpacity={0.2}
+                              isAnimationActive={true}
+                              animationBegin={500}
+                              animationDuration={900}
+                              animationEasing="ease-out"
+                            />
+                          </RadarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
