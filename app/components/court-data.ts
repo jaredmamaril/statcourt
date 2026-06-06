@@ -354,6 +354,199 @@ export function normalizeStat(value: number, max: number) {
   return Math.min((value / max) * 100, 100);
 }
 
+// Get player insights based on their stats per game
+type Insight = { label: string; score: number };
+
+export function getPlayerInsights(player: Player): string[] {
+  const insights: Insight[] = [];
+
+  // Derived values
+  const scoringLoad =
+    player.stats.ppg / (player.stats.apg + player.stats.rpg + 1);
+  const isPreThreeEra = player.stats.threePercent < 10;
+
+  // Archetype rules
+  const isPrimaryScoringEngine = player.stats.ppg >= 24 && player.stats.apg < 6;
+  const isTwoWayThreat = player.stats.ppg >= 22 && player.stats.rpg >= 7;
+  const isFloorGeneral = player.stats.apg >= 8 && player.stats.fgPercent >= 48;
+  const isPaintDominator =
+    player.stats.rpg >= 10 && player.stats.fgPercent >= 52;
+  const isStretchBig = player.stats.rpg >= 8 && player.stats.threePercent >= 33;
+  const isTripleDoubleMachine =
+    player.stats.ppg >= 20 && player.stats.rpg >= 7 && player.stats.apg >= 7;
+  const isBalancedStar =
+    player.stats.ppg >= 18 &&
+    player.stats.rpg >= 5 &&
+    player.stats.apg >= 4 &&
+    player.stats.fgPercent >= 48 &&
+    player.stats.ftPercent >= 75;
+  const isVolumeScorer = player.stats.ppg >= 25 && player.stats.fgPercent < 46;
+  const isPostUpSpecialist =
+    player.stats.fgPercent >= 52 &&
+    player.stats.threePercent < 25 &&
+    player.stats.rpg >= 8;
+  const isPurePointGuard = player.stats.apg >= 8 && player.stats.ppg < 18;
+
+  if (isTripleDoubleMachine)
+    insights.push({ label: "Triple-Double Machine", score: 1.0 });
+  if (isPaintDominator)
+    insights.push({ label: "Paint Dominator", score: 0.97 });
+  if (isPrimaryScoringEngine)
+    insights.push({ label: "Primary Scoring Engine", score: 0.95 });
+  if (isTwoWayThreat) insights.push({ label: "Two-Way Threat", score: 0.93 });
+  if (isFloorGeneral) insights.push({ label: "Floor General", score: 0.92 });
+  if (isBalancedStar) insights.push({ label: "Balanced Star", score: 0.91 });
+  if (isPostUpSpecialist)
+    insights.push({ label: "Post-Up Specialist", score: 0.9 });
+  if (isStretchBig) insights.push({ label: "Stretch Big", score: 0.89 });
+  if (isVolumeScorer) insights.push({ label: "Volume Scorer", score: 0.88 });
+  if (isPurePointGuard)
+    insights.push({ label: "Pure Point Guard", score: 0.87 });
+  if (scoringLoad > 3.5)
+    insights.push({ label: "High-Usage Offensive Focus", score: 0.88 });
+  if (player.stats.ppg >= 24 && player.stats.fgPercent >= 44)
+    insights.push({ label: "Elite Shot Creator", score: 0.9 });
+  if (isPreThreeEra && player.stats.ppg >= 20)
+    insights.push({ label: "Pre-3PT Era Dominant Big", score: 0.86 });
+
+  // Position-aware rules
+  if (player.position === "C" || player.position === "PF") {
+    if (player.stats.apg >= 4)
+      insights.push({ label: "Passing Big", score: 0.85 });
+    if (player.stats.threePercent >= 35)
+      insights.push({ label: "Floor-Spacing Big", score: 0.84 });
+  }
+
+  if (player.position === "PG") {
+    if (player.stats.rpg >= 6)
+      insights.push({ label: "Rebounding Guard", score: 0.84 });
+    if (player.stats.ppg >= 22 && player.stats.apg >= 6)
+      insights.push({ label: "Scoring Point Guard", score: 0.86 });
+  }
+
+  if (player.position === "SG" || player.position === "SF") {
+    if (player.stats.apg >= 6 && player.stats.ppg >= 20)
+      insights.push({ label: "Wing Playmaker", score: 0.85 });
+    if (player.stats.rpg >= 8 && player.stats.ppg >= 20)
+      insights.push({ label: "Versatile Wing", score: 0.84 });
+  }
+
+  // Role player / lower tier rules
+  if (player.stats.ppg >= 15 && player.stats.ppg < 20)
+    insights.push({ label: "Consistent Contributor", score: 0.5 });
+  if (player.stats.ppg >= 10 && player.stats.ppg < 15)
+    insights.push({ label: "Reliable Role Player", score: 0.35 });
+  if (player.stats.rpg >= 6 && player.stats.rpg < 7)
+    insights.push({ label: "Active on the Boards", score: 0.4 });
+  if (player.stats.apg >= 4 && player.stats.apg < 5)
+    insights.push({ label: "Capable Ball Handler", score: 0.38 });
+  if (player.stats.fgPercent >= 48 && player.stats.fgPercent < 52)
+    insights.push({ label: "Solid Efficiency", score: 0.42 });
+  if (player.stats.threePercent >= 35 && player.stats.threePercent < 38)
+    insights.push({ label: "Reliable from Deep", score: 0.4 });
+  if (player.stats.ftPercent >= 80 && player.stats.ftPercent < 85)
+    insights.push({ label: "Steady at the Line", score: 0.38 });
+
+  // Stat-based strengths
+  if (player.stats.ppg >= 28)
+    insights.push({
+      label: "Generational Scorer",
+      score: normalizeStat(player.stats.ppg, statMaxValues.ppg),
+    });
+  else if (player.stats.ppg >= 25)
+    insights.push({
+      label: "Elite Scorer",
+      score: normalizeStat(player.stats.ppg, statMaxValues.ppg),
+    });
+  else if (player.stats.ppg >= 20)
+    insights.push({
+      label: "Reliable Offensive Threat",
+      score: normalizeStat(player.stats.ppg, statMaxValues.ppg),
+    });
+
+  if (player.stats.rpg >= 15)
+    insights.push({
+      label: "Historic Rebounding Presence",
+      score: normalizeStat(player.stats.rpg, statMaxValues.rpg),
+    });
+  else if (player.stats.rpg >= 10)
+    insights.push({
+      label: "Dominant Rebounder",
+      score: normalizeStat(player.stats.rpg, statMaxValues.rpg),
+    });
+  else if (player.stats.rpg >= 7)
+    insights.push({
+      label: "Strong Rebounding Impact",
+      score: normalizeStat(player.stats.rpg, statMaxValues.rpg),
+    });
+
+  if (player.stats.apg >= 10)
+    insights.push({
+      label: "Generational Playmaker",
+      score: normalizeStat(player.stats.apg, statMaxValues.apg),
+    });
+  else if (player.stats.apg >= 7)
+    insights.push({
+      label: "Elite Facilitator",
+      score: normalizeStat(player.stats.apg, statMaxValues.apg),
+    });
+  else if (player.stats.apg >= 5)
+    insights.push({
+      label: "Strong Playmaking Ability",
+      score: normalizeStat(player.stats.apg, statMaxValues.apg),
+    });
+
+  if (player.stats.fgPercent >= 57)
+    insights.push({
+      label: "Exceptional Efficiency",
+      score: normalizeStat(player.stats.fgPercent, statMaxValues.fgPercent),
+    });
+  else if (player.stats.fgPercent >= 52)
+    insights.push({
+      label: "Highly Efficient Scorer",
+      score: normalizeStat(player.stats.fgPercent, statMaxValues.fgPercent),
+    });
+
+  if (player.stats.threePercent >= 42)
+    insights.push({
+      label: "Elite Perimeter Shooter",
+      score: normalizeStat(
+        player.stats.threePercent,
+        statMaxValues.threePercent,
+      ),
+    });
+  else if (player.stats.threePercent >= 38)
+    insights.push({
+      label: "High-Level Shooter",
+      score: normalizeStat(
+        player.stats.threePercent,
+        statMaxValues.threePercent,
+      ),
+    });
+
+  if (player.stats.ftPercent >= 90)
+    insights.push({
+      label: "Automatic at the Line",
+      score: normalizeStat(player.stats.ftPercent, statMaxValues.ftPercent),
+    });
+  else if (player.stats.ftPercent >= 85)
+    insights.push({
+      label: "Elite Free Throw Shooter",
+      score: normalizeStat(player.stats.ftPercent, statMaxValues.ftPercent),
+    });
+
+  // Weakness labels
+  if (player.stats.ftPercent < 60)
+    insights.push({ label: "FT Liability", score: -0.1 });
+  if (player.stats.threePercent < 25 && !isPreThreeEra)
+    insights.push({ label: "Limited Range", score: -0.1 });
+
+  return insights
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 4)
+    .map((insight) => insight.label);
+}
+
 // Future: this type can be expanded to include more stats or player attributes as needed, and can be used to structure the data for the radar chart or other visualizations on the court page.
 export type RadarStatRow = {
   stat: string;
