@@ -10,6 +10,7 @@ import {
   normalizeStat,
   statMaxValues,
   getPlayerInsights,
+  getSimilarPlayers,
 } from "../components/court-data";
 import type {
   SortValue,
@@ -42,12 +43,14 @@ export default function Players() {
     "team" | "position" | "sort" | null
   >(null);
 
+  // State for front face and back face of card
   const [isCardFlipped, setIsCardFlipped] = useState(false);
   // Reset flip to front whenever the selected player changes
   useEffect(() => {
     setIsCardFlipped(false);
   }, [currentPlayer]);
 
+  // Back info delay to show up on screen
   const [showBackContent, setShowBackContent] = useState(false);
   useEffect(() => {
     if (isCardFlipped) {
@@ -115,6 +118,11 @@ export default function Players() {
   const playerInsights = selectedPlayer
     ? getPlayerInsights(selectedPlayer)
     : null;
+
+  // Get players similar to current player
+  const similarPlayers = selectedPlayer
+    ? getSimilarPlayers(selectedPlayer)
+    : [];
 
   // Function to toggle a player as a favorite, adding them to the favorites list if they're not already in it or removing them if they are
   const toggleFavorite = (playerName: string) => {
@@ -542,10 +550,26 @@ export default function Players() {
 
                 <div
                   key={selectedPlayer.id}
-                  className="relative w-full max-w-md min-h-144 overflow-hidden rounded-3xl cursor-pointer animate-[cardIn_750ms_ease-out]"
+                  className="relative w-full max-w-md min-h-144 overflow-hidden rounded-3xl animate-[cardIn_750ms_ease-out]"
                   style={{ perspective: "1000px" }}
-                  onClick={() => setIsCardFlipped((prev) => !prev)}
+                  onClick={(e) => {
+                    if (
+                      e.target instanceof HTMLElement &&
+                      e.target.closest("button")
+                    ) {
+                      return;
+                    }
+
+                    setIsCardFlipped((prev) => !prev);
+                  }}
                   onKeyDown={(e) => {
+                    if (
+                      e.target instanceof HTMLElement &&
+                      e.target.closest("button")
+                    ) {
+                      return;
+                    }
+
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
                       setIsCardFlipped((prev) => !prev);
@@ -560,7 +584,7 @@ export default function Players() {
                     className="relative w-full min-h-144"
                     style={{
                       transformStyle: "preserve-3d",
-                      transition: "transform 0.6s ease-out",
+                      transition: "transform 0.5s ease-out",
                       transform: isCardFlipped
                         ? "rotateY(180deg)"
                         : "rotateY(0deg)",
@@ -568,7 +592,11 @@ export default function Players() {
                   >
                     {/* Front face */}
                     <div
-                      className="absolute inset-0 min-h-144 border border-[#1bc2ec]/10 bg-black/30 p-6 rounded-3xl"
+                      className={`absolute inset-0 min-h-144 border border-[#1bc2ec]/10 bg-black/30 p-6 rounded-3xl ${
+                        isCardFlipped
+                          ? "pointer-events-none"
+                          : "pointer-events-auto"
+                      }`}
                       style={{ backfaceVisibility: "hidden" }}
                     >
                       {/* Team-colored card border */}
@@ -663,7 +691,11 @@ export default function Players() {
 
                     {/* Back face */}
                     <div
-                      className="absolute inset-0 min-h-144 rounded-3xl border bg-black/30"
+                      className={`absolute inset-0 min-h-144 rounded-3xl border bg-black/30 ${
+                        isCardFlipped
+                          ? "pointer-events-auto"
+                          : "pointer-events-none"
+                      }`}
                       style={{
                         backfaceVisibility: "hidden",
                         transform: "rotateY(180deg)",
@@ -701,11 +733,7 @@ export default function Players() {
 
                       {/* Player stats radar chart */}
                       {showBackContent && (
-                        <div
-                          className="relative z-10 w-full h-48 mt-2"
-                          onClick={(e) => e.stopPropagation()}
-                          onMouseDown={(e) => e.stopPropagation()}
-                        >
+                        <div className="relative z-10 w-full h-48 mt-2">
                           {/* Left side stats — FG%, 3PT%, FT% */}
                           <div className="absolute left-0 top-0 h-full flex flex-col justify-around py-2 z-10 ml-6">
                             <div className="flex flex-col items-start">
@@ -868,43 +896,75 @@ export default function Players() {
                         </div>
                       )}
 
-                      {/* Player insights */}
-                      {playerInsights && (
-                        <div className="mt-4 ml-4 flex w-fit flex-col items-center gap-1">
-                          <span className="font-michroma text-[10px] uppercase tracking-wide text-white">
-                            Insights
-                          </span>
-                          {/* Core label */}
-                          {playerInsights.archetype && (
-                            <div
-                              className="w-fit rounded border px-2 py-1 font-michroma text-[11px] font-bold uppercase tracking-wide text-[#EFBF04]"
-                              style={{
-                                borderColor: "EFBF04",
-                                backgroundColor: "#EFBF0499",
-                              }}
-                            >
-                              {playerInsights.archetype}
-                            </div>
-                          )}
+                      <div className="mt-4 flex items-start justify-center gap-10">
+                        {/* Insights */}
+                        {playerInsights && (
+                          <div className="flex w-fit flex-col items-center gap-1">
+                            <span className="font-michroma text-[10px] uppercase tracking-wide text-white">
+                              Insights
+                            </span>
 
-                          {/* Supporting labels and bonus labels */}
-                          <div className="flex flex-col items-center gap-1">
-                            {playerInsights.traits.map((trait) => (
-                              <span
-                                key={trait}
-                                className="w-fit rounded border px-1.5 py-0.5 font-michroma text-[10px] font-semibold text-white/95"
+                            {playerInsights.archetype && (
+                              <div
+                                className="w-fit rounded border px-2 py-1 font-michroma text-[11px] font-bold uppercase tracking-wide text-[#EFBF04]"
                                 style={{
-                                  borderColor: teamColors[selectedPlayer.team],
-                                  backgroundColor: `${teamColors[selectedPlayer.team]}45`,
-                                  textShadow: "0 1px 2px rgba(0,0,0,0.75)",
+                                  borderColor: "#EFBF04",
+                                  backgroundColor: "#EFBF0499",
                                 }}
                               >
-                                {trait}
-                              </span>
+                                {playerInsights.archetype}
+                              </div>
+                            )}
+
+                            <div className="flex flex-col items-center gap-1">
+                              {playerInsights.traits.map((trait) => (
+                                <span
+                                  key={trait}
+                                  className="w-fit rounded border px-1.5 py-0.5 font-michroma text-[10px] font-semibold text-white/95"
+                                  style={{
+                                    borderColor:
+                                      teamColors[selectedPlayer.team],
+                                    backgroundColor: `${teamColors[selectedPlayer.team]}45`,
+                                    textShadow: "0 1px 2px rgba(0,0,0,0.75)",
+                                  }}
+                                >
+                                  {trait}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Similar To */}
+                        <div className="relative z-30 flex w-fit flex-col items-center gap-1">
+                          <span className="font-michroma text-[10px] uppercase tracking-wide text-white/50">
+                            Similar To
+                          </span>
+
+                          <div className="flex flex-col items-center gap-1">
+                            {similarPlayers.map((player) => (
+                              <button
+                                key={player.id}
+                                type="button"
+                                onPointerDown={(e) => {
+                                  e.stopPropagation();
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setCurrentPlayer(player.name);
+                                }}
+                                className="cursor-pointer w-fit rounded border px-1.5 py-0.5 font-michroma text-[10px] font-semibold text-white/50 transition-all duration-150 hover:brightness-250"
+                                style={{
+                                  borderColor: `${teamColors[player.team]}30`,
+                                  backgroundColor: `${teamColors[player.team]}30`,
+                                }}
+                              >
+                                {player.name}
+                              </button>
                             ))}
                           </div>
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
                 </div>
