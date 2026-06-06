@@ -590,7 +590,45 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
   };
 }
 
+// Function to weigh positions differently, so players in similar positions get matched evenly and display more accurate similarities on function getSimilarPlayers
+function getPositionWeights(position: Position): Record<StatKey, number> {
+  if (position === "PG") {
+    return {
+      ppg: 1.2,
+      rpg: 0.7,
+      apg: 1.6,
+      fgPercent: 0.8,
+      threePercent: 1.3,
+      ftPercent: 0.6,
+    };
+  }
+
+  if (position === "SG" || position === "SF") {
+    return {
+      ppg: 1.5,
+      rpg: 1.0,
+      apg: 1.0,
+      fgPercent: 0.9,
+      threePercent: 1.2,
+      ftPercent: 0.7,
+    };
+  }
+
+  // PF, C
+  return {
+    ppg: 1.0,
+    rpg: 1.6,
+    apg: 0.8,
+    fgPercent: 1.4,
+    threePercent: 0.6,
+    ftPercent: 0.6,
+  };
+}
+
+// Function to display players similar to current player on card (max 3 players)
 export function getSimilarPlayers(player: Player, limit = 3): Player[] {
+  const weights = getPositionWeights(player.position);
+
   return players
     .filter((otherPlayer) => otherPlayer.id !== player.id)
     .map((otherPlayer) => {
@@ -598,30 +636,36 @@ export function getSimilarPlayers(player: Player, limit = 3): Player[] {
         Math.abs(
           normalizeStat(player.stats.ppg, statMaxValues.ppg) -
             normalizeStat(otherPlayer.stats.ppg, statMaxValues.ppg),
-        ) +
+        ) *
+          weights.ppg +
         Math.abs(
           normalizeStat(player.stats.rpg, statMaxValues.rpg) -
             normalizeStat(otherPlayer.stats.rpg, statMaxValues.rpg),
-        ) +
+        ) *
+          weights.rpg +
         Math.abs(
           normalizeStat(player.stats.apg, statMaxValues.apg) -
             normalizeStat(otherPlayer.stats.apg, statMaxValues.apg),
-        ) +
+        ) *
+          weights.apg +
         Math.abs(
           normalizeStat(player.stats.fgPercent, statMaxValues.fgPercent) -
             normalizeStat(otherPlayer.stats.fgPercent, statMaxValues.fgPercent),
-        ) +
+        ) *
+          weights.fgPercent +
         Math.abs(
           normalizeStat(player.stats.threePercent, statMaxValues.threePercent) -
             normalizeStat(
               otherPlayer.stats.threePercent,
               statMaxValues.threePercent,
             ),
-        ) +
+        ) *
+          weights.threePercent +
         Math.abs(
           normalizeStat(player.stats.ftPercent, statMaxValues.ftPercent) -
             normalizeStat(otherPlayer.stats.ftPercent, statMaxValues.ftPercent),
-        );
+        ) *
+          weights.ftPercent;
 
       return {
         player: otherPlayer,
