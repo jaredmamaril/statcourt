@@ -590,7 +590,51 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
   };
 }
 
+export function getSimilarPlayers(player: Player, limit = 3): Player[] {
+  return players
+    .filter((otherPlayer) => otherPlayer.id !== player.id)
+    .map((otherPlayer) => {
+      const statDifference =
+        Math.abs(
+          normalizeStat(player.stats.ppg, statMaxValues.ppg) -
+            normalizeStat(otherPlayer.stats.ppg, statMaxValues.ppg),
+        ) +
+        Math.abs(
+          normalizeStat(player.stats.rpg, statMaxValues.rpg) -
+            normalizeStat(otherPlayer.stats.rpg, statMaxValues.rpg),
+        ) +
+        Math.abs(
+          normalizeStat(player.stats.apg, statMaxValues.apg) -
+            normalizeStat(otherPlayer.stats.apg, statMaxValues.apg),
+        ) +
+        Math.abs(
+          normalizeStat(player.stats.fgPercent, statMaxValues.fgPercent) -
+            normalizeStat(otherPlayer.stats.fgPercent, statMaxValues.fgPercent),
+        ) +
+        Math.abs(
+          normalizeStat(player.stats.threePercent, statMaxValues.threePercent) -
+            normalizeStat(
+              otherPlayer.stats.threePercent,
+              statMaxValues.threePercent,
+            ),
+        ) +
+        Math.abs(
+          normalizeStat(player.stats.ftPercent, statMaxValues.ftPercent) -
+            normalizeStat(otherPlayer.stats.ftPercent, statMaxValues.ftPercent),
+        );
+
+      return {
+        player: otherPlayer,
+        statDifference,
+      };
+    })
+    .sort((a, b) => a.statDifference - b.statDifference)
+    .slice(0, limit)
+    .map((result) => result.player);
+}
+
 // Future: this type can be expanded to include more stats or player attributes as needed, and can be used to structure the data for the radar chart or other visualizations on the court page.
+// Labels for the radar display
 export type RadarStatRow = {
   stat: string;
   playerOne: number;
