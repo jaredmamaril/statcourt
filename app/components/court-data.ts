@@ -729,7 +729,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
 
   if (player.stats.apg >= 10)
     addInsight(
-      "Generational Playmaker",
+      "Generational Creator",
       normalizeStat(player.stats.apg, statMaxValues.apg),
       "core",
       "gold",
@@ -737,7 +737,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
     );
   else if (player.stats.apg >= 7)
     addInsight(
-      "Elite Facilitator",
+      "Elite Playmaker",
       normalizeStat(player.stats.apg, statMaxValues.apg),
       "supporting",
       "blue",
