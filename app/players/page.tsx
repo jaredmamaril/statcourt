@@ -147,11 +147,28 @@ export default function Players() {
       };
     }
 
+    if (insight.rarity === "red") {
+      return {
+        borderColor: "#EF4444",
+        backgroundColor: "#EF444455",
+        color: "#FECACA",
+      };
+    }
+
     return {
       borderColor: "#94A3B8",
       backgroundColor: "#94A3B840",
       color: "#E2E8F0",
     };
+  }
+
+  // Use rarities as labels
+  function getInsightRarityLabel(rarity: PlayerInsightDisplay["rarity"]) {
+    if (rarity === "gold") return "Generational";
+    if (rarity === "purple") return "Historic";
+    if (rarity === "blue") return "Elite";
+    if (rarity === "red") return "Weakness";
+    return "Basic";
   }
 
   // Get players similar to current player
@@ -949,7 +966,7 @@ export default function Players() {
                             </span>
                             {/* Player archetype */}
                             {playerInsights.archetype && (
-                              <div className="group relative z-[100] w-fit">
+                              <div className="group relative z-100 w-fit">
                                 <div
                                   className="w-fit rounded border px-2 py-1 font-michroma text-[11px] font-bold uppercase tracking-wide"
                                   style={{
@@ -961,12 +978,15 @@ export default function Players() {
                                   {playerInsights.archetype.label}
                                 </div>
 
-                                <div className="pointer-events-none absolute left-1/2 top-full z-[999] mt-2 w-56 -translate-x-1/2 rounded-md border border-[#1ab2ec]/50 bg-black/90 p-2 text-center opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                                <div className="pointer-events-none absolute left-1/2 top-full z-999 mt-2 w-56 -translate-x-1/2 rounded-md border border-[#1ab2ec]/50 bg-black/90 p-2 text-center opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                                   <p className="font-michroma text-[10px] font-bold text-white/80">
                                     {playerInsights.archetype.label}
                                   </p>
-                                  <p className="mt-1 font-michroma text-[9px] text-white/60 uppercase">
-                                    Tier: {playerInsights.archetype.rarity}
+                                  <p className="mt-1 font-michroma text-[9px] text-white/60">
+                                    Tier:{" "}
+                                    {getInsightRarityLabel(
+                                      playerInsights.archetype.rarity,
+                                    )}
                                   </p>
                                   <p className="mt-1 font-michroma text-[9px] text-white/80">
                                     {playerInsights.archetype.description}
@@ -983,7 +1003,7 @@ export default function Players() {
                               {playerInsights.traits.map((trait) => (
                                 <span
                                   key={trait.label}
-                                  className="group relative z-[90] w-fit hover:z-[100]"
+                                  className="group relative z-90 w-fit hover:z-100"
                                 >
                                   <span
                                     className="block w-fit rounded border px-1.5 py-0.5 font-michroma text-[10px]"
@@ -994,12 +1014,13 @@ export default function Players() {
                                     {trait.label}
                                   </span>
 
-                                  <span className="pointer-events-none absolute top-full left-1/2 z-[999] mt-2 w-56 -translate-x-1/2 rounded-md border border-[#1ab2ec]/50 bg-black/90 p-2 text-center opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                                  <span className="pointer-events-none absolute top-full left-1/2 z-999 mt-2 w-56 -translate-x-1/2 rounded-md border border-[#1ab2ec]/50 bg-black/90 p-2 text-center opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                                     <span className="block font-michroma text-[10px] font-bold text-white/80">
                                       {trait.label}
                                     </span>
-                                    <span className="mt-1 block font-michroma text-[9px] text-white/60 uppercase">
-                                      Tier: {trait.rarity}
+                                    <span className="mt-1 block font-michroma text-[9px] text-white/60">
+                                      Tier:{" "}
+                                      {getInsightRarityLabel(trait.rarity)}
                                     </span>
                                     <span className="mt-1 block font-michroma text-[9px] text-white/80">
                                       {trait.description}
