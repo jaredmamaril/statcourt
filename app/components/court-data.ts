@@ -1046,3 +1046,9 @@ export const sortOptions: { label: string; value: SortValue }[] = [
   { label: "3 Point %", value: "threePercent" },
   { label: "Free Throw %", value: "ftPercent" },
 ];
+
+// Slots of player currently being compared on court page
+export type CompareSlots = {
+  left: string;
+  right: string;
+};
