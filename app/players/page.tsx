@@ -968,7 +968,7 @@ export default function Players() {
                             {playerInsights.archetype && (
                               <div className="group relative z-100 w-fit">
                                 <div
-                                  className="w-fit rounded border px-2 py-1 font-michroma text-[11px] font-bold uppercase tracking-wide"
+                                  className="w-fit rounded border px-2 py-1 font-michroma text-[10px] font-bold uppercase tracking-wide ml-2 text-center"
                                   style={{
                                     ...getInsightRarityStyles(
                                       playerInsights.archetype,
@@ -1053,14 +1053,16 @@ export default function Players() {
                                   e.stopPropagation();
                                   setCurrentPlayer(player.name);
                                 }}
-                                className="cursor-pointer w-fit rounded border px-1.5 py-0.5 font-michroma text-[10.5px] text-white transition-all duration-150 hover:brightness-150"
+                                className="flex w-44 cursor-pointer items-center justify-between gap-3 rounded border px-2 py-1 font-michroma text-[10px] text-white/70 transition-all duration-150 hover:brightness-150 mr-2"
                                 style={{
                                   borderColor: `${teamColors[player.team]}`,
                                   backgroundColor: `${teamColors[player.team]}80`,
                                 }}
                               >
-                                <span>{player.name}</span>
-                                <span className="ml-2 text-white/60">
+                                <span className="min-w-0 flex-1 truncate text-left">
+                                  {player.name}
+                                </span>
+                                <span className="shrink-0 text-white/60">
                                   {matchScore}%
                                 </span>
                               </button>
