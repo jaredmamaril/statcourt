@@ -28,6 +28,7 @@ import {
 } from "recharts";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Players() {
   // State for filters and dropdowns
@@ -186,6 +187,9 @@ export default function Players() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // router to travel to court page
+  const router = useRouter();
 
   return (
     <main className="min-h-screen overflow-hidden text-white overflow-y-auto">
@@ -942,7 +946,7 @@ export default function Players() {
                           </span>
 
                           <div className="flex flex-col items-center gap-1">
-                            {similarPlayers.map((player) => (
+                            {similarPlayers.map(({ player, matchScore }) => (
                               <button
                                 key={player.id}
                                 type="button"
@@ -959,12 +963,30 @@ export default function Players() {
                                   backgroundColor: `${teamColors[player.team]}30`,
                                 }}
                               >
-                                {player.name}
+                                <span>{player.name}</span>
+                                <span className="ml-2 text-white/60">
+                                  {matchScore}%
+                                </span>
                               </button>
                             ))}
                           </div>
                         </div>
                       </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(
+                            `/court?left=${encodeURIComponent(selectedPlayer.name)}`,
+                          );
+                        }}
+                        className="absolute w-88 bottom-4 left-1/2 z-40 -translate-x-1/2 rounded-md border bg-black/60 px-4 py-2 font-michroma text-lg uppercase tracking-wide text-white backdrop-blur-sm transition-all duration-200 hover:brightness-250 cursor-pointer"
+                        style={{
+                          borderColor: teamColors[selectedPlayer.team],
+                        }}
+                      >
+                        Add to Compare
+                      </button>
                     </div>
                   </div>
                 </div>
