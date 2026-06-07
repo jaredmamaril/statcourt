@@ -17,6 +17,7 @@ import type {
   Team,
   Position,
   SortDirection,
+  PlayerInsightDisplay,
 } from "../components/court-data";
 import {
   PolarAngleAxis,
@@ -119,6 +120,39 @@ export default function Players() {
   const playerInsights = selectedPlayer
     ? getPlayerInsights(selectedPlayer)
     : null;
+
+  // Get trait rarity
+  function getInsightRarityStyles(insight: PlayerInsightDisplay) {
+    if (insight.rarity === "gold") {
+      return {
+        borderColor: "#EFBF04",
+        backgroundColor: "#EFBF0499",
+        color: "#FFE88A",
+      };
+    }
+
+    if (insight.rarity === "purple") {
+      return {
+        borderColor: "#A855F7",
+        backgroundColor: "#A855F766",
+        color: "#E9D5FF",
+      };
+    }
+
+    if (insight.rarity === "blue") {
+      return {
+        borderColor: "#38BDF8",
+        backgroundColor: "#38BDF866",
+        color: "#E0F2FE",
+      };
+    }
+
+    return {
+      borderColor: "#94A3B8",
+      backgroundColor: "#94A3B840",
+      color: "#E2E8F0",
+    };
+  }
 
   // Get players similar to current player
   const similarPlayers = selectedPlayer
@@ -908,31 +942,31 @@ export default function Players() {
                               Insights
                             </span>
 
+                            {/* Player archetype */}
                             {playerInsights.archetype && (
                               <div
-                                className="w-fit rounded border px-2 py-1 font-michroma text-[11px] font-bold uppercase tracking-wide text-[#EFBF04]"
+                                className="w-fit rounded border px-2 py-1 font-michroma text-[11px] font-bold uppercase tracking-wide"
                                 style={{
-                                  borderColor: "#EFBF04",
-                                  backgroundColor: "#EFBF0499",
+                                  ...getInsightRarityStyles(
+                                    playerInsights.archetype,
+                                  ),
                                 }}
                               >
-                                {playerInsights.archetype}
+                                {playerInsights.archetype.label}
                               </div>
                             )}
 
+                            {/* Player traits */}
                             <div className="flex flex-col items-center gap-1">
                               {playerInsights.traits.map((trait) => (
                                 <span
-                                  key={trait}
-                                  className="w-fit rounded border px-1.5 py-0.5 font-michroma text-[10px] font-semibold text-white/95"
+                                  key={trait.label}
+                                  className="w-fit rounded border px-1.5 py-0.5 font-michroma text-[10px]"
                                   style={{
-                                    borderColor:
-                                      teamColors[selectedPlayer.team],
-                                    backgroundColor: `${teamColors[selectedPlayer.team]}45`,
-                                    textShadow: "0 1px 2px rgba(0,0,0,0.75)",
+                                    ...getInsightRarityStyles(trait),
                                   }}
                                 >
-                                  {trait}
+                                  {trait.label}
                                 </span>
                               ))}
                             </div>
@@ -957,7 +991,7 @@ export default function Players() {
                                   e.stopPropagation();
                                   setCurrentPlayer(player.name);
                                 }}
-                                className="cursor-pointer w-fit rounded border px-1.5 py-0.5 font-michroma text-[10px] font-semibold text-white/50 transition-all duration-150 hover:brightness-250"
+                                className="cursor-pointer w-fit rounded border px-1.5 py-0.5 font-michroma text-[10.5px] text-white/50 transition-all duration-150 hover:brightness-250"
                                 style={{
                                   borderColor: `${teamColors[player.team]}30`,
                                   backgroundColor: `${teamColors[player.team]}30`,
@@ -972,6 +1006,8 @@ export default function Players() {
                           </div>
                         </div>
                       </div>
+
+                      {/* Send to court page to compare with other player(s) button */}
                       <button
                         type="button"
                         onClick={(e) => {
