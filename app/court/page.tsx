@@ -6,7 +6,7 @@ import {
   normalizeStat,
   teamColors,
 } from "../components/court-data";
-import { RadarStatRow } from "../components/court-data";
+import type { RadarStatRow, CompareSlots } from "../components/court-data";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import {
@@ -20,20 +20,49 @@ import {
 } from "recharts";
 import type { TooltipContentProps } from "recharts";
 
+function getSavedCompareSlots(): CompareSlots {
+  if (typeof window === "undefined") {
+    return { left: "", right: "" };
+  }
+
+  const savedSlots = localStorage.getItem("statcourt-compare-slots");
+
+  if (!savedSlots) {
+    return { left: "", right: "" };
+  }
+
+  return JSON.parse(savedSlots) as CompareSlots;
+}
+
 export default function Court() {
   // State for left player selection
-  const [leftPlayer, setLeftPlayer] = useState("");
+  const [leftPlayer, setLeftPlayer] = useState(
+    () => getSavedCompareSlots().left,
+  );
   const [isLeftDropdownOpen, setIsLeftDropdownOpen] = useState(false);
   const selectedLeftPlayer = players.find(
     (player) => player.name === leftPlayer,
   );
 
   // State for right player selection
-  const [rightPlayer, setRightPlayer] = useState("");
+  const [rightPlayer, setRightPlayer] = useState(
+    () => getSavedCompareSlots().right,
+  );
   const [isRightDropdownOpen, setIsRightDropdownOpen] = useState(false);
   const selectedRightPlayer = players.find(
     (player) => player.name === rightPlayer,
   );
+
+  // Makes court page save who was on page
+  useEffect(() => {
+    localStorage.setItem(
+      "statcourt-compare-slots",
+      JSON.stringify({
+        left: leftPlayer,
+        right: rightPlayer,
+      }),
+    );
+  }, [leftPlayer, rightPlayer]);
 
   // Prepare radar chart data
   const radarData: RadarStatRow[] = [
@@ -206,7 +235,7 @@ export default function Court() {
     <main className="min-h-screen overflow-hidden bg-[#07111f] text-white">
       <section className="relative flex min-h-screen overflow-hidden items-center justify-between bg-[url('/court.svg')] bg-cover bg-center bg-no-repeat px-6 sm:px-10">
         {/* Left player selection */}
-        <div className="pointer-events-none absolute left-0 top-0 z-10 flex h-full w-1/2 justify-start pl-3 pt-20">
+        <div className="pointer-events-none absolute left-0 top-0 z-10 flex h-full w-1/2 justify-start pl-3 pt-20 animate-[courtLeftIn_600ms_ease-out_both]">
           <div className="pointer-events-auto flex flex-col items-center">
             {/* Heading for player selection */}
             <h1 className="font-michroma text-xl text-white font-bold">
@@ -292,60 +321,64 @@ export default function Court() {
         </div>
 
         {/* Radar chart container, centered on the court background */}
-        <div className="absolute left-1/2 top-1/2 z-20 flex h-120 w-130 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 backdrop">
-          {/* Responsive container for the radar chart, ensuring it scales properly within the available space */}
-          <ResponsiveContainer width="100%" height="100%">
-            {/* Main radar chart component */}
-            <RadarChart data={radarData}>
-              {/* Grid lines */}
-              <PolarGrid stroke="rgba(255,255,255,0.25)" />
-              {/* Stat labels */}
-              <PolarAngleAxis
-                dataKey="stat"
-                tick={{ fill: "white", fontSize: 14, fontFamily: "Michroma" }}
-              />
-              {/* Radial axis, hidden for cleaner look */}
-              <PolarRadiusAxis
-                angle={90}
-                domain={[0, 100]}
-                tick={false}
-                axisLine={false}
-              />
-              {/* Custom tooltip for displaying actual stat values on hover */}
-              <Tooltip content={customTooltip} />
-              {/* Radar area for left player */}
-              <Radar
-                name={
-                  selectedLeftPlayer ? selectedLeftPlayer.name : "Player One"
-                }
-                dataKey="playerOne"
-                stroke="#F4BB44"
-                strokeWidth={2}
-                fill="#F4BB44"
-                fillOpacity={0.14}
-                isAnimationActive={true}
-                animationDuration={900}
-                animationEasing="ease-out"
-              />
-              {/* Radar area for right player */}
-              <Radar
-                name={
-                  selectedRightPlayer ? selectedRightPlayer.name : "Player Two"
-                }
-                dataKey="playerTwo"
-                stroke="#347A99"
-                strokeWidth={2}
-                fill="#347A99"
-                fillOpacity={0.22}
-                isAnimationActive={true}
-                animationDuration={900}
-                animationEasing="ease-out"
-              />
-            </RadarChart>
-          </ResponsiveContainer>
+        <div className="absolute left-1/2 top-1/2 z-20 h-120 w-130 -translate-x-1/2 -translate-y-1/2">
+          <div className="flex h-full w-full items-center justify-center rounded-full bg-black/40 backdrop animate-[courtRadarIn_700ms_ease-out_150ms_both]">
+            {/* Responsive container for the radar chart, ensuring it scales properly within the available space */}
+            <ResponsiveContainer width="100%" height="100%">
+              {/* Main radar chart component */}
+              <RadarChart data={radarData}>
+                {/* Grid lines */}
+                <PolarGrid stroke="rgba(255,255,255,0.25)" />
+                {/* Stat labels */}
+                <PolarAngleAxis
+                  dataKey="stat"
+                  tick={{ fill: "white", fontSize: 14, fontFamily: "Michroma" }}
+                />
+                {/* Radial axis, hidden for cleaner look */}
+                <PolarRadiusAxis
+                  angle={90}
+                  domain={[0, 100]}
+                  tick={false}
+                  axisLine={false}
+                />
+                {/* Custom tooltip for displaying actual stat values on hover */}
+                <Tooltip content={customTooltip} />
+                {/* Radar area for left player */}
+                <Radar
+                  name={
+                    selectedLeftPlayer ? selectedLeftPlayer.name : "Player One"
+                  }
+                  dataKey="playerOne"
+                  stroke="#F4BB44"
+                  strokeWidth={2}
+                  fill="#F4BB44"
+                  fillOpacity={0.14}
+                  isAnimationActive={true}
+                  animationDuration={900}
+                  animationEasing="ease-out"
+                />
+                {/* Radar area for right player */}
+                <Radar
+                  name={
+                    selectedRightPlayer
+                      ? selectedRightPlayer.name
+                      : "Player Two"
+                  }
+                  dataKey="playerTwo"
+                  stroke="#347A99"
+                  strokeWidth={2}
+                  fill="#347A99"
+                  fillOpacity={0.22}
+                  isAnimationActive={true}
+                  animationDuration={900}
+                  animationEasing="ease-out"
+                />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
         {/* Right player selection */}
-        <div className="pointer-events-none absolute right-0 top-0 z-10 flex h-full w-1/2 justify-end pr-3 pt-20">
+        <div className="pointer-events-none absolute right-0 top-0 z-10 flex h-full w-1/2 justify-end pr-3 pt-20 animate-[courtRightIn_600ms_ease-out_both]">
           <div className="pointer-events-auto flex flex-col items-center">
             {/* Heading for player selection */}
             <h1 className="font-michroma text-xl font-bold text-white">
