@@ -405,6 +405,8 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
     player.stats.rpg >= 10 &&
     player.stats.fgPercent >= 50 &&
     player.stats.threePercent < 25;
+  const isGenerationalShooter =
+    player.stats.threePercent >= 42 && player.stats.ppg >= 20;
 
   if (isTripleDoubleMachine) addInsight("Triple-Double Machine", 1.0, "core");
   if (isPaintDominator) addInsight("Paint Dominator", 0.97, "core");
@@ -418,6 +420,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
   if (isVolumeScorer) addInsight("Volume Scorer", 0.88, "core");
   if (isPurePointGuard) addInsight("Pure Point Guard", 0.87, "core");
   if (isInteriorAnchor) addInsight("Interior Anchor", 0.94, "core");
+  if (isGenerationalShooter) addInsight("Generational Shooter", 0.98, "core");
 
   if (scoringLoad > 3.5)
     addInsight("High-Usage Offensive Focus", 0.88, "supporting");
@@ -581,7 +584,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
   const traits = insights
     .filter((insight) => insight.label !== archetype?.label)
     .sort((a, b) => tierRank[b.tier] - tierRank[a.tier] || b.score - a.score)
-    .slice(0, 4)
+    .slice(0, 3)
     .map((insight) => insight.label);
 
   return {
@@ -625,14 +628,70 @@ function getPositionWeights(position: Position): Record<StatKey, number> {
   };
 }
 
+// Position similarity
+function getPositionSimilarity(
+  playerPosition: Position,
+  otherPosition: Position,
+) {
+  // Perfect match
+  if (playerPosition === otherPosition) {
+    return 100;
+  }
+
+  // Some match
+  const isGuardMatch =
+    (playerPosition === "PG" || playerPosition === "SG") &&
+    (otherPosition === "PG" || otherPosition === "SG");
+  const isWingMatch =
+    (playerPosition === "SG" || playerPosition === "SF") &&
+    (otherPosition === "SG" || otherPosition === "SF");
+  const isBigMatch =
+    (playerPosition === "PF" || playerPosition === "C") &&
+    (otherPosition === "PF" || otherPosition === "C");
+
+  if (isGuardMatch || isWingMatch || isBigMatch) {
+    return 75;
+  }
+
+  // No match
+  return 35;
+}
+
+// Archetype similarity
+function getArchetypeSimilarity(player: Player, otherPlayer: Player) {
+  const playerArchetype = getPlayerInsights(player).archetype;
+  const otherArchetype = getPlayerInsights(otherPlayer).archetype;
+
+  // If no archetypes
+  if (!playerArchetype || !otherArchetype) {
+    return 50;
+  }
+
+  // Same archetype = 100% match, else 40%
+  return playerArchetype === otherArchetype ? 100 : 40;
+}
+
+// Get confidence score of similar player match result
+export type SimilarPlayerResult = {
+  player: Player;
+  matchScore: number;
+};
+
 // Function to display players similar to current player on card (max 3 players)
-export function getSimilarPlayers(player: Player, limit = 3): Player[] {
+export function getSimilarPlayers(
+  player: Player,
+  limit = 3,
+): SimilarPlayerResult[] {
   const weights = getPositionWeights(player.position);
+  const totalWeight = Object.values(weights).reduce(
+    (total, weight) => total + weight,
+    0,
+  );
 
   return players
     .filter((otherPlayer) => otherPlayer.id !== player.id)
     .map((otherPlayer) => {
-      const statDifference =
+      const weightedDifference =
         Math.abs(
           normalizeStat(player.stats.ppg, statMaxValues.ppg) -
             normalizeStat(otherPlayer.stats.ppg, statMaxValues.ppg),
@@ -667,14 +726,27 @@ export function getSimilarPlayers(player: Player, limit = 3): Player[] {
         ) *
           weights.ftPercent;
 
+      const averageStatDifference = weightedDifference / totalWeight;
+      const statSimilarity = Math.max(0, 100 - averageStatDifference);
+      const positionSimilarity = getPositionSimilarity(
+        player.position,
+        otherPlayer.position,
+      );
+      const archetypeSimilarity = getArchetypeSimilarity(player, otherPlayer);
+
+      const matchScore = Math.round(
+        statSimilarity * 0.7 +
+          positionSimilarity * 0.2 +
+          archetypeSimilarity * 0.1,
+      );
+
       return {
         player: otherPlayer,
-        statDifference,
+        matchScore,
       };
     })
-    .sort((a, b) => a.statDifference - b.statDifference)
-    .slice(0, limit)
-    .map((result) => result.player);
+    .sort((a, b) => b.matchScore - a.matchScore)
+    .slice(0, limit);
 }
 
 // Future: this type can be expanded to include more stats or player attributes as needed, and can be used to structure the data for the radar chart or other visualizations on the court page.
