@@ -857,6 +857,8 @@ export default function Players() {
                               </span>
                             </div>
                           </div>
+
+                          {/* Radar chart */}
                           <ResponsiveContainer width="100%" height="100%">
                             <RadarChart
                               data={[
@@ -938,35 +940,71 @@ export default function Players() {
                         {/* Insights */}
                         {playerInsights && (
                           <div className="flex w-fit flex-col items-center gap-1">
-                            <span className="font-michroma text-[10px] uppercase tracking-wide text-white">
+                            <span className="font-michroma text-[14px] uppercase tracking-wide text-white">
                               Insights
                             </span>
 
+                            <span className="font-michroma text-[6px] uppercase tracking-wide text-white">
+                              Archetype
+                            </span>
                             {/* Player archetype */}
                             {playerInsights.archetype && (
-                              <div
-                                className="w-fit rounded border px-2 py-1 font-michroma text-[11px] font-bold uppercase tracking-wide"
-                                style={{
-                                  ...getInsightRarityStyles(
-                                    playerInsights.archetype,
-                                  ),
-                                }}
-                              >
-                                {playerInsights.archetype.label}
+                              <div className="group relative z-[100] w-fit">
+                                <div
+                                  className="w-fit rounded border px-2 py-1 font-michroma text-[11px] font-bold uppercase tracking-wide"
+                                  style={{
+                                    ...getInsightRarityStyles(
+                                      playerInsights.archetype,
+                                    ),
+                                  }}
+                                >
+                                  {playerInsights.archetype.label}
+                                </div>
+
+                                <div className="pointer-events-none absolute left-1/2 top-full z-[999] mt-2 w-56 -translate-x-1/2 rounded-md border border-[#1ab2ec]/50 bg-black/90 p-2 text-center opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                                  <p className="font-michroma text-[10px] font-bold text-white/80">
+                                    {playerInsights.archetype.label}
+                                  </p>
+                                  <p className="mt-1 font-michroma text-[9px] text-white/60 uppercase">
+                                    Tier: {playerInsights.archetype.rarity}
+                                  </p>
+                                  <p className="mt-1 font-michroma text-[9px] text-white/80">
+                                    {playerInsights.archetype.description}
+                                  </p>
+                                </div>
                               </div>
                             )}
 
+                            <span className="font-michroma text-[6px] uppercase tracking-wide text-white">
+                              Traits
+                            </span>
                             {/* Player traits */}
                             <div className="flex flex-col items-center gap-1">
                               {playerInsights.traits.map((trait) => (
                                 <span
                                   key={trait.label}
-                                  className="w-fit rounded border px-1.5 py-0.5 font-michroma text-[10px]"
-                                  style={{
-                                    ...getInsightRarityStyles(trait),
-                                  }}
+                                  className="group relative z-[90] w-fit hover:z-[100]"
                                 >
-                                  {trait.label}
+                                  <span
+                                    className="block w-fit rounded border px-1.5 py-0.5 font-michroma text-[10px]"
+                                    style={{
+                                      ...getInsightRarityStyles(trait),
+                                    }}
+                                  >
+                                    {trait.label}
+                                  </span>
+
+                                  <span className="pointer-events-none absolute top-full left-1/2 z-[999] mt-2 w-56 -translate-x-1/2 rounded-md border border-[#1ab2ec]/50 bg-black/90 p-2 text-center opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                                    <span className="block font-michroma text-[10px] font-bold text-white/80">
+                                      {trait.label}
+                                    </span>
+                                    <span className="mt-1 block font-michroma text-[9px] text-white/60 uppercase">
+                                      Tier: {trait.rarity}
+                                    </span>
+                                    <span className="mt-1 block font-michroma text-[9px] text-white/80">
+                                      {trait.description}
+                                    </span>
+                                  </span>
                                 </span>
                               ))}
                             </div>
@@ -975,8 +1013,11 @@ export default function Players() {
 
                         {/* Similar To */}
                         <div className="relative z-30 flex w-fit flex-col items-center gap-1">
-                          <span className="font-michroma text-[10px] uppercase tracking-wide text-white/50">
+                          <span className="font-michroma text-[14px] uppercase tracking-wide text-white/50">
                             Similar To
+                          </span>
+                          <span className="font-michroma text-[6px] text-white/50 -mt-1">
+                            by Career Statistical Match
                           </span>
 
                           <div className="flex flex-col items-center gap-1">
@@ -991,10 +1032,10 @@ export default function Players() {
                                   e.stopPropagation();
                                   setCurrentPlayer(player.name);
                                 }}
-                                className="cursor-pointer w-fit rounded border px-1.5 py-0.5 font-michroma text-[10.5px] text-white/50 transition-all duration-150 hover:brightness-250"
+                                className="cursor-pointer w-fit rounded border px-1.5 py-0.5 font-michroma text-[10.5px] text-white transition-all duration-150 hover:brightness-150"
                                 style={{
-                                  borderColor: `${teamColors[player.team]}30`,
-                                  backgroundColor: `${teamColors[player.team]}30`,
+                                  borderColor: `${teamColors[player.team]}`,
+                                  backgroundColor: `${teamColors[player.team]}80`,
                                 }}
                               >
                                 <span>{player.name}</span>
@@ -1016,7 +1057,7 @@ export default function Players() {
                             `/court?left=${encodeURIComponent(selectedPlayer.name)}`,
                           );
                         }}
-                        className="absolute w-88 bottom-4 left-1/2 z-40 -translate-x-1/2 rounded-md border bg-black/60 px-4 py-2 font-michroma text-lg uppercase tracking-wide text-white backdrop-blur-sm transition-all duration-200 hover:brightness-250 cursor-pointer"
+                        className="absolute w-88 bottom-4 left-1/2 z-30 -translate-x-1/2 rounded-md border bg-black/60 px-4 py-2 font-michroma text-lg uppercase tracking-wide text-white backdrop-blur-sm transition-all duration-200 hover:brightness-250 cursor-pointer"
                         style={{
                           borderColor: teamColors[selectedPlayer.team],
                         }}
