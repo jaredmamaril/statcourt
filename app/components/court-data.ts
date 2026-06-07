@@ -366,8 +366,9 @@ type InsightTier = "core" | "supporting" | "bonus" | "weakness";
  *  Gold = Generational / all-time
  *  Purple = Historic / rare dominance
  *  Blue = Elite / high-end star skill
- *  Gray = Strong / supporting / bonus / weakness */
-type InsightRarity = "gold" | "purple" | "blue" | "gray";
+ *  Gray = Strong / supporting / bonus
+ *  Red = weakness */
+type InsightRarity = "gold" | "purple" | "blue" | "gray" | "red";
 
 // Insight requirements
 type Insight = {
@@ -808,7 +809,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
       "FT Liability",
       -0.1,
       "weakness",
-      "gray",
+      "red",
       "Free-throw percentage is a notable weakness in this profile.",
     );
   if (player.stats.threePercent < 25 && !isPreThreeEra)
@@ -816,7 +817,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
       "Limited Range",
       -0.1,
       "weakness",
-      "gray",
+      "red",
       "Three-point shooting does not meaningfully stretch defenses.",
     );
 
