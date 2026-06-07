@@ -18,6 +18,7 @@ import type {
   Position,
   SortDirection,
   PlayerInsightDisplay,
+  CompareSlots,
 } from "../components/court-data";
 import {
   PolarAngleAxis,
@@ -47,22 +48,6 @@ export default function Players() {
 
   // State for front face and back face of card
   const [isCardFlipped, setIsCardFlipped] = useState(false);
-  // Reset flip to front whenever the selected player changes
-  useEffect(() => {
-    setIsCardFlipped(false);
-  }, [currentPlayer]);
-
-  // Back info delay to show up on screen
-  const [showBackContent, setShowBackContent] = useState(false);
-  useEffect(() => {
-    if (isCardFlipped) {
-      // Wait for flip animation to finish (0.01s) then trigger radar animation
-      const timer = setTimeout(() => setShowBackContent(true), 10);
-      return () => clearTimeout(timer);
-    } else {
-      setShowBackContent(false);
-    }
-  }, [isCardFlipped]);
 
   // Filter and sort players based on search input, favorites toggle, team and position filters, and sorting options
   const filteredPlayers = players
@@ -239,8 +224,42 @@ export default function Players() {
     };
   }, []);
 
-  // router to travel to court page
+  // Router to travel to court page
   const router = useRouter();
+
+  // Current players being compared on court
+  function getSavedCompareSlots(): CompareSlots {
+    if (typeof window === "undefined") return { left: "", right: "" };
+
+    const savedSlots = localStorage.getItem("statcourt-compare-slots");
+
+    if (!savedSlots) return { left: "", right: "" };
+
+    return JSON.parse(savedSlots) as CompareSlots;
+  }
+
+  // State for player being sent to court page
+  const [isGoingToCourt, setIsGoingToCourt] = useState(false);
+  // State of who is currently being compared
+  const [compareSlots, setCompareSlots] =
+    useState<CompareSlots>(getSavedCompareSlots);
+  function addPlayerToCompare(slot: "left" | "right") {
+    if (!selectedPlayer) return;
+
+    const nextSlots = {
+      ...compareSlots,
+      [slot]: selectedPlayer.name,
+    };
+
+    setCompareSlots(nextSlots);
+    localStorage.setItem("statcourt-compare-slots", JSON.stringify(nextSlots));
+
+    setIsGoingToCourt(true);
+
+    setTimeout(() => {
+      router.push("/court");
+    }, 450);
+  }
 
   return (
     <main className="min-h-screen overflow-hidden text-white overflow-y-auto">
@@ -256,8 +275,8 @@ export default function Players() {
           <div
             className={
               selectedPlayer
-                ? "relative w-full transition-all duration-1000 ease-out opacity-10 lg:-translate-x-1/6"
-                : "relative w-full transition-all duration-1000 ease-out opacity-100 translate-x-0"
+                ? "relative w-full transition-all duration-500 ease-out opacity-10 lg:-translate-x-1/6"
+                : "relative w-full transition-all duration-500 ease-out opacity-100 translate-x-0"
             }
           >
             {/* Header section */}
@@ -545,6 +564,7 @@ export default function Players() {
                             setCurrentPlayer(
                               currentPlayer === player.name ? "" : player.name,
                             );
+                            setIsCardFlipped(false);
                           }}
                           className="flex min-w-0 flex-1 cursor-pointer px-1 py-3.5 text-left font-michroma text-xs"
                         >
@@ -597,7 +617,10 @@ export default function Players() {
                 {/* Back button */}
                 <button
                   type="button"
-                  onClick={() => setCurrentPlayer("")}
+                  onClick={() => {
+                    setCurrentPlayer("");
+                    setIsCardFlipped(false);
+                  }}
                   className="flex items-center gap-1 font-michroma text-xs text-white/50 hover:text-white transition-colors duration-200 cursor-pointer"
                 >
                   ← Back
@@ -605,7 +628,11 @@ export default function Players() {
 
                 <div
                   key={selectedPlayer.id}
-                  className="relative w-full max-w-md min-h-144 overflow-hidden rounded-3xl animate-[cardIn_750ms_ease-out]"
+                  className={`relative w-full max-w-md min-h-144 overflow-hidden rounded-3xl animate-[cardIn_500ms_ease-out] transition-all duration-500 ${
+                    isGoingToCourt
+                      ? "scale-90 translate-y-20 opacity-0"
+                      : "scale-100 translate-y-0 opacity-100"
+                  }`}
                   style={{ perspective: "1000px" }}
                   onClick={(e) => {
                     if (
@@ -787,7 +814,7 @@ export default function Players() {
                       </div>
 
                       {/* Player stats radar chart */}
-                      {showBackContent && (
+                      {isCardFlipped && (
                         <div className="relative z-10 w-full h-48 mt-2">
                           {/* Left side stats — FG%, 3PT%, FT% */}
                           <div className="absolute left-0 top-0 h-full flex flex-col justify-around py-2 z-10 ml-6">
@@ -1003,7 +1030,7 @@ export default function Players() {
                               {playerInsights.traits.map((trait) => (
                                 <span
                                   key={trait.label}
-                                  className="group relative z-90 w-fit hover:z-100"
+                                  className="group relative z-90 w-fit hover:z-300"
                                 >
                                   <span
                                     className="block w-fit rounded border px-1.5 py-0.5 font-michroma text-[10px]"
@@ -1052,6 +1079,7 @@ export default function Players() {
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setCurrentPlayer(player.name);
+                                  setIsCardFlipped(false);
                                 }}
                                 className="flex w-44 cursor-pointer items-center justify-between gap-3 rounded border px-2 py-1 font-michroma text-[10px] text-white/70 transition-all duration-150 hover:brightness-150 mr-2"
                                 style={{
@@ -1059,7 +1087,7 @@ export default function Players() {
                                   backgroundColor: `${teamColors[player.team]}80`,
                                 }}
                               >
-                                <span className="min-w-0 flex-1 truncate text-left">
+                                <span className="min-w-0 flex-1 truncate text-left text-white">
                                   {player.name}
                                 </span>
                                 <span className="shrink-0 text-white/60">
@@ -1072,21 +1100,51 @@ export default function Players() {
                       </div>
 
                       {/* Send to court page to compare with other player(s) button */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          router.push(
-                            `/court?left=${encodeURIComponent(selectedPlayer.name)}`,
-                          );
-                        }}
-                        className="absolute w-88 bottom-4 left-1/2 z-30 -translate-x-1/2 rounded-md border bg-black/60 px-4 py-2 font-michroma text-lg uppercase tracking-wide text-white backdrop-blur-sm transition-all duration-200 hover:brightness-250 cursor-pointer"
-                        style={{
-                          borderColor: teamColors[selectedPlayer.team],
-                        }}
+                      <div
+                        className="group absolute bottom-4 left-1/2 z-200 w-88 -translate-x-1/2"
+                        onClick={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
                       >
-                        Add to Compare
-                      </button>
+                        <button
+                          type="button"
+                          className="w-full cursor-pointer rounded-md border bg-black/60 px-4 py-2 font-michroma text-lg uppercase tracking-wide text-white backdrop-blur-sm transition-all duration-200 hover:brightness-250"
+                          style={{
+                            borderColor: teamColors[selectedPlayer.team],
+                          }}
+                        >
+                          Add to Compare
+                        </button>
+
+                        <div className="pointer-events-none absolute bottom-full left-1/2 z-210 w-full -translate-x-1/2 rounded-md border border-white/20 bg-black/90 p-3 opacity-0 transition-opacity duration-200 after:absolute after:left-0 after:top-full after:h-3 after:w-full after:content-[''] group-hover:pointer-events-auto group-hover:opacity-100">
+                          <p className="mb-2 text-center font-michroma text-[10px] uppercase text-white/60">
+                            Replace on Court
+                          </p>
+
+                          <div className="flex flex-col gap-2">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                addPlayerToCompare("left");
+                              }}
+                              className="cursor-pointer rounded border border-white/20 px-3 py-2 text-left font-michroma text-[10px] text-white/80 transition hover:bg-white/10"
+                            >
+                              Left: {compareSlots.left || "Empty"}
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                addPlayerToCompare("right");
+                              }}
+                              className="cursor-pointer rounded border border-white/20 px-3 py-2 text-left font-michroma text-[10px] text-white/80 transition hover:bg-white/10"
+                            >
+                              Right: {compareSlots.right || "Empty"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
