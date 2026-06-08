@@ -9,6 +9,7 @@ import {
   teamColors,
 } from "../components/court-data";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 // Safety for tabs
 type RankingTab =
@@ -131,6 +132,9 @@ function getArchetypePillStyle(
 }
 
 export default function Rankings() {
+  // Router to travel to players page
+  const router = useRouter();
+
   // Current tab, default is overall tab
   const [activeTab, setActiveTab] = useState<RankingTab>("overall");
 
@@ -266,7 +270,7 @@ export default function Rankings() {
                     </div>
 
                     {/* Tooltip for stats and card viewing */}
-                    <div className="pointer-events-none absolute left-1/2 top-full z-100 mt-2 w-64 -translate-x-1/2 rounded-md border border-[#1bc2ec]/40 bg-black/95 p-3 opacity-0 shadow-xl transition-opacity duration-200 group-hover:opacity-100">
+                    <div className="pointer-events-none absolute left-1/2 top-full z-100 w-64 -translate-x-1/2 rounded-md border border-[#1bc2ec]/40 bg-black/95 p-3 opacity-0 shadow-xl transition-opacity duration-200 group-hover:opacity-100 group-hover:pointer-events-auto">
                       <p className="font-michroma text-[10px] font-bold text-white">
                         {player.name}
                       </p>
@@ -290,6 +294,19 @@ export default function Rankings() {
                           </p>
                         ))}
                       </div>
+
+                      {/* Go to players' card button */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          router.push(
+                            `/players?player=${encodeURIComponent(player.name)}`,
+                          );
+                        }}
+                        className="mt-3 w-full cursor-pointer rounded border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-3 py-2 font-michroma font-bold text-[12px] uppercase tracking-wide text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20"
+                      >
+                        View Full Card
+                      </button>
                     </div>
                   </div>
                 );
@@ -367,7 +384,7 @@ export default function Rankings() {
                   </span>
 
                   {/* Tooltip for stats and card viewing */}
-                  <div className="pointer-events-none absolute left-1/2 top-full z-100 mt-2 w-64 -translate-x-1/2 rounded-md border border-[#1bc2ec]/40 bg-black/95 p-3 opacity-0 shadow-xl transition-opacity duration-200 group-hover:opacity-100">
+                  <div className="pointer-events-none absolute left-1/2 top-full z-100 w-64 -translate-x-1/2 rounded-md border border-[#1bc2ec]/40 bg-black/95 p-3 opacity-0 shadow-xl transition-opacity duration-200 group-hover:opacity-100 group-hover:pointer-events-auto">
                     <p className="font-michroma text-[10px] font-bold text-white">
                       {player.name}
                     </p>
@@ -391,6 +408,19 @@ export default function Rankings() {
                         </p>
                       ))}
                     </div>
+
+                    {/* Go to players' card button */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        router.push(
+                          `/players?player=${encodeURIComponent(player.name)}`,
+                        );
+                      }}
+                      className="mt-3 w-full cursor-pointer rounded border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-3 py-2 font-michroma font-bold text-[12px] uppercase tracking-wide text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20"
+                    >
+                      View Full Card
+                    </button>
                   </div>
                 </div>
               );

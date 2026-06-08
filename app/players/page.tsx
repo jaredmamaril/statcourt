@@ -30,7 +30,7 @@ import {
 } from "recharts";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Players() {
   // State for filters and dropdowns
@@ -226,6 +226,22 @@ export default function Players() {
 
   // Router to travel to court page
   const router = useRouter();
+  // Parameters to read query to specific card
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const playerFromUrl = searchParams.get("player");
+
+    if (!playerFromUrl) return;
+
+    const matchingPlayer = players.find(
+      (player) => player.name === playerFromUrl,
+    );
+
+    if (!matchingPlayer) return;
+
+    setCurrentPlayer(matchingPlayer.name);
+    setIsCardFlipped(false);
+  }, [searchParams]);
 
   // Current players being compared on court
   function getSavedCompareSlots(): CompareSlots {
