@@ -6,6 +6,7 @@ import {
   getPlayerInsights,
   normalizeStat,
   statMaxValues,
+  teamColors,
 } from "../components/court-data";
 import { useState } from "react";
 
@@ -28,46 +29,95 @@ const rankingTabs: { label: string; value: RankingTab }[] = [
   { label: "Archetypes", value: "archetypes" },
 ];
 
+function toDisplayRating(rawScore: number) {
+  return 70 + rawScore * 0.3;
+}
+
 function getRankingScore(player: (typeof players)[number], tab: RankingTab) {
+  const ppgScore = normalizeStat(player.stats.ppg, statMaxValues.ppg);
+  const rpgScore = normalizeStat(player.stats.rpg, statMaxValues.rpg);
+  const apgScore = normalizeStat(player.stats.apg, statMaxValues.apg);
+  const fgScore = normalizeStat(
+    player.stats.fgPercent,
+    statMaxValues.fgPercent,
+  );
+  const threeScore = normalizeStat(
+    player.stats.threePercent,
+    statMaxValues.threePercent,
+  );
+  const ftScore = normalizeStat(
+    player.stats.ftPercent,
+    statMaxValues.ftPercent,
+  );
+
+  const scoringScore = ppgScore * 0.75 + fgScore * 0.15 + ftScore * 0.1;
+  const shootingScore = threeScore * 0.65 + ftScore * 0.25 + fgScore * 0.1;
+  const playmakingScore =
+    apgScore * 0.75 + scoringScore * 0.15 + threeScore * 0.1;
+  const reboundingScore = rpgScore * 0.9 + fgScore * 0.1;
+  const efficiencyScore = fgScore * 0.45 + threeScore * 0.3 + ftScore * 0.25;
+
   if (tab === "scoring") {
-    return normalizeStat(player.stats.ppg, statMaxValues.ppg);
+    return toDisplayRating(scoringScore);
   }
 
   if (tab === "shooting") {
-    return (
-      normalizeStat(player.stats.threePercent, statMaxValues.threePercent) *
-        0.55 +
-      normalizeStat(player.stats.ftPercent, statMaxValues.ftPercent) * 0.25 +
-      normalizeStat(player.stats.fgPercent, statMaxValues.fgPercent) * 0.2
-    );
+    return toDisplayRating(shootingScore);
   }
 
   if (tab === "playmaking") {
-    return normalizeStat(player.stats.apg, statMaxValues.apg);
+    return toDisplayRating(playmakingScore);
   }
 
   if (tab === "rebounding") {
-    return normalizeStat(player.stats.rpg, statMaxValues.rpg);
+    return toDisplayRating(reboundingScore);
   }
 
   if (tab === "efficiency") {
-    return (
-      normalizeStat(player.stats.fgPercent, statMaxValues.fgPercent) * 0.5 +
-      normalizeStat(player.stats.threePercent, statMaxValues.threePercent) *
-        0.25 +
-      normalizeStat(player.stats.ftPercent, statMaxValues.ftPercent) * 0.25
-    );
+    return toDisplayRating(efficiencyScore);
   }
 
-  return (
-    normalizeStat(player.stats.ppg, statMaxValues.ppg) * 0.3 +
-    normalizeStat(player.stats.rpg, statMaxValues.rpg) * 0.18 +
-    normalizeStat(player.stats.apg, statMaxValues.apg) * 0.18 +
-    normalizeStat(player.stats.fgPercent, statMaxValues.fgPercent) * 0.16 +
-    normalizeStat(player.stats.threePercent, statMaxValues.threePercent) *
-      0.12 +
-    normalizeStat(player.stats.ftPercent, statMaxValues.ftPercent) * 0.06
-  );
+  const starCategories = [
+    ppgScore >= 70,
+    rpgScore >= 55,
+    apgScore >= 55,
+    fgScore >= 70,
+    threeScore >= 70,
+    ftScore >= 75,
+  ].filter(Boolean).length;
+
+  const versatilityBonus = starCategories * 2;
+
+  const overallScore =
+    scoringScore * 0.3 +
+    efficiencyScore * 0.23 +
+    playmakingScore * 0.19 +
+    reboundingScore * 0.15 +
+    shootingScore * 0.13 +
+    versatilityBonus;
+
+  return toDisplayRating(overallScore);
+}
+
+function getArchetypePillStyle(
+  archetype: NonNullable<ReturnType<typeof getPlayerInsights>["archetype"]>,
+) {
+  const color =
+    archetype.rarity === "gold"
+      ? "#EFBF04"
+      : archetype.rarity === "purple"
+        ? "#A855F7"
+        : archetype.rarity === "blue"
+          ? "#38BDF8"
+          : archetype.rarity === "red"
+            ? "#EF4444"
+            : "#94A3B8";
+
+  return {
+    color,
+    borderColor: `${color}99`,
+    backgroundColor: `${color}22`,
+  };
 }
 
 export default function Rankings() {
@@ -120,6 +170,8 @@ export default function Rankings() {
                   index === 0 ? "1ST" : index === 1 ? "2ND" : "3RD";
                 const archetype = getPlayerInsights(player).archetype;
                 const rating = getRankingScore(player, activeTab).toFixed(1);
+                const rankColor =
+                  index === 0 ? "#EFBF04" : index === 1 ? "#C0C0C0" : "#CD7F32";
 
                 return (
                   <div
@@ -132,18 +184,34 @@ export default function Rankings() {
                           {rankLabel}
                         </p>
 
-                        <p className="mt-2 truncate font-michroma text-sm text-white">
+                        <p
+                          className="mt-2 truncate font-michroma font-semibold text-md text-white"
+                          style={{
+                            color: rankColor,
+                          }}
+                        >
                           {player.name}
                         </p>
 
                         {archetype && (
-                          <p className="mt-1 truncate font-michroma text-[10px] text-[#EFBF04]">
-                            {archetype.label}
-                          </p>
+                          <span
+                            className="mt-1 inline-flex w-fit max-w-full rounded border px-2 py-0.5 font-michroma text-[9px]"
+                            style={getArchetypePillStyle(archetype)}
+                          >
+                            <span className="truncate">{archetype.label}</span>
+                          </span>
                         )}
 
+                        <p
+                          className="mt-1 font-michroma font-semibold text-[10px] text-white/50"
+                          style={{
+                            color: teamColors[player.team],
+                          }}
+                        >
+                          {player.team}
+                        </p>
                         <p className="mt-1 font-michroma text-[10px] text-white/50">
-                          {player.team} - {player.position}
+                          {player.position}
                         </p>
                       </div>
 
@@ -167,14 +235,12 @@ export default function Rankings() {
             </div>
           </div>
 
-          <div className="mb-2 grid grid-cols-[56px_1fr_64px_64px] items-center px-3 font-michroma text-[9px] uppercase tracking-wide text-white/40">
-            <span>Rank</span>
-            <span>Player</span>
-            <span className="text-right">Team</span>
-            <span className="text-right">Rating</span>
+          <div className="mb-2 flex items-center justify-between px-3 font-michroma text-[9px] uppercase tracking-wide text-white/40">
+            <span className="-ml-2">Remaining Rankings</span>
+            <span className="-mr-2">Rating</span>
           </div>
 
-          <div className="flex flex-col gap-1.5">
+          <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
             {rankedPlayers.slice(3).map((player, index) => {
               const archetype = getPlayerInsights(player).archetype;
               const rating = getRankingScore(player, activeTab).toFixed(1);
@@ -182,21 +248,24 @@ export default function Rankings() {
               return (
                 <div
                   key={player.id}
-                  className="grid grid-cols-[56px_1fr_64px_64px] items-center rounded-md border border-white/10 bg-black/30 px-3 py-2 transition-all duration-200 hover:border-[#1bc2ec]/50 hover:bg-[#1bc2ec]/10"
+                  className="grid w-full grid-cols-[48px_1fr_52px_56px] items-center rounded-md border border-white/10 bg-black/30 px-3 py-2 transition-all duration-200 hover:border-[#1bc2ec]/50 hover:bg-[#1bc2ec]/10"
                 >
                   <span className="font-michroma text-xs font-bold text-[#1bc2ec]">
                     #{index + 4}
                   </span>
 
                   <div className="min-w-0">
-                    <p className="truncate font-michroma text-xs text-white">
+                    <p className="truncate font-michroma text-[13px] font-semibold text-white">
                       {player.name}
                     </p>
 
                     {archetype && (
-                      <p className="mt-0.5 truncate font-michroma text-[9px] text-[#EFBF04]">
-                        {archetype.label}
-                      </p>
+                      <span
+                        className="mt-1 inline-flex w-fit max-w-full rounded border px-2 py-0.5 font-michroma text-[9px]"
+                        style={getArchetypePillStyle(archetype)}
+                      >
+                        <span className="truncate">{archetype.label}</span>
+                      </span>
                     )}
 
                     <p className="mt-0.5 font-michroma text-[9px] text-white/40">
@@ -204,7 +273,12 @@ export default function Rankings() {
                     </p>
                   </div>
 
-                  <span className="text-right font-michroma text-[11px] text-white/60">
+                  <span
+                    className="text-right font-michroma font-semibold text-[11px]"
+                    style={{
+                      color: teamColors[player.team],
+                    }}
+                  >
                     {player.team}
                   </span>
 
