@@ -10,6 +10,7 @@ import {
 } from "../components/court-data";
 import { useState } from "react";
 
+// Safety for tabs
 type RankingTab =
   | "overall"
   | "scoring"
@@ -19,6 +20,7 @@ type RankingTab =
   | "efficiency"
   | "archetypes";
 
+// Different ranking tabs to compare with
 const rankingTabs: { label: string; value: RankingTab }[] = [
   { label: "Overall", value: "overall" },
   { label: "Scoring", value: "scoring" },
@@ -29,10 +31,12 @@ const rankingTabs: { label: string; value: RankingTab }[] = [
   { label: "Archetypes", value: "archetypes" },
 ];
 
+// Rating shown on display for more appleasing results
 function toDisplayRating(rawScore: number) {
   return 70 + rawScore * 0.3;
 }
 
+// Get score of player's stats
 function getRankingScore(player: (typeof players)[number], tab: RankingTab) {
   const ppgScore = normalizeStat(player.stats.ppg, statMaxValues.ppg);
   const rpgScore = normalizeStat(player.stats.rpg, statMaxValues.rpg);
@@ -50,6 +54,7 @@ function getRankingScore(player: (typeof players)[number], tab: RankingTab) {
     statMaxValues.ftPercent,
   );
 
+  // Weighing score based on importance in category
   const scoringScore = ppgScore * 0.75 + fgScore * 0.15 + ftScore * 0.1;
   const shootingScore = threeScore * 0.65 + ftScore * 0.25 + fgScore * 0.1;
   const playmakingScore =
@@ -57,6 +62,7 @@ function getRankingScore(player: (typeof players)[number], tab: RankingTab) {
   const reboundingScore = rpgScore * 0.9 + fgScore * 0.1;
   const efficiencyScore = fgScore * 0.45 + threeScore * 0.3 + ftScore * 0.25;
 
+  // Specific ranking types
   if (tab === "scoring") {
     return toDisplayRating(scoringScore);
   }
@@ -77,6 +83,7 @@ function getRankingScore(player: (typeof players)[number], tab: RankingTab) {
     return toDisplayRating(efficiencyScore);
   }
 
+  // Bonus categories for exceptional stats
   const starCategories = [
     ppgScore >= 70,
     rpgScore >= 55,
@@ -86,8 +93,10 @@ function getRankingScore(player: (typeof players)[number], tab: RankingTab) {
     ftScore >= 75,
   ].filter(Boolean).length;
 
+  // Bonus weighing
   const versatilityBonus = starCategories * 2;
 
+  // Overall score
   const overallScore =
     scoringScore * 0.3 +
     efficiencyScore * 0.23 +
@@ -99,6 +108,7 @@ function getRankingScore(player: (typeof players)[number], tab: RankingTab) {
   return toDisplayRating(overallScore);
 }
 
+// Archetype pill ranking and design
 function getArchetypePillStyle(
   archetype: NonNullable<ReturnType<typeof getPlayerInsights>["archetype"]>,
 ) {
@@ -121,15 +131,28 @@ function getArchetypePillStyle(
 }
 
 export default function Rankings() {
+  // Current tab, default is overall tab
   const [activeTab, setActiveTab] = useState<RankingTab>("overall");
 
+  // Get ranked players from highest rated to lowest based on category
   const rankedPlayers = [...players].sort(
     (a, b) => getRankingScore(b, activeTab) - getRankingScore(a, activeTab),
   );
 
   const topThreePlayers = rankedPlayers.slice(0, 3);
+
+  // Differentiate which tab you are in
   const activeTabLabel =
     rankingTabs.find((tab) => tab.value === activeTab)?.label ?? "Overall";
+
+  // Overall tab gets different header than specified stat categories
+  const rankingHeading =
+    activeTab === "overall"
+      ? "Top Overall Players"
+      : `Top ${activeTabLabel} Ratings`;
+
+  // (Current stat category) Rating
+  const ratingLabel = `${activeTabLabel} Rating`;
 
   return (
     <main className="min-h-screen overflow-hidden text-white overflow-y-auto">
@@ -140,6 +163,7 @@ export default function Rankings() {
             const isActive = activeTab === tab.value;
 
             return (
+              // Each tab in row
               <button
                 key={tab.value}
                 type="button"
@@ -161,10 +185,11 @@ export default function Rankings() {
           {/* Top ranking leaders */}
           <div className="mb-6">
             <h1 className="font-michroma text-sm uppercase tracking-wide text-white">
-              Top {activeTabLabel} Players
+              {rankingHeading}
             </h1>
 
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              {/* Top 3 players in section */}
               {topThreePlayers.map((player, index) => {
                 const rankLabel =
                   index === 0 ? "1ST" : index === 1 ? "2ND" : "3RD";
@@ -176,14 +201,16 @@ export default function Rankings() {
                 return (
                   <div
                     key={player.id}
-                    className="relative overflow-hidden rounded-md border border-[#1bc2ec]/30 bg-black/40 px-4 py-4 transition-all duration-200 hover:border-[#1bc2ec]/70 hover:bg-[#1bc2ec]/10"
+                    className="group relative rounded-md border border-[#1bc2ec]/30 bg-black/40 px-4 py-4 transition-all duration-200 hover:border-[#1bc2ec]/70 hover:bg-[#1bc2ec]/10"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
+                        {/* 1st, 2nd, 3rd */}
                         <p className="font-michroma text-xs font-bold text-[#1bc2ec]">
                           {rankLabel}
                         </p>
 
+                        {/* Name changes color based on which place they are in */}
                         <p
                           className="mt-2 truncate font-michroma font-semibold text-md text-white"
                           style={{
@@ -193,15 +220,19 @@ export default function Rankings() {
                           {player.name}
                         </p>
 
+                        {/* If they have an archetype, display with proper ranking style */}
                         {archetype && (
                           <span
                             className="mt-1 inline-flex w-fit max-w-full rounded border px-2 py-0.5 font-michroma text-[9px]"
                             style={getArchetypePillStyle(archetype)}
                           >
-                            <span className="truncate">{archetype.label}</span>
+                            <span className="truncate uppercase">
+                              {archetype.label}
+                            </span>
                           </span>
                         )}
 
+                        {/* Player team */}
                         <p
                           className="mt-1 font-michroma font-semibold text-[10px] text-white/50"
                           style={{
@@ -210,16 +241,20 @@ export default function Rankings() {
                         >
                           {player.team}
                         </p>
+
+                        {/* Player position */}
                         <p className="mt-1 font-michroma text-[10px] text-white/50">
                           {player.position}
                         </p>
                       </div>
 
+                      {/* Player rating */}
                       <p className="font-michroma text-xl font-bold text-white">
                         {rating}
                       </p>
                     </div>
 
+                    {/* Player headshot */}
                     <div className="mt-3 flex justify-center">
                       <Image
                         src={player.image}
@@ -229,12 +264,40 @@ export default function Rankings() {
                         className="h-28 w-28 rounded-md object-cover"
                       />
                     </div>
+
+                    {/* Tooltip for stats and card viewing */}
+                    <div className="pointer-events-none absolute left-1/2 top-full z-100 mt-2 w-64 -translate-x-1/2 rounded-md border border-[#1bc2ec]/40 bg-black/95 p-3 opacity-0 shadow-xl transition-opacity duration-200 group-hover:opacity-100">
+                      <p className="font-michroma text-[10px] font-bold text-white">
+                        {player.name}
+                      </p>
+
+                      {/* Rating in current tab/category */}
+                      <p className="mt-2 font-michroma text-[9px] text-[#1bc2ec]">
+                        {ratingLabel}: {rating}
+                      </p>
+
+                      {/* Traits of the character based on calculations */}
+                      <p className="mt-3 font-michroma text-[9px] uppercase text-white/50">
+                        Top Traits
+                      </p>
+                      <div className="mt-1 flex flex-col gap-1">
+                        {getPlayerInsights(player).traits.map((trait) => (
+                          <p
+                            key={trait.label}
+                            className="font-michroma text-[9px] text-white/70"
+                          >
+                            - {trait.label}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 );
               })}
             </div>
           </div>
 
+          {/* Rest of list/rankings */}
           <div className="mb-2 flex items-center justify-between px-3 font-michroma text-[9px] uppercase tracking-wide text-white/40">
             <span className="-ml-2">Remaining Rankings</span>
             <span className="-mr-2">Rating</span>
@@ -248,31 +311,47 @@ export default function Rankings() {
               return (
                 <div
                   key={player.id}
-                  className="grid w-full grid-cols-[48px_1fr_52px_56px] items-center rounded-md border border-white/10 bg-black/30 px-3 py-2 transition-all duration-200 hover:border-[#1bc2ec]/50 hover:bg-[#1bc2ec]/10"
+                  className="group relative grid w-full grid-cols-[44px_40px_1fr_52px_56px] items-center rounded-md border border-white/10 bg-black/30 px-3 py-2 transition-all duration-200 hover:border-[#1bc2ec]/50 hover:bg-[#1bc2ec]/10"
                 >
+                  {/* Rankings starting at #4 */}
                   <span className="font-michroma text-xs font-bold text-[#1bc2ec]">
                     #{index + 4}
                   </span>
 
-                  <div className="min-w-0">
+                  {/* Player headshot */}
+                  <Image
+                    src={player.image}
+                    alt={player.name}
+                    width={40}
+                    height={40}
+                    className="h-10 w-10 rounded-md object-cover"
+                  />
+
+                  {/* Player name */}
+                  <div className="min-w-0 ml-4">
                     <p className="truncate font-michroma text-[13px] font-semibold text-white">
                       {player.name}
                     </p>
 
+                    {/* If they have an archetype, display with proper ranking style */}
                     {archetype && (
                       <span
                         className="mt-1 inline-flex w-fit max-w-full rounded border px-2 py-0.5 font-michroma text-[9px]"
                         style={getArchetypePillStyle(archetype)}
                       >
-                        <span className="truncate">{archetype.label}</span>
+                        <span className="truncate uppercase">
+                          {archetype.label}
+                        </span>
                       </span>
                     )}
 
+                    {/* Player position and jersey number */}
                     <p className="mt-0.5 font-michroma text-[9px] text-white/40">
                       {player.position} - #{player.jerseyNumber}
                     </p>
                   </div>
 
+                  {/* Player team */}
                   <span
                     className="text-right font-michroma font-semibold text-[11px]"
                     style={{
@@ -282,9 +361,37 @@ export default function Rankings() {
                     {player.team}
                   </span>
 
+                  {/* Player rating */}
                   <span className="text-right font-michroma text-xs font-bold text-white">
                     {rating}
                   </span>
+
+                  {/* Tooltip for stats and card viewing */}
+                  <div className="pointer-events-none absolute left-1/2 top-full z-100 mt-2 w-64 -translate-x-1/2 rounded-md border border-[#1bc2ec]/40 bg-black/95 p-3 opacity-0 shadow-xl transition-opacity duration-200 group-hover:opacity-100">
+                    <p className="font-michroma text-[10px] font-bold text-white">
+                      {player.name}
+                    </p>
+
+                    {/* Rating in current tab/category */}
+                    <p className="mt-2 font-michroma text-[9px] text-[#1bc2ec]">
+                      {ratingLabel}: {rating}
+                    </p>
+
+                    {/* Traits of the character based on calculations */}
+                    <p className="mt-3 font-michroma text-[9px] uppercase text-white/50">
+                      Top Traits
+                    </p>
+                    <div className="mt-1 flex flex-col gap-1">
+                      {getPlayerInsights(player).traits.map((trait) => (
+                        <p
+                          key={trait.label}
+                          className="font-michroma text-[9px] text-white/70"
+                        >
+                          - {trait.label}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               );
             })}
