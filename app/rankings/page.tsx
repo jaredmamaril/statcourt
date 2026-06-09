@@ -574,22 +574,22 @@ export default function Rankings() {
                       return (
                         <div
                           key={player.id}
-                          className="group relative grid w-full grid-cols-[44px_40px_1fr_52px_56px] items-center rounded-md border border-white/10 bg-black/30 px-3 py-2 transition-all duration-200 hover:border-[#1bc2ec]/50 hover:bg-[#1bc2ec]/10"
+                          className="group relative grid w-full grid-cols-[48px_48px_1fr_72px] items-center rounded-md border border-white/10 bg-black/30 px-4 py-3 transition-all duration-200 hover:border-[#1bc2ec]/50 hover:bg-[#1bc2ec]/10"
                         >
-                          <span className="font-michroma text-xs text-[#1bc2ec]">
+                          <span className="font-michroma text-xs font-bold text-[#1bc2ec]">
                             #{index + 1}
                           </span>
 
                           <Image
                             src={player.image}
                             alt={player.name}
-                            width={40}
-                            height={40}
-                            className="h-10 w-10 rounded-md object-cover -ml-5"
+                            width={48}
+                            height={48}
+                            className="-ml-3 h-12 w-12 rounded-md object-cover"
                           />
 
-                          <div className="min-w-0 -ml-3">
-                            <p className="truncate font-michroma text-xs text-white">
+                          <div className="min-w-0">
+                            <p className="truncate font-michroma text-sm font-semibold text-white">
                               {player.name}
                             </p>
                             <p
@@ -604,7 +604,7 @@ export default function Rankings() {
                           </div>
 
                           {/* Overall score */}
-                          <span className="text-right font-michroma text-xs font-bold text-white">
+                          <span className="text-right font-michroma text-sm font-bold text-white">
                             {rating}
                           </span>
 
