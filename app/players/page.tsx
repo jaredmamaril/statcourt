@@ -30,24 +30,11 @@ import {
 } from "recharts";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
-
-// Checks URL for finding player
-function getInitialPlayerFromUrl() {
-  if (typeof window === "undefined") return "";
-
-  const playerFromUrl = new URLSearchParams(window.location.search).get(
-    "player",
-  );
-
-  if (!playerFromUrl) return "";
-
-  return players.find((player) => player.name === playerFromUrl)?.name ?? "";
-}
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Players() {
   // State for filters and dropdowns
-  const [currentPlayer, setCurrentPlayer] = useState(getInitialPlayerFromUrl);
+  const [currentPlayer, setCurrentPlayer] = useState("");
   const [playerSearch, setPlayerSearch] = useState("");
   const [favorites, setFavorites] = useState<string[]>([]);
   const [showFavorites, setShowFavorites] = useState(false);
@@ -61,6 +48,27 @@ export default function Players() {
 
   // State for front face and back face of card
   const [isCardFlipped, setIsCardFlipped] = useState(false);
+  const searchParams = useSearchParams();
+
+  // Open a player card when coming from rankings with /players?player=name
+  useEffect(() => {
+    const playerFromUrl = searchParams.get("player");
+
+    if (!playerFromUrl) return;
+
+    const matchingPlayer = players.find(
+      (player) => player.name === playerFromUrl,
+    );
+
+    if (!matchingPlayer) return;
+
+    const timer = window.setTimeout(() => {
+      setCurrentPlayer(matchingPlayer.name);
+      setIsCardFlipped(false);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [searchParams]);
 
   // Filter and sort players based on search input, favorites toggle, team and position filters, and sorting options
   const filteredPlayers = players
