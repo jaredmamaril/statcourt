@@ -466,8 +466,20 @@ export default function Rankings() {
                       (player) =>
                         getPlayerInsights(player).archetype?.label === label,
                     ).length;
+                    // Highest overall player in archetype group
+                    const representative = players
+                      .filter(
+                        (player) =>
+                          getPlayerInsights(player).archetype?.label === label,
+                      )
+                      .sort(
+                        (a, b) =>
+                          getRankingScore(b, "overall") -
+                          getRankingScore(a, "overall"),
+                      )[0];
 
                     return (
+                      // Buttons of archetypes
                       <button
                         key={label}
                         type="button"
@@ -489,6 +501,19 @@ export default function Rankings() {
                           {playerCount}{" "}
                           {playerCount === 1 ? "Player" : "Players"}
                         </span>
+
+                        {representative && (
+                          <span className="mt-2 flex items-center gap-2">
+                            <span className="min-w-0">
+                              <span className="block text-[8px] uppercase text-white/35">
+                                Face of Archetype
+                              </span>
+                              <span className="block truncate text-[9px] text-white/70">
+                                {representative.name}
+                              </span>
+                            </span>
+                          </span>
+                        )}
                       </button>
                     );
                   })}
