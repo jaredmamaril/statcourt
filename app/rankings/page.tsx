@@ -11,7 +11,11 @@ import {
   teamColors,
   teamLogos,
 } from "../components/court-data";
-import type { Team, Position } from "../components/court-data";
+import type {
+  Team,
+  Position,
+  PlayerInsightDisplay,
+} from "../components/court-data";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -135,6 +139,147 @@ function getArchetypePillStyle(
   };
 }
 
+// Types for archetype description safety
+type ArchetypeRarity = PlayerInsightDisplay["rarity"];
+type ArchetypeMetadata = {
+  description: string;
+  coreTraits: string[];
+  rarity: ArchetypeRarity;
+};
+// Archetype descriptions
+const archetypeInfoByLabel = {
+  "Generational Shooter": {
+    description:
+      "Transforms offensive spacing through elite perimeter shooting and high-volume scoring gravity.",
+    coreTraits: [
+      "Elite Perimeter Shooter",
+      "Automatic at the Line",
+      "Scoring Gravity",
+    ],
+    rarity: "gold",
+  },
+  "Generational Scorer": {
+    description:
+      "Produces all-time scoring volume and bends defensive game plans through constant shot pressure.",
+    coreTraits: [
+      "Elite Shot Creator",
+      "High-Usage Offensive Focus",
+      "Scoring Volume",
+    ],
+    rarity: "gold",
+  },
+  "Generational Creator": {
+    description:
+      "Controls possessions through elite passing vision, offensive command, and teammate creation.",
+    coreTraits: ["Floor General", "Elite Playmaker", "Offense Orchestrator"],
+    rarity: "gold",
+  },
+  "Triple-Double Machine": {
+    description:
+      "Impacts every phase of the game through scoring, rebounding, and playmaking production.",
+    coreTraits: [
+      "All-Around Production",
+      "Elite Playmaker",
+      "Strong Rebounding Impact",
+    ],
+    rarity: "purple",
+  },
+  "Interior Anchor": {
+    description:
+      "Controls the paint through rebounding, interior efficiency, and physical presence.",
+    coreTraits: ["Dominant Rebounder", "Paint Presence", "Interior Efficiency"],
+    rarity: "purple",
+  },
+  "Historic Rebounding": {
+    description:
+      "Creates a historic possession advantage through elite rebounding dominance.",
+    coreTraits: ["Dominant Rebounder", "Second-Chance Value", "Paint Control"],
+    rarity: "purple",
+  },
+  "Paint Dominator": {
+    description:
+      "Controls the interior through scoring, rebounding, and efficient finishing.",
+    coreTraits: [
+      "Dominant Rebounder",
+      "Efficient Finisher",
+      "Interior Scoring",
+    ],
+    rarity: "blue",
+  },
+  "Primary Scoring Engine": {
+    description:
+      "Carries offensive volume through elite shot creation and scoring pressure.",
+    coreTraits: [
+      "Elite Shot Creator",
+      "Reliable Offensive Threat",
+      "High-Usage Offensive Focus",
+    ],
+    rarity: "blue",
+  },
+  "Two-Way Threat": {
+    description:
+      "Pairs star-level scoring with major physical impact through rebounding and matchup versatility.",
+    coreTraits: ["Scoring Pressure", "Rebounding Impact", "Versatile Profile"],
+    rarity: "blue",
+  },
+  "Floor General": {
+    description:
+      "Runs the offense through elite passing, pace control, and efficient decision-making.",
+    coreTraits: ["Elite Playmaker", "Offensive Control", "Decision-Making"],
+    rarity: "blue",
+  },
+  "Balanced Star": {
+    description:
+      "Contributes across scoring, rebounding, playmaking, and efficiency without relying on one skill.",
+    coreTraits: [
+      "Versatile Production",
+      "Efficient Scoring",
+      "All-Around Impact",
+    ],
+    rarity: "blue",
+  },
+  "Post-Up Specialist": {
+    description:
+      "Creates offense from interior touches, physical positioning, and efficient close-range scoring.",
+    coreTraits: ["Interior Scoring", "Efficient Finisher", "Paint Touches"],
+    rarity: "blue",
+  },
+  "Stretch Big": {
+    description:
+      "Combines frontcourt size and rebounding with floor-spacing shooting value.",
+    coreTraits: ["Floor Spacing", "Frontcourt Skill", "Rebounding Presence"],
+    rarity: "blue",
+  },
+  "Volume Scorer": {
+    description:
+      "Carries a heavy scoring workload through shot volume, even without elite efficiency.",
+    coreTraits: ["Scoring Volume", "Shot Creation", "High Usage"],
+    rarity: "blue",
+  },
+  "Pure Point Guard": {
+    description:
+      "Creates value primarily through passing, tempo control, and organizing team offense.",
+    coreTraits: ["Passing Control", "Floor General", "Team Creation"],
+    rarity: "blue",
+  },
+  "Elite Shot Creator": {
+    description:
+      "Generates high-level scoring chances while maintaining strong offensive efficiency.",
+    coreTraits: ["Shot Creation", "Scoring Pressure", "Self-Created Offense"],
+    rarity: "blue",
+  },
+  "Elite Scorer": {
+    description:
+      "Produces star-level points with enough efficiency to lead an offense.",
+    coreTraits: [
+      "Scoring Volume",
+      "Reliable Offensive Threat",
+      "Shot Pressure",
+    ],
+    rarity: "blue",
+  },
+} satisfies Record<string, ArchetypeMetadata>;
+
 export default function Rankings() {
   // Current filter being used
   const [openFilter, setOpenFilter] = useState<
@@ -223,6 +368,14 @@ export default function Rankings() {
         )
     : [];
 
+  // Get info depending on which archetype is chosen
+  const selectedArchetypeInfo =
+    archetypeFilter in archetypeInfoByLabel
+      ? archetypeInfoByLabel[
+          archetypeFilter as keyof typeof archetypeInfoByLabel
+        ]
+      : undefined;
+
   // Differentiate which tab you are in
   const activeTabLabel =
     rankingTabs.find((tab) => tab.value === activeTab)?.label ?? "Overall";
@@ -266,14 +419,16 @@ export default function Rankings() {
         <div className="rounded-b-md border border-t-0 border-[#1bc2ec]/30 bg-black/25 p-4">
           {/* Top ranking leaders */}
           <div className="mb-6">
+            {/* If current tab is archetypes */}
             {activeTab === "archetypes" ? (
               <div>
-                <div className="border-b border-[#1bc2ec]/30 pb-3">
+                <div>
                   <h1 className="font-michroma text-sm uppercase tracking-wide text-white">
                     Archetypes
                   </h1>
                 </div>
 
+                {/* All archetypes available */}
                 <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                   {archetypeOptionDetails.map(({ label, archetype }) => {
                     const isSelected = archetypeFilter === label;
@@ -300,52 +455,137 @@ export default function Rankings() {
                   })}
                 </div>
 
-                <div className="mt-8 border-b border-[#1bc2ec]/30 pb-3">
+                {/* Archetype description */}
+                {archetypeFilter && (
+                  <div className="mt-6 rounded-md border border-white/10 bg-black/30 p-4">
+                    <h2 className="font-michroma text-sm uppercase tracking-wide text-white">
+                      {archetypeFilter}
+                    </h2>
+
+                    <p className="mt-3 font-michroma text-xs leading-relaxed text-white/60">
+                      {selectedArchetypeInfo?.description ??
+                        "A player identity class based on this player's strongest statistical profile."}
+                    </p>
+
+                    <div className="mt-5">
+                      <p className="font-michroma text-[10px] uppercase text-white/40">
+                        Core Traits
+                      </p>
+
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {(
+                          selectedArchetypeInfo?.coreTraits ?? [
+                            "Statistical Identity",
+                          ]
+                        ).map((trait) => (
+                          <span
+                            key={trait}
+                            className="rounded border border-[#1bc2ec]/40 bg-[#1bc2ec]/10 px-2 py-1 font-michroma text-[10px] text-[#1bc2ec]"
+                          >
+                            {trait}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {/* List of players in chosen archetype */}
+                <div className="mt-4">
                   <h2 className="font-michroma text-sm uppercase tracking-wide text-white">
                     Top Players In Selected Archetype
                   </h2>
                 </div>
 
-                <div className="mt-4 flex flex-col gap-2">
+                <div className="mt-4 grid grid-cols-1 gap-2 lg:grid-cols-2">
                   {selectedArchetypePlayers.length === 0 ? (
                     <p className="font-michroma text-xs text-white/40">
                       Select an archetype to view players.
                     </p>
                   ) : (
-                    selectedArchetypePlayers.map((player, index) => (
-                      <div
-                        key={player.id}
-                        className="grid grid-cols-[56px_40px_1fr_72px] items-center rounded-md border border-white/10 bg-black/30 px-3 py-2"
-                      >
-                        <span className="font-michroma text-xs text-[#1bc2ec]">
-                          #{index + 1}
-                        </span>
+                    selectedArchetypePlayers.map((player, index) => {
+                      const rating = getRankingScore(player, "overall").toFixed(
+                        1,
+                      );
 
-                        <Image
-                          src={player.image}
-                          alt={player.name}
-                          width={40}
-                          height={40}
-                          className="h-10 w-10 rounded-md object-cover"
-                        />
+                      return (
+                        <div
+                          key={player.id}
+                          className="group relative grid w-full grid-cols-[44px_40px_1fr_52px_56px] items-center rounded-md border border-white/10 bg-black/30 px-3 py-2 transition-all duration-200 hover:border-[#1bc2ec]/50 hover:bg-[#1bc2ec]/10"
+                        >
+                          <span className="font-michroma text-xs text-[#1bc2ec]">
+                            #{index + 1}
+                          </span>
 
-                        <div className="min-w-0">
-                          <p className="truncate font-michroma text-xs text-white">
-                            {player.name}
-                          </p>
-                          <p
-                            className="mt-0.5 font-michroma text-[9px]"
-                            style={{ color: teamColors[player.team] }}
-                          >
-                            {player.team} - {player.position}
-                          </p>
+                          <Image
+                            src={player.image}
+                            alt={player.name}
+                            width={40}
+                            height={40}
+                            className="h-10 w-10 rounded-md object-cover -ml-5"
+                          />
+
+                          <div className="min-w-0 -ml-3">
+                            <p className="truncate font-michroma text-xs text-white">
+                              {player.name}
+                            </p>
+                            <p
+                              className="mt-0.5 font-michroma text-[9px]"
+                              style={{ color: teamColors[player.team] }}
+                            >
+                              {player.team}
+                            </p>
+                            <p className="mt-0.5 font-michroma text-[9px] text-white/40">
+                              {player.position} - #{player.jerseyNumber}
+                            </p>
+                          </div>
+
+                          {/* Overall score */}
+                          <span className="text-right font-michroma text-xs font-bold text-white">
+                            {rating}
+                          </span>
+
+                          {/* Tooltip for stats and card viewing */}
+                          <div className="pointer-events-none absolute left-1/2 top-full z-100 w-64 -translate-x-1/2 rounded-md border border-[#1bc2ec]/40 bg-black/95 p-3 opacity-0 transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100">
+                            <p className="font-michroma text-[10px] font-bold text-white">
+                              {player.name}
+                            </p>
+
+                            <p className="mt-2 font-michroma text-[9px] text-[#1bc2ec]">
+                              Overall Rating: {rating}
+                            </p>
+
+                            <p className="mt-3 font-michroma text-[9px] uppercase text-white/50">
+                              Top Traits
+                            </p>
+
+                            <div className="mt-1 flex flex-col gap-1">
+                              {getPlayerInsights(player).traits.map((trait) => (
+                                <p
+                                  key={trait.label}
+                                  className="font-michroma text-[9px] text-white/70"
+                                >
+                                  - {trait.label}
+                                </p>
+                              ))}
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                router.push(
+                                  `/players?player=${encodeURIComponent(
+                                    player.name,
+                                  )}`,
+                                );
+                              }}
+                              className="mt-3 w-full cursor-pointer rounded border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-3 py-2 font-michroma font-bold text-[12px] uppercase tracking-wide text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20"
+                            >
+                              View Full Card
+                            </button>
+                          </div>
                         </div>
-
-                        <span className="text-right font-michroma text-xs font-bold text-white">
-                          {getRankingScore(player, "overall").toFixed(1)}
-                        </span>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               </div>
