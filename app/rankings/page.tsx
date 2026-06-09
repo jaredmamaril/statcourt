@@ -275,7 +275,7 @@ export default function Rankings() {
                 </button>
 
                 {openFilter === "era" && (
-                  <div className="absolute left-0 top-full z-80 mt-2 w-full rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
+                  <div className="absolute left-0 top-full z-80 mt-2 w-full rounded-md border border-white/20 bg-[#07111f] py-1">
                     <button
                       type="button"
                       onClick={() => {
@@ -301,18 +301,20 @@ export default function Rankings() {
                   onClick={() =>
                     setOpenFilter(openFilter === "position" ? null : "position")
                   }
-                  className={`flex cursor-pointer items-center px-3 py-1 rounded-md border font-michroma text-xs transition-all duration-200 ${
+                  className={`flex cursor-pointer items-center gap-3 rounded-md border font-michroma text-xs transition-all duration-200 ${
                     positionFilter
-                      ? "gap-3 border-[#1bc2ec] bg-[#1bc2ec]/10 text-[#1bc2ec]"
-                      : "min-w-36 justify-between border-white/20 bg-black/30 text-white/70 hover:border-[#1bc2ec]/60"
+                      ? "w-18 border-[#1bc2ec] bg-[#1bc2ec]/10 px-3 py-1 text-[#1bc2ec]"
+                      : "w-40 border-white/20 bg-black/30 px-3 py-1 text-white/60 hover:border-white/60"
                   }`}
                 >
-                  <span>{positionFilter || "All Positions"}</span>
-                  <span className="text-[#1bc2ec]">▾</span>
+                  <span className="flex-1 text-left">
+                    {positionFilter || "All Positions"}
+                  </span>
+                  <span className="shrink-0 text-[#1bc2ec]">▾</span>
                 </button>
 
                 {openFilter === "position" && (
-                  <div className="absolute left-0 top-full z-80 mt-2 w-full rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
+                  <div className="absolute left-0 top-full z-80 mt-2 max-h-80 w-34 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1">
                     <button
                       type="button"
                       onClick={() => {
@@ -380,7 +382,7 @@ export default function Rankings() {
                 </button>
 
                 {openFilter === "team" && (
-                  <div className="absolute left-0 top-full z-80 mt-2 max-h-52 w-full overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
+                  <div className="absolute left-0 top-full z-80 mt-2 max-h-52 w-full overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1">
                     <button
                       type="button"
                       onClick={() => {
@@ -457,7 +459,7 @@ export default function Rankings() {
                 </button>
 
                 {openFilter === "archetype" && (
-                  <div className="absolute left-0 top-full z-80 mt-2 max-h-52 w-full overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
+                  <div className="absolute left-0 top-full z-80 mt-2 max-h-52 w-full overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1">
                     <button
                       type="button"
                       onClick={() => {
@@ -590,7 +592,7 @@ export default function Rankings() {
                     </div>
 
                     {/* Tooltip for stats and card viewing */}
-                    <div className="pointer-events-none absolute left-1/2 top-full z-100 w-64 -translate-x-1/2 rounded-md border border-[#1bc2ec]/40 bg-black/95 p-3 opacity-0 shadow-xl transition-opacity duration-200 group-hover:opacity-100 group-hover:pointer-events-auto">
+                    <div className="pointer-events-none absolute left-1/2 top-full z-100 w-64 -translate-x-1/2 rounded-md border border-[#1bc2ec]/40 bg-black/95 p-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-hover:pointer-events-auto">
                       <p className="font-michroma text-[10px] font-bold text-white">
                         {player.name}
                       </p>
@@ -704,7 +706,7 @@ export default function Rankings() {
                   </span>
 
                   {/* Tooltip for stats and card viewing */}
-                  <div className="pointer-events-none absolute left-1/2 top-full z-100 w-64 -translate-x-1/2 rounded-md border border-[#1bc2ec]/40 bg-black/95 p-3 opacity-0 shadow-xl transition-opacity duration-200 group-hover:opacity-100 group-hover:pointer-events-auto">
+                  <div className="pointer-events-none absolute left-1/2 top-full z-100 w-64 -translate-x-1/2 rounded-md border border-[#1bc2ec]/40 bg-black/95 p-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-hover:pointer-events-auto">
                     <p className="font-michroma text-[10px] font-bold text-white">
                       {player.name}
                     </p>
