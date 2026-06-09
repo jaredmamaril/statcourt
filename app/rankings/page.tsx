@@ -3,11 +3,15 @@
 import Image from "next/image";
 import {
   players,
+  positions,
+  teams,
   getPlayerInsights,
   normalizeStat,
   statMaxValues,
   teamColors,
+  teamLogos,
 } from "../components/court-data";
+import type { Team, Position } from "../components/court-data";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -132,14 +136,75 @@ function getArchetypePillStyle(
 }
 
 export default function Rankings() {
+  // Current filter being used
+  const [openFilter, setOpenFilter] = useState<
+    "era" | "position" | "team" | "archetype" | null
+  >(null);
+  // Different states for filters
+  const [eraFilter, setEraFilter] = useState("all-time");
+  const [positionFilter, setPositionFilter] = useState<Position | "">("");
+  const [teamFilter, setTeamFilter] = useState<Team | "">("");
+  const [playerSearch, setPlayerSearch] = useState("");
+  const [archetypeFilter, setArchetypeFilter] = useState("");
+  // Get archetypes available
+  const archetypeOptions = Array.from(
+    new Set(
+      players
+        .map((player) => getPlayerInsights(player).archetype?.label)
+        .filter((label): label is string => Boolean(label)),
+    ),
+  ).sort();
+  // Color for archetype options in dropdown
+  const archetypeOptionDetails = archetypeOptions.map((archetypeLabel) => {
+    const matchingPlayer = players.find(
+      (player) => getPlayerInsights(player).archetype?.label === archetypeLabel,
+    );
+
+    return {
+      label: archetypeLabel,
+      archetype: matchingPlayer
+        ? getPlayerInsights(matchingPlayer).archetype
+        : null,
+    };
+  });
+  // For displaying rarity color in main screen
+  const selectedArchetypeOption = archetypeOptionDetails.find(
+    (option) => option.label === archetypeFilter,
+  );
+  // For border rarity color in main screen
+  const selectedArchetypeColor = selectedArchetypeOption?.archetype
+    ? getArchetypePillStyle(selectedArchetypeOption.archetype).color
+    : undefined;
+
   // Router to travel to players page
   const router = useRouter();
 
   // Current tab, default is overall tab
   const [activeTab, setActiveTab] = useState<RankingTab>("overall");
 
-  // Get ranked players from highest rated to lowest based on category
-  const rankedPlayers = [...players].sort(
+  // Filter out players based on search
+  const filteredPlayers = players.filter((player) => {
+    const archetype = getPlayerInsights(player).archetype;
+
+    const matchesSearch = player.name
+      .toLowerCase()
+      .includes(playerSearch.toLowerCase());
+
+    const matchesPosition = positionFilter
+      ? player.position === positionFilter
+      : true;
+
+    const matchesTeam = teamFilter ? player.team === teamFilter : true;
+
+    const matchesArchetype = archetypeFilter
+      ? archetype?.label === archetypeFilter
+      : true;
+
+    return matchesSearch && matchesPosition && matchesTeam && matchesArchetype;
+  });
+
+  // Get ranked players from highest rated to lowest based on category and filter
+  const rankedPlayers = [...filteredPlayers].sort(
     (a, b) => getRankingScore(b, activeTab) - getRankingScore(a, activeTab),
   );
 
@@ -191,6 +256,261 @@ export default function Rankings() {
             <h1 className="font-michroma text-sm uppercase tracking-wide text-white">
               {rankingHeading}
             </h1>
+
+            {/* Filter bar */}
+            <div className="flex flex-wrap items-center justify-start gap-2 mt-2">
+              {/* Era filter */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOpenFilter(openFilter === "era" ? null : "era")
+                  }
+                  className="flex min-w-28 cursor-pointer items-center justify-between rounded-md border border-white/20 bg-black/30 px-3 py-1 font-michroma text-xs text-white/70 transition hover:border-[#1bc2ec]/60"
+                >
+                  <span>
+                    {eraFilter === "all-time" ? "All-Time" : eraFilter}
+                  </span>
+                  <span className="text-[#1bc2ec]">▾</span>
+                </button>
+
+                {openFilter === "era" && (
+                  <div className="absolute left-0 top-full z-80 mt-2 w-full rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEraFilter("all-time");
+                        setOpenFilter(null);
+                      }}
+                      className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs transition ${
+                        eraFilter === "all-time"
+                          ? "bg-[#1bc2ec]/20 text-[#1bc2ec]"
+                          : "text-white/70 hover:bg-white/10"
+                      }`}
+                    >
+                      All-Time
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Position filter */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOpenFilter(openFilter === "position" ? null : "position")
+                  }
+                  className={`flex cursor-pointer items-center px-3 py-1 rounded-md border font-michroma text-xs transition-all duration-200 ${
+                    positionFilter
+                      ? "gap-3 border-[#1bc2ec] bg-[#1bc2ec]/10 text-[#1bc2ec]"
+                      : "min-w-36 justify-between border-white/20 bg-black/30 text-white/70 hover:border-[#1bc2ec]/60"
+                  }`}
+                >
+                  <span>{positionFilter || "All Positions"}</span>
+                  <span className="text-[#1bc2ec]">▾</span>
+                </button>
+
+                {openFilter === "position" && (
+                  <div className="absolute left-0 top-full z-80 mt-2 w-full rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPositionFilter("");
+                        setOpenFilter(null);
+                      }}
+                      className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs transition ${
+                        positionFilter === ""
+                          ? "bg-[#1bc2ec]/20 text-[#1bc2ec]"
+                          : "text-white/70 hover:bg-white/10"
+                      }`}
+                    >
+                      All Positions
+                    </button>
+
+                    {positions.map((position) => (
+                      <button
+                        key={position}
+                        type="button"
+                        onClick={() => {
+                          setPositionFilter(position);
+                          setOpenFilter(null);
+                        }}
+                        className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs transition ${
+                          positionFilter === position
+                            ? "bg-[#1bc2ec]/20 text-[#1bc2ec]"
+                            : "text-white/70 hover:bg-white/10"
+                        }`}
+                      >
+                        {position}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Team filter */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOpenFilter(openFilter === "team" ? null : "team")
+                  }
+                  className="flex min-w-32 cursor-pointer items-center justify-between rounded-md border border-white/20 bg-black/30 px-3 py-1 font-michroma text-xs text-white/70 transition hover:border-[#1bc2ec]/60"
+                  style={{
+                    color: teamFilter ? teamColors[teamFilter] : undefined,
+                    borderColor: teamFilter
+                      ? teamColors[teamFilter]
+                      : undefined,
+                  }}
+                >
+                  <span className="flex items-center gap-2">
+                    {teamFilter && (
+                      <Image
+                        src={teamLogos[teamFilter]}
+                        alt={`${teamFilter} logo`}
+                        width={16}
+                        height={16}
+                        className="h-4 w-4 object-contain"
+                      />
+                    )}
+                    <span>{teamFilter || "All Teams"}</span>
+                  </span>
+                  <span className="text-[#1bc2ec]">▾</span>
+                </button>
+
+                {openFilter === "team" && (
+                  <div className="absolute left-0 top-full z-80 mt-2 max-h-52 w-full overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTeamFilter("");
+                        setOpenFilter(null);
+                      }}
+                      className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs transition ${
+                        teamFilter === ""
+                          ? "bg-[#1bc2ec]/20 text-[#1bc2ec]"
+                          : "text-white/70 hover:bg-white/10"
+                      }`}
+                    >
+                      All Teams
+                    </button>
+
+                    {teams.map((team) => (
+                      <button
+                        key={team}
+                        type="button"
+                        onClick={() => {
+                          setTeamFilter(team);
+                          setOpenFilter(null);
+                        }}
+                        className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs transition ${
+                          teamFilter === team
+                            ? "bg-[#1bc2ec]/20"
+                            : "hover:bg-white/10"
+                        }`}
+                        style={{ color: teamColors[team] }}
+                      >
+                        <span className="flex items-center gap-2">
+                          <Image
+                            src={teamLogos[team]}
+                            alt={`${team} logo`}
+                            width={16}
+                            height={16}
+                            className="h-4 w-4 object-contain"
+                          />
+                          <span>{team}</span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Archetype filter */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOpenFilter(
+                      openFilter === "archetype" ? null : "archetype",
+                    )
+                  }
+                  className="flex min-w-40 cursor-pointer items-center justify-between rounded-md border border-white/20 bg-black/30 px-3 py-1 font-michroma text-xs text-white/70 transition hover:border-[#1bc2ec]/60"
+                  style={{
+                    borderColor: selectedArchetypeColor,
+                  }}
+                >
+                  <span
+                    className="truncate"
+                    style={{
+                      color: selectedArchetypeOption?.archetype
+                        ? getArchetypePillStyle(
+                            selectedArchetypeOption.archetype,
+                          ).color
+                        : undefined,
+                    }}
+                  >
+                    {archetypeFilter || "All Archetypes"}
+                  </span>
+                  <span className="text-[#1bc2ec]">▾</span>
+                </button>
+
+                {openFilter === "archetype" && (
+                  <div className="absolute left-0 top-full z-80 mt-2 max-h-52 w-full overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setArchetypeFilter("");
+                        setOpenFilter(null);
+                      }}
+                      className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs transition ${
+                        archetypeFilter === ""
+                          ? "bg-[#1bc2ec]/20 text-[#1bc2ec]"
+                          : "text-white/70 hover:bg-white/10"
+                      }`}
+                    >
+                      All Archetypes
+                    </button>
+
+                    {archetypeOptionDetails.map(({ label, archetype }) => {
+                      const archetypeColor = archetype
+                        ? getArchetypePillStyle(archetype).color
+                        : undefined;
+
+                      return (
+                        <button
+                          key={label}
+                          type="button"
+                          onClick={() => {
+                            setArchetypeFilter(label);
+                            setOpenFilter(null);
+                          }}
+                          className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs transition ${
+                            archetypeFilter === label
+                              ? "bg-[#1bc2ec]/20"
+                              : "hover:bg-white/10"
+                          }`}
+                          style={{
+                            color: archetypeColor,
+                          }}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Player search */}
+              <input
+                value={playerSearch}
+                onChange={(event) => setPlayerSearch(event.target.value)}
+                placeholder="Search Player..."
+                className="min-w-44 rounded-md border border-white/20 bg-black/30 px-3 py-1 font-michroma text-xs text-white outline-none placeholder:text-[#2da6c4]/80 focus:border-[#1bc2ec]"
+              />
+            </div>
 
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
               {/* Top 3 players in section */}
