@@ -472,7 +472,11 @@ export default function Rankings() {
                         key={label}
                         type="button"
                         onClick={() => setArchetypeFilter(label)}
-                        className="rounded-md border bg-black/30 px-3 py-3 text-left font-michroma text-xs transition hover:bg-white/10"
+                        className={`cursor-pointer rounded-md border bg-black/30 text-left font-michroma transition-all duration-200 hover:bg-white/10 ${
+                          isSelected
+                            ? "scale-[1.03] px-4 py-4 text-sm"
+                            : "px-3 py-3 text-xs"
+                        }`}
                         style={{
                           color: archetypeColor,
                           borderColor: isSelected
