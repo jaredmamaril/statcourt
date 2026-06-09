@@ -30,11 +30,24 @@ import {
 } from "recharts";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+
+// Checks URL for finding player
+function getInitialPlayerFromUrl() {
+  if (typeof window === "undefined") return "";
+
+  const playerFromUrl = new URLSearchParams(window.location.search).get(
+    "player",
+  );
+
+  if (!playerFromUrl) return "";
+
+  return players.find((player) => player.name === playerFromUrl)?.name ?? "";
+}
 
 export default function Players() {
   // State for filters and dropdowns
-  const [currentPlayer, setCurrentPlayer] = useState("");
+  const [currentPlayer, setCurrentPlayer] = useState(getInitialPlayerFromUrl);
   const [playerSearch, setPlayerSearch] = useState("");
   const [favorites, setFavorites] = useState<string[]>([]);
   const [showFavorites, setShowFavorites] = useState(false);
@@ -226,22 +239,6 @@ export default function Players() {
 
   // Router to travel to court page
   const router = useRouter();
-  // Parameters to read query to specific card
-  const searchParams = useSearchParams();
-  useEffect(() => {
-    const playerFromUrl = searchParams.get("player");
-
-    if (!playerFromUrl) return;
-
-    const matchingPlayer = players.find(
-      (player) => player.name === playerFromUrl,
-    );
-
-    if (!matchingPlayer) return;
-
-    setCurrentPlayer(matchingPlayer.name);
-    setIsCardFlipped(false);
-  }, [searchParams]);
 
   // Current players being compared on court
   function getSavedCompareSlots(): CompareSlots {
@@ -398,8 +395,18 @@ export default function Players() {
                             ? "bg-[#1bc2ec]/10 text-[#1bc2ec]"
                             : "text-white/70 hover:bg-white/10"
                         }`}
+                        style={{ color: teamColors[team] }}
                       >
-                        {team}
+                        <span className="flex items-center gap-2">
+                          <Image
+                            src={teamLogos[team]}
+                            alt={`${team} logo`}
+                            width={16}
+                            height={16}
+                            className="h-4 w-4 object-contain"
+                          />
+                          <span>{team}</span>
+                        </span>
                       </button>
                     ))}
                   </div>
