@@ -459,13 +459,32 @@ export default function Rankings() {
                 <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                   {archetypeOptionDetails.map(({ label, archetype }) => {
                     const isSelected = archetypeFilter === label;
+
                     const archetypeColor = archetype
                       ? getArchetypePillStyle(archetype).color
                       : "#94A3B8";
+
                     const playerCount = players.filter(
                       (player) =>
                         getPlayerInsights(player).archetype?.label === label,
                     ).length;
+
+                    // Players in archetype group
+                    const archetypePlayers = players.filter(
+                      (player) =>
+                        getPlayerInsights(player).archetype?.label === label,
+                    );
+
+                    // Average rating between all players in archetype
+                    const averageRating =
+                      archetypePlayers.length > 0
+                        ? archetypePlayers.reduce(
+                            (total, player) =>
+                              total + getRankingScore(player, "overall"),
+                            0,
+                          ) / archetypePlayers.length
+                        : null;
+
                     // Highest overall player in archetype group
                     const representative = players
                       .filter(
@@ -484,10 +503,8 @@ export default function Rankings() {
                         key={label}
                         type="button"
                         onClick={() => setArchetypeFilter(label)}
-                        className={`cursor-pointer rounded-md border bg-black/30 text-left font-michroma transition-all duration-200 hover:bg-white/10 ${
-                          isSelected
-                            ? "scale-[1.03] px-4 py-4 text-sm"
-                            : "px-3 py-3 text-xs"
+                        className={`rounded-md cursor-pointer border bg-black/30 px-4 py-4 text-left font-michroma transition-all duration-200 hover:bg-white/10 ${
+                          isSelected ? "scale-[1.02]" : ""
                         }`}
                         style={{
                           color: archetypeColor,
@@ -496,24 +513,42 @@ export default function Rankings() {
                             : "rgba(255,255,255,0.12)",
                         }}
                       >
-                        <span className="block">{label}</span>
-                        <span className="mt-1 block text-[9px] text-white/40">
-                          {playerCount}{" "}
-                          {playerCount === 1 ? "Player" : "Players"}
-                        </span>
+                        <span className="grid grid-cols-[1fr_auto] items-center gap-4">
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm">
+                              {label}
+                            </span>
 
-                        {representative && (
-                          <span className="mt-2 flex items-center gap-2">
-                            <span className="min-w-0">
+                            <span className="mt-1 block text-[10px] text-white/40">
+                              {archetypePlayers.length}{" "}
+                              {archetypePlayers.length === 1
+                                ? "Player"
+                                : "Players"}
+                            </span>
+
+                            {representative && (
+                              <>
+                                <span className="mt-4 block text-[9px] uppercase text-white/35">
+                                  Face of Archetype
+                                </span>
+                                <span className="mt-1 block truncate text-[10px] text-white/75">
+                                  {representative.name}
+                                </span>
+                              </>
+                            )}
+                          </span>
+
+                          {averageRating !== null && (
+                            <span className="text-center">
                               <span className="block text-[8px] uppercase text-white/35">
-                                Face of Archetype
+                                Avg
                               </span>
-                              <span className="block truncate text-[9px] text-white/70">
-                                {representative.name}
+                              <span className="mt-1 block text-md font-bold text-white">
+                                {averageRating.toFixed(1)}
                               </span>
                             </span>
-                          </span>
-                        )}
+                          )}
+                        </span>
                       </button>
                     );
                   })}
