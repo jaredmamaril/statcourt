@@ -435,6 +435,10 @@ export default function Rankings() {
                     const archetypeColor = archetype
                       ? getArchetypePillStyle(archetype).color
                       : "#94A3B8";
+                    const playerCount = players.filter(
+                      (player) =>
+                        getPlayerInsights(player).archetype?.label === label,
+                    ).length;
 
                     return (
                       <button
@@ -449,7 +453,11 @@ export default function Rankings() {
                             : "rgba(255,255,255,0.12)",
                         }}
                       >
-                        {label}
+                        <span className="block">{label}</span>
+                        <span className="mt-1 block text-[9px] text-white/40">
+                          {playerCount}{" "}
+                          {playerCount === 1 ? "Player" : "Players"}
+                        </span>
                       </button>
                     );
                   })}
