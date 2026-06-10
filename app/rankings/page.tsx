@@ -18,6 +18,16 @@ import type {
 } from "../components/court-data";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  Trophy,
+  Sparkles,
+  Flame,
+  Target,
+  Brain,
+  Shield,
+  Gauge,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 // Safety for tabs
 type RankingTab =
@@ -30,14 +40,24 @@ type RankingTab =
   | "archetypes";
 
 // Different ranking tabs to compare with
-const rankingTabs: { label: string; value: RankingTab }[] = [
-  { label: "Overall", value: "overall" },
-  { label: "Archetypes", value: "archetypes" },
-  { label: "Scoring", value: "scoring" },
-  { label: "Shooting", value: "shooting" },
-  { label: "Playmaking", value: "playmaking" },
-  { label: "Rebounding", value: "rebounding" },
-  { label: "Efficiency", value: "efficiency" },
+const rankingTabs: {
+  label: string;
+  value: RankingTab;
+  Icon: LucideIcon;
+  color: string;
+}[] = [
+  { label: "Overall", value: "overall", Icon: Trophy, color: "#EFBF04" },
+  {
+    label: "Archetypes",
+    value: "archetypes",
+    Icon: Sparkles,
+    color: "#A855F7",
+  },
+  { label: "Scoring", value: "scoring", Icon: Flame, color: "#EF4444" },
+  { label: "Shooting", value: "shooting", Icon: Target, color: "#1bc2ec" },
+  { label: "Playmaking", value: "playmaking", Icon: Brain, color: "#3B82F6" },
+  { label: "Rebounding", value: "rebounding", Icon: Shield, color: "#A855F7" },
+  { label: "Efficiency", value: "efficiency", Icon: Gauge, color: "#22C55E" },
 ];
 
 // Rating shown on display for more appleasing results
@@ -420,6 +440,7 @@ export default function Rankings() {
         <div className="mt-8 flex w-full items-end gap-2 overflow-x-auto border-b border-[#1bc2ec]/30 pb-0">
           {rankingTabs.map((tab) => {
             const isActive = activeTab === tab.value;
+            const Icon = tab.Icon;
 
             return (
               // Each tab in row
@@ -433,7 +454,10 @@ export default function Rankings() {
                     : "py-2.5 border-white/10 bg-black/30 text-white/50 hover:border-white/30 hover:text-white/80"
                 }`}
               >
-                {tab.label}
+                <span className="flex items-center justify-center gap-2 whitespace-nowrap">
+                  <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
+                  <span>{tab.label}</span>
+                </span>
               </button>
             );
           })}
