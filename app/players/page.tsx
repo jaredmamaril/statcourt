@@ -310,8 +310,8 @@ export default function Players() {
               <input
                 value={playerSearch}
                 onChange={(e) => setPlayerSearch(e.target.value)}
-                placeholder="Search for a Player..."
-                className="w-full sm:w-64 rounded-md border border-white/30 bg-black/40 px-4 py-2 text-white/80 placeholder:text-[#1bc2ec]/80 font-michroma text-sm outline-none focus:border-white text-center"
+                placeholder="Search For a Player..."
+                className="w-full sm:w-64 rounded-md border border-white/30 bg-black/40 px-4 py-2 text-white/80 placeholder:text-white/35 font-michroma text-sm outline-none focus:border-white text-center"
               />
             </div>
             <div className="flex items-center justify-center">
