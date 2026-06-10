@@ -141,10 +141,17 @@ function getArchetypePillStyle(
 
 // Types for archetype description safety
 type ArchetypeRarity = PlayerInsightDisplay["rarity"];
+type ArchetypeStatBars = {
+  scoring: number;
+  rebounding: number;
+  playmaking: number;
+  shooting: number;
+};
 type ArchetypeMetadata = {
   description: string;
   coreTraits: string[];
   rarity: ArchetypeRarity;
+  statBars: ArchetypeStatBars;
 };
 // Archetype descriptions
 const archetypeInfoByLabel = {
@@ -157,6 +164,7 @@ const archetypeInfoByLabel = {
       "Scoring Gravity",
     ],
     rarity: "gold",
+    statBars: { scoring: 9, rebounding: 3, playmaking: 6, shooting: 10 },
   },
   "Generational Scorer": {
     description:
@@ -167,12 +175,14 @@ const archetypeInfoByLabel = {
       "Scoring Volume",
     ],
     rarity: "gold",
+    statBars: { scoring: 10, rebounding: 5, playmaking: 5, shooting: 7 },
   },
   "Generational Creator": {
     description:
       "Controls possessions through elite passing vision, offensive command, and teammate creation.",
     coreTraits: ["Floor General", "Elite Playmaker", "Offense Orchestrator"],
     rarity: "gold",
+    statBars: { scoring: 6, rebounding: 5, playmaking: 10, shooting: 5 },
   },
   "Triple-Double Machine": {
     description:
@@ -183,18 +193,21 @@ const archetypeInfoByLabel = {
       "Strong Rebounding Impact",
     ],
     rarity: "purple",
+    statBars: { scoring: 8, rebounding: 9, playmaking: 9, shooting: 6 },
   },
   "Interior Anchor": {
     description:
       "Controls the paint through rebounding, interior efficiency, and physical presence.",
     coreTraits: ["Dominant Rebounder", "Paint Presence", "Interior Efficiency"],
     rarity: "purple",
+    statBars: { scoring: 7, rebounding: 10, playmaking: 4, shooting: 2 },
   },
   "Historic Rebounding": {
     description:
       "Creates a historic possession advantage through elite rebounding dominance.",
     coreTraits: ["Dominant Rebounder", "Second-Chance Value", "Paint Control"],
     rarity: "purple",
+    statBars: { scoring: 6, rebounding: 10, playmaking: 3, shooting: 1 },
   },
   "Paint Dominator": {
     description:
@@ -205,6 +218,7 @@ const archetypeInfoByLabel = {
       "Interior Scoring",
     ],
     rarity: "blue",
+    statBars: { scoring: 8, rebounding: 10, playmaking: 3, shooting: 2 },
   },
   "Primary Scoring Engine": {
     description:
@@ -215,18 +229,21 @@ const archetypeInfoByLabel = {
       "High-Usage Offensive Focus",
     ],
     rarity: "blue",
+    statBars: { scoring: 9, rebounding: 5, playmaking: 5, shooting: 6 },
   },
   "Two-Way Threat": {
     description:
       "Pairs star-level scoring with major physical impact through rebounding and matchup versatility.",
     coreTraits: ["Scoring Pressure", "Rebounding Impact", "Versatile Profile"],
     rarity: "blue",
+    statBars: { scoring: 8, rebounding: 8, playmaking: 5, shooting: 5 },
   },
   "Floor General": {
     description:
       "Runs the offense through elite passing, pace control, and efficient decision-making.",
     coreTraits: ["Elite Playmaker", "Offensive Control", "Decision-Making"],
     rarity: "blue",
+    statBars: { scoring: 6, rebounding: 4, playmaking: 9, shooting: 5 },
   },
   "Balanced Star": {
     description:
@@ -237,36 +254,42 @@ const archetypeInfoByLabel = {
       "All-Around Impact",
     ],
     rarity: "blue",
+    statBars: { scoring: 8, rebounding: 7, playmaking: 7, shooting: 7 },
   },
   "Post-Up Specialist": {
     description:
       "Creates offense from interior touches, physical positioning, and efficient close-range scoring.",
     coreTraits: ["Interior Scoring", "Efficient Finisher", "Paint Touches"],
     rarity: "blue",
+    statBars: { scoring: 8, rebounding: 8, playmaking: 3, shooting: 2 },
   },
   "Stretch Big": {
     description:
       "Combines frontcourt size and rebounding with floor-spacing shooting value.",
     coreTraits: ["Floor Spacing", "Frontcourt Skill", "Rebounding Presence"],
     rarity: "blue",
+    statBars: { scoring: 7, rebounding: 8, playmaking: 5, shooting: 8 },
   },
   "Volume Scorer": {
     description:
       "Carries a heavy scoring workload through shot volume, even without elite efficiency.",
     coreTraits: ["Scoring Volume", "Shot Creation", "High Usage"],
     rarity: "blue",
+    statBars: { scoring: 9, rebounding: 4, playmaking: 4, shooting: 6 },
   },
   "Pure Point Guard": {
     description:
       "Creates value primarily through passing, tempo control, and organizing team offense.",
     coreTraits: ["Passing Control", "Floor General", "Team Creation"],
     rarity: "blue",
+    statBars: { scoring: 4, rebounding: 4, playmaking: 9, shooting: 5 },
   },
   "Elite Shot Creator": {
     description:
       "Generates high-level scoring chances while maintaining strong offensive efficiency.",
     coreTraits: ["Shot Creation", "Scoring Pressure", "Self-Created Offense"],
     rarity: "blue",
+    statBars: { scoring: 9, rebounding: 4, playmaking: 5, shooting: 7 },
   },
   "Elite Scorer": {
     description:
@@ -277,6 +300,7 @@ const archetypeInfoByLabel = {
       "Shot Pressure",
     ],
     rarity: "blue",
+    statBars: { scoring: 9, rebounding: 5, playmaking: 4, shooting: 7 },
   },
 } satisfies Record<string, ArchetypeMetadata>;
 
@@ -464,11 +488,6 @@ export default function Rankings() {
                       ? getArchetypePillStyle(archetype).color
                       : "#94A3B8";
 
-                    const playerCount = players.filter(
-                      (player) =>
-                        getPlayerInsights(player).archetype?.label === label,
-                    ).length;
-
                     // Players in archetype group
                     const archetypePlayers = players.filter(
                       (player) =>
@@ -541,7 +560,7 @@ export default function Rankings() {
                           {averageRating !== null && (
                             <span className="text-center">
                               <span className="block text-[8px] uppercase text-white/35">
-                                Avg
+                                Avg Ovr
                               </span>
                               <span className="mt-1 block text-md font-bold text-white">
                                 {averageRating.toFixed(1)}
@@ -566,7 +585,7 @@ export default function Rankings() {
                         "A player identity class based on this player's strongest statistical profile."}
                     </p>
 
-                    <div className="mt-5">
+                    <div className="mt-3">
                       <p className="font-michroma text-[10px] uppercase text-white/40">
                         Core Traits
                       </p>
@@ -586,6 +605,44 @@ export default function Rankings() {
                         ))}
                       </div>
                     </div>
+
+                    {/* Stat bars */}
+                    {selectedArchetypeInfo && (
+                      <div className="min-w-56">
+                        {[
+                          ["Scoring", selectedArchetypeInfo.statBars.scoring],
+                          [
+                            "Rebounding",
+                            selectedArchetypeInfo.statBars.rebounding,
+                          ],
+                          [
+                            "Playmaking",
+                            selectedArchetypeInfo.statBars.playmaking,
+                          ],
+                          ["Shooting", selectedArchetypeInfo.statBars.shooting],
+                        ].map(([label, value]) => (
+                          <div key={label} className="mt-2">
+                            <div className="mb-1 flex items-center justify-between gap-3">
+                              <span className="font-michroma text-[9px] text-white/50">
+                                {label}
+                              </span>
+                              <span className="font-michroma text-[9px] text-white/40">
+                                {value}/10
+                              </span>
+                            </div>
+
+                            <div className="h-1.5 w-full rounded bg-white/10">
+                              <div
+                                className="h-full rounded bg-[#1bc2ec]"
+                                style={{
+                                  width: `${Number(value) * 10}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
                 {/* List of players in chosen archetype */}
