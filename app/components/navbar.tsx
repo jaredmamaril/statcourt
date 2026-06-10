@@ -50,8 +50,8 @@ export default function Navbar() {
               priority
               className="rounded-md h-12 w-12"
             />
-            <span className="font-michroma text-2xl text-[#1bc2ec]">
-              STATCOURT
+            <span className="font-michroma text-2xl font-bold text-[#1bc2ec]">
+              statcourt
             </span>
           </Link>
           <nav className="hidden items-center justify-center gap-6 md:flex">
