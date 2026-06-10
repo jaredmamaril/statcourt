@@ -43,12 +43,12 @@ export default function Navbar() {
           {/* Logo and site name on the left */}
           <Link href="/" className="flex w-fit items-center gap-3">
             <Image
-              src="/statcourt-logo.png"
+              src="/statcourt-logo.svg"
               alt="StatCourt Logo"
               width={32}
               height={32}
               priority
-              className="rounded-md h-11 w-11"
+              className="rounded-md h-12 w-12"
             />
             <span className="font-michroma text-2xl text-[#1bc2ec]">
               STATCOURT
