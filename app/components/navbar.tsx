@@ -28,42 +28,55 @@ export default function Navbar() {
   }
 
   return (
-    <header className="relative z-50 border-b border-transparent bg-background backdrop-blur-sm">
-      <div className="grid h-12 w-full grid-cols-3 items-center px-3">
-        {/* Logo and site name on the left */}
-        <Link href="/" className="flex w-fit items-center gap-3">
-          <Image
-            src="/statcourt-logo.png"
-            alt="StatCourt Logo"
-            width={32}
-            height={32}
-            priority
-            className="rounded-md h-11 w-11"
-          />
-          <span className="font-michroma text-2xl text-white">STATCOURT</span>
-        </Link>
-        <nav className="hidden items-center justify-center gap-6 md:flex">
-          {/* Navigation links */}
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`font-michroma text-base transition-colors duration-200 ${isActive ? "text-[#347A99] text-lg font-bold" : "text-white/90 hover:text-[#347A99]"}`}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="justify-self-end">
-          {/* Future: this button could open a sign-in modal or redirect to a sign-in page, and could be conditionally rendered based on user authentication state */}
-          <button className="cursor-pointer rounded-md bg-[#347A99] px-4 py-2 text-base font-michroma text-white">
-            SIGN IN
-          </button>
+    <>
+      <header
+        className="border-b border-transparent bg-background"
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 999999,
+        }}
+      >
+        <div className="grid h-12 w-full grid-cols-3 items-center px-3">
+          {/* Logo and site name on the left */}
+          <Link href="/" className="flex w-fit items-center gap-3">
+            <Image
+              src="/statcourt-logo.png"
+              alt="StatCourt Logo"
+              width={32}
+              height={32}
+              priority
+              className="rounded-md h-11 w-11"
+            />
+            <span className="font-michroma text-2xl text-white">STATCOURT</span>
+          </Link>
+          <nav className="hidden items-center justify-center gap-6 md:flex">
+            {/* Navigation links */}
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`font-michroma text-base transition-colors duration-200 ${isActive ? "text-[#347A99] text-lg font-bold" : "text-white/90 hover:text-[#347A99]"}`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+          <div className="justify-self-end">
+            {/* Future: this button could open a sign-in modal or redirect to a sign-in page, and could be conditionally rendered based on user authentication state */}
+            <button className="cursor-pointer rounded-md bg-[#347A99] px-4 py-2 text-base font-michroma text-white">
+              SIGN IN
+            </button>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      <div className="h-12" aria-hidden="true" />
+    </>
   );
 }

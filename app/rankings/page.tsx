@@ -32,12 +32,12 @@ type RankingTab =
 // Different ranking tabs to compare with
 const rankingTabs: { label: string; value: RankingTab }[] = [
   { label: "Overall", value: "overall" },
+  { label: "Archetypes", value: "archetypes" },
   { label: "Scoring", value: "scoring" },
   { label: "Shooting", value: "shooting" },
   { label: "Playmaking", value: "playmaking" },
   { label: "Rebounding", value: "rebounding" },
   { label: "Efficiency", value: "efficiency" },
-  { label: "Archetypes", value: "archetypes" },
 ];
 
 // Rating shown on display for more appleasing results
@@ -414,7 +414,7 @@ export default function Rankings() {
   const ratingLabel = `${activeTabLabel} Rating`;
 
   return (
-    <main className="min-h-screen overflow-hidden text-white overflow-y-auto">
+    <main className="min-h-screen overflow-x-hidden text-white">
       <section className="mx-auto w-full max-w-6xl px-6 pb-12">
         {/* Ranking tabs */}
         <div className="mt-8 flex w-full items-end gap-2 overflow-x-auto border-b border-[#1bc2ec]/30 pb-0">
@@ -645,6 +645,7 @@ export default function Rankings() {
                     )}
                   </div>
                 )}
+
                 {/* List of players in chosen archetype */}
                 <div className="mt-4">
                   <h2 className="font-michroma text-sm uppercase tracking-wide text-white">
@@ -800,7 +801,7 @@ export default function Rankings() {
                       className={`flex cursor-pointer items-center gap-3 rounded-md border font-michroma text-xs transition ${
                         positionFilter
                           ? "w-18 border-[#1bc2ec] bg-[#1bc2ec]/10 px-3 py-1 text-[#1bc2ec]"
-                          : "w-40 border-white/20 bg-black/30 px-3 py-1 text-white/60 hover:border-white/60"
+                          : "w-40 border-white/20 bg-black/30 px-3 py-1 text-white/70 hover:border-white/60"
                       }`}
                     >
                       <span className="flex-1 text-left">

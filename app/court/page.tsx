@@ -232,7 +232,7 @@ export default function Court() {
   }, []);
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#07111f] text-white">
+    <main className="min-h-screen overflow-x-hidden text-white">
       <section className="relative flex min-h-screen overflow-hidden items-center justify-between bg-[url('/court.svg')] bg-cover bg-center bg-no-repeat px-6 sm:px-10">
         {/* Left player selection */}
         <div className="pointer-events-none absolute left-0 top-0 z-10 flex h-full w-1/2 justify-start pl-3 pt-20 animate-[courtLeftIn_600ms_ease-out_both]">

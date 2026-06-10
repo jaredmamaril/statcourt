@@ -283,7 +283,7 @@ export default function Players() {
   }
 
   return (
-    <main className="min-h-screen overflow-hidden text-white overflow-y-auto">
+    <main className="min-h-screen overflow-x-hidden text-white">
       <section className="w-full max-w-6xl mx-auto px-6 pt-4 pb-12 relative">
         <div
           className={
@@ -539,7 +539,7 @@ export default function Players() {
 
             {/* Player list */}
             <div className="flex items-center justify-center">
-              <div className="flex flex-col w-full max-w-100 gap-1 max-h-[70vh] overflow-y-auto pr-2">
+              <div className="flex flex-col w-full max-w-100 gap-1 pr-2">
                 {/* No player(s) cases */}
                 {filteredPlayers.length === 0 ? (
                   <p className="text-center text-white/40 font-michroma text-xs py-8">
