@@ -440,7 +440,7 @@ export default function Rankings() {
         </div>
 
         {/* Open ranking panel */}
-        <div className="rounded-b-md border border-t-0 border-[#1bc2ec]/30 bg-black/25 p-4">
+        <div className="rounded-b-md border border-t-0 border-[#1bc2ec]/50 bg-black/25 p-4">
           {/* Top ranking leaders */}
           <div className="mb-6">
             {/* If current tab is archetypes */}
@@ -1007,7 +1007,7 @@ export default function Rankings() {
                     value={playerSearch}
                     onChange={(event) => setPlayerSearch(event.target.value)}
                     placeholder="Search Player..."
-                    className="min-w-44 rounded-md border border-white/20 bg-black/30 px-3 py-1 font-michroma text-xs text-white outline-none placeholder:text-[#1bc2ec]/80 focus:border-[#1bc2ec]"
+                    className="min-w-44 rounded-md border border-white/20 bg-black/30 px-3 py-1 font-michroma text-xs text-white outline-none placeholder:text-white/35 focus:border-white"
                   />
                 </div>
 
