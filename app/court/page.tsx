@@ -36,25 +36,33 @@ function getSavedCompareSlots(): CompareSlots {
 
 export default function Court() {
   // State for left player selection
-  const [leftPlayer, setLeftPlayer] = useState(
-    () => getSavedCompareSlots().left,
-  );
+  const [leftPlayer, setLeftPlayer] = useState("");
   const [isLeftDropdownOpen, setIsLeftDropdownOpen] = useState(false);
   const selectedLeftPlayer = players.find(
     (player) => player.name === leftPlayer,
   );
 
   // State for right player selection
-  const [rightPlayer, setRightPlayer] = useState(
-    () => getSavedCompareSlots().right,
-  );
+  const [rightPlayer, setRightPlayer] = useState("");
   const [isRightDropdownOpen, setIsRightDropdownOpen] = useState(false);
   const selectedRightPlayer = players.find(
     (player) => player.name === rightPlayer,
   );
 
+  // If saved players have been loaded
+  const [hasLoadedSavedPlayers, setHasLoadedSavedPlayers] = useState(false);
+
   // Makes court page save who was on page
   useEffect(() => {
+    const savedSlots = getSavedCompareSlots();
+
+    setLeftPlayer(savedSlots.left);
+    setRightPlayer(savedSlots.right);
+    setHasLoadedSavedPlayers(true);
+  }, []);
+  useEffect(() => {
+    if (!hasLoadedSavedPlayers) return;
+
     localStorage.setItem(
       "statcourt-compare-slots",
       JSON.stringify({
@@ -62,7 +70,7 @@ export default function Court() {
         right: rightPlayer,
       }),
     );
-  }, [leftPlayer, rightPlayer]);
+  }, [leftPlayer, rightPlayer, hasLoadedSavedPlayers]);
 
   // Prepare radar chart data
   const radarData: RadarStatRow[] = [
@@ -238,7 +246,7 @@ export default function Court() {
         <div className="pointer-events-none absolute left-0 top-0 z-10 flex h-full w-1/2 justify-start pl-3 pt-20 animate-[courtLeftIn_600ms_ease-out_both]">
           <div className="pointer-events-auto flex flex-col items-center">
             {/* Heading for player selection */}
-            <h1 className="font-michroma text-xl text-white font-bold">
+            <h1 className="font-michroma text-xl text-[#1ab2ec] font-bold">
               CHOOSE YOUR PLAYER
             </h1>
 
@@ -262,7 +270,7 @@ export default function Court() {
               <button
                 type="button"
                 onClick={() => setIsLeftDropdownOpen(!isLeftDropdownOpen)}
-                className="flex cursor-pointer w-full items-center justify-between rounded-md border border-[#347A99]/50 bg-black/60 px-4 py-2 font-michroma text-white outline-none"
+                className="flex cursor-pointer w-full items-center justify-between rounded-md border border-white/30 bg-black/60 px-4 py-2 font-michroma text-white outline-none"
               >
                 <span>
                   {selectedLeftPlayer
@@ -381,7 +389,7 @@ export default function Court() {
         <div className="pointer-events-none absolute right-0 top-0 z-10 flex h-full w-1/2 justify-end pr-3 pt-20 animate-[courtRightIn_600ms_ease-out_both]">
           <div className="pointer-events-auto flex flex-col items-center">
             {/* Heading for player selection */}
-            <h1 className="font-michroma text-xl font-bold text-white">
+            <h1 className="font-michroma text-xl font-bold text-[#1ab2ec]">
               CHOOSE YOUR PLAYER
             </h1>
 
@@ -405,7 +413,7 @@ export default function Court() {
               <button
                 type="button"
                 onClick={() => setIsRightDropdownOpen(!isRightDropdownOpen)}
-                className="flex cursor-pointer w-full items-center justify-between rounded-md border border-[#347A99]/50 bg-black/60 px-4 py-2 font-michroma text-white outline-none"
+                className="flex cursor-pointer w-full items-center justify-between rounded-md border border-white/30 bg-black/60 px-4 py-2 font-michroma text-white outline-none"
               >
                 <span>
                   {selectedRightPlayer
