@@ -288,7 +288,7 @@ export default function Court() {
                     value={leftSearch}
                     onChange={(e) => setLeftSearch(e.target.value)}
                     placeholder="Search Player..."
-                    className="mx-2 mb-2 w-[calc(100%-1rem)] rounded-md border border-white/30 bg-black/40 px-3 py-1.5 text-white/80 placeholder:text-[#2da6c4] font-michroma"
+                    className="mx-2 mb-2 w-[calc(100%-1rem)] rounded-md border border-white/30 bg-black/40 px-3 py-1.5 text-white/80 placeholder:text-white/35 font-michroma"
                   />
                   {/* List of players filtered based on search input, rendered as buttons in the dropdown */}
                   {filteredLeftPlayers.map((player) => (
@@ -389,7 +389,7 @@ export default function Court() {
         <div className="pointer-events-none absolute right-0 top-0 z-10 flex h-full w-1/2 justify-end pr-3 pt-20 animate-[courtRightIn_600ms_ease-out_both]">
           <div className="pointer-events-auto flex flex-col items-center">
             {/* Heading for player selection */}
-            <h1 className="font-michroma text-xl font-bold text-[1bc2ec]">
+            <h1 className="font-michroma text-xl font-bold text-[#1bc2ec]">
               CHOOSE YOUR PLAYER
             </h1>
 
@@ -431,7 +431,7 @@ export default function Court() {
                     value={rightSearch}
                     onChange={(e) => setRightSearch(e.target.value)}
                     placeholder="Search Player..."
-                    className="mx-2 mb-2 w-[calc(100%-1rem)] rounded-md border border-white/30 bg-black/40 px-3 py-1.5 text-white/80 placeholder:text-[#2da6c4] font-michroma"
+                    className="mx-2 mb-2 w-[calc(100%-1rem)] rounded-md border border-white/30 bg-black/40 px-3 py-1.5 text-white/80 placeholder:text-white/35 font-michroma"
                   />
                   {/* List of players filtered based on search input, rendered as buttons in the dropdown */}
                   {filteredRightPlayers.map((player) => (
