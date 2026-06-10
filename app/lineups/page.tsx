@@ -1,12 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { Trophy, Flame, Brain, Shield, Target, Crown } from "lucide-react";
 
 type LineupTab = "featured" | "builder";
 
 const lineupTabs: { label: string; value: LineupTab }[] = [
   { label: "Featured Lineups", value: "featured" },
   { label: "Build Your Own", value: "builder" },
+];
+
+const lineupCards = [
+  { title: "Greatest Teams", color: "#EFBF04", Icon: Trophy },
+  { title: "Bucket Getters", color: "#EF4444", Icon: Flame },
+  { title: "Floor Generals", color: "#3B82F6", Icon: Brain },
+  { title: "Lockdown Squads", color: "#A855F7", Icon: Shield },
+  { title: "Splash Squads", color: "#1bc2ec", Icon: Target },
+  { title: "All-Time Teams", color: "#EFBF04", Icon: Crown },
 ];
 
 export default function Lineups() {
@@ -44,90 +54,56 @@ export default function Lineups() {
               </h1>
 
               <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
-                <button
-                  type="button"
-                  className="min-h-36 cursor-pointer rounded-md border border-[#1bc2ec]/30 bg-black/30 p-4 text-left transition hover:border-[#1bc2ec]/70 hover:bg-[#1bc2ec]/10"
-                >
-                  <h2 className="font-michroma text-sm text-[#1bc2ec]">
-                    Greatest Teams
-                  </h2>
-                  <p className="mt-3 font-michroma text-xs leading-relaxed text-white/35">
-                    Featured:
-                  </p>
-                  <p className="mt-3 font-michroma text-[10px] leading-relaxed text-white/35">
-                    Lineups:
-                  </p>
-                </button>
-                <button
-                  type="button"
-                  className="min-h-36 cursor-pointer rounded-md border border-[#1bc2ec]/30 bg-black/30 p-4 text-left transition hover:border-[#1bc2ec]/70 hover:bg-[#1bc2ec]/10"
-                >
-                  <h2 className="font-michroma text-sm text-[#1bc2ec]">
-                    Bucket Getters
-                  </h2>
-                  <p className="mt-3 font-michroma text-xs leading-relaxed text-white/35">
-                    Featured:
-                  </p>
-                  <p className="mt-3 font-michroma text-[10px] leading-relaxed text-white/35">
-                    Lineups:
-                  </p>
-                </button>
-                <button
-                  type="button"
-                  className="min-h-36 cursor-pointer rounded-md border border-[#1bc2ec]/30 bg-black/30 p-4 text-left transition hover:border-[#1bc2ec]/70 hover:bg-[#1bc2ec]/10"
-                >
-                  <h2 className="font-michroma text-sm text-[#1bc2ec]">
-                    Floor Generals
-                  </h2>
-                  <p className="mt-3 font-michroma text-xs leading-relaxed text-white/35">
-                    Featured:
-                  </p>
-                  <p className="mt-3 font-michroma text-[10px] leading-relaxed text-white/35">
-                    Lineups:
-                  </p>
-                </button>
-                <button
-                  type="button"
-                  className="min-h-36 cursor-pointer rounded-md border border-[#1bc2ec]/30 bg-black/30 p-4 text-left transition hover:border-[#1bc2ec]/70 hover:bg-[#1bc2ec]/10"
-                >
-                  <h2 className="font-michroma text-sm text-[#1bc2ec]">
-                    Lockdown Squads
-                  </h2>
-                  <p className="mt-3 font-michroma text-xs leading-relaxed text-white/35">
-                    Featured:
-                  </p>
-                  <p className="mt-3 font-michroma text-[10px] leading-relaxed text-white/35">
-                    Lineups:
-                  </p>
-                </button>
-                <button
-                  type="button"
-                  className="min-h-36 cursor-pointer rounded-md border border-[#1bc2ec]/30 bg-black/30 p-4 text-left transition hover:border-[#1bc2ec]/70 hover:bg-[#1bc2ec]/10"
-                >
-                  <h2 className="font-michroma text-sm text-[#1bc2ec]">
-                    Splash Squads
-                  </h2>
-                  <p className="mt-3 font-michroma text-xs leading-relaxed text-white/35">
-                    Featured:
-                  </p>
-                  <p className="mt-3 font-michroma text-[10px] leading-relaxed text-white/35">
-                    Lineups:
-                  </p>
-                </button>
-                <button
-                  type="button"
-                  className="min-h-36 cursor-pointer rounded-md border border-[#1bc2ec]/30 bg-black/30 p-4 text-left transition hover:border-[#1bc2ec]/70 hover:bg-[#1bc2ec]/10"
-                >
-                  <h2 className="font-michroma text-sm text-[#1bc2ec]">
-                    All-Time Teams
-                  </h2>
-                  <p className="mt-3 font-michroma text-xs leading-relaxed text-white/35">
-                    Featured:
-                  </p>
-                  <p className="mt-3 font-michroma text-[10px] leading-relaxed text-white/35">
-                    Lineups:
-                  </p>
-                </button>
+                {lineupCards.map((card) => {
+                  const Icon = card.Icon;
+
+                  return (
+                    <button
+                      key={card.title}
+                      type="button"
+                      className="grid min-h-36 cursor-pointer grid-cols-[1fr_auto] items-center gap-6 rounded-md border bg-black/30 p-4 text-left"
+                      style={{
+                        borderColor: `${card.color}80`,
+                      }}
+                    >
+                      <div className="flex flex-col justify-center">
+                        <div className="flex items-center gap-2">
+                          <Icon
+                            size={20}
+                            strokeWidth={2}
+                            style={{ color: card.color }}
+                          />
+
+                          <h2
+                            className="font-michroma text-sm"
+                            style={{ color: card.color }}
+                          >
+                            {card.title}
+                          </h2>
+                        </div>
+
+                        <p className="mt-3 font-michroma text-xs leading-relaxed text-white/35">
+                          Featured:
+                        </p>
+
+                        <p className="mt-3 font-michroma text-[10px] leading-relaxed text-white/35">
+                          Lineups:
+                        </p>
+                      </div>
+
+                      <span
+                        className="self-center rounded-md border px-4 py-3 font-michroma text-xs uppercase transition hover:brightness-150"
+                        style={{
+                          color: card.color,
+                          borderColor: `${card.color}80`,
+                          backgroundColor: `${card.color}18`,
+                        }}
+                      >
+                        Explore
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
