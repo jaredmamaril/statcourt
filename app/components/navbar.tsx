@@ -15,10 +15,10 @@ type NavItem = {
   /* Nav items | Future: generated from API or database in the future for easier maintenance and scalability */
 }
 const navItems: NavItem[] = [
-  { label: "COURT", href: "/court" },
-  { label: "PLAYERS", href: "/players" },
-  { label: "RANKINGS", href: "/rankings" },
-  { label: "LINEUPS", href: "/lineups" },
+  { label: "court", href: "/court" },
+  { label: "players", href: "/players" },
+  { label: "rankings", href: "/rankings" },
+  { label: "lineups", href: "/lineups" },
 ];
 
 export default function Navbar() {
