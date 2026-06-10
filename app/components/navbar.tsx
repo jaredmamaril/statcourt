@@ -30,7 +30,7 @@ export default function Navbar() {
   return (
     <>
       <header
-        className="border-b border-transparent bg-background"
+        className="border-b border-white/10 bg-background"
         style={{
           position: "fixed",
           top: 0,
@@ -50,7 +50,12 @@ export default function Navbar() {
               priority
               className="rounded-md h-11 w-11"
             />
-            <span className="font-michroma text-2xl text-white">STATCOURT</span>
+            <span
+              className="font-michroma text-2xl"
+              style={{ color: "#1ab2ec" }}
+            >
+              STATCOURT
+            </span>
           </Link>
           <nav className="hidden items-center justify-center gap-6 md:flex">
             {/* Navigation links */}
