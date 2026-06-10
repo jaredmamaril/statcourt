@@ -16,7 +16,7 @@ import type {
   Position,
   PlayerInsightDisplay,
 } from "../components/court-data";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Trophy,
@@ -24,7 +24,7 @@ import {
   Flame,
   Target,
   Brain,
-  Shield,
+  MirrorRectangular,
   Gauge,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -56,7 +56,12 @@ const rankingTabs: {
   { label: "Scoring", value: "scoring", Icon: Flame, color: "#EF4444" },
   { label: "Shooting", value: "shooting", Icon: Target, color: "#1bc2ec" },
   { label: "Playmaking", value: "playmaking", Icon: Brain, color: "#3B82F6" },
-  { label: "Rebounding", value: "rebounding", Icon: Shield, color: "#A855F7" },
+  {
+    label: "Rebounding",
+    value: "rebounding",
+    Icon: MirrorRectangular,
+    color: "#A855F7",
+  },
   { label: "Efficiency", value: "efficiency", Icon: Gauge, color: "#22C55E" },
 ];
 
@@ -343,6 +348,7 @@ export default function Rankings() {
         .filter((label): label is string => Boolean(label)),
     ),
   ).sort();
+
   // Color for archetype options in dropdown
   const archetypeOptionDetails = archetypeOptions.map((archetypeLabel) => {
     const matchingPlayer = players.find(
@@ -356,6 +362,10 @@ export default function Rankings() {
         : null,
     };
   });
+
+  // Scrolling down to archetype description
+  const archetypeDescriptionRef = useRef<HTMLDivElement>(null);
+
   // For displaying rarity color in main screen
   const selectedArchetypeOption = archetypeOptionDetails.find(
     (option) => option.label === archetypeFilter,
@@ -545,7 +555,16 @@ export default function Rankings() {
                       <button
                         key={label}
                         type="button"
-                        onClick={() => setArchetypeFilter(label)}
+                        onClick={() => {
+                          setArchetypeFilter(label);
+
+                          setTimeout(() => {
+                            archetypeDescriptionRef.current?.scrollIntoView({
+                              behavior: "smooth",
+                              block: "start",
+                            });
+                          }, 150);
+                        }}
                         className={`rounded-md cursor-pointer border bg-black/30 px-4 py-4 text-left font-michroma transition-all duration-200 hover:bg-white/10 ${
                           isSelected ? "scale-[1.02]" : ""
                         }`}
@@ -599,7 +618,10 @@ export default function Rankings() {
 
                 {/* Archetype description */}
                 {archetypeFilter && (
-                  <div className="mt-6 rounded-md border border-white/10 bg-black/30 p-4">
+                  <div
+                    ref={archetypeDescriptionRef}
+                    className="scroll-mt-24 mt-6 rounded-md border border-white/10 bg-black/30 p-4"
+                  >
                     <h2 className="font-michroma text-sm uppercase tracking-wide text-white">
                       {archetypeFilter}
                     </h2>
