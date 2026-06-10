@@ -246,7 +246,7 @@ export default function Court() {
         <div className="pointer-events-none absolute left-0 top-0 z-10 flex h-full w-1/2 justify-start pl-3 pt-20 animate-[courtLeftIn_600ms_ease-out_both]">
           <div className="pointer-events-auto flex flex-col items-center">
             {/* Heading for player selection */}
-            <h1 className="font-michroma text-xl text-[#1ab2ec] font-bold">
+            <h1 className="font-michroma text-xl text-[#1bc2ec] font-bold">
               CHOOSE YOUR PLAYER
             </h1>
 
@@ -389,7 +389,7 @@ export default function Court() {
         <div className="pointer-events-none absolute right-0 top-0 z-10 flex h-full w-1/2 justify-end pr-3 pt-20 animate-[courtRightIn_600ms_ease-out_both]">
           <div className="pointer-events-auto flex flex-col items-center">
             {/* Heading for player selection */}
-            <h1 className="font-michroma text-xl font-bold text-[#1ab2ec]">
+            <h1 className="font-michroma text-xl font-bold text-[1bc2ec]">
               CHOOSE YOUR PLAYER
             </h1>
 

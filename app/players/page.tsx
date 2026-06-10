@@ -311,7 +311,7 @@ export default function Players() {
                 value={playerSearch}
                 onChange={(e) => setPlayerSearch(e.target.value)}
                 placeholder="Search for a Player..."
-                className="w-full sm:w-64 rounded-md border border-white/30 bg-black/40 px-4 py-2 text-white/80 placeholder:text-[#1ab2ec]/80 font-michroma text-sm outline-none focus:border-white text-center"
+                className="w-full sm:w-64 rounded-md border border-white/30 bg-black/40 px-4 py-2 text-white/80 placeholder:text-[#1bc2ec]/80 font-michroma text-sm outline-none focus:border-white text-center"
               />
             </div>
             <div className="flex items-center justify-center">
@@ -1036,7 +1036,7 @@ export default function Players() {
                                   {playerInsights.archetype.label}
                                 </div>
 
-                                <div className="pointer-events-none absolute left-1/2 top-full z-999 mt-2 w-56 -translate-x-1/2 rounded-md border border-[#1ab2ec]/50 bg-black/90 p-2 text-center opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                                <div className="pointer-events-none absolute left-1/2 top-full z-999 mt-2 w-56 -translate-x-1/2 rounded-md border border-[#1bc2ec]/50 bg-black/90 p-2 text-center opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                                   <p className="font-michroma text-[10px] font-bold text-white/80">
                                     {playerInsights.archetype.label}
                                   </p>
@@ -1072,7 +1072,7 @@ export default function Players() {
                                     {trait.label}
                                   </span>
 
-                                  <span className="pointer-events-none absolute top-full left-1/2 z-999 mt-2 w-56 -translate-x-1/2 rounded-md border border-[#1ab2ec]/50 bg-black/90 p-2 text-center opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                                  <span className="pointer-events-none absolute top-full left-1/2 z-999 mt-2 w-56 -translate-x-1/2 rounded-md border border-[#1bc2ec]/50 bg-black/90 p-2 text-center opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                                     <span className="block font-michroma text-[10px] font-bold text-white/80">
                                       {trait.label}
                                     </span>

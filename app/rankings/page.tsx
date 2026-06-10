@@ -1007,7 +1007,7 @@ export default function Rankings() {
                     value={playerSearch}
                     onChange={(event) => setPlayerSearch(event.target.value)}
                     placeholder="Search Player..."
-                    className="min-w-44 rounded-md border border-white/20 bg-black/30 px-3 py-1 font-michroma text-xs text-white outline-none placeholder:text-[#1ab2ec]/80 focus:border-[#1bc2ec]"
+                    className="min-w-44 rounded-md border border-white/20 bg-black/30 px-3 py-1 font-michroma text-xs text-white outline-none placeholder:text-[#1bc2ec]/80 focus:border-[#1bc2ec]"
                   />
                 </div>
 

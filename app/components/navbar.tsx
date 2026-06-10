@@ -50,10 +50,7 @@ export default function Navbar() {
               priority
               className="rounded-md h-11 w-11"
             />
-            <span
-              className="font-michroma text-2xl"
-              style={{ color: "#1ab2ec" }}
-            >
+            <span className="font-michroma text-2xl text-[#1bc2ec]">
               STATCOURT
             </span>
           </Link>
@@ -65,7 +62,7 @@ export default function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`font-michroma text-base transition-colors duration-200 ${isActive ? "text-[#347A99] text-lg font-bold" : "text-white/90 hover:text-[#347A99]"}`}
+                  className={`font-michroma text-base transition-colors duration-200 ${isActive ? "text-[#1bc2ec] text-lg font-bold" : "text-white/90 hover:text-[#1bc2ec]"}`}
                 >
                   {item.label}
                 </Link>
