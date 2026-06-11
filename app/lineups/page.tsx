@@ -52,6 +52,7 @@ const lineupDetails = {
     },
     overall: 98.2,
     archetype: "Championship Dynasty",
+    accomplishments: ["72-10 Record", "NBA Champions", "15-3 Playoffs"],
     description:
       "Elite defensive dynasty built around Jordan's scoring, Pippen's versatility, and Rodman's rebounding.",
     strengths: ["Defense", "Rebounding", "Transition scoring"],
@@ -67,6 +68,7 @@ const lineupDetails = {
     },
     overall: 97.6,
     archetype: "Spacing Superteam",
+    accomplishments: ["72-10 Record", "NBA Champions", "15-3 Playoffs"],
     description:
       "Elite defensive dynasty built around Jordan's scoring, Pippen's versatility, and Rodman's rebounding.",
     strengths: ["Defense", "Rebounding", "Transition scoring"],
@@ -82,6 +84,7 @@ const lineupDetails = {
     },
     overall: 96.8,
     archetype: "Balanced Dynasty",
+    accomplishments: ["72-10 Record", "NBA Champions", "15-3 Playoffs"],
     description:
       "Elite defensive dynasty built around Jordan's scoring, Pippen's versatility, and Rodman's rebounding.",
     strengths: ["Defense", "Rebounding", "Transition scoring"],
@@ -90,10 +93,10 @@ const lineupDetails = {
 };
 
 const courtMarkerPositions = {
-  PG: "left-1/2 top-5 ",
-  SG: "left-[20%] top-15",
+  PG: "left-1/2 top-8",
+  SG: "left-[20%] top-20",
   SF: "left-[75%] bottom-15",
-  PF: "left-[30%] top-65",
+  PF: "left-[27%] top-65",
   C: "left-[65%] top-45",
 };
 
@@ -326,13 +329,34 @@ export default function Lineups() {
                               </span>
                             </p>
 
+                            <div className="mt-4 flex flex-wrap gap-2">
+                              {lineupDetails[
+                                selectedLineupName as keyof typeof lineupDetails
+                              ].accomplishments.map((item) => (
+                                <span
+                                  key={item}
+                                  className="rounded border px-2 py-1 font-michroma text-[9px]"
+                                  style={{
+                                    color: selectedCategoryColor,
+                                    borderColor: `${selectedCategoryColor}66`,
+                                    backgroundColor: `${selectedCategoryColor}14`,
+                                  }}
+                                >
+                                  {item}
+                                </span>
+                              ))}
+                            </div>
+
                             <div className="mt-5">
                               <p className="font-michroma text-[10px] uppercase text-white/40">
                                 Archetype
                               </p>
                               <p
-                                className="mt-1 font-michroma text-xs"
-                                style={{ color: selectedCategoryColor }}
+                                className="mt-1 font-michroma text-sm"
+                                style={{
+                                  color: selectedCategoryColor,
+                                  textShadow: `0 0 10px ${selectedCategoryColor}`,
+                                }}
                               >
                                 {
                                   lineupDetails[
@@ -355,7 +379,7 @@ export default function Lineups() {
 
                               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                                 <div>
-                                  <p className="font-michroma text-[10px] uppercase text-white/40">
+                                  <p className="font-michroma text-[10px] uppercase text-emerald-400/40">
                                     Strengths
                                   </p>
 
@@ -365,7 +389,7 @@ export default function Lineups() {
                                     ].strengths.map((strength) => (
                                       <span
                                         key={strength}
-                                        className="rounded border border-emerald-400/40 bg-emerald-400/10 px-2 py-1 font-michroma text-[9px] text-emerald-300"
+                                        className="rounded border border-emerald-600/40 bg-emerald-500/10 px-2 py-1 font-michroma text-[9px] text-emerald-400"
                                       >
                                         {strength}
                                       </span>
@@ -374,7 +398,7 @@ export default function Lineups() {
                                 </div>
 
                                 <div>
-                                  <p className="font-michroma text-[10px] uppercase text-white/40">
+                                  <p className="font-michroma text-[10px] uppercase text-red-700/40">
                                     Weaknesses
                                   </p>
 
@@ -384,7 +408,7 @@ export default function Lineups() {
                                     ].weaknesses.map((weakness) => (
                                       <span
                                         key={weakness}
-                                        className="rounded border border-red-400/40 bg-red-400/10 px-2 py-1 font-michroma text-[9px] text-red-300"
+                                        className="rounded border border-red-700/40 bg-red-700/10 px-2 py-1 font-michroma text-[9px] text-red-700"
                                       >
                                         {weakness}
                                       </span>
@@ -402,7 +426,7 @@ export default function Lineups() {
 
                             {/* Three point arc */}
                             <div
-                              className="absolute left-1/2 bottom-15 h-[60%] w-[70%] -translate-x-1/2 rounded-t-full border-t border-l border-r"
+                              className="absolute left-1/2 bottom-17 h-[60%] w-[70%] -translate-x-1/2 rounded-t-full border-t border-l border-r"
                               style={{
                                 borderColor: `${selectedCategoryColor}40`,
                               }}
@@ -410,7 +434,7 @@ export default function Lineups() {
 
                             {/* Paint */}
                             <div
-                              className="absolute left-1/2 bottom-15 h-36 w-24 -translate-x-1/2 border"
+                              className="absolute left-1/2 bottom-22 h-36 w-24 -translate-x-1/2 border"
                               style={{
                                 borderColor: `${selectedCategoryColor}40`,
                               }}
@@ -418,7 +442,7 @@ export default function Lineups() {
 
                             {/* Free throw semicircle */}
                             <div
-                              className="absolute left-1/2 bottom-51 h-12 w-24 -translate-x-1/2 rounded-t-full border-t border-l border-r"
+                              className="absolute left-1/2 bottom-58 h-12 w-24 -translate-x-1/2 rounded-t-full border-t border-l border-r"
                               style={{
                                 borderColor: `${selectedCategoryColor}40`,
                               }}
@@ -426,7 +450,7 @@ export default function Lineups() {
 
                             {/* Hoop */}
                             <div
-                              className="absolute left-1/2 bottom-20 h-3 w-3 -translate-x-1/2 rounded-full border"
+                              className="absolute left-1/2 bottom-27 h-3 w-3 -translate-x-1/2 rounded-full border"
                               style={{
                                 borderColor: `${selectedCategoryColor}80`,
                               }}
@@ -434,7 +458,7 @@ export default function Lineups() {
 
                             {/* Backboard */}
                             <div
-                              className="absolute left-1/2 bottom-20 h-px w-14 -translate-x-1/2"
+                              className="absolute left-1/2 bottom-27 h-px w-14 -translate-x-1/2"
                               style={{
                                 backgroundColor: `${selectedCategoryColor}80`,
                               }}
