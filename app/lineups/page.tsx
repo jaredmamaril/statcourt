@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Trophy, Flame, Brain, Shield, Target, Crown } from "lucide-react";
 
 type LineupTab = "featured" | "builder";
@@ -19,8 +19,68 @@ const lineupCards = [
   { title: "All-Time Teams", color: "#EFBF04", Icon: Crown },
 ];
 
+const lineupGroups = {
+  "Greatest Teams": ["1996 Bulls", "2017 Warriors", "1986 Celtics"],
+  "Bucket Getters": [
+    "Isolation Killers",
+    "Three-Level Scorers",
+    "Late-Game Closers",
+  ],
+  "Floor Generals": ["Pass First Legends", "Tempo Controllers", "Assist Kings"],
+  "Lockdown Squads": [
+    "All-Defense Unit",
+    "Paint Protectors",
+    "Perimeter Stoppers",
+  ],
+  "Splash Squads": [
+    "Spacing Nightmare",
+    "Deep Range Lineup",
+    "Catch-and-Shoot Crew",
+  ],
+  "All-Time Teams": ["All-Time Lakers", "All-Time Bulls", "All-Time Warriors"],
+};
+
+const lineupDetails = {
+  "1996 Bulls": {
+    players: {
+      PG: "Ron Harper",
+      SG: "Michael Jordan",
+      SF: "Scottie Pippen",
+      PF: "Dennis Rodman",
+      C: "Luc Longley",
+    },
+    overall: 98.2,
+    archetype: "Championship Dynasty",
+  },
+  "2017 Warriors": {
+    players: {
+      PG: "Stephen Curry",
+      SG: "Klay Thompson",
+      SF: "Kevin Durant",
+      PF: "Draymond Green",
+      C: "Zaza Pachulia",
+    },
+    overall: 97.6,
+    archetype: "Spacing Superteam",
+  },
+  "1986 Celtics": {
+    players: {
+      PG: "Dennis Johnson",
+      SG: "Danny Ainge",
+      SF: "Larry Bird",
+      PF: "Kevin McHale",
+      C: "Robert Parish",
+    },
+    overall: 96.8,
+    archetype: "Balanced Dynasty",
+  },
+};
+
 export default function Lineups() {
   const [activeTab, setActiveTab] = useState<LineupTab>("featured");
+  const [selectedLineupCategory, setSelectedLineupCategory] = useState("");
+  const lineupSectionRef = useRef<HTMLDivElement>(null);
+  const [selectedLineupName, setSelectedLineupName] = useState("");
 
   return (
     <main className="min-h-screen overflow-x-hidden text-white">
@@ -61,7 +121,24 @@ export default function Lineups() {
                     <button
                       key={card.title}
                       type="button"
-                      className="grid min-h-36 cursor-pointer grid-cols-[1fr_auto] items-center gap-6 rounded-md border bg-black/30 p-4 text-left"
+                      onClick={() => {
+                        setSelectedLineupCategory(card.title);
+
+                        const firstLineup =
+                          lineupGroups[
+                            card.title as keyof typeof lineupGroups
+                          ][0];
+
+                        setSelectedLineupName(firstLineup);
+
+                        setTimeout(() => {
+                          lineupSectionRef.current?.scrollIntoView({
+                            behavior: "smooth",
+                            block: "start",
+                          });
+                        }, 150);
+                      }}
+                      className="grid min-h-36 grid-cols-[1fr_auto] items-center gap-6 rounded-md border bg-black/30 p-4 text-left"
                       style={{
                         borderColor: `${card.color}80`,
                       }}
@@ -74,10 +151,7 @@ export default function Lineups() {
                             style={{ color: card.color }}
                           />
 
-                          <h2
-                            className="font-michroma text-sm"
-                            style={{ color: card.color }}
-                          >
+                          <h2 className="font-michroma text-sm">
                             {card.title}
                           </h2>
                         </div>
@@ -92,7 +166,7 @@ export default function Lineups() {
                       </div>
 
                       <span
-                        className="self-center rounded-md border px-4 py-3 font-michroma text-xs uppercase transition hover:brightness-150"
+                        className="cursor-pointer self-end rounded-md border px-4 py-3 font-michroma text-xs uppercase transition hover:brightness-150"
                         style={{
                           color: card.color,
                           borderColor: `${card.color}80`,
@@ -105,6 +179,96 @@ export default function Lineups() {
                   );
                 })}
               </div>
+              {selectedLineupCategory && (
+                <div
+                  ref={lineupSectionRef}
+                  className="scroll-mt-24 mt-8 rounded-b-md border border-[#1bc2ec]/50 bg-black/25 p-4"
+                >
+                  <h2 className="border-b border-[#1bc2ec]/30 pb-3 text-center font-michroma text-sm uppercase tracking-wide text-white">
+                    {selectedLineupCategory}
+                  </h2>
+
+                  <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_1.4fr]">
+                    <div className="flex flex-col gap-2">
+                      {lineupGroups[
+                        selectedLineupCategory as keyof typeof lineupGroups
+                      ].map((lineupName) => (
+                        <button
+                          key={lineupName}
+                          type="button"
+                          onClick={() => setSelectedLineupName(lineupName)}
+                          className={`rounded-md border px-4 py-3 text-left font-michroma text-xs transition ${
+                            selectedLineupName === lineupName
+                              ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]"
+                              : "border-white/10 bg-black/30 text-white/60 hover:border-[#1bc2ec]/50 hover:text-white"
+                          }`}
+                        >
+                          {lineupName}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="min-h-64 rounded-md border border-white/10 bg-black/30 p-5">
+                      {selectedLineupName &&
+                      selectedLineupName in lineupDetails ? (
+                        <>
+                          <h3 className="font-michroma text-sm uppercase tracking-wide text-white">
+                            {selectedLineupName}
+                          </h3>
+
+                          <div className="mt-5 grid gap-2">
+                            {Object.entries(
+                              lineupDetails[
+                                selectedLineupName as keyof typeof lineupDetails
+                              ].players,
+                            ).map(([position, playerName]) => (
+                              <div
+                                key={position}
+                                className="grid grid-cols-[40px_1fr] gap-3 font-michroma text-xs"
+                              >
+                                <span className="text-[#1bc2ec]">
+                                  {position}
+                                </span>
+                                <span className="text-white/80">
+                                  {playerName}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+
+                          <p className="mt-5 font-michroma text-xs text-white">
+                            OVR:{" "}
+                            <span className="text-[#1bc2ec]">
+                              {
+                                lineupDetails[
+                                  selectedLineupName as keyof typeof lineupDetails
+                                ].overall
+                              }
+                            </span>
+                          </p>
+
+                          <div className="mt-5">
+                            <p className="font-michroma text-[10px] uppercase text-white/40">
+                              Archetype
+                            </p>
+                            <p className="mt-1 font-michroma text-xs text-[#1bc2ec]">
+                              {
+                                lineupDetails[
+                                  selectedLineupName as keyof typeof lineupDetails
+                                ].archetype
+                              }
+                            </p>
+                          </div>
+                        </>
+                      ) : (
+                        <p className="font-michroma text-xs text-white/40">
+                          Choose a lineup to view details.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
