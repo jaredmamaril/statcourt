@@ -16,7 +16,7 @@ const lineupCards = [
   { title: "Bucket Getters", color: "#EF4444", Icon: Flame },
   { title: "Floor Generals", color: "#3B82F6", Icon: Brain },
   { title: "Lockdown Squads", color: "#A855F7", Icon: Shield },
-  { title: "Splash Squads", color: "#1bc2ec", Icon: Target },
+  { title: "Splash Squads", color: "#14F1D9", Icon: Target },
   { title: "All-Time Teams", color: "#EFBF04", Icon: Crown },
 ];
 
@@ -105,23 +105,32 @@ function LineupMarker({
   name,
   className,
   color,
+  isHighlighted,
 }: {
   position: string;
   name: string;
   className: string;
   color: string;
+  isHighlighted: boolean;
 }) {
   const player = players.find((player) => player.name === name);
   const imageSrc = player?.image || "/blank-player.svg";
 
   return (
-    <div className={`absolute -translate-x-1/2 text-center ${className}`}>
+    <div
+      className={`absolute -translate-x-1/2 text-center transition-all duration-200 ${
+        isHighlighted ? "scale-110 z-20" : "scale-100 z-10"
+      } ${className}`}
+    >
       <PlayerImage
         src={imageSrc}
         alt={player?.name || name}
         width={72}
         height={72}
-        className="mx-auto h-70px w-70px rounded-full object-cover"
+        className="mx-auto h-70px w-70px rounded-full object-cover transition-all duration-200"
+        style={{
+          boxShadow: isHighlighted ? `0 0 18px ${color}` : "none",
+        }}
       />
 
       <p className="mt-0.5 font-michroma text-[7px] text-white">{name}</p>
@@ -138,6 +147,7 @@ export default function Lineups() {
   const [selectedLineupCategory, setSelectedLineupCategory] = useState("");
   const lineupSectionRef = useRef<HTMLDivElement>(null);
   const [selectedLineupName, setSelectedLineupName] = useState("");
+  const [hoveredLineupPlayer, setHoveredLineupPlayer] = useState("");
 
   const selectedCategoryColor =
     lineupCards.find((card) => card.title === selectedLineupCategory)?.color ??
@@ -304,14 +314,43 @@ export default function Lineups() {
                               ).map(([position, playerName]) => (
                                 <div
                                   key={position}
-                                  className="grid grid-cols-[40px_1fr] gap-3 font-michroma text-xs"
+                                  onMouseEnter={() =>
+                                    setHoveredLineupPlayer(playerName)
+                                  }
+                                  onMouseLeave={() =>
+                                    setHoveredLineupPlayer("")
+                                  }
+                                  className="grid cursor-pointer grid-cols-[40px_1fr] font-michroma text-xs transition"
                                 >
                                   <span
-                                    style={{ color: selectedCategoryColor }}
+                                    className="transition-all duration-200"
+                                    style={{
+                                      color:
+                                        hoveredLineupPlayer === playerName
+                                          ? selectedCategoryColor
+                                          : selectedCategoryColor,
+                                      textShadow:
+                                        hoveredLineupPlayer === playerName
+                                          ? `0 0 10px ${selectedCategoryColor}`
+                                          : "none",
+                                    }}
                                   >
                                     {position}
                                   </span>
-                                  <span className="text-white/80">
+
+                                  <span
+                                    className="text-white/80 transition-all duration-200"
+                                    style={{
+                                      color:
+                                        hoveredLineupPlayer === playerName
+                                          ? selectedCategoryColor
+                                          : "rgba(255,255,255,0.8)",
+                                      textShadow:
+                                        hoveredLineupPlayer === playerName
+                                          ? `0 0 10px ${selectedCategoryColor}`
+                                          : "none",
+                                    }}
+                                  >
                                     {playerName}
                                   </span>
                                 </div>
@@ -474,6 +513,9 @@ export default function Lineups() {
                                 position={position}
                                 name={playerName}
                                 color={selectedCategoryColor}
+                                isHighlighted={
+                                  hoveredLineupPlayer === playerName
+                                }
                                 className={
                                   courtMarkerPositions[
                                     position as keyof typeof courtMarkerPositions
