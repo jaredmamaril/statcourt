@@ -52,6 +52,10 @@ const lineupDetails = {
     },
     overall: 98.2,
     archetype: "Championship Dynasty",
+    description:
+      "Elite defensive dynasty built around Jordan's scoring, Pippen's versatility, and Rodman's rebounding.",
+    strengths: ["Defense", "Rebounding", "Transition scoring"],
+    weaknesses: ["Spacing", "Bench creation"],
   },
   "2017 Warriors": {
     players: {
@@ -63,6 +67,10 @@ const lineupDetails = {
     },
     overall: 97.6,
     archetype: "Spacing Superteam",
+    description:
+      "Elite defensive dynasty built around Jordan's scoring, Pippen's versatility, and Rodman's rebounding.",
+    strengths: ["Defense", "Rebounding", "Transition scoring"],
+    weaknesses: ["Spacing", "Bench creation"],
   },
   "1986 Celtics": {
     players: {
@@ -74,15 +82,19 @@ const lineupDetails = {
     },
     overall: 96.8,
     archetype: "Balanced Dynasty",
+    description:
+      "Elite defensive dynasty built around Jordan's scoring, Pippen's versatility, and Rodman's rebounding.",
+    strengths: ["Defense", "Rebounding", "Transition scoring"],
+    weaknesses: ["Spacing", "Bench creation"],
   },
 };
 
 const courtMarkerPositions = {
-  PG: "left-1/2 ",
-  SG: "left-[20%] top-8",
-  SF: "left-[75%] bottom-6",
-  PF: "left-[30%] top-60",
-  C: "left-[65%] top-38",
+  PG: "left-1/2 top-5 ",
+  SG: "left-[20%] top-15",
+  SF: "left-[75%] bottom-15",
+  PF: "left-[30%] top-65",
+  C: "left-[65%] top-45",
 };
 
 function LineupMarker({
@@ -329,6 +341,58 @@ export default function Lineups() {
                                   ].archetype
                                 }
                               </p>
+                              <div className="mt-5">
+                                <p className="font-michroma text-[10px] uppercase text-white/40">
+                                  Description
+                                </p>
+                                <p className="mt-1 font-michroma text-[10px] leading-relaxed text-white/70">
+                                  {
+                                    lineupDetails[
+                                      selectedLineupName as keyof typeof lineupDetails
+                                    ].description
+                                  }
+                                </p>
+                              </div>
+
+                              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                                <div>
+                                  <p className="font-michroma text-[10px] uppercase text-white/40">
+                                    Strengths
+                                  </p>
+
+                                  <div className="mt-2 flex flex-wrap gap-2">
+                                    {lineupDetails[
+                                      selectedLineupName as keyof typeof lineupDetails
+                                    ].strengths.map((strength) => (
+                                      <span
+                                        key={strength}
+                                        className="rounded border border-emerald-400/40 bg-emerald-400/10 px-2 py-1 font-michroma text-[9px] text-emerald-300"
+                                      >
+                                        {strength}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <p className="font-michroma text-[10px] uppercase text-white/40">
+                                    Weaknesses
+                                  </p>
+
+                                  <div className="mt-2 flex flex-wrap gap-2">
+                                    {lineupDetails[
+                                      selectedLineupName as keyof typeof lineupDetails
+                                    ].weaknesses.map((weakness) => (
+                                      <span
+                                        key={weakness}
+                                        className="rounded border border-red-400/40 bg-red-400/10 px-2 py-1 font-michroma text-[9px] text-red-300"
+                                      >
+                                        {weakness}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </div>
 
@@ -339,7 +403,7 @@ export default function Lineups() {
 
                             {/* Three point arc */}
                             <div
-                              className="absolute left-1/2 bottom-6 h-[68%] w-[70%] -translate-x-1/2 rounded-t-full border-t border-l border-r"
+                              className="absolute left-1/2 bottom-15 h-[60%] w-[70%] -translate-x-1/2 rounded-t-full border-t border-l border-r"
                               style={{
                                 borderColor: `${selectedCategoryColor}40`,
                               }}
@@ -347,7 +411,7 @@ export default function Lineups() {
 
                             {/* Paint */}
                             <div
-                              className="absolute left-1/2 bottom-6 h-36 w-24 -translate-x-1/2 border"
+                              className="absolute left-1/2 bottom-15 h-36 w-24 -translate-x-1/2 border"
                               style={{
                                 borderColor: `${selectedCategoryColor}40`,
                               }}
@@ -355,7 +419,7 @@ export default function Lineups() {
 
                             {/* Free throw semicircle */}
                             <div
-                              className="absolute left-1/2 bottom-42 h-12 w-24 -translate-x-1/2 rounded-t-full border-t border-l border-r"
+                              className="absolute left-1/2 bottom-51 h-12 w-24 -translate-x-1/2 rounded-t-full border-t border-l border-r"
                               style={{
                                 borderColor: `${selectedCategoryColor}40`,
                               }}
@@ -363,7 +427,7 @@ export default function Lineups() {
 
                             {/* Hoop */}
                             <div
-                              className="absolute left-1/2 bottom-11 h-3 w-3 -translate-x-1/2 rounded-full border"
+                              className="absolute left-1/2 bottom-20 h-3 w-3 -translate-x-1/2 rounded-full border"
                               style={{
                                 borderColor: `${selectedCategoryColor}80`,
                               }}
@@ -371,7 +435,7 @@ export default function Lineups() {
 
                             {/* Backboard */}
                             <div
-                              className="absolute left-1/2 bottom-11 h-px w-14 -translate-x-1/2"
+                              className="absolute left-1/2 bottom-20 h-px w-14 -translate-x-1/2"
                               style={{
                                 backgroundColor: `${selectedCategoryColor}80`,
                               }}
