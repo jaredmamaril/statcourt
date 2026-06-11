@@ -1,6 +1,6 @@
 "use client";
-import Image from "next/image";
 import { players } from "../components/court-data";
+import PlayerImage from "../components/player-image";
 import { useRef, useState } from "react";
 import { Trophy, Flame, Brain, Shield, Target, Crown } from "lucide-react";
 
@@ -109,18 +109,17 @@ function LineupMarker({
   color: string;
 }) {
   const player = players.find((player) => player.name === name);
+  const imageSrc = player?.image || "/blank-player.svg";
 
   return (
     <div className={`absolute -translate-x-1/2 text-center ${className}`}>
-      {player && (
-        <Image
-          src={player.image}
-          alt={player.name}
-          width={72}
-          height={72}
-          className="mx-auto h-17.5 w-17.5 rounded-full object-cover"
-        />
-      )}
+      <PlayerImage
+        src={imageSrc}
+        alt={player?.name || name}
+        width={72}
+        height={72}
+        className="mx-auto h-70px w-70px rounded-full object-cover"
+      />
 
       <p className="mt-0.5 font-michroma text-[7px] text-white">{name}</p>
 

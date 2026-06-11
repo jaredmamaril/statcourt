@@ -29,6 +29,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import Image from "next/image";
+import PlayerImage from "../components/player-image";
 import { useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -785,7 +786,7 @@ export default function Players() {
 
                       {/* Player image */}
                       <div className="absolute inset-0 z-20 flex items-center justify-center -top-18">
-                        <Image
+                        <PlayerImage
                           src={selectedPlayer.image}
                           alt={selectedPlayer.name}
                           width={144}
@@ -827,7 +828,7 @@ export default function Players() {
 
                       <div className="flex items-center justify-center gap-2 font-michroma uppercase pt-1">
                         {/* Player headshot */}
-                        <Image
+                        <PlayerImage
                           src={selectedPlayer.image}
                           alt={selectedPlayer.name}
                           width={96}

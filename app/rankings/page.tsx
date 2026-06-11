@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import PlayerImage from "../components/player-image";
 import {
   players,
   positions,
@@ -719,7 +720,7 @@ export default function Rankings() {
                             #{index + 1}
                           </span>
 
-                          <Image
+                          <PlayerImage
                             src={player.image}
                             alt={player.name}
                             width={48}
@@ -1131,7 +1132,7 @@ export default function Rankings() {
 
                         {/* Player headshot */}
                         <div className="mt-3 flex justify-center">
-                          <Image
+                          <PlayerImage
                             src={player.image}
                             alt={player.name}
                             width={120}
@@ -1211,7 +1212,7 @@ export default function Rankings() {
                       </span>
 
                       {/* Player headshot */}
-                      <Image
+                      <PlayerImage
                         src={player.image}
                         alt={player.name}
                         width={40}

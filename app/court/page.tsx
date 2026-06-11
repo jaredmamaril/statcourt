@@ -7,7 +7,7 @@ import {
   teamColors,
 } from "../components/court-data";
 import type { RadarStatRow, CompareSlots } from "../components/court-data";
-import Image from "next/image";
+import PlayerImage from "../components/player-image";
 import { useState, useRef, useEffect } from "react";
 import {
   PolarAngleAxis,
@@ -56,9 +56,13 @@ export default function Court() {
   useEffect(() => {
     const savedSlots = getSavedCompareSlots();
 
-    setLeftPlayer(savedSlots.left);
-    setRightPlayer(savedSlots.right);
-    setHasLoadedSavedPlayers(true);
+    const timer = window.setTimeout(() => {
+      setLeftPlayer(savedSlots.left);
+      setRightPlayer(savedSlots.right);
+      setHasLoadedSavedPlayers(true);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, []);
   useEffect(() => {
     if (!hasLoadedSavedPlayers) return;
@@ -253,7 +257,7 @@ export default function Court() {
             {/* Player image container with conditional rendering */}
             <div className="mt-2 flex h-64 w-64 items-center justify-center rounded-md border border-[#347A99]/50 bg-black/5 text-sm text-white/70">
               {selectedLeftPlayer ? (
-                <Image
+                <PlayerImage
                   src={selectedLeftPlayer.image}
                   alt={selectedLeftPlayer.name}
                   width={200}
@@ -396,7 +400,7 @@ export default function Court() {
             {/* Player image container with conditional rendering */}
             <div className="mt-2 flex h-64 w-64 items-center justify-center rounded-md border border-[#347A99]/50 bg-black/5 text-sm text-white/70">
               {selectedRightPlayer ? (
-                <Image
+                <PlayerImage
                   src={selectedRightPlayer.image}
                   alt={selectedRightPlayer.name}
                   width={200}
