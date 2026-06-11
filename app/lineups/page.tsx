@@ -1,5 +1,6 @@
 "use client";
-
+import Image from "next/image";
+import { players } from "../components/court-data";
 import { useRef, useState } from "react";
 import { Trophy, Flame, Brain, Shield, Target, Crown } from "lucide-react";
 
@@ -55,10 +56,10 @@ const lineupDetails = {
   "2017 Warriors": {
     players: {
       PG: "Stephen Curry",
-      SG: "Klay Thompson",
-      SF: "Kevin Durant",
-      PF: "Draymond Green",
-      C: "Zaza Pachulia",
+      SG: "Stephen Curry",
+      SF: "Stephen Curry",
+      PF: "Stephen Curry",
+      C: "Stephen Curry",
     },
     overall: 97.6,
     archetype: "Spacing Superteam",
@@ -76,11 +77,57 @@ const lineupDetails = {
   },
 };
 
+const courtMarkerPositions = {
+  PG: "left-1/2 ",
+  SG: "left-[20%] top-8",
+  SF: "left-[75%] bottom-6",
+  PF: "left-[30%] top-60",
+  C: "left-[65%] top-38",
+};
+
+function LineupMarker({
+  position,
+  name,
+  className,
+  color,
+}: {
+  position: string;
+  name: string;
+  className: string;
+  color: string;
+}) {
+  const player = players.find((player) => player.name === name);
+
+  return (
+    <div className={`absolute -translate-x-1/2 text-center ${className}`}>
+      {player && (
+        <Image
+          src={player.image}
+          alt={player.name}
+          width={72}
+          height={72}
+          className="mx-auto h-17.5 w-17.5 rounded-full object-cover"
+        />
+      )}
+
+      <p className="mt-0.5 font-michroma text-[7px] text-white">{name}</p>
+
+      <p className="font-michroma text-[6px]" style={{ color }}>
+        {position}
+      </p>
+    </div>
+  );
+}
+
 export default function Lineups() {
   const [activeTab, setActiveTab] = useState<LineupTab>("featured");
   const [selectedLineupCategory, setSelectedLineupCategory] = useState("");
   const lineupSectionRef = useRef<HTMLDivElement>(null);
   const [selectedLineupName, setSelectedLineupName] = useState("");
+
+  const selectedCategoryColor =
+    lineupCards.find((card) => card.title === selectedLineupCategory)?.color ??
+    "#1bc2ec";
 
   return (
     <main className="min-h-screen overflow-x-hidden text-white">
@@ -182,13 +229,17 @@ export default function Lineups() {
               {selectedLineupCategory && (
                 <div
                   ref={lineupSectionRef}
-                  className="scroll-mt-24 mt-8 rounded-b-md border border-[#1bc2ec]/50 bg-black/25 p-4"
+                  className="scroll-mt-24 mt-8 rounded-md border border-white/10 bg-black/25 p-4"
                 >
-                  <h2 className="border-b border-[#1bc2ec]/30 pb-3 text-center font-michroma text-sm uppercase tracking-wide text-white">
+                  <h2
+                    className="border-b pb-3 text-center font-michroma text-sm uppercase tracking-wide text-white"
+                    style={{ borderColor: `${selectedCategoryColor}55` }}
+                  >
                     {selectedLineupCategory}
                   </h2>
 
-                  <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_1.4fr]">
+                  <div className="mt-5 grid gap-6 lg:grid-cols-[220px_1fr]">
+                    {/* Left lineup buttons */}
                     <div className="flex flex-col gap-2">
                       {lineupGroups[
                         selectedLineupCategory as keyof typeof lineupGroups
@@ -199,70 +250,155 @@ export default function Lineups() {
                           onClick={() => setSelectedLineupName(lineupName)}
                           className={`rounded-md border px-4 py-3 text-left font-michroma text-xs transition ${
                             selectedLineupName === lineupName
-                              ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]"
-                              : "border-white/10 bg-black/30 text-white/60 hover:border-[#1bc2ec]/50 hover:text-white"
+                              ? "bg-black/30"
+                              : "border-white/10 bg-black/30 text-white/60 hover:text-white"
                           }`}
+                          style={
+                            selectedLineupName === lineupName
+                              ? {
+                                  color: selectedCategoryColor,
+                                  borderColor: `${selectedCategoryColor}99`,
+                                  backgroundColor: `${selectedCategoryColor}18`,
+                                }
+                              : undefined
+                          }
                         >
                           {lineupName}
                         </button>
                       ))}
                     </div>
 
-                    <div className="min-h-64 rounded-md border border-white/10 bg-black/30 p-5">
+                    {/* Right selected lineup card */}
+                    <div
+                      className="min-h-96 rounded-md border bg-black/30 p-5"
+                      style={{ borderColor: `${selectedCategoryColor}55` }}
+                    >
                       {selectedLineupName &&
                       selectedLineupName in lineupDetails ? (
-                        <>
-                          <h3 className="font-michroma text-sm uppercase tracking-wide text-white">
-                            {selectedLineupName}
-                          </h3>
+                        <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
+                          {/* Left text column */}
+                          <div>
+                            <h3 className="font-michroma text-sm uppercase tracking-wide text-white">
+                              {selectedLineupName}
+                            </h3>
 
-                          <div className="mt-5 grid gap-2">
+                            <div className="mt-5 grid gap-2">
+                              {Object.entries(
+                                lineupDetails[
+                                  selectedLineupName as keyof typeof lineupDetails
+                                ].players,
+                              ).map(([position, playerName]) => (
+                                <div
+                                  key={position}
+                                  className="grid grid-cols-[40px_1fr] gap-3 font-michroma text-xs"
+                                >
+                                  <span
+                                    style={{ color: selectedCategoryColor }}
+                                  >
+                                    {position}
+                                  </span>
+                                  <span className="text-white/80">
+                                    {playerName}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+
+                            <p className="mt-5 font-michroma text-xs text-white">
+                              OVR:{" "}
+                              <span style={{ color: selectedCategoryColor }}>
+                                {
+                                  lineupDetails[
+                                    selectedLineupName as keyof typeof lineupDetails
+                                  ].overall
+                                }
+                              </span>
+                            </p>
+
+                            <div className="mt-5">
+                              <p className="font-michroma text-[10px] uppercase text-white/40">
+                                Archetype
+                              </p>
+                              <p
+                                className="mt-1 font-michroma text-xs"
+                                style={{ color: selectedCategoryColor }}
+                              >
+                                {
+                                  lineupDetails[
+                                    selectedLineupName as keyof typeof lineupDetails
+                                  ].archetype
+                                }
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Right court column */}
+                          <div className="relative min-h-96 overflow-hidden rounded-md bg-transparent">
+                            {/* Half court boundary */}
+                            <div className="absolute inset-x-8 inset-y-6 " />
+
+                            {/* Three point arc */}
+                            <div
+                              className="absolute left-1/2 bottom-6 h-[68%] w-[70%] -translate-x-1/2 rounded-t-full border-t border-l border-r"
+                              style={{
+                                borderColor: `${selectedCategoryColor}40`,
+                              }}
+                            />
+
+                            {/* Paint */}
+                            <div
+                              className="absolute left-1/2 bottom-6 h-36 w-24 -translate-x-1/2 border"
+                              style={{
+                                borderColor: `${selectedCategoryColor}40`,
+                              }}
+                            />
+
+                            {/* Free throw semicircle */}
+                            <div
+                              className="absolute left-1/2 bottom-42 h-12 w-24 -translate-x-1/2 rounded-t-full border-t border-l border-r"
+                              style={{
+                                borderColor: `${selectedCategoryColor}40`,
+                              }}
+                            />
+
+                            {/* Hoop */}
+                            <div
+                              className="absolute left-1/2 bottom-11 h-3 w-3 -translate-x-1/2 rounded-full border"
+                              style={{
+                                borderColor: `${selectedCategoryColor}80`,
+                              }}
+                            />
+
+                            {/* Backboard */}
+                            <div
+                              className="absolute left-1/2 bottom-11 h-px w-14 -translate-x-1/2"
+                              style={{
+                                backgroundColor: `${selectedCategoryColor}80`,
+                              }}
+                            />
+
                             {Object.entries(
                               lineupDetails[
                                 selectedLineupName as keyof typeof lineupDetails
                               ].players,
                             ).map(([position, playerName]) => (
-                              <div
+                              <LineupMarker
                                 key={position}
-                                className="grid grid-cols-[40px_1fr] gap-3 font-michroma text-xs"
-                              >
-                                <span className="text-[#1bc2ec]">
-                                  {position}
-                                </span>
-                                <span className="text-white/80">
-                                  {playerName}
-                                </span>
-                              </div>
+                                position={position}
+                                name={playerName}
+                                color={selectedCategoryColor}
+                                className={
+                                  courtMarkerPositions[
+                                    position as keyof typeof courtMarkerPositions
+                                  ]
+                                }
+                              />
                             ))}
                           </div>
-
-                          <p className="mt-5 font-michroma text-xs text-white">
-                            OVR:{" "}
-                            <span className="text-[#1bc2ec]">
-                              {
-                                lineupDetails[
-                                  selectedLineupName as keyof typeof lineupDetails
-                                ].overall
-                              }
-                            </span>
-                          </p>
-
-                          <div className="mt-5">
-                            <p className="font-michroma text-[10px] uppercase text-white/40">
-                              Archetype
-                            </p>
-                            <p className="mt-1 font-michroma text-xs text-[#1bc2ec]">
-                              {
-                                lineupDetails[
-                                  selectedLineupName as keyof typeof lineupDetails
-                                ].archetype
-                              }
-                            </p>
-                          </div>
-                        </>
+                        </div>
                       ) : (
                         <p className="font-michroma text-xs text-white/40">
-                          Choose a lineup to view details.
+                          Choose a lineup with saved details to view the court.
                         </p>
                       )}
                     </div>
