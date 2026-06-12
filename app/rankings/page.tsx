@@ -446,9 +446,9 @@ export default function Rankings() {
 
   return (
     <main className="min-h-screen overflow-x-hidden text-white">
-      <section className="mx-auto w-full max-w-6xl px-6 pb-12">
+      <section className="mx-auto w-full max-w-7xl px-6 pb-12">
         {/* Ranking tabs */}
-        <div className="mt-8 flex w-full items-end gap-2 overflow-x-auto border-b border-[#1bc2ec]/30 pb-0">
+        <div className="mt-0 flex w-full items-start overflow-x-auto pb-0">
           {rankingTabs.map((tab) => {
             const isActive = activeTab === tab.value;
             const Icon = tab.Icon;
@@ -459,7 +459,7 @@ export default function Rankings() {
                 key={tab.value}
                 type="button"
                 onClick={() => setActiveTab(tab.value)}
-                className={`min-w-36 cursor-pointer rounded-t-md border border-b-0 px-4 font-michroma text-xs uppercase tracking-wide transition-all duration-200 ${
+                className={`min-w-36 cursor-pointer rounded-b-md border border-t-0 px-4 font-michroma text-xs uppercase tracking-wide transition-all duration-200 ${
                   isActive
                     ? "py-4 border-[#1bc2ec]/70 bg-[#1bc2ec]/20 text-[#1bc2ec]"
                     : "py-2.5 border-white/10 bg-black/30 text-white/50 hover:border-white/30 hover:text-white/80"
@@ -475,14 +475,14 @@ export default function Rankings() {
         </div>
 
         {/* Open ranking panel */}
-        <div className="rounded-b-md border border-t-0 border-[#1bc2ec]/50 bg-black/25 p-4">
+        <div className="pt-2">
           {/* Top ranking leaders */}
           <div className="mb-6">
             {/* If current tab is archetypes */}
             {activeTab === "archetypes" ? (
               <div>
                 <div>
-                  <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex flex-wrap items-center justify-center gap-3">
                     <h1 className="font-michroma text-sm uppercase tracking-wide text-white">
                       Archetypes
                     </h1>
@@ -511,6 +511,12 @@ export default function Rankings() {
                         </p>
                       </div>
                     </div>
+
+                    {/* For tooltip */}
+                    <p className="-ml-2 text-xs text-white/20">
+                      {" "}
+                      Hover over me!
+                    </p>
                   </div>
                 </div>
 
@@ -795,12 +801,12 @@ export default function Rankings() {
               </div>
             ) : (
               <>
-                <h1 className="font-michroma text-sm uppercase tracking-wide text-white">
+                <h1 className="font-michroma text-sm uppercase tracking-wide text-white text-center">
                   {rankingHeading}
                 </h1>
 
                 {/* Filter bar */}
-                <div className="flex flex-wrap items-center justify-start gap-2 mt-2">
+                <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
                   {/* Era filter */}
                   <div className="relative">
                     <button
