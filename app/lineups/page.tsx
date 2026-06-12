@@ -527,7 +527,7 @@ export default function Lineups() {
                         </div>
                       ) : (
                         <p className="font-michroma text-xs text-white/40">
-                          Choose a lineup with saved details to view the court.
+                          No current details.
                         </p>
                       )}
                     </div>
