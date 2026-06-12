@@ -1,7 +1,8 @@
 "use client";
-import { players } from "../components/court-data";
+import { players, getPlayerInsights } from "../components/court-data";
 import PlayerImage from "../components/player-image";
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Trophy, Flame, Brain, Shield, Target, Crown } from "lucide-react";
 
 type LineupTab = "featured" | "builder";
@@ -93,11 +94,11 @@ const lineupDetails = {
 };
 
 const courtMarkerPositions = {
-  PG: "left-1/2 top-8",
-  SG: "left-[20%] top-20",
-  SF: "left-[75%] bottom-15",
-  PF: "left-[27%] top-65",
-  C: "left-[65%] top-45",
+  PG: "left-1/2 top-5",
+  SG: "left-[20%] top-17",
+  SF: "left-[75%] bottom-18",
+  PF: "left-[27%] top-62",
+  C: "left-[65%] top-42",
 };
 
 function LineupMarker({
@@ -106,32 +107,81 @@ function LineupMarker({
   className,
   color,
   isHighlighted,
+  onViewCard,
 }: {
   position: string;
   name: string;
   className: string;
   color: string;
   isHighlighted: boolean;
+  onViewCard: (playerName: string) => void;
 }) {
   const player = players.find((player) => player.name === name);
   const imageSrc = player?.image || "/blank-player.svg";
+  const archetype = player ? getPlayerInsights(player).archetype : null;
 
   return (
     <div
-      className={`absolute -translate-x-1/2 text-center transition-all duration-200 ${
-        isHighlighted ? "scale-110 z-20" : "scale-100 z-10"
+      className={`absolute -translate-x-1/2 text-center transition-all duration-200 hover:z-999 ${
+        isHighlighted ? "z-900 scale-125" : "z-10 scale-100"
       } ${className}`}
     >
-      <PlayerImage
-        src={imageSrc}
-        alt={player?.name || name}
-        width={72}
-        height={72}
-        className="mx-auto h-70px w-70px rounded-full object-cover transition-all duration-200"
-        style={{
-          boxShadow: isHighlighted ? `0 0 18px ${color}` : "none",
-        }}
-      />
+      <div className="group/headshot relative inline-block">
+        <PlayerImage
+          src={imageSrc}
+          alt={player?.name || name}
+          width={72}
+          height={72}
+          className="mx-auto h-20 w-20 rounded-full object-cover transition-all duration-200"
+          style={{
+            boxShadow: isHighlighted
+              ? `0 0 0 3px ${color}, 0 0 24px ${color}`
+              : "none",
+          }}
+        />
+
+        <div
+          className="pointer-events-none absolute bottom-full left-1/2 z-100 mb-2 w-48 -translate-x-1/2 rounded-md border bg-black/95 p-3 opacity-0 transition-opacity duration-200 group-hover/headshot:pointer-events-auto group-hover/headshot:opacity-100"
+          style={{
+            borderColor: `${color}99`,
+          }}
+        >
+          <p className="font-michroma text-[10px] uppercase text-white">
+            {name}
+          </p>
+
+          <p className="mt-1 font-michroma text-[8px] text-white/50">
+            {position} • {player?.team ?? "N/A"}
+          </p>
+
+          <p className="mt-3 font-michroma text-[9px] text-white">
+            OVR <span style={{ color }}>{player ? "93.4" : "N/A"}</span>
+          </p>
+
+          <p className="mt-2 font-michroma text-[8px]" style={{ color }}>
+            {archetype?.label ?? "Unknown Archetype"}
+          </p>
+
+          <div className="mt-3 grid grid-cols-3 gap-2 font-michroma text-[8px] text-white/70">
+            <span>{player?.stats.ppg ?? "-"} PPG</span>
+            <span>{player?.stats.rpg ?? "-"} RPG</span>
+            <span>{player?.stats.apg ?? "-"} APG</span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => onViewCard(name)}
+            className="mt-3 w-full cursor-pointer rounded border px-3 py-2 font-michroma text-[9px] uppercase transition hover:brightness-150"
+            style={{
+              color,
+              borderColor: `${color}99`,
+              backgroundColor: `${color}18`,
+            }}
+          >
+            View Card
+          </button>
+        </div>
+      </div>
 
       <p className="mt-0.5 font-michroma text-[7px] text-white">{name}</p>
 
@@ -148,6 +198,12 @@ export default function Lineups() {
   const lineupSectionRef = useRef<HTMLDivElement>(null);
   const [selectedLineupName, setSelectedLineupName] = useState("");
   const [hoveredLineupPlayer, setHoveredLineupPlayer] = useState("");
+
+  const router = useRouter();
+
+  function viewPlayerCard(playerName: string) {
+    router.push(`/players?player=${encodeURIComponent(playerName)}`);
+  }
 
   const selectedCategoryColor =
     lineupCards.find((card) => card.title === selectedLineupCategory)?.color ??
@@ -459,7 +515,7 @@ export default function Lineups() {
                           </div>
 
                           {/* Right court column */}
-                          <div className="relative min-h-96 overflow-hidden rounded-md bg-transparent">
+                          <div className="relative min-h-96 overflow-visible rounded-md bg-transparent">
                             {/* Half court boundary */}
                             <div className="absolute inset-x-8 inset-y-6 " />
 
@@ -516,6 +572,7 @@ export default function Lineups() {
                                 isHighlighted={
                                   hoveredLineupPlayer === playerName
                                 }
+                                onViewCard={viewPlayerCard}
                                 className={
                                   courtMarkerPositions[
                                     position as keyof typeof courtMarkerPositions
