@@ -261,6 +261,7 @@ export default function Lineups() {
   const lineupSectionRef = useRef<HTMLDivElement>(null);
   const [selectedLineupName, setSelectedLineupName] = useState("");
   const [hoveredLineupPlayer, setHoveredLineupPlayer] = useState("");
+  const [hoveredBuildPlayer, setHoveredBuildPlayer] = useState("");
   const [buildPlayerSearch, setBuildPlayerSearch] = useState("");
 
   const [customLineup, setCustomLineup] = useState<Record<Position, string>>({
@@ -293,6 +294,9 @@ export default function Lineups() {
       player.position === activeBuildPosition &&
       player.name.toLowerCase().includes(buildPlayerSearch.toLowerCase()),
   );
+
+  const selectedLineupCount = selectedCustomPlayers.length;
+  const isLineupComplete = selectedLineupCount === lineupPositions.length;
 
   function pickBuildPlayer(playerName: string) {
     setCustomLineup((prev) => ({
@@ -508,7 +512,7 @@ export default function Lineups() {
                                   setHoveredLineupPlayer(playerName)
                                 }
                                 onMouseLeave={() => setHoveredLineupPlayer("")}
-                                className="grid grid-cols-[40px_1fr] w-fit font-michroma text-xs transition cursor-pointer "
+                                className="grid grid-cols-[40px_1fr] w-fit font-michroma text-xs transition cursor-pointer"
                               >
                                 <span
                                   className="transition-all duration-200"
@@ -824,11 +828,11 @@ export default function Lineups() {
                                 className="mx-auto h-20 w-20 rounded-full object-cover"
                               />
 
-                              <p className="mt-1 font-michroma text-xs text-white">
+                              <p className="mt-1 flex h-10 items-center justify-center text-center font-michroma text-[11px] leading-5 text-white">
                                 {player.name}
                               </p>
 
-                              <p className="mt-1 font-michroma text-[9px] text-white/40">
+                              <p className="font-michroma text-[9px] text-white/40">
                                 {player.team} • {player.position}
                               </p>
 
@@ -880,9 +884,15 @@ export default function Lineups() {
                         return (
                           <div
                             key={position}
-                            className={`grid grid-cols-[44px_1fr_auto] items-center gap-2 rounded-md border px-3 py-2 ${
+                            onMouseEnter={() => {
+                              if (player) {
+                                setHoveredBuildPlayer(player.name);
+                              }
+                            }}
+                            onMouseLeave={() => setHoveredBuildPlayer("")}
+                            className={`h-fit grid grid-cols-[44px_1fr_auto] items-center gap-2 rounded-md border px-3 py-2 transition ${
                               player
-                                ? "border-emerald-400/50 bg-emerald-400/10"
+                                ? "border-emerald-400/50 bg-emerald-400/10 hover:border-[#1bc2ec]/70 hover:bg-[#1bc2ec]/10"
                                 : "border-white/10 bg-black/20"
                             }`}
                           >
@@ -895,7 +905,7 @@ export default function Lineups() {
                             </span>
 
                             <div>
-                              <p className="font-michroma text-sm text-white">
+                              <p className="max-w-44 truncate font-michroma text-sm text-white">
                                 {player ? player.name : "Select Player"}
                               </p>
 
@@ -920,9 +930,16 @@ export default function Lineups() {
                       })}
                       <button
                         type="button"
-                        className="mx-auto mt-2 rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-6 py-3 font-michroma text-[17.5px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20"
+                        disabled={!isLineupComplete}
+                        className={`mx-auto rounded-md border px-8 py-5 font-michroma text-[14px] uppercase transition ${
+                          isLineupComplete
+                            ? "cursor-pointer border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.35)] hover:bg-[#1bc2ec]/20"
+                            : "cursor-not-allowed border-white/10 bg-white/5 text-white/30"
+                        }`}
                       >
-                        Analyze Lineup
+                        {isLineupComplete
+                          ? "Analyze Lineup"
+                          : `${selectedLineupCount}/${lineupPositions.length} Selected`}
                       </button>
                     </div>
                   </div>
@@ -953,7 +970,10 @@ export default function Lineups() {
                             position={position}
                             name={playerName || "Select Player"}
                             color="#1bc2ec"
-                            isHighlighted={false}
+                            isHighlighted={
+                              Boolean(playerName) &&
+                              hoveredBuildPlayer === playerName
+                            }
                             onViewCard={viewPlayerCard}
                             className={builderCourtMarkerPositions[position]}
                           />
