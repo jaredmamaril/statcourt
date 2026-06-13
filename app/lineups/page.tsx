@@ -267,6 +267,7 @@ export default function Lineups() {
   const [hoveredLineupPlayer, setHoveredLineupPlayer] = useState("");
   const [hoveredBuildPlayer, setHoveredBuildPlayer] = useState("");
   const [buildPlayerSearch, setBuildPlayerSearch] = useState("");
+  const [isScoutOpen, setIsScoutOpen] = useState(false);
 
   const [customLineup, setCustomLineup] = useState<Record<Position, string>>({
     PG: "",
@@ -301,6 +302,21 @@ export default function Lineups() {
 
   const selectedLineupCount = selectedCustomPlayers.length;
   const isLineupComplete = selectedLineupCount === lineupPositions.length;
+
+  const bestPlayerFit =
+    selectedCustomPlayers.length === 0
+      ? null
+      : selectedCustomPlayers.toSorted(
+          (a, b) => getBuilderPlayerRating(b) - getBuilderPlayerRating(a),
+        )[0];
+
+  const lineupArchetype = "Championship Dynasty";
+  const teamIdentity = "Elite Defense & Rebounding";
+  const lineupStrengths = ["Defense", "Rebounding", "Leadership"];
+  const lineupWeaknesses = ["Perimeter Shooting"];
+  const xFactor = bestPlayerFit;
+  const similarLineup = "1996 Bulls (89%)";
+  const courtBalance = "Excellent";
 
   function pickBuildPlayer(playerName: string) {
     setCustomLineup((prev) => ({
@@ -933,6 +949,7 @@ export default function Lineups() {
                       <button
                         type="button"
                         disabled={!isLineupComplete}
+                        onClick={() => setIsScoutOpen(true)}
                         className={`mx-auto rounded-md border px-8 py-5 font-michroma text-[16xpx] uppercase transition ${
                           isLineupComplete
                             ? "cursor-pointer font-bold border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.35)] hover:bg-[#1bc2ec]/20"
@@ -994,6 +1011,126 @@ export default function Lineups() {
           </section>
         )}
       </section>
+
+      {isScoutOpen && (
+        <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-xl rounded-md border border-[#1bc2ec]/60 bg-[#07111f] p-6 shadow-[0_0_35px_rgba(27,194,236,0.25)]">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="font-michroma text-[10px] uppercase text-white/40">
+                  Scout Report
+                </p>
+
+                <h2 className="mt-1 font-michroma text-xl text-white">
+                  Lineup Analysis
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsScoutOpen(false)}
+                className="font-michroma text-sm text-white/40 transition hover:text-red-400"
+              >
+                x
+              </button>
+            </div>
+
+            <div className="mt-6 grid gap-4">
+              <div>
+                <p className="font-michroma text-[10px] uppercase text-white/40">
+                  Overall
+                </p>
+                <p className="font-michroma text-4xl text-[#1bc2ec]">
+                  {customLineupOverall?.toFixed(1)}
+                </p>
+              </div>
+
+              <div>
+                <p className="font-michroma text-[10px] uppercase text-white/40">
+                  Archetype
+                </p>
+                <p className="font-michroma text-sm text-white">
+                  {lineupArchetype}
+                </p>
+              </div>
+
+              <div>
+                <p className="font-michroma text-[10px] uppercase text-white/40">
+                  Team Identity
+                </p>
+                <p className="font-michroma text-sm text-white">
+                  {teamIdentity}
+                </p>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <p className="font-michroma text-[10px] uppercase text-emerald-400/60">
+                    Strengths
+                  </p>
+
+                  <div className="mt-2 grid gap-2">
+                    {lineupStrengths.map((strength) => (
+                      <p
+                        key={strength}
+                        className="font-michroma text-xs text-white"
+                      >
+                        <span className="text-emerald-400">✓</span> {strength}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="font-michroma text-[10px] uppercase text-red-400/60">
+                    Weaknesses
+                  </p>
+
+                  <div className="mt-2 grid gap-2">
+                    {lineupWeaknesses.map((weakness) => (
+                      <p
+                        key={weakness}
+                        className="font-michroma text-xs text-white"
+                      >
+                        <span className="text-red-400">!</span> {weakness}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-3 border-t border-white/10 pt-4 sm:grid-cols-3">
+                <div>
+                  <p className="font-michroma text-[10px] uppercase text-white/40">
+                    X-Factor
+                  </p>
+                  <p className="font-michroma text-xs text-white">
+                    {xFactor?.name ?? "--"}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-michroma text-[10px] uppercase text-white/40">
+                    Similar To
+                  </p>
+                  <p className="font-michroma text-xs text-white">
+                    {similarLineup}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-michroma text-[10px] uppercase text-white/40">
+                    Court Balance
+                  </p>
+                  <p className="font-michroma text-xs text-white">
+                    {courtBalance}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
