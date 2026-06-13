@@ -1,5 +1,10 @@
 "use client";
-import { players, getPlayerInsights } from "../components/court-data";
+import {
+  players,
+  getPlayerInsights,
+  normalizeStat,
+  statMaxValues,
+} from "../components/court-data";
 import type { Position } from "../components/court-data";
 import PlayerImage from "../components/player-image";
 import { useRef, useState } from "react";
@@ -195,12 +200,60 @@ function LineupMarker({
   );
 }
 
+function getBuilderPlayerRating(player: (typeof players)[number]) {
+  const ppgScore = normalizeStat(player.stats.ppg, statMaxValues.ppg);
+  const rpgScore = normalizeStat(player.stats.rpg, statMaxValues.rpg);
+  const apgScore = normalizeStat(player.stats.apg, statMaxValues.apg);
+  const fgScore = normalizeStat(
+    player.stats.fgPercent,
+    statMaxValues.fgPercent,
+  );
+  const threeScore = normalizeStat(
+    player.stats.threePercent,
+    statMaxValues.threePercent,
+  );
+  const ftScore = normalizeStat(
+    player.stats.ftPercent,
+    statMaxValues.ftPercent,
+  );
+
+  const scoringScore = ppgScore * 0.75 + fgScore * 0.15 + ftScore * 0.1;
+  const shootingScore = threeScore * 0.65 + ftScore * 0.25 + fgScore * 0.1;
+  const playmakingScore =
+    apgScore * 0.75 + scoringScore * 0.15 + threeScore * 0.1;
+  const reboundingScore = rpgScore * 0.9 + fgScore * 0.1;
+  const efficiencyScore = fgScore * 0.45 + threeScore * 0.3 + ftScore * 0.25;
+
+  const starCategories = [
+    ppgScore >= 70,
+    rpgScore >= 55,
+    apgScore >= 55,
+    fgScore >= 70,
+    threeScore >= 70,
+    ftScore >= 75,
+  ].filter(Boolean).length;
+
+  const versatilityBonus = starCategories * 2;
+
+  const overallScore =
+    scoringScore * 0.3 +
+    efficiencyScore * 0.23 +
+    playmakingScore * 0.19 +
+    reboundingScore * 0.15 +
+    shootingScore * 0.13 +
+    versatilityBonus;
+
+  return 70 + overallScore * 0.3;
+}
+
 export default function Lineups() {
   const [activeTab, setActiveTab] = useState<LineupTab>("featured");
+  const [hasStartedBuilder, setHasStartedBuilder] = useState(false);
   const [selectedLineupCategory, setSelectedLineupCategory] = useState("");
   const lineupSectionRef = useRef<HTMLDivElement>(null);
   const [selectedLineupName, setSelectedLineupName] = useState("");
   const [hoveredLineupPlayer, setHoveredLineupPlayer] = useState("");
+  const [buildPlayerSearch, setBuildPlayerSearch] = useState("");
 
   const [customLineup, setCustomLineup] = useState<Record<Position, string>>({
     PG: "",
@@ -209,6 +262,50 @@ export default function Lineups() {
     PF: "",
     C: "",
   });
+
+  const [activeBuildPosition, setActiveBuildPosition] =
+    useState<Position>("PG");
+
+  const selectedCustomPlayers = lineupPositions
+    .map((position) =>
+      players.find((player) => player.name === customLineup[position]),
+    )
+    .filter((player): player is (typeof players)[number] => Boolean(player));
+
+  const customLineupOverall =
+    selectedCustomPlayers.length === 0
+      ? null
+      : selectedCustomPlayers.reduce(
+          (total, player) => total + getBuilderPlayerRating(player),
+          0,
+        ) / selectedCustomPlayers.length;
+
+  const availableBuildPlayers = players.filter(
+    (player) =>
+      player.position === activeBuildPosition &&
+      player.name.toLowerCase().includes(buildPlayerSearch.toLowerCase()),
+  );
+
+  function pickBuildPlayer(playerName: string) {
+    setCustomLineup((prev) => ({
+      ...prev,
+      [activeBuildPosition]: playerName,
+    }));
+
+    const currentIndex = lineupPositions.indexOf(activeBuildPosition);
+    const nextPosition = lineupPositions[currentIndex + 1];
+
+    if (nextPosition) {
+      setActiveBuildPosition(nextPosition);
+    }
+  }
+
+  function removeBuildPlayer(position: Position) {
+    setCustomLineup((prev) => ({
+      ...prev,
+      [position]: "",
+    }));
+  }
 
   const router = useRouter();
 
@@ -219,6 +316,8 @@ export default function Lineups() {
   const selectedCategoryColor =
     lineupCards.find((card) => card.title === selectedLineupCategory)?.color ??
     "#1bc2ec";
+
+  const shouldShowTopText = activeTab === "featured" || hasStartedBuilder;
 
   return (
     <main className="min-h-screen overflow-x-hidden text-white">
@@ -234,6 +333,9 @@ export default function Lineups() {
                   type="button"
                   onClick={() => {
                     setActiveTab(tab.value);
+                    if (tab.value === "builder") {
+                      setHasStartedBuilder(false);
+                    }
                   }}
                   className={`min-w-48 cursor-pointer rounded-b-md border border-t-0 px-4 font-michroma text-xs uppercase tracking-wide transition-all duration-200 ${
                     isActive
@@ -247,19 +349,21 @@ export default function Lineups() {
             })}
           </div>
 
-          <div className="grid flex-1 grid-cols-[auto_1fr] items-start gap-6 pl-10 pt-5">
-            <h1 className="font-michroma text-[16px] uppercase tracking-wide text-white">
-              {activeTab === "featured"
-                ? "Featured Lineups"
-                : "Build Your Own Team"}
-            </h1>
+          {shouldShowTopText && (
+            <div className="grid flex-1 grid-cols-[auto_1fr] items-start gap-6 pl-10 pt-5">
+              <h1 className="font-michroma text-[16px] uppercase tracking-wide text-white">
+                {activeTab === "featured"
+                  ? "Featured Lineups"
+                  : "Build Your Own Team"}
+              </h1>
 
-            <p className="w-full overflow-hidden -mt-1 font-michroma text-xs text-white/40 text-center">
-              {activeTab === "featured"
-                ? "Explore curated lineups and discover unique team archetypes, strengths, and playstyles."
-                : "Build your lineup, then scout the team to uncover its archetype, strengths, weaknesses, and overall potential."}
-            </p>
-          </div>
+              <p className="w-full overflow-hidden -mt-1 font-michroma text-xs text-white/40 text-center">
+                {activeTab === "featured"
+                  ? "Explore curated lineups and discover unique team archetypes, strengths, and playstyles."
+                  : "Build your lineup, then scout the team to uncover its archetype, strengths, weaknesses, and overall potential."}
+              </p>
+            </div>
+          )}
         </div>
 
         {activeTab === "featured" && (
@@ -614,46 +718,131 @@ export default function Lineups() {
 
         {activeTab === "builder" && (
           <section className="min-h-[calc(100vh-140px)]">
-            <div className="mt-3 rounded-md border border-[#1bc2ec]/40 bg-black/30 p-5">
-              <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-                {/* Left side selectors */}
-                <div className="flex flex-col gap-3">
-                  {lineupPositions.map((position) => (
-                    <div
-                      key={position}
-                      className="grid grid-cols-[40px_1fr] items-center gap-3"
-                    >
-                      <span className="font-michroma text-xs text-[#1bc2ec]">
-                        {position}
-                      </span>
+            {!hasStartedBuilder ? (
+              <section className="flex min-h-[calc(100vh-120px)] items-center justify-center">
+                <div className="max-w-lg rounded-md border border-[#1bc2ec]/50 bg-black/60 p-6 text-center">
+                  <p className="font-michroma text-[10px] uppercase text-white/40">
+                    Build Your Own
+                  </p>
 
-                      <select
-                        value={customLineup[position]}
-                        onChange={(event) =>
-                          setCustomLineup((prev) => ({
-                            ...prev,
-                            [position]: event.target.value,
-                          }))
-                        }
-                        className="rounded-md border border-white/20 bg-black/40 px-3 py-2 font-michroma text-xs text-white outline-none"
-                      >
-                        <option value="">Select Player</option>
-                        {players.map((player) => (
-                          <option key={player.id} value={player.name}>
-                            {player.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  ))}
+                  <h2 className="mt-2 font-michroma text-xl text-[#1bc2ec]">
+                    Draft Your Lineup
+                  </h2>
+
+                  <p className="mt-4 font-michroma text-xs leading-relaxed text-white/55">
+                    Choose one player for each position. Your current OVR
+                    updates as you draft, and selected positions turn green so
+                    you can track your lineup.
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => setHasStartedBuilder(true)}
+                    className="mt-6 rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-6 py-3 font-michroma text-xs uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20"
+                  >
+                    Start Draft
+                  </button>
                 </div>
+              </section>
+            ) : (
+              <div className="mt-3">
+                <div className="grid gap-6 lg:grid-cols-[400px_1fr]">
+                  {/* Left side selectors */}
+                  <div className="flex w-full flex-col gap-2">
+                    <div className="flex justify-start gap-2 ml-15">
+                      {lineupPositions.map((position) => {
+                        const isActive = activeBuildPosition === position;
+                        const hasPlayer = customLineup[position] !== "";
 
-                {/* Right side court preview */}
-                <div className="relative min-h-96 overflow-visible rounded-md bg-transparent">
-                  {/* court lines + markers stay here */}
+                        return (
+                          <button
+                            key={position}
+                            type="button"
+                            onClick={() => {
+                              setActiveBuildPosition(position);
+                              setBuildPlayerSearch("");
+                            }}
+                            className={`rounded-md border px-3 py-2 font-michroma text-xs transition ${
+                              isActive
+                                ? "border-[#1bc2ec] bg-[#1bc2ec]/15 text-[#1bc2ec]"
+                                : hasPlayer
+                                  ? "border-emerald-400/70 bg-emerald-400/10 text-emerald-400"
+                                  : "border-white/15 bg-black/30 text-white/50 hover:text-white"
+                            }`}
+                          >
+                            <span>{position}</span>
+
+                            {hasPlayer && (
+                              <span
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  removeBuildPlayer(position);
+                                }}
+                                className="ml-2 text-red-600 hover:text-red-700"
+                              >
+                                x
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex justify-start">
+                      <input
+                        type="text"
+                        value={buildPlayerSearch}
+                        onChange={(event) =>
+                          setBuildPlayerSearch(event.target.value)
+                        }
+                        placeholder="Search Player..."
+                        className="w-full max-w-md rounded-md border border-white/15 bg-black/30 px-4 py-3 font-michroma text-xs text-white outline-none transition placeholder:text-white/30 focus:border-white"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      {availableBuildPlayers.map((player) => {
+                        const isSelected =
+                          customLineup[activeBuildPosition] === player.name;
+
+                        return (
+                          <button
+                            key={player.id}
+                            type="button"
+                            onClick={() => pickBuildPlayer(player.name)}
+                            className={`rounded-md border bg-black/30 p-3 text-center transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/10 ${
+                              isSelected
+                                ? "border-[#1bc2ec] bg-[#1bc2ec]/15"
+                                : "border-white/15"
+                            }`}
+                          >
+                            <PlayerImage
+                              src={player.image}
+                              alt={player.name}
+                              width={96}
+                              height={96}
+                              className="mx-auto h-30 w-30 rounded-full object-cover"
+                            />
+
+                            <p className="mt-1 font-michroma text-xs text-white">
+                              {player.name}
+                            </p>
+
+                            <p className="mt-1 font-michroma text-[9px] text-white/40">
+                              {player.team} • {player.position}
+                            </p>
+
+                            <p className="mt-1 font-michroma text-[10px] text-[#1bc2ec]">
+                              {getBuilderPlayerRating(player).toFixed(1)} OVR
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </section>
         )}
       </section>
