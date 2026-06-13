@@ -101,12 +101,20 @@ const lineupDetails = {
   },
 };
 
-const courtMarkerPositions = {
+const featuredCourtMarkerPositions: Record<Position, string> = {
   PG: "left-1/2 top-5",
   SG: "left-[20%] top-17",
   SF: "left-[75%] bottom-18",
   PF: "left-[27%] top-62",
   C: "left-[65%] top-42",
+};
+
+const builderCourtMarkerPositions: Record<Position, string> = {
+  PG: "left-1/2 top-6",
+  SG: "left-[22%] top-16",
+  SF: "left-[78%] bottom-10",
+  PF: "left-[25%] bottom-20",
+  C: "left-[65%] top-50",
 };
 
 function LineupMarker({
@@ -476,7 +484,7 @@ export default function Lineups() {
 
                   {/* Right selected lineup card */}
                   <div
-                    className="min-h-96 rounded-md border bg-black/30 p-5"
+                    className="relative min-h-96 rounded-md border bg-black/30 p-5"
                     style={{ borderColor: `${selectedCategoryColor}55` }}
                   >
                     {selectedLineupName &&
@@ -653,7 +661,7 @@ export default function Lineups() {
 
                           {/* Paint */}
                           <div
-                            className="absolute left-1/2 bottom-22 h-36 w-24 -translate-x-1/2 border"
+                            className="absolute left-1/2 bottom-17 h-36 w-24 -translate-x-1/2 border"
                             style={{
                               borderColor: `${selectedCategoryColor}40`,
                             }}
@@ -661,7 +669,7 @@ export default function Lineups() {
 
                           {/* Free throw semicircle */}
                           <div
-                            className="absolute left-1/2 bottom-58 h-12 w-24 -translate-x-1/2 rounded-t-full border-t border-l border-r"
+                            className="absolute left-1/2 bottom-53 h-12 w-24 -translate-x-1/2 rounded-t-full border-t border-l border-r"
                             style={{
                               borderColor: `${selectedCategoryColor}40`,
                             }}
@@ -669,7 +677,7 @@ export default function Lineups() {
 
                           {/* Hoop */}
                           <div
-                            className="absolute left-1/2 bottom-27 h-3 w-3 -translate-x-1/2 rounded-full border"
+                            className="absolute left-1/2 bottom-24 h-3 w-3 -translate-x-1/2 rounded-full border"
                             style={{
                               borderColor: `${selectedCategoryColor}80`,
                             }}
@@ -677,7 +685,7 @@ export default function Lineups() {
 
                           {/* Backboard */}
                           <div
-                            className="absolute left-1/2 bottom-27 h-px w-14 -translate-x-1/2"
+                            className="absolute left-1/2 bottom-24 h-px w-14 -translate-x-1/2"
                             style={{
                               backgroundColor: `${selectedCategoryColor}80`,
                             }}
@@ -696,8 +704,8 @@ export default function Lineups() {
                               isHighlighted={hoveredLineupPlayer === playerName}
                               onViewCard={viewPlayerCard}
                               className={
-                                courtMarkerPositions[
-                                  position as keyof typeof courtMarkerPositions
+                                featuredCourtMarkerPositions[
+                                  position as keyof typeof featuredCourtMarkerPositions
                                 ]
                               }
                             />
@@ -746,10 +754,10 @@ export default function Lineups() {
               </section>
             ) : (
               <div className="mt-3">
-                <div className="grid gap-6 lg:grid-cols-[400px_1fr]">
+                <div className="grid items-start gap-5 lg:grid-cols-[400px_300px_1fr]">
                   {/* Left side selectors */}
                   <div className="flex w-full flex-col gap-2">
-                    <div className="flex justify-start gap-2 ml-15">
+                    <div className="flex justify-center gap-2">
                       {lineupPositions.map((position) => {
                         const isActive = activeBuildPosition === position;
                         const hasPlayer = customLineup[position] !== "";
@@ -771,24 +779,12 @@ export default function Lineups() {
                             }`}
                           >
                             <span>{position}</span>
-
-                            {hasPlayer && (
-                              <span
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  removeBuildPlayer(position);
-                                }}
-                                className="ml-2 text-red-600 hover:text-red-700"
-                              >
-                                x
-                              </span>
-                            )}
                           </button>
                         );
                       })}
                     </div>
 
-                    <div className="flex justify-start">
+                    <div className="flex justify-center">
                       <input
                         type="text"
                         value={buildPlayerSearch}
@@ -800,42 +796,167 @@ export default function Lineups() {
                       />
                     </div>
 
-                    <div className="grid grid-cols-3 gap-3">
-                      {availableBuildPlayers.map((player) => {
-                        const isSelected =
-                          customLineup[activeBuildPosition] === player.name;
+                    <div
+                      className="overflow-y-auto pr-2"
+                      style={{ maxHeight: "392px" }}
+                    >
+                      <div className="grid grid-cols-3 gap-2">
+                        {availableBuildPlayers.map((player) => {
+                          const isSelected =
+                            customLineup[activeBuildPosition] === player.name;
+
+                          return (
+                            <button
+                              key={player.id}
+                              type="button"
+                              onClick={() => pickBuildPlayer(player.name)}
+                              className={`h-48 rounded-md border bg-black/30 p-3 text-center transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/10 ${
+                                isSelected
+                                  ? "border-[#1bc2ec] bg-[#1bc2ec]/15"
+                                  : "border-white/15"
+                              }`}
+                            >
+                              <PlayerImage
+                                src={player.image}
+                                alt={player.name}
+                                width={64}
+                                height={64}
+                                className="mx-auto h-20 w-20 rounded-full object-cover"
+                              />
+
+                              <p className="mt-1 font-michroma text-xs text-white">
+                                {player.name}
+                              </p>
+
+                              <p className="mt-1 font-michroma text-[9px] text-white/40">
+                                {player.team} • {player.position}
+                              </p>
+
+                              <p className="mt-1 font-michroma text-[10px] text-[#1bc2ec]">
+                                {getBuilderPlayerRating(player).toFixed(1)} OVR
+                              </p>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    className="rounded-md border border-white/10 bg-black/20 p-4"
+                    style={{ height: "480px" }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-michroma text-[10px] uppercase text-white/40">
+                          Your Lineup
+                        </p>
+
+                        <h2 className="mt-1 font-michroma text-lg text-white">
+                          Draft Board
+                        </h2>
+                      </div>
+
+                      <div className="text-center">
+                        <p className="font-michroma text-[10px] uppercase text-white/40">
+                          OVR
+                        </p>
+
+                        <p className="font-michroma text-2xl text-[#1bc2ec]">
+                          {customLineupOverall
+                            ? customLineupOverall.toFixed(1)
+                            : "--"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 grid gap-2">
+                      {lineupPositions.map((position) => {
+                        const playerName = customLineup[position];
+                        const player = players.find(
+                          (player) => player.name === playerName,
+                        );
 
                         return (
-                          <button
-                            key={player.id}
-                            type="button"
-                            onClick={() => pickBuildPlayer(player.name)}
-                            className={`rounded-md border bg-black/30 p-3 text-center transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/10 ${
-                              isSelected
-                                ? "border-[#1bc2ec] bg-[#1bc2ec]/15"
-                                : "border-white/15"
+                          <div
+                            key={position}
+                            className={`grid grid-cols-[44px_1fr_auto] items-center gap-2 rounded-md border px-3 py-2 ${
+                              player
+                                ? "border-emerald-400/50 bg-emerald-400/10"
+                                : "border-white/10 bg-black/20"
                             }`}
                           >
-                            <PlayerImage
-                              src={player.image}
-                              alt={player.name}
-                              width={96}
-                              height={96}
-                              className="mx-auto h-30 w-30 rounded-full object-cover"
-                            />
+                            <span
+                              className={`font-michroma text-sm ${
+                                player ? "text-emerald-400" : "text-white/40"
+                              }`}
+                            >
+                              {position}
+                            </span>
 
-                            <p className="mt-1 font-michroma text-xs text-white">
-                              {player.name}
-                            </p>
+                            <div>
+                              <p className="font-michroma text-sm text-white">
+                                {player ? player.name : "Select Player"}
+                              </p>
 
-                            <p className="mt-1 font-michroma text-[9px] text-white/40">
-                              {player.team} • {player.position}
-                            </p>
+                              <p className="mt-1 font-michroma text-[10px] text-white/35">
+                                {player
+                                  ? `${player.team} • #${player.jerseyNumber}`
+                                  : "Empty"}
+                              </p>
+                            </div>
 
-                            <p className="mt-1 font-michroma text-[10px] text-[#1bc2ec]">
-                              {getBuilderPlayerRating(player).toFixed(1)} OVR
-                            </p>
-                          </button>
+                            {player && (
+                              <button
+                                type="button"
+                                onClick={() => removeBuildPlayer(position)}
+                                className="font-michroma text-xs text-white/40 transition hover:text-red-400"
+                              >
+                                x
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                      <button
+                        type="button"
+                        className="mx-auto mt-2 rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-6 py-3 font-michroma text-[17.5px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20"
+                      >
+                        Analyze Lineup
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-4">
+                    <div className="relative h-120 overflow-visible bg-transparent">
+                      {/* Three point arc */}
+                      <div className="absolute left-1/2 bottom-10 h-[63%] w-[88%] -translate-x-1/2 rounded-t-full border-t border-l border-r border-[#1bc2ec]/25" />
+
+                      {/* Paint */}
+                      <div className="absolute left-1/2 bottom-10 h-40 w-28 -translate-x-1/2 border border-[#1bc2ec]/25" />
+
+                      {/* Free throw semicircle */}
+                      <div className="absolute left-1/2 bottom-50 h-14 w-28 -translate-x-1/2 rounded-t-full border-t border-l border-r border-[#1bc2ec]/25" />
+
+                      {/* Hoop */}
+                      <div className="absolute left-1/2 bottom-20 h-3 w-3 -translate-x-1/2 rounded-full border border-[#1bc2ec]/60" />
+
+                      {/* Backboard */}
+                      <div className="absolute left-1/2 bottom-24 h-px w-16 -translate-x-1/2 bg-[#1bc2ec]/60" />
+
+                      {lineupPositions.map((position) => {
+                        const playerName = customLineup[position];
+
+                        return (
+                          <LineupMarker
+                            key={position}
+                            position={position}
+                            name={playerName || "Select Player"}
+                            color="#1bc2ec"
+                            isHighlighted={false}
+                            onViewCard={viewPlayerCard}
+                            className={builderCourtMarkerPositions[position]}
+                          />
                         );
                       })}
                     </div>
