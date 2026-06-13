@@ -124,6 +124,7 @@ function LineupMarker({
   color,
   isHighlighted,
   onViewCard,
+  tooltipPosition = "top",
 }: {
   position: string;
   name: string;
@@ -131,10 +132,13 @@ function LineupMarker({
   color: string;
   isHighlighted: boolean;
   onViewCard: (playerName: string) => void;
+  tooltipPosition?: "top" | "bottom";
 }) {
   const player = players.find((player) => player.name === name);
   const imageSrc = player?.image || "/blank-player.svg";
   const archetype = player ? getPlayerInsights(player).archetype : null;
+  const tooltipClass =
+    tooltipPosition === "bottom" ? "top-full" : "bottom-full";
 
   return (
     <div
@@ -157,7 +161,7 @@ function LineupMarker({
         />
 
         <div
-          className="pointer-events-none absolute bottom-full left-1/2 z-100 w-48 -translate-x-1/2 rounded-md border bg-black/95 p-3 opacity-0 transition-opacity duration-200 group-hover/headshot:pointer-events-auto group-hover/headshot:opacity-100"
+          className={`pointer-events-none absolute left-1/2 z-100 w-48 -translate-x-1/2 rounded-md border bg-black/95 p-3 opacity-0 transition-opacity duration-200 group-hover/headshot:pointer-events-auto group-hover/headshot:opacity-100 ${tooltipClass}`}
           style={{
             borderColor: `${color}99`,
           }}
@@ -303,13 +307,6 @@ export default function Lineups() {
       ...prev,
       [activeBuildPosition]: playerName,
     }));
-
-    const currentIndex = lineupPositions.indexOf(activeBuildPosition);
-    const nextPosition = lineupPositions[currentIndex + 1];
-
-    if (nextPosition) {
-      setActiveBuildPosition(nextPosition);
-    }
   }
 
   function removeBuildPlayer(position: Position) {
@@ -707,6 +704,11 @@ export default function Lineups() {
                               color={selectedCategoryColor}
                               isHighlighted={hoveredLineupPlayer === playerName}
                               onViewCard={viewPlayerCard}
+                              tooltipPosition={
+                                position === "PG" || position === "SG"
+                                  ? "bottom"
+                                  : "top"
+                              }
                               className={
                                 featuredCourtMarkerPositions[
                                   position as keyof typeof featuredCourtMarkerPositions
@@ -931,14 +933,14 @@ export default function Lineups() {
                       <button
                         type="button"
                         disabled={!isLineupComplete}
-                        className={`mx-auto rounded-md border px-8 py-5 font-michroma text-[14px] uppercase transition ${
+                        className={`mx-auto rounded-md border px-8 py-5 font-michroma text-[16xpx] uppercase transition ${
                           isLineupComplete
-                            ? "cursor-pointer border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.35)] hover:bg-[#1bc2ec]/20"
+                            ? "cursor-pointer font-bold border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.35)] hover:bg-[#1bc2ec]/20"
                             : "cursor-not-allowed border-white/10 bg-white/5 text-white/30"
                         }`}
                       >
                         {isLineupComplete
-                          ? "Analyze Lineup"
+                          ? "Scout Lineup"
                           : `${selectedLineupCount}/${lineupPositions.length} Selected`}
                       </button>
                     </div>
@@ -975,6 +977,11 @@ export default function Lineups() {
                               hoveredBuildPlayer === playerName
                             }
                             onViewCard={viewPlayerCard}
+                            tooltipPosition={
+                              position === "PG" || position === "SG"
+                                ? "bottom"
+                                : "top"
+                            }
                             className={builderCourtMarkerPositions[position]}
                           />
                         );
