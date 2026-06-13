@@ -460,6 +460,7 @@ export default function Rankings() {
                 type="button"
                 onClick={() => {
                   setActiveTab(tab.value);
+                  setArchetypeFilter("");
                 }}
                 className={`min-w-36 cursor-pointer rounded-b-md border border-t-0 px-4 font-michroma text-xs uppercase tracking-wide transition-all duration-200 ${
                   isActive
