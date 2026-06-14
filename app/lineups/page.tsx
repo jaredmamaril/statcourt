@@ -291,6 +291,8 @@ export default function Lineups() {
   const [lineupNameInput, setLineupNameInput] = useState("");
   const [savedLineups, setSavedLineups] = useState<SavedLineup[]>([]);
   const [savedLineupSearch, setSavedLineupSearch] = useState("");
+  const [lineupPendingDelete, setLineupPendingDelete] =
+    useState<SavedLineup | null>(null);
 
   const filteredSavedLineups = savedLineups.filter((lineup) => {
     const search = savedLineupSearch.toLowerCase();
@@ -1291,7 +1293,7 @@ export default function Lineups() {
 
                           <button
                             type="button"
-                            onClick={() => deleteSavedLineup(lineup.id)}
+                            onClick={() => setLineupPendingDelete(lineup)}
                             className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 font-michroma text-[9px] uppercase text-red-400 transition hover:bg-red-500/20"
                           >
                             Delete
@@ -1550,6 +1552,45 @@ export default function Lineups() {
                 className="rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-4 py-3 font-michroma text-xs uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20"
               >
                 Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {lineupPendingDelete && (
+        <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-md rounded-md border border-red-500/50 bg-[#07111f] p-6 shadow-[0_0_30px_rgba(239,68,68,0.2)]">
+            <p className="font-michroma text-[10px] uppercase text-red-400/70">
+              Delete Lineup
+            </p>
+
+            <h2 className="mt-2 font-michroma text-lg text-white">
+              Delete {lineupPendingDelete.name}?
+            </h2>
+
+            <p className="mt-3 font-michroma text-xs leading-relaxed text-white/45">
+              This saved lineup will be removed permanently.
+            </p>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setLineupPendingDelete(null)}
+                className="rounded-md border border-white/15 bg-white/5 px-4 py-3 font-michroma text-xs uppercase text-white/50 transition hover:text-white"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  deleteSavedLineup(lineupPendingDelete.id);
+                  setLineupPendingDelete(null);
+                }}
+                className="rounded-md border border-red-500/60 bg-red-500/10 px-4 py-3 font-michroma text-xs uppercase text-red-400 transition hover:bg-red-500/20"
+              >
+                Delete
               </button>
             </div>
           </div>
