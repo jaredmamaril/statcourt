@@ -311,6 +311,14 @@ export default function Lineups() {
         )[0];
 
   const lineupArchetype = "Championship Dynasty";
+  const lineupTier =
+    customLineupOverall && customLineupOverall >= 92
+      ? "Championship Favorite"
+      : customLineupOverall && customLineupOverall >= 88
+        ? "Championship Contender"
+        : customLineupOverall && customLineupOverall >= 84
+          ? "Playoff-Caliber"
+          : "Developing Lineup";
   const scoutSummary =
     "A championship-caliber lineup built around elite defense, rebounding, and leadership.";
   const teamIdentity = "Elite Defense & Rebounding";
@@ -1045,7 +1053,7 @@ export default function Lineups() {
               </button>
             </div>
 
-            <div className="absolute right-30 top-6">
+            <div className="absolute right-25 top-6">
               <p className="font-michroma text-[10px] uppercase text-white/40">
                 Lineup
               </p>
@@ -1081,21 +1089,20 @@ export default function Lineups() {
                   );
                 })}
               </div>
-              <button
-                type="button"
-                className="mt-6 rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-5 py-3 font-michroma text-xs uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20"
-              >
-                Save Lineup?
-              </button>
             </div>
 
             <div className="mt-1 grid max-w-xl gap-3">
-              <div className="flex items-center gap-2">
-                <p className="font-michroma text-3xl text-[#1bc2ec] -tracking-widest">
-                  {customLineupOverall?.toFixed(1)}
-                </p>
-                <p className="font-michroma text-[10px] uppercase text-white/40">
-                  Overall
+              <div>
+                <div className="flex items-center gap-2">
+                  <p className="font-michroma text-3xl text-[#1bc2ec] -tracking-widest">
+                    {customLineupOverall?.toFixed(1)}
+                  </p>
+                  <p className="font-michroma text-[10px] uppercase text-white/40">
+                    Overall
+                  </p>
+                </div>
+                <p className="font-michroma text-xs text-[#1bc2ec]">
+                  {lineupTier}
                 </p>
               </div>
 
@@ -1117,7 +1124,7 @@ export default function Lineups() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-[120px_220px]">
+              <div className="grid grid-cols-[120px_180px_160px] items-start gap-3">
                 <div>
                   <p className="font-michroma text-[10px] uppercase text-emerald-400/60">
                     Strengths
@@ -1151,6 +1158,13 @@ export default function Lineups() {
                     ))}
                   </div>
                 </div>
+
+                <button
+                  type="button"
+                  className="rounded-md border border-[#1bc2ec]/70 bg-[#07111f] px-3 py-3 font-michroma text-xs uppercase text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.25)] transition hover:bg-[#1bc2ec]/10"
+                >
+                  Save Lineup
+                </button>
               </div>
 
               <div className="grid gap-3 border-t border-white/10 pt-4 sm:grid-cols-3">
@@ -1170,7 +1184,7 @@ export default function Lineups() {
                   <p className="font-michroma text-[10px] uppercase text-white/40">
                     Similar To
                   </p>
-                  <p className="font-michroma text-xs text-white">
+                  <p className="font-michroma text-xs text-[#1bc2ec]">
                     {similarLineup}
                   </p>
                   <p className="mt-1 font-michroma text-[8px] leading-relaxed text-white/35">
