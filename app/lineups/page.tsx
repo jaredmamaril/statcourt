@@ -1137,26 +1137,102 @@ export default function Lineups() {
                   {savedLineups.map((lineup) => (
                     <div
                       key={lineup.id}
-                      className="rounded-md border border-white/10 bg-black/25 p-4"
+                      className="group rounded-md border border-white/10 bg-black/25 p-4 transition-all duration-200 hover:-translate-y-1 hover:border-[#1bc2ec]/50"
                     >
-                      <p className="font-michroma text-sm text-white">
-                        {lineup.name}
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="font-michroma text-[19px] text-white">
+                            {lineup.name}
+                          </p>
+
+                          <p className="mt-1 font-michroma text-[9px] text-white/30">
+                            Saved{" "}
+                            {new Date(lineup.createdAt).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              },
+                            )}
+                          </p>
+
+                          <p className="mt-2 font-michroma text-[14px] text-[#1bc2ec]">
+                            {lineup.archetype}
+                          </p>
+
+                          <p className="mt-1 font-michroma text-[12px] text-white/80">
+                            Championship Contender
+                          </p>
+                        </div>
+
+                        <div className="rounded-md border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-3 py-2 text-center transition-all duration-200 group-hover:border-[#1bc2ec] group-hover:shadow-[0_0_18px_rgba(27,194,236,0.3)]">
+                          <p className="font-michroma text-xl text-[#1bc2ec]">
+                            {lineup.overall.toFixed(1)}
+                          </p>
+
+                          <p className="font-michroma text-[8px] uppercase text-white/40">
+                            OVR
+                          </p>
+                        </div>
+                      </div>
+
+                      <p className="mt-2 truncate font-michroma text-[10px] text-white/50">
+                        {lineupPositions
+                          .map((position) => {
+                            const playerName = lineup.players[position];
+                            return playerName
+                              ? playerName.split(" ").at(-1)
+                              : null;
+                          })
+                          .filter(Boolean)
+                          .join(" • ")}
                       </p>
 
-                      <p className="mt-3 font-michroma text-2xl text-[#1bc2ec]">
-                        {lineup.overall.toFixed(1)}
-                      </p>
+                      <div className="mt-2">
+                        <p className="font-michroma text-[9px] uppercase text-white/35">
+                          Team Identity
+                        </p>
 
-                      <p className="mt-2 font-michroma text-[10px] text-white/40">
-                        {lineup.archetype}
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => deleteSavedLineup(lineup.id)}
-                        className="mt-4 rounded-md border border-red-500/50 bg-red-500/10 px-3 py-2 font-michroma text-[10px] uppercase text-red-400 transition hover:bg-red-500/20"
-                      >
-                        Delete
-                      </button>
+                        <p className="mt-1 font-michroma text-[12px] text-white">
+                          {lineup.teamIdentity}
+                        </p>
+
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {lineupStrengths.map((strength) => (
+                            <span
+                              key={strength}
+                              className="rounded border border-emerald-400/40 bg-emerald-400/10 px-2 py-1 font-michroma text-[8px] text-emerald-400"
+                            >
+                              ✓ {strength}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="mt-2 flex flex-wrap justify-center">
+                        <button
+                          type="button"
+                          className="rounded-md border border-[#1bc2ec]/80 bg-[#1bc2ec]/15 px-3 py-2 font-michroma text-[9px] uppercase text-[#1bc2ec] shadow-[0_0_14px_rgba(27,194,236,0.25)] transition hover:bg-[#1bc2ec]/25"
+                        >
+                          Load Lineup
+                        </button>
+
+                        <button
+                          type="button"
+                          className="rounded-md border border-white/15 bg-white/5 px-3 py-2 font-michroma text-[9px] uppercase text-white/55 transition hover:border-[#1bc2ec]/40 hover:text-[#1bc2ec]"
+                        >
+                          Scout Report
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => deleteSavedLineup(lineup.id)}
+                          className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 font-michroma text-[9px] uppercase text-red-400 transition hover:bg-red-500/20"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
