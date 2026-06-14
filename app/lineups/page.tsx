@@ -1014,7 +1014,7 @@ export default function Lineups() {
 
       {isScoutOpen && (
         <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 px-4">
-          <div className="w-full max-w-xl rounded-md border border-[#1bc2ec]/60 bg-[#07111f] p-6 shadow-[0_0_35px_rgba(27,194,236,0.25)]">
+          <div className="relative w-full max-w-xl rounded-md border border-[#1bc2ec]/60 bg-[#07111f] p-6 shadow-[0_0_35px_rgba(27,194,236,0.25)]">
             <div className="flex items-start justify-between">
               <div>
                 <p className="font-michroma text-[10px] uppercase text-white/40">
@@ -1029,13 +1029,57 @@ export default function Lineups() {
               <button
                 type="button"
                 onClick={() => setIsScoutOpen(false)}
-                className="font-michroma text-sm text-white/40 transition hover:text-red-400"
+                className="font-michroma text-lg text-white/40 transition hover:text-red-400"
               >
                 x
               </button>
             </div>
 
-            <div className="mt-6 grid gap-4">
+            <div className="absolute right-30 top-6">
+              <p className="font-michroma text-[10px] uppercase text-white/40">
+                Lineup
+              </p>
+
+              <div className="mt-2 grid gap-1">
+                {lineupPositions.map((position) => {
+                  const playerName = customLineup[position];
+                  const player = players.find(
+                    (player) => player.name === playerName,
+                  );
+
+                  return (
+                    <div
+                      key={position}
+                      className="grid grid-cols-[34px_1fr] items-center gap-3"
+                    >
+                      <span className="font-michroma text-[10px] text-[#1bc2ec]">
+                        {position}
+                      </span>
+
+                      <div>
+                        <p className="truncate font-michroma text-[10px] text-white">
+                          {player?.name ?? "Empty"}
+                        </p>
+
+                        <p className="mt-1 font-michroma text-[8px] text-white/35">
+                          {player
+                            ? `${player.team} • #${player.jerseyNumber}`
+                            : "--"}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <button
+                type="button"
+                className="mt-6 rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-5 py-3 font-michroma text-xs uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20"
+              >
+                Save Lineup?
+              </button>
+            </div>
+
+            <div className="mt-6 grid max-w-xl gap-4">
               <div>
                 <p className="font-michroma text-[10px] uppercase text-white/40">
                   Overall
@@ -1063,7 +1107,7 @@ export default function Lineups() {
                 </p>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-[120px_220px]">
                 <div>
                   <p className="font-michroma text-[10px] uppercase text-emerald-400/60">
                     Strengths
@@ -1073,7 +1117,7 @@ export default function Lineups() {
                     {lineupStrengths.map((strength) => (
                       <p
                         key={strength}
-                        className="font-michroma text-xs text-white"
+                        className="font-michroma text-[10px] text-white"
                       >
                         <span className="text-emerald-400">✓</span> {strength}
                       </p>
@@ -1090,7 +1134,7 @@ export default function Lineups() {
                     {lineupWeaknesses.map((weakness) => (
                       <p
                         key={weakness}
-                        className="font-michroma text-xs text-white"
+                        className="font-michroma text-[10px] text-white"
                       >
                         <span className="text-red-400">!</span> {weakness}
                       </p>
