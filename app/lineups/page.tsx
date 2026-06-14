@@ -319,6 +319,16 @@ export default function Lineups() {
     );
   }
 
+  function deleteSavedLineup(lineupId: string) {
+    const nextLineups = savedLineups.filter((lineup) => lineup.id !== lineupId);
+
+    setSavedLineups(nextLineups);
+    localStorage.setItem(
+      "statcourt-saved-lineups",
+      JSON.stringify(nextLineups),
+    );
+  }
+
   const [customLineup, setCustomLineup] = useState<Record<Position, string>>({
     PG: "",
     SG: "",
@@ -1106,11 +1116,11 @@ export default function Lineups() {
               </div>
             ) : (
               <div className="mt-6">
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center justify-center gap-4">
                   <input
                     type="text"
                     placeholder="Search saved lineups..."
-                    className="w-full max-w-md rounded-md border border-white/15 bg-black/30 px-4 py-3 font-michroma text-xs text-white outline-none placeholder:text-white/30 focus:border-[#1bc2ec]"
+                    className="w-full max-w-md rounded-md border border-white/15 bg-black/30 px-4 py-3 font-michroma text-xs text-white outline-none placeholder:text-white/30 focus:border-white"
                   />
 
                   <button
@@ -1138,6 +1148,13 @@ export default function Lineups() {
                       <p className="mt-2 font-michroma text-[10px] text-white/40">
                         {lineup.archetype}
                       </p>
+                      <button
+                        type="button"
+                        onClick={() => deleteSavedLineup(lineup.id)}
+                        className="mt-4 rounded-md border border-red-500/50 bg-red-500/10 px-3 py-2 font-michroma text-[10px] uppercase text-red-400 transition hover:bg-red-500/20"
+                      >
+                        Delete
+                      </button>
                     </div>
                   ))}
                 </div>
