@@ -284,8 +284,8 @@ export default function Players() {
   }
 
   return (
-    <main className="h-[calc(100vh-48px)] overflow-hidden text-white">
-      <section className="mx-auto h-full w-full max-w-6xl overflow-hidden px-6 pt-4">
+    <main className="min-h-screen overflow-x-hidden text-white">
+      <section className="relative mx-auto w-full max-w-6xl px-6 pt-4 pb-12">
         <div
           className={
             selectedPlayer
@@ -297,7 +297,7 @@ export default function Players() {
           <div
             className={
               selectedPlayer
-                ? "relative flex h-full w-full flex-col transition-all duration-500 ease-out opacity-10 lg:-translate-x-1/6"
+                ? "relative flex h-full w-full flex-col transition-all duration-500 ease-out opacity-10 lg:-translate-x-5"
                 : "relative flex h-full w-full flex-col transition-all duration-500 ease-out opacity-100 translate-x-0"
             }
           >
@@ -539,7 +539,7 @@ export default function Players() {
             </div>
 
             {/* Player list */}
-            <div className="player-list-scroll min-h-0 flex-1 overflow-y-auto pr-2">
+            <div className="player-list-scroll max-h-[450px] overflow-y-auto pr-2">
               <div className="mx-auto flex w-full max-w-100 flex-col gap-1">
                 {/* No player(s) cases */}
                 {filteredPlayers.length === 0 ? (

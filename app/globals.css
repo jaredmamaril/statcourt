@@ -87,5 +87,8 @@ a {
 /* For list of players on players page */
 .player-list-scroll {
   scrollbar-width: none;
+}
+
+.player-list-scroll::-webkit-scrollbar {
   display: none;
 }
