@@ -290,6 +290,23 @@ export default function Lineups() {
   const [isNamingLineup, setIsNamingLineup] = useState(false);
   const [lineupNameInput, setLineupNameInput] = useState("");
   const [savedLineups, setSavedLineups] = useState<SavedLineup[]>([]);
+  const [savedLineupSearch, setSavedLineupSearch] = useState("");
+
+  const filteredSavedLineups = savedLineups.filter((lineup) => {
+    const search = savedLineupSearch.toLowerCase();
+
+    const playerNames = lineupPositions
+      .map((position) => lineup.players[position])
+      .join(" ")
+      .toLowerCase();
+
+    return (
+      lineup.name.toLowerCase().includes(search) ||
+      lineup.archetype.toLowerCase().includes(search) ||
+      lineup.teamIdentity.toLowerCase().includes(search) ||
+      playerNames.includes(search)
+    );
+  });
 
   useEffect(() => {
     const saved = localStorage.getItem("statcourt-saved-lineups");
@@ -329,6 +346,15 @@ export default function Lineups() {
       "statcourt-saved-lineups",
       JSON.stringify(nextLineups),
     );
+  }
+
+  function loadSavedLineup(lineup: SavedLineup) {
+    setCustomLineup(lineup.players);
+    setActiveTab("builder");
+    setHasStartedBuilder(true);
+    setActiveBuildPosition("PG");
+    setIsScoutOpen(false);
+    setIsNamingLineup(false);
   }
 
   const [customLineup, setCustomLineup] = useState<Record<Position, string>>({
@@ -1121,6 +1147,10 @@ export default function Lineups() {
                 <div className="flex items-center justify-center gap-4">
                   <input
                     type="text"
+                    value={savedLineupSearch}
+                    onChange={(event) =>
+                      setSavedLineupSearch(event.target.value)
+                    }
                     placeholder="Search saved lineups..."
                     className="w-full max-w-md rounded-md border border-white/15 bg-black/30 px-4 py-3 font-michroma text-xs text-white outline-none placeholder:text-white/30 focus:border-white"
                   />
@@ -1133,109 +1163,116 @@ export default function Lineups() {
                   </button>
                 </div>
 
-                <div className="mt-6 grid gap-4 md:grid-cols-3">
-                  {savedLineups.map((lineup) => (
-                    <div
-                      key={lineup.id}
-                      className="group rounded-md border border-white/10 bg-black/25 p-4 transition-all duration-200 hover:-translate-y-1 hover:border-[#1bc2ec]/50"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <p className="font-michroma text-[19px] text-white">
-                            {lineup.name}
-                          </p>
+                {filteredSavedLineups.length === 0 ? (
+                  <p className="mt-10 text-center font-michroma text-xs text-white/40">
+                    No saved lineups match your search.
+                  </p>
+                ) : (
+                  <div className="mt-6 grid gap-4 md:grid-cols-3">
+                    {filteredSavedLineups.map((lineup) => (
+                      <div
+                        key={lineup.id}
+                        className="group rounded-md border border-white/10 bg-black/25 p-4 transition-all duration-200 hover:-translate-y-1 hover:border-[#1bc2ec]/50"
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <p className="font-michroma text-[19px] text-white">
+                              {lineup.name}
+                            </p>
 
-                          <p className="mt-1 font-michroma text-[9px] text-white/30">
-                            Saved{" "}
-                            {new Date(lineup.createdAt).toLocaleDateString(
-                              "en-US",
-                              {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              },
-                            )}
-                          </p>
+                            <p className="mt-1 font-michroma text-[9px] text-white/30">
+                              Saved{" "}
+                              {new Date(lineup.createdAt).toLocaleDateString(
+                                "en-US",
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                },
+                              )}
+                            </p>
 
-                          <p className="mt-2 font-michroma text-[14px] text-[#1bc2ec]">
-                            {lineup.archetype}
-                          </p>
+                            <p className="mt-2 font-michroma text-[14px] text-[#1bc2ec]">
+                              {lineup.archetype}
+                            </p>
 
-                          <p className="mt-1 font-michroma text-[12px] text-white/80">
-                            Championship Contender
-                          </p>
+                            <p className="mt-1 font-michroma text-[12px] text-white/80">
+                              Championship Contender
+                            </p>
+                          </div>
+
+                          <div className="rounded-md border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-3 py-2 text-center transition-all duration-200 group-hover:border-[#1bc2ec] group-hover:shadow-[0_0_18px_rgba(27,194,236,0.3)]">
+                            <p className="font-michroma text-xl text-[#1bc2ec]">
+                              {lineup.overall.toFixed(1)}
+                            </p>
+
+                            <p className="font-michroma text-[8px] uppercase text-white/40">
+                              OVR
+                            </p>
+                          </div>
                         </div>
 
-                        <div className="rounded-md border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-3 py-2 text-center transition-all duration-200 group-hover:border-[#1bc2ec] group-hover:shadow-[0_0_18px_rgba(27,194,236,0.3)]">
-                          <p className="font-michroma text-xl text-[#1bc2ec]">
-                            {lineup.overall.toFixed(1)}
-                          </p>
-
-                          <p className="font-michroma text-[8px] uppercase text-white/40">
-                            OVR
-                          </p>
-                        </div>
-                      </div>
-
-                      <p className="mt-2 truncate font-michroma text-[10px] text-white/50">
-                        {lineupPositions
-                          .map((position) => {
-                            const playerName = lineup.players[position];
-                            return playerName
-                              ? playerName.split(" ").at(-1)
-                              : null;
-                          })
-                          .filter(Boolean)
-                          .join(" • ")}
-                      </p>
-
-                      <div className="mt-2">
-                        <p className="font-michroma text-[9px] uppercase text-white/35">
-                          Team Identity
+                        <p className="mt-2 truncate font-michroma text-[10px] text-white/50">
+                          {lineupPositions
+                            .map((position) => {
+                              const playerName = lineup.players[position];
+                              return playerName
+                                ? playerName.split(" ").at(-1)
+                                : null;
+                            })
+                            .filter(Boolean)
+                            .join(" • ")}
                         </p>
 
-                        <p className="mt-1 font-michroma text-[12px] text-white">
-                          {lineup.teamIdentity}
-                        </p>
+                        <div className="mt-2">
+                          <p className="font-michroma text-[9px] uppercase text-white/35">
+                            Team Identity
+                          </p>
 
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {lineupStrengths.map((strength) => (
-                            <span
-                              key={strength}
-                              className="rounded border border-emerald-400/40 bg-emerald-400/10 px-2 py-1 font-michroma text-[8px] text-emerald-400"
-                            >
-                              ✓ {strength}
-                            </span>
-                          ))}
+                          <p className="mt-1 font-michroma text-[12px] text-white">
+                            {lineup.teamIdentity}
+                          </p>
+
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {lineupStrengths.map((strength) => (
+                              <span
+                                key={strength}
+                                className="rounded border border-emerald-400/40 bg-emerald-400/10 px-2 py-1 font-michroma text-[8px] text-emerald-400"
+                              >
+                                ✓ {strength}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="mt-2 flex flex-wrap justify-center">
+                          <button
+                            type="button"
+                            onClick={() => loadSavedLineup(lineup)}
+                            className="rounded-md border border-[#1bc2ec]/80 bg-[#1bc2ec]/15 px-3 py-2 font-michroma text-[9px] uppercase text-[#1bc2ec] shadow-[0_0_14px_rgba(27,194,236,0.25)] transition hover:bg-[#1bc2ec]/25"
+                          >
+                            Load Lineup
+                          </button>
+
+                          <button
+                            type="button"
+                            className="rounded-md border border-white/15 bg-white/5 px-3 py-2 font-michroma text-[9px] uppercase text-white/55 transition hover:border-[#1bc2ec]/40 hover:text-[#1bc2ec]"
+                          >
+                            Scout Report
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => deleteSavedLineup(lineup.id)}
+                            className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 font-michroma text-[9px] uppercase text-red-400 transition hover:bg-red-500/20"
+                          >
+                            Delete
+                          </button>
                         </div>
                       </div>
-
-                      <div className="mt-2 flex flex-wrap justify-center">
-                        <button
-                          type="button"
-                          className="rounded-md border border-[#1bc2ec]/80 bg-[#1bc2ec]/15 px-3 py-2 font-michroma text-[9px] uppercase text-[#1bc2ec] shadow-[0_0_14px_rgba(27,194,236,0.25)] transition hover:bg-[#1bc2ec]/25"
-                        >
-                          Load Lineup
-                        </button>
-
-                        <button
-                          type="button"
-                          className="rounded-md border border-white/15 bg-white/5 px-3 py-2 font-michroma text-[9px] uppercase text-white/55 transition hover:border-[#1bc2ec]/40 hover:text-[#1bc2ec]"
-                        >
-                          Scout Report
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => deleteSavedLineup(lineup.id)}
-                          className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 font-michroma text-[9px] uppercase text-red-400 transition hover:bg-red-500/20"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </section>
