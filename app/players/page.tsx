@@ -284,21 +284,21 @@ export default function Players() {
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden text-white">
-      <section className="w-full max-w-6xl mx-auto px-6 pt-4 pb-12 relative">
+    <main className="h-[calc(100vh-48px)] overflow-hidden text-white">
+      <section className="mx-auto h-full w-full max-w-6xl overflow-hidden px-6 pt-4">
         <div
           className={
             selectedPlayer
-              ? "relative w-full grid gap-10 lg:grid-cols-[46%_1fr]"
-              : "relative w-full max-w-3xl mx-auto"
+              ? "relative grid h-full min-h-0 w-full gap-10 lg:grid-cols-[46%_1fr]"
+              : "relative mx-auto h-full min-h-0 w-full max-w-3xl"
           }
         >
           {/* Wrapper that contains the left controls */}
           <div
             className={
               selectedPlayer
-                ? "relative w-full transition-all duration-500 ease-out opacity-10 lg:-translate-x-1/6"
-                : "relative w-full transition-all duration-500 ease-out opacity-100 translate-x-0"
+                ? "relative flex h-full w-full flex-col transition-all duration-500 ease-out opacity-10 lg:-translate-x-1/6"
+                : "relative flex h-full w-full flex-col transition-all duration-500 ease-out opacity-100 translate-x-0"
             }
           >
             {/* Header section */}
@@ -539,8 +539,8 @@ export default function Players() {
             </div>
 
             {/* Player list */}
-            <div className="flex items-center justify-center">
-              <div className="flex flex-col w-full max-w-100 gap-1 pr-2">
+            <div className="player-list-scroll min-h-0 flex-1 overflow-y-auto pr-2">
+              <div className="mx-auto flex w-full max-w-100 flex-col gap-1">
                 {/* No player(s) cases */}
                 {filteredPlayers.length === 0 ? (
                   <p className="text-center text-white/40 font-michroma text-xs py-8">
