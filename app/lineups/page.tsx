@@ -287,6 +287,8 @@ export default function Lineups() {
   const [hoveredBuildPlayer, setHoveredBuildPlayer] = useState("");
   const [buildPlayerSearch, setBuildPlayerSearch] = useState("");
   const [isScoutOpen, setIsScoutOpen] = useState(false);
+  const [isNamingLineup, setIsNamingLineup] = useState(false);
+  const [lineupNameInput, setLineupNameInput] = useState("");
   const [savedLineups, setSavedLineups] = useState<SavedLineup[]>([]);
 
   useEffect(() => {
@@ -297,12 +299,12 @@ export default function Lineups() {
     setSavedLineups(JSON.parse(saved) as SavedLineup[]);
   }, []);
 
-  function saveLineup() {
+  function saveLineup(lineupName: string) {
     if (!customLineupOverall) return;
 
     const newLineup: SavedLineup = {
       id: crypto.randomUUID(),
-      name: `Lineup ${savedLineups.length + 1}`,
+      name: lineupName.trim() || `Lineup ${savedLineups.length + 1}`,
       players: customLineup,
       overall: customLineupOverall,
       archetype: lineupArchetype,
@@ -1359,11 +1361,56 @@ export default function Lineups() {
 
             <button
               type="button"
-              onClick={saveLineup}
+              onClick={() => {
+                setLineupNameInput("");
+                setIsNamingLineup(true);
+              }}
               className="absolute -bottom-10.5 right-0 rounded-md border border-[#1bc2ec]/70 bg-[#07111f] px-5 py-3 font-michroma text-xs uppercase text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.25)] transition hover:bg-[#1bc2ec]/10"
             >
               Save Lineup
             </button>
+          </div>
+        </div>
+      )}
+
+      {isNamingLineup && (
+        <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-md rounded-md border border-[#1bc2ec]/60 bg-[#07111f] p-6 shadow-[0_0_35px_rgba(27,194,236,0.25)]">
+            <p className="font-michroma text-[10px] uppercase text-white/40">
+              Save Lineup
+            </p>
+
+            <h2 className="mt-1 font-michroma text-lg text-white">
+              Name Your Lineup
+            </h2>
+
+            <input
+              value={lineupNameInput}
+              onChange={(event) => setLineupNameInput(event.target.value)}
+              className="mt-5 w-full rounded-md border border-white/15 bg-black/30 px-4 py-3 font-michroma text-xs text-white outline-none placeholder:text-white/30 focus:border-[#1bc2ec]"
+              placeholder="Lineup name..."
+            />
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setIsNamingLineup(false)}
+                className="rounded-md border border-white/15 bg-black/20 px-4 py-3 font-michroma text-xs uppercase text-white/50 transition hover:text-white"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  saveLineup(lineupNameInput);
+                  setIsNamingLineup(false);
+                }}
+                className="rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-4 py-3 font-michroma text-xs uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20"
+              >
+                Save
+              </button>
+            </div>
           </div>
         </div>
       )}
