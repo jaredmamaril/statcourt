@@ -7,9 +7,17 @@ import {
 } from "../components/court-data";
 import type { Position } from "../components/court-data";
 import PlayerImage from "../components/player-image";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trophy, Flame, Brain, Shield, Target, Crown } from "lucide-react";
+import {
+  Trophy,
+  Flame,
+  Brain,
+  Shield,
+  Target,
+  Crown,
+  Save,
+} from "lucide-react";
 
 type LineupTab = "featured" | "builder" | "saved";
 
@@ -259,6 +267,16 @@ function getBuilderPlayerRating(player: (typeof players)[number]) {
   return 70 + overallScore * 0.3;
 }
 
+type SavedLineup = {
+  id: string;
+  name: string;
+  players: Record<Position, string>;
+  overall: number;
+  archetype: string;
+  teamIdentity: string;
+  createdAt: string;
+};
+
 export default function Lineups() {
   const [activeTab, setActiveTab] = useState<LineupTab>("featured");
   const [hasStartedBuilder, setHasStartedBuilder] = useState(false);
@@ -269,6 +287,37 @@ export default function Lineups() {
   const [hoveredBuildPlayer, setHoveredBuildPlayer] = useState("");
   const [buildPlayerSearch, setBuildPlayerSearch] = useState("");
   const [isScoutOpen, setIsScoutOpen] = useState(false);
+  const [savedLineups, setSavedLineups] = useState<SavedLineup[]>([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("statcourt-saved-lineups");
+
+    if (!saved) return;
+
+    setSavedLineups(JSON.parse(saved) as SavedLineup[]);
+  }, []);
+
+  function saveLineup() {
+    if (!customLineupOverall) return;
+
+    const newLineup: SavedLineup = {
+      id: crypto.randomUUID(),
+      name: `Lineup ${savedLineups.length + 1}`,
+      players: customLineup,
+      overall: customLineupOverall,
+      archetype: lineupArchetype,
+      teamIdentity,
+      createdAt: new Date().toISOString(),
+    };
+
+    const nextLineups = [newLineup, ...savedLineups];
+
+    setSavedLineups(nextLineups);
+    localStorage.setItem(
+      "statcourt-saved-lineups",
+      JSON.stringify(nextLineups),
+    );
+  }
 
   const [customLineup, setCustomLineup] = useState<Record<Position, string>>({
     PG: "",
@@ -361,7 +410,8 @@ export default function Lineups() {
     lineupCards.find((card) => card.title === selectedLineupCategory)?.color ??
     "#1bc2ec";
 
-  const shouldShowTopText = activeTab === "featured" || hasStartedBuilder;
+  const shouldShowTopText =
+    activeTab === "featured" || activeTab === "saved" || hasStartedBuilder;
 
   return (
     <main className="min-h-screen overflow-x-hidden text-white">
@@ -1025,17 +1075,77 @@ export default function Lineups() {
             )}
           </section>
         )}
-      </section>
 
-      {activeTab === "saved" && (
-        <section className="min-h-[calc(100vh-140px)]">
-          <div className="mt-8">
-            <p className="text-center font-michroma text-sm text-white/40">
-              No saved lineups yet.
-            </p>
-          </div>
-        </section>
-      )}
+        {activeTab === "saved" && (
+          <section className="min-h-[calc(100vh-140px)]">
+            {savedLineups.length === 0 ? (
+              <div className="flex min-h-[420px] flex-col items-center justify-center text-center">
+                <Save
+                  size={56}
+                  strokeWidth={1.5}
+                  className="mb-1 text-[#1bc2ec]"
+                />
+                <p className="font-michroma text-lg text-white">
+                  No saved lineups yet.
+                </p>
+
+                <p className="mt-3 max-w-md font-michroma text-xs leading-relaxed text-white/40">
+                  Build your first team and save it after scouting.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab("builder");
+                    setHasStartedBuilder(false);
+                  }}
+                  className="mt-6 rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-6 py-3 font-michroma text-xs uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20"
+                >
+                  Build a Lineup
+                </button>
+              </div>
+            ) : (
+              <div className="mt-6">
+                <div className="flex items-center justify-between gap-4">
+                  <input
+                    type="text"
+                    placeholder="Search saved lineups..."
+                    className="w-full max-w-md rounded-md border border-white/15 bg-black/30 px-4 py-3 font-michroma text-xs text-white outline-none placeholder:text-white/30 focus:border-[#1bc2ec]"
+                  />
+
+                  <button
+                    type="button"
+                    className="rounded-md border border-white/15 bg-black/30 px-4 py-3 font-michroma text-xs text-white/60"
+                  >
+                    Sort: Highest OVR ▾
+                  </button>
+                </div>
+
+                <div className="mt-6 grid gap-4 md:grid-cols-3">
+                  {savedLineups.map((lineup) => (
+                    <div
+                      key={lineup.id}
+                      className="rounded-md border border-white/10 bg-black/25 p-4"
+                    >
+                      <p className="font-michroma text-sm text-white">
+                        {lineup.name}
+                      </p>
+
+                      <p className="mt-3 font-michroma text-2xl text-[#1bc2ec]">
+                        {lineup.overall.toFixed(1)}
+                      </p>
+
+                      <p className="mt-2 font-michroma text-[10px] text-white/40">
+                        {lineup.archetype}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+      </section>
 
       {isScoutOpen && (
         <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 px-4">
@@ -1232,6 +1342,7 @@ export default function Lineups() {
 
             <button
               type="button"
+              onClick={saveLineup}
               className="absolute -bottom-10.5 right-0 rounded-md border border-[#1bc2ec]/70 bg-[#07111f] px-5 py-3 font-michroma text-xs uppercase text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.25)] transition hover:bg-[#1bc2ec]/10"
             >
               Save Lineup
