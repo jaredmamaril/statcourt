@@ -15,6 +15,7 @@
   --font-michroma: var(--font-michroma);
 }
 
+/* For animations on court page */
 @keyframes cardIn {
   from {
     opacity: 0;
@@ -81,4 +82,10 @@ body {
 
 a {
   text-decoration: none;
+}
+
+/* For list of players on players page */
+.player-list-scroll {
+  scrollbar-width: none;
+  display: none;
 }
