@@ -357,6 +357,11 @@ export default function Lineups() {
     setIsNamingLineup(false);
   }
 
+  function scoutSavedLineup(lineup: SavedLineup) {
+    setCustomLineup(lineup.players);
+    setIsScoutOpen(true);
+  }
+
   const [customLineup, setCustomLineup] = useState<Record<Position, string>>({
     PG: "",
     SG: "",
@@ -447,6 +452,15 @@ export default function Lineups() {
   const selectedCategoryColor =
     lineupCards.find((card) => card.title === selectedLineupCategory)?.color ??
     "#1bc2ec";
+
+  function getSavedLineupArchetypeColor(archetype: string) {
+    if (archetype === "Championship Dynasty") return "#EFBF04";
+    if (archetype === "Spacing Superteam") return "#1bc2ec";
+    if (archetype === "Lockdown Unit") return "#A855F7";
+    if (archetype === "Showtime Offense") return "#EF4444";
+
+    return "#1bc2ec";
+  }
 
   const shouldShowTopText =
     activeTab === "featured" || activeTab === "saved" || hasStartedBuilder;
@@ -1162,13 +1176,19 @@ export default function Lineups() {
                     Sort: Highest OVR ▾
                   </button>
                 </div>
+                <div className="mt-2">
+                  <p className="mb-4 text-center font-michroma text-xs text-white/40">
+                    {savedLineups.length} Saved{" "}
+                    {savedLineups.length === 1 ? "Lineup" : "Lineups"}
+                  </p>
+                </div>
 
                 {filteredSavedLineups.length === 0 ? (
                   <p className="mt-10 text-center font-michroma text-xs text-white/40">
                     No saved lineups match your search.
                   </p>
                 ) : (
-                  <div className="mt-6 grid gap-4 md:grid-cols-3">
+                  <div className="mt-2 grid gap-4 md:grid-cols-3">
                     {filteredSavedLineups.map((lineup) => (
                       <div
                         key={lineup.id}
@@ -1192,7 +1212,14 @@ export default function Lineups() {
                               )}
                             </p>
 
-                            <p className="mt-2 font-michroma text-[14px] text-[#1bc2ec]">
+                            <p
+                              className="mt-2 font-michroma text-[14px]"
+                              style={{
+                                color: getSavedLineupArchetypeColor(
+                                  lineup.archetype,
+                                ),
+                              }}
+                            >
                               {lineup.archetype}
                             </p>
 
@@ -1256,6 +1283,7 @@ export default function Lineups() {
 
                           <button
                             type="button"
+                            onClick={() => scoutSavedLineup(lineup)}
                             className="rounded-md border border-white/15 bg-white/5 px-3 py-2 font-michroma text-[9px] uppercase text-white/55 transition hover:border-[#1bc2ec]/40 hover:text-[#1bc2ec]"
                           >
                             Scout Report
