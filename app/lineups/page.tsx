@@ -311,12 +311,22 @@ export default function Lineups() {
         )[0];
 
   const lineupArchetype = "Championship Dynasty";
+  const scoutSummary =
+    "A championship-caliber lineup built around elite defense, rebounding, and leadership.";
   const teamIdentity = "Elite Defense & Rebounding";
   const lineupStrengths = ["Defense", "Rebounding", "Leadership"];
   const lineupWeaknesses = ["Perimeter Shooting"];
   const xFactor = bestPlayerFit;
   const similarLineup = "1996 Bulls (89%)";
   const courtBalance = "Excellent";
+  const courtBalanceColor =
+    courtBalance === "Excellent"
+      ? "#22C55E"
+      : courtBalance === "Good"
+        ? "#EFBF04"
+        : courtBalance === "Average"
+          ? "#F97316"
+          : "#EF4444";
 
   function pickBuildPlayer(playerName: string) {
     setCustomLineup((prev) => ({
@@ -1016,14 +1026,14 @@ export default function Lineups() {
         <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 px-4">
           <div className="relative w-full max-w-xl rounded-md border border-[#1bc2ec]/60 bg-[#07111f] p-6 shadow-[0_0_35px_rgba(27,194,236,0.25)]">
             <div className="flex items-start justify-between">
-              <div>
-                <p className="font-michroma text-[10px] uppercase text-white/40">
-                  Scout Report
-                </p>
-
-                <h2 className="mt-1 font-michroma text-xl text-white">
-                  Lineup Analysis
+              <div className="-mt-2">
+                <h2 className="font-michroma text-xl text-white">
+                  Scouting Report
                 </h2>
+
+                <p className="mt-1 max-w-62.5 font-michroma text-[10px] leading-relaxed text-white/35">
+                  {scoutSummary}
+                </p>
               </div>
 
               <button
@@ -1079,13 +1089,13 @@ export default function Lineups() {
               </button>
             </div>
 
-            <div className="mt-6 grid max-w-xl gap-4">
-              <div>
+            <div className="mt-1 grid max-w-xl gap-3">
+              <div className="flex items-center gap-2">
+                <p className="font-michroma text-3xl text-[#1bc2ec] -tracking-widest">
+                  {customLineupOverall?.toFixed(1)}
+                </p>
                 <p className="font-michroma text-[10px] uppercase text-white/40">
                   Overall
-                </p>
-                <p className="font-michroma text-4xl text-[#1bc2ec]">
-                  {customLineupOverall?.toFixed(1)}
                 </p>
               </div>
 
@@ -1151,6 +1161,9 @@ export default function Lineups() {
                   <p className="font-michroma text-xs text-white">
                     {xFactor?.name ?? "--"}
                   </p>
+                  <p className="mt-1 font-michroma text-[8px] leading-relaxed text-white/35">
+                    Primary creator and transition engine.
+                  </p>
                 </div>
 
                 <div>
@@ -1160,13 +1173,19 @@ export default function Lineups() {
                   <p className="font-michroma text-xs text-white">
                     {similarLineup}
                   </p>
+                  <p className="mt-1 font-michroma text-[8px] leading-relaxed text-white/35">
+                    Elite defense and rebounding identity.
+                  </p>
                 </div>
 
                 <div>
                   <p className="font-michroma text-[10px] uppercase text-white/40">
                     Court Balance
                   </p>
-                  <p className="font-michroma text-xs text-white">
+                  <p
+                    className="font-michroma text-lg "
+                    style={{ color: courtBalanceColor }}
+                  >
                     {courtBalance}
                   </p>
                 </div>
