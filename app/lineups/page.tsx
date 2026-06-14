@@ -11,13 +11,14 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trophy, Flame, Brain, Shield, Target, Crown } from "lucide-react";
 
-type LineupTab = "featured" | "builder";
+type LineupTab = "featured" | "builder" | "saved";
 
 const lineupPositions: Position[] = ["PG", "SG", "SF", "PF", "C"];
 
 const lineupTabs: { label: string; value: LineupTab }[] = [
   { label: "Featured Lineups", value: "featured" },
   { label: "Build Your Own", value: "builder" },
+  { label: "Your Saved Lineups", value: "saved" },
 ];
 
 const lineupCards = [
@@ -394,16 +395,12 @@ export default function Lineups() {
 
           {shouldShowTopText && (
             <div className="grid flex-1 grid-cols-[auto_1fr] items-start gap-6 pl-10 pt-5">
-              <h1 className="font-michroma text-[16px] uppercase tracking-wide text-white">
-                {activeTab === "featured"
-                  ? "Featured Lineups"
-                  : "Build Your Own Team"}
-              </h1>
-
               <p className="w-full overflow-hidden -mt-1 font-michroma text-xs text-white/40 text-center">
                 {activeTab === "featured"
                   ? "Explore curated lineups and discover unique team archetypes, strengths, and playstyles."
-                  : "Build your lineup, then scout the team to uncover its archetype, strengths, weaknesses, and overall potential."}
+                  : activeTab === "builder"
+                    ? "Build your lineup, then scout the team to uncover its archetype, strengths, weaknesses, and overall potential."
+                    : "View and manage the lineups you have saved."}
               </p>
             </div>
           )}
@@ -1030,6 +1027,16 @@ export default function Lineups() {
         )}
       </section>
 
+      {activeTab === "saved" && (
+        <section className="min-h-[calc(100vh-140px)]">
+          <div className="mt-8">
+            <p className="text-center font-michroma text-sm text-white/40">
+              No saved lineups yet.
+            </p>
+          </div>
+        </section>
+      )}
+
       {isScoutOpen && (
         <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 px-4">
           <div className="relative w-full max-w-xl rounded-md border border-[#1bc2ec]/60 bg-[#07111f] p-6 shadow-[0_0_35px_rgba(27,194,236,0.25)]">
@@ -1159,12 +1166,29 @@ export default function Lineups() {
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  className="rounded-md border border-[#1bc2ec]/70 bg-[#07111f] px-3 py-3 font-michroma text-xs uppercase text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.25)] transition hover:bg-[#1bc2ec]/10"
-                >
-                  Save Lineup
-                </button>
+                <div className="text-center">
+                  <p className="font-michroma text-[10px] uppercase text-white/40">
+                    Team Grades
+                  </p>
+
+                  <div className="mt-1 grid gap-1 font-michroma text-[9px] text-white/70">
+                    <p>
+                      Offense: <span className="text-[#1bc2ec]">A+</span>
+                    </p>
+                    <p>
+                      Defense: <span className="text-[#1bc2ec]">A</span>
+                    </p>
+                    <p>
+                      Shooting: <span className="text-[#EFBF04]">B+</span>
+                    </p>
+                    <p>
+                      Playmaking: <span className="text-[#1bc2ec]">A</span>
+                    </p>
+                    <p>
+                      Rebounding: <span className="text-[#1bc2ec]">A+</span>
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <div className="grid gap-3 border-t border-white/10 pt-4 sm:grid-cols-3">
@@ -1205,6 +1229,13 @@ export default function Lineups() {
                 </div>
               </div>
             </div>
+
+            <button
+              type="button"
+              className="absolute -bottom-10.5 right-0 rounded-md border border-[#1bc2ec]/70 bg-[#07111f] px-5 py-3 font-michroma text-xs uppercase text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.25)] transition hover:bg-[#1bc2ec]/10"
+            >
+              Save Lineup
+            </button>
           </div>
         </div>
       )}
