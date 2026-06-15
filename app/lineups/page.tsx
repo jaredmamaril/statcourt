@@ -19,8 +19,30 @@ import {
   Save,
 } from "lucide-react";
 
+// Types
 type LineupTab = "featured" | "builder" | "saved";
 
+type SavedLineup = {
+  id: string;
+  name: string;
+  players: Record<Position, string>;
+  overall: number;
+  archetype: string;
+  teamIdentity: string;
+  createdAt: string;
+};
+
+type LineupMarkerProps = {
+  position: string;
+  name: string;
+  className: string;
+  color: string;
+  isHighlighted: boolean;
+  onViewCard: (playerName: string) => void;
+  tooltipPosition?: "top" | "bottom";
+};
+
+// Static lineup data
 const lineupPositions: Position[] = ["PG", "SG", "SF", "PF", "C"];
 
 const lineupTabs: { label: string; value: LineupTab }[] = [
@@ -110,6 +132,7 @@ const lineupDetails = {
   },
 };
 
+// Court marker positions
 const featuredCourtMarkerPositions: Record<Position, string> = {
   PG: "left-1/2 top-5",
   SG: "left-[20%] top-17",
@@ -126,6 +149,71 @@ const builderCourtMarkerPositions: Record<Position, string> = {
   C: "left-[65%] top-50",
 };
 
+// Rating helpers
+function getBuilderPlayerRating(player: (typeof players)[number]) {
+  const ppgScore = normalizeStat(player.stats.ppg, statMaxValues.ppg);
+  const rpgScore = normalizeStat(player.stats.rpg, statMaxValues.rpg);
+  const apgScore = normalizeStat(player.stats.apg, statMaxValues.apg);
+  const fgScore = normalizeStat(
+    player.stats.fgPercent,
+    statMaxValues.fgPercent,
+  );
+  const threeScore = normalizeStat(
+    player.stats.threePercent,
+    statMaxValues.threePercent,
+  );
+  const ftScore = normalizeStat(
+    player.stats.ftPercent,
+    statMaxValues.ftPercent,
+  );
+
+  const scoringScore = ppgScore * 0.75 + fgScore * 0.15 + ftScore * 0.1;
+  const shootingScore = threeScore * 0.65 + ftScore * 0.25 + fgScore * 0.1;
+  const playmakingScore =
+    apgScore * 0.75 + scoringScore * 0.15 + threeScore * 0.1;
+  const reboundingScore = rpgScore * 0.9 + fgScore * 0.1;
+  const efficiencyScore = fgScore * 0.45 + threeScore * 0.3 + ftScore * 0.25;
+
+  const starCategories = [
+    ppgScore >= 70,
+    rpgScore >= 55,
+    apgScore >= 55,
+    fgScore >= 70,
+    threeScore >= 70,
+    ftScore >= 75,
+  ].filter(Boolean).length;
+
+  const versatilityBonus = starCategories * 2;
+
+  const overallScore =
+    scoringScore * 0.3 +
+    efficiencyScore * 0.23 +
+    playmakingScore * 0.19 +
+    reboundingScore * 0.15 +
+    shootingScore * 0.13 +
+    versatilityBonus;
+
+  return 70 + overallScore * 0.3;
+}
+
+function getSavedLineupArchetypeColor(archetype: string) {
+  if (archetype === "Championship Dynasty") return "#EFBF04";
+  if (archetype === "Spacing Superteam") return "#1bc2ec";
+  if (archetype === "Lockdown Unit") return "#A855F7";
+  if (archetype === "Showtime Offense") return "#EF4444";
+
+  return "#1bc2ec";
+}
+
+function getCourtBalanceColor(courtBalance: string) {
+  if (courtBalance === "Excellent") return "#22C55E";
+  if (courtBalance === "Good") return "#EFBF04";
+  if (courtBalance === "Average") return "#F97316";
+
+  return "#EF4444";
+}
+
+// Small components
 function LineupMarker({
   position,
   name,
@@ -134,15 +222,7 @@ function LineupMarker({
   isHighlighted,
   onViewCard,
   tooltipPosition = "top",
-}: {
-  position: string;
-  name: string;
-  className: string;
-  color: string;
-  isHighlighted: boolean;
-  onViewCard: (playerName: string) => void;
-  tooltipPosition?: "top" | "bottom";
-}) {
+}: LineupMarkerProps) {
   const player = players.find((player) => player.name === name);
   const imageSrc = player?.image || "/blank-player.svg";
   const archetype = player ? getPlayerInsights(player).archetype : null;
@@ -221,81 +301,100 @@ function LineupMarker({
   );
 }
 
-function getBuilderPlayerRating(player: (typeof players)[number]) {
-  const ppgScore = normalizeStat(player.stats.ppg, statMaxValues.ppg);
-  const rpgScore = normalizeStat(player.stats.rpg, statMaxValues.rpg);
-  const apgScore = normalizeStat(player.stats.apg, statMaxValues.apg);
-  const fgScore = normalizeStat(
-    player.stats.fgPercent,
-    statMaxValues.fgPercent,
-  );
-  const threeScore = normalizeStat(
-    player.stats.threePercent,
-    statMaxValues.threePercent,
-  );
-  const ftScore = normalizeStat(
-    player.stats.ftPercent,
-    statMaxValues.ftPercent,
-  );
-
-  const scoringScore = ppgScore * 0.75 + fgScore * 0.15 + ftScore * 0.1;
-  const shootingScore = threeScore * 0.65 + ftScore * 0.25 + fgScore * 0.1;
-  const playmakingScore =
-    apgScore * 0.75 + scoringScore * 0.15 + threeScore * 0.1;
-  const reboundingScore = rpgScore * 0.9 + fgScore * 0.1;
-  const efficiencyScore = fgScore * 0.45 + threeScore * 0.3 + ftScore * 0.25;
-
-  const starCategories = [
-    ppgScore >= 70,
-    rpgScore >= 55,
-    apgScore >= 55,
-    fgScore >= 70,
-    threeScore >= 70,
-    ftScore >= 75,
-  ].filter(Boolean).length;
-
-  const versatilityBonus = starCategories * 2;
-
-  const overallScore =
-    scoringScore * 0.3 +
-    efficiencyScore * 0.23 +
-    playmakingScore * 0.19 +
-    reboundingScore * 0.15 +
-    shootingScore * 0.13 +
-    versatilityBonus;
-
-  return 70 + overallScore * 0.3;
-}
-
-type SavedLineup = {
-  id: string;
-  name: string;
-  players: Record<Position, string>;
-  overall: number;
-  archetype: string;
-  teamIdentity: string;
-  createdAt: string;
-};
-
 export default function Lineups() {
-  const [activeTab, setActiveTab] = useState<LineupTab>("featured");
-  const [hasStartedBuilder, setHasStartedBuilder] = useState(false);
-  const [selectedLineupCategory, setSelectedLineupCategory] = useState("");
+  const router = useRouter();
   const lineupSectionRef = useRef<HTMLDivElement>(null);
+
+  // Tabs
+  const [activeTab, setActiveTab] = useState<LineupTab>("featured");
+
+  // Featured lineups
+  const [selectedLineupCategory, setSelectedLineupCategory] = useState("");
   const [selectedLineupName, setSelectedLineupName] = useState("");
   const [hoveredLineupPlayer, setHoveredLineupPlayer] = useState("");
+
+  // Builder
+  const [hasStartedBuilder, setHasStartedBuilder] = useState(false);
+  const [customLineup, setCustomLineup] = useState<Record<Position, string>>({
+    PG: "",
+    SG: "",
+    SF: "",
+    PF: "",
+    C: "",
+  });
+  const [activeBuildPosition, setActiveBuildPosition] =
+    useState<Position>("PG");
   const [hoveredBuildPlayer, setHoveredBuildPlayer] = useState("");
   const [buildPlayerSearch, setBuildPlayerSearch] = useState("");
+
+  // Saved lineups
+  const [savedLineups, setSavedLineups] = useState<SavedLineup[]>([]);
+  const [savedLineupSearch, setSavedLineupSearch] = useState("");
+
+  // Modals
   const [isScoutOpen, setIsScoutOpen] = useState(false);
   const [isNamingLineup, setIsNamingLineup] = useState(false);
   const [lineupNameInput, setLineupNameInput] = useState("");
-  const [savedLineups, setSavedLineups] = useState<SavedLineup[]>([]);
-  const [savedLineupSearch, setSavedLineupSearch] = useState("");
   const [lineupPendingDelete, setLineupPendingDelete] =
     useState<SavedLineup | null>(null);
-  const [animatedScoutOverall, setAnimatedScoutOverall] = useState(0);
   const [isLineupSavedOpen, setIsLineupSavedOpen] = useState(false);
 
+  // Animations
+  const [animatedScoutOverall, setAnimatedScoutOverall] = useState(0);
+
+  // Builder derived data
+  const selectedCustomPlayers = lineupPositions
+    .map((position) =>
+      players.find((player) => player.name === customLineup[position]),
+    )
+    .filter((player): player is (typeof players)[number] => Boolean(player));
+  const customLineupOverall =
+    selectedCustomPlayers.length === 0
+      ? null
+      : selectedCustomPlayers.reduce(
+          (total, player) => total + getBuilderPlayerRating(player),
+          0,
+        ) / selectedCustomPlayers.length;
+  const availableBuildPlayers = players.filter(
+    (player) =>
+      player.position === activeBuildPosition &&
+      player.name.toLowerCase().includes(buildPlayerSearch.toLowerCase()),
+  );
+  const selectedLineupCount = selectedCustomPlayers.length;
+  const isLineupComplete = selectedLineupCount === lineupPositions.length;
+  const bestPlayerFit =
+    selectedCustomPlayers.length === 0
+      ? null
+      : selectedCustomPlayers.toSorted(
+          (a, b) => getBuilderPlayerRating(b) - getBuilderPlayerRating(a),
+        )[0];
+
+  // Scout report values
+  const lineupArchetype = "Championship Dynasty";
+  const lineupTier =
+    customLineupOverall && customLineupOverall >= 92
+      ? "Championship Favorite"
+      : customLineupOverall && customLineupOverall >= 88
+        ? "Championship Contender"
+        : customLineupOverall && customLineupOverall >= 84
+          ? "Playoff-Caliber"
+          : "Developing Lineup";
+  const scoutSummary =
+    "A championship-caliber lineup built around elite defense, rebounding, and leadership.";
+  const teamIdentity = "Elite Defense & Rebounding";
+  const lineupStrengths = ["Defense", "Rebounding", "Leadership"];
+  const lineupWeaknesses = ["Perimeter Shooting"];
+  const xFactor = bestPlayerFit;
+  const similarLineup = "1996 Bulls (89%)";
+  const courtBalance = "Excellent";
+  const courtBalanceColor = getCourtBalanceColor(courtBalance);
+
+  // Featured lineup display values
+  const selectedCategoryColor =
+    lineupCards.find((card) => card.title === selectedLineupCategory)?.color ??
+    "#1bc2ec";
+
+  // Saved lineup derived data
   const filteredSavedLineups = savedLineups.filter((lineup) => {
     const search = savedLineupSearch.toLowerCase();
 
@@ -312,6 +411,11 @@ export default function Lineups() {
     );
   });
 
+  // Page display values
+  const shouldShowTopText =
+    activeTab === "featured" || activeTab === "saved" || hasStartedBuilder;
+
+  // Load saved lineups from localStorage
   useEffect(() => {
     const saved = localStorage.getItem("statcourt-saved-lineups");
 
@@ -320,6 +424,49 @@ export default function Lineups() {
     setSavedLineups(JSON.parse(saved) as SavedLineup[]);
   }, []);
 
+  // Animate scout report OVR
+  useEffect(() => {
+    if (!isScoutOpen || customLineupOverall === null) return;
+
+    const targetOverall = customLineupOverall;
+
+    let frameId: number;
+    const duration = 600;
+    const startTime = performance.now();
+
+    function animate(now: number) {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const nextValue = targetOverall * progress;
+
+      setAnimatedScoutOverall(nextValue);
+
+      if (progress < 1) {
+        frameId = requestAnimationFrame(animate);
+      }
+    }
+
+    setAnimatedScoutOverall(0);
+    frameId = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(frameId);
+  }, [isScoutOpen, customLineupOverall]);
+
+  // Builder actions
+  function pickBuildPlayer(playerName: string) {
+    setCustomLineup((prev) => ({
+      ...prev,
+      [activeBuildPosition]: playerName,
+    }));
+  }
+
+  function removeBuildPlayer(position: Position) {
+    setCustomLineup((prev) => ({
+      ...prev,
+      [position]: "",
+    }));
+  }
+
+  // Saved lineup actions
   function saveLineup(lineupName: string) {
     if (!customLineupOverall) return;
 
@@ -366,138 +513,15 @@ export default function Lineups() {
     setIsScoutOpen(true);
   }
 
-  const [customLineup, setCustomLineup] = useState<Record<Position, string>>({
-    PG: "",
-    SG: "",
-    SF: "",
-    PF: "",
-    C: "",
-  });
-
-  const [activeBuildPosition, setActiveBuildPosition] =
-    useState<Position>("PG");
-
-  const selectedCustomPlayers = lineupPositions
-    .map((position) =>
-      players.find((player) => player.name === customLineup[position]),
-    )
-    .filter((player): player is (typeof players)[number] => Boolean(player));
-
-  const customLineupOverall =
-    selectedCustomPlayers.length === 0
-      ? null
-      : selectedCustomPlayers.reduce(
-          (total, player) => total + getBuilderPlayerRating(player),
-          0,
-        ) / selectedCustomPlayers.length;
-
-  const availableBuildPlayers = players.filter(
-    (player) =>
-      player.position === activeBuildPosition &&
-      player.name.toLowerCase().includes(buildPlayerSearch.toLowerCase()),
-  );
-
-  const selectedLineupCount = selectedCustomPlayers.length;
-  const isLineupComplete = selectedLineupCount === lineupPositions.length;
-
-  const bestPlayerFit =
-    selectedCustomPlayers.length === 0
-      ? null
-      : selectedCustomPlayers.toSorted(
-          (a, b) => getBuilderPlayerRating(b) - getBuilderPlayerRating(a),
-        )[0];
-
-  const lineupArchetype = "Championship Dynasty";
-  const lineupTier =
-    customLineupOverall && customLineupOverall >= 92
-      ? "Championship Favorite"
-      : customLineupOverall && customLineupOverall >= 88
-        ? "Championship Contender"
-        : customLineupOverall && customLineupOverall >= 84
-          ? "Playoff-Caliber"
-          : "Developing Lineup";
-  const scoutSummary =
-    "A championship-caliber lineup built around elite defense, rebounding, and leadership.";
-  const teamIdentity = "Elite Defense & Rebounding";
-  const lineupStrengths = ["Defense", "Rebounding", "Leadership"];
-  const lineupWeaknesses = ["Perimeter Shooting"];
-  const xFactor = bestPlayerFit;
-  const similarLineup = "1996 Bulls (89%)";
-  const courtBalance = "Excellent";
-  const courtBalanceColor =
-    courtBalance === "Excellent"
-      ? "#22C55E"
-      : courtBalance === "Good"
-        ? "#EFBF04"
-        : courtBalance === "Average"
-          ? "#F97316"
-          : "#EF4444";
-
-  function pickBuildPlayer(playerName: string) {
-    setCustomLineup((prev) => ({
-      ...prev,
-      [activeBuildPosition]: playerName,
-    }));
-  }
-
-  function removeBuildPlayer(position: Position) {
-    setCustomLineup((prev) => ({
-      ...prev,
-      [position]: "",
-    }));
-  }
-
-  useEffect(() => {
-    if (!isScoutOpen || customLineupOverall === null) return;
-
-    const targetOverall = customLineupOverall;
-
-    let frameId: number;
-    const duration = 600;
-    const startTime = performance.now();
-
-    function animate(now: number) {
-      const progress = Math.min((now - startTime) / duration, 1);
-      const nextValue = targetOverall * progress;
-
-      setAnimatedScoutOverall(nextValue);
-
-      if (progress < 1) {
-        frameId = requestAnimationFrame(animate);
-      }
-    }
-
-    setAnimatedScoutOverall(0);
-    frameId = requestAnimationFrame(animate);
-
-    return () => cancelAnimationFrame(frameId);
-  }, [isScoutOpen, customLineupOverall]);
-
-  const router = useRouter();
-
+  // Navigation
   function viewPlayerCard(playerName: string) {
     router.push(`/players?player=${encodeURIComponent(playerName)}`);
   }
 
-  const selectedCategoryColor =
-    lineupCards.find((card) => card.title === selectedLineupCategory)?.color ??
-    "#1bc2ec";
-
-  function getSavedLineupArchetypeColor(archetype: string) {
-    if (archetype === "Championship Dynasty") return "#EFBF04";
-    if (archetype === "Spacing Superteam") return "#1bc2ec";
-    if (archetype === "Lockdown Unit") return "#A855F7";
-    if (archetype === "Showtime Offense") return "#EF4444";
-
-    return "#1bc2ec";
-  }
-
-  const shouldShowTopText =
-    activeTab === "featured" || activeTab === "saved" || hasStartedBuilder;
-
   return (
     <main className="min-h-screen overflow-x-hidden text-white">
       <section className="mx-auto w-full max-w-7xl px-6 pb-12">
+        {/* Page tabs and header text */}
         <div className="mt-0 flex w-full items-start justify-start overflow-x-auto border-t border-white/10">
           <div className="flex shrink-0 items-start">
             {lineupTabs.map((tab) => {
@@ -537,9 +561,10 @@ export default function Lineups() {
             </div>
           )}
         </div>
-
+        {/* Featured Lineups tab */}
         {activeTab === "featured" && (
           <section className="min-h-[calc(100vh-140px)]">
+            {/* Lineup category cards */}
             <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
               {lineupCards.map((card) => {
                 const Icon = card.Icon;
@@ -604,6 +629,8 @@ export default function Lineups() {
                 );
               })}
             </div>
+
+            {/* Selected lineup details */}
             {selectedLineupCategory && (
               <div
                 ref={lineupSectionRef}
@@ -617,7 +644,7 @@ export default function Lineups() {
                 </h2>
 
                 <div className="mt-5 grid gap-6 lg:grid-cols-[220px_1fr]">
-                  {/* Left lineup buttons */}
+                  {/* Lineup selector list */}
                   <div className="flex flex-col gap-2">
                     {lineupGroups[
                       selectedLineupCategory as keyof typeof lineupGroups
@@ -646,7 +673,7 @@ export default function Lineups() {
                     ))}
                   </div>
 
-                  {/* Right selected lineup card */}
+                  {/* Selected lineup breakdown */}
                   <div
                     className="relative min-h-96 rounded-md border bg-black/30 p-5"
                     style={{ borderColor: `${selectedCategoryColor}55` }}
@@ -654,7 +681,7 @@ export default function Lineups() {
                     {selectedLineupName &&
                     selectedLineupName in lineupDetails ? (
                       <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
-                        {/* Left text column */}
+                        {/* Lineup stats and scouting text */}
                         <div>
                           <h3 className="font-michroma text-sm uppercase tracking-wide text-white">
                             {selectedLineupName}
@@ -810,12 +837,11 @@ export default function Lineups() {
                           </div>
                         </div>
 
-                        {/* Right court column */}
+                        {/* Half-court lineup visualization */}
                         <div className="relative min-h-96 overflow-visible rounded-md bg-transparent">
                           {/* Half court boundary */}
                           <div className="absolute inset-x-8 inset-y-6 " />
 
-                          {/* Three point arc */}
                           <div
                             className="absolute left-1/2 bottom-17 h-[60%] w-[70%] -translate-x-1/2 rounded-t-full border-t border-l border-r"
                             style={{
@@ -823,7 +849,6 @@ export default function Lineups() {
                             }}
                           />
 
-                          {/* Paint */}
                           <div
                             className="absolute left-1/2 bottom-17 h-36 w-24 -translate-x-1/2 border"
                             style={{
@@ -831,7 +856,6 @@ export default function Lineups() {
                             }}
                           />
 
-                          {/* Free throw semicircle */}
                           <div
                             className="absolute left-1/2 bottom-53 h-12 w-24 -translate-x-1/2 rounded-t-full border-t border-l border-r"
                             style={{
@@ -839,7 +863,6 @@ export default function Lineups() {
                             }}
                           />
 
-                          {/* Hoop */}
                           <div
                             className="absolute left-1/2 bottom-24 h-3 w-3 -translate-x-1/2 rounded-full border"
                             style={{
@@ -847,7 +870,6 @@ export default function Lineups() {
                             }}
                           />
 
-                          {/* Backboard */}
                           <div
                             className="absolute left-1/2 bottom-24 h-px w-14 -translate-x-1/2"
                             style={{
@@ -892,9 +914,10 @@ export default function Lineups() {
             )}
           </section>
         )}
-
+        {/* Build Your Own tab */}
         {activeTab === "builder" && (
           <section className="min-h-[calc(100vh-140px)]">
+            {/* Draft intro screen */}
             {!hasStartedBuilder ? (
               <section className="flex min-h-[calc(100vh-120px)] items-center justify-center">
                 <div className="max-w-lg rounded-md border border-[#1bc2ec]/50 bg-black/60 p-6 text-center">
@@ -935,8 +958,9 @@ export default function Lineups() {
               </section>
             ) : (
               <div className="mt-3">
+                {/* Draft builder workspace */}
                 <div className="grid items-start gap-5 lg:grid-cols-[400px_300px_1fr]">
-                  {/* Left side selectors */}
+                  {/* Player picker */}
                   <div className="flex w-full flex-col gap-2">
                     <div className="flex justify-center gap-2">
                       {lineupPositions.map((position) => {
@@ -1023,6 +1047,7 @@ export default function Lineups() {
                     </div>
                   </div>
 
+                  {/* Draft board */}
                   <div
                     className="rounded-md border border-white/10 bg-black/20 p-4"
                     style={{ height: "480px" }}
@@ -1125,21 +1150,17 @@ export default function Lineups() {
                     </div>
                   </div>
 
+                  {/* Builder court preview */}
                   <div className="flex flex-col gap-4">
                     <div className="relative h-120 overflow-visible bg-transparent">
-                      {/* Three point arc */}
                       <div className="absolute left-1/2 bottom-10 h-[63%] w-[88%] -translate-x-1/2 rounded-t-full border-t border-l border-r border-[#1bc2ec]/25" />
 
-                      {/* Paint */}
                       <div className="absolute left-1/2 bottom-10 h-40 w-28 -translate-x-1/2 border border-[#1bc2ec]/25" />
 
-                      {/* Free throw semicircle */}
                       <div className="absolute left-1/2 bottom-50 h-14 w-28 -translate-x-1/2 rounded-t-full border-t border-l border-r border-[#1bc2ec]/25" />
 
-                      {/* Hoop */}
                       <div className="absolute left-1/2 bottom-20 h-3 w-3 -translate-x-1/2 rounded-full border border-[#1bc2ec]/60" />
 
-                      {/* Backboard */}
                       <div className="absolute left-1/2 bottom-24 h-px w-16 -translate-x-1/2 bg-[#1bc2ec]/60" />
 
                       {lineupPositions.map((position) => {
@@ -1173,8 +1194,10 @@ export default function Lineups() {
           </section>
         )}
 
+        {/* Saved Lineups tab */}
         {activeTab === "saved" && (
           <section className="min-h-[calc(100vh-140px)]">
+            {/* Empty saved lineups state */}
             {savedLineups.length === 0 ? (
               <div className="flex min-h-[420px] flex-col items-center justify-center text-center">
                 <Save
@@ -1203,6 +1226,7 @@ export default function Lineups() {
               </div>
             ) : (
               <div className="mt-6">
+                {/* Saved lineup filters */}
                 <div className="flex items-center justify-center gap-4">
                   <input
                     type="text"
@@ -1234,6 +1258,7 @@ export default function Lineups() {
                   </p>
                 ) : (
                   <div className="mt-2 grid gap-4 md:grid-cols-3">
+                    {/* Saved lineup cards */}
                     {filteredSavedLineups.map((lineup) => (
                       <div
                         key={lineup.id}
@@ -1354,6 +1379,7 @@ export default function Lineups() {
         )}
       </section>
 
+      {/* Scout report modal */}
       {isScoutOpen && (
         <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 px-4">
           <div className="relative w-full max-w-xl animate-[modalIn_260ms_ease-out] rounded-md border border-[#1bc2ec]/60 bg-[#07111f] p-6 shadow-[0_0_35px_rgba(27,194,236,0.25)]">
@@ -1561,6 +1587,7 @@ export default function Lineups() {
         </div>
       )}
 
+      {/* Name lineup modal */}
       {isNamingLineup && (
         <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-md rounded-md border border-[#1bc2ec]/60 bg-[#07111f] p-6 shadow-[0_0_35px_rgba(27,194,236,0.25)]">
@@ -1605,6 +1632,7 @@ export default function Lineups() {
         </div>
       )}
 
+      {/* Delete confirmation modal */}
       {lineupPendingDelete && (
         <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-md rounded-md border border-red-500/50 bg-[#07111f] p-6 shadow-[0_0_30px_rgba(239,68,68,0.2)]">
@@ -1644,6 +1672,7 @@ export default function Lineups() {
         </div>
       )}
 
+      {/* Lineup saved success modal */}
       {isLineupSavedOpen && (
         <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-md rounded-md border border-emerald-400/60 bg-[#07111f] p-6 text-center shadow-[0_0_30px_rgba(34,197,94,0.22)]">
