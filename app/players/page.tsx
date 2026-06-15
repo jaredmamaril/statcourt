@@ -660,7 +660,7 @@ export default function Players() {
 
                 <div
                   key={selectedPlayer.id}
-                  className={`relative w-full max-w-md min-h-144 overflow-hidden rounded-3xl animate-[cardIn_500ms_ease-out] transition-all duration-500 ${
+                  className={`relative w-full max-w-md min-h-134 overflow-hidden rounded-3xl animate-[cardIn_500ms_ease-out] transition-all duration-500 ${
                     isGoingToCourt
                       ? "scale-90 translate-y-20 opacity-0"
                       : "scale-100 translate-y-0 opacity-100"
@@ -695,7 +695,7 @@ export default function Players() {
                 >
                   {/* Rotating container */}
                   <div
-                    className="relative w-full min-h-144"
+                    className="relative w-full min-h-134"
                     style={{
                       transformStyle: "preserve-3d",
                       transition: "transform 0.5s ease-out",
@@ -706,7 +706,7 @@ export default function Players() {
                   >
                     {/* Front face */}
                     <div
-                      className={`absolute inset-0 min-h-144 border border-[#1bc2ec]/10 bg-black/30 p-6 rounded-3xl ${
+                      className={`absolute inset-0 min-h-134 border border-[#1bc2ec]/10 bg-black/30 p-6 rounded-3xl ${
                         isCardFlipped
                           ? "pointer-events-none"
                           : "pointer-events-auto"
@@ -774,7 +774,7 @@ export default function Players() {
                       </div>
 
                       {/* Team logo - top left corner */}
-                      <div className="absolute top-18 left-10 z-30 opacity-70">
+                      <div className="absolute top-18 left-12 z-30 opacity-70">
                         <Image
                           src={teamLogos[selectedPlayer.team]}
                           alt={`${selectedPlayer.team} logo`}
@@ -797,7 +797,7 @@ export default function Players() {
 
                       {/* Player name */}
                       <div className="absolute bottom-8 left-0 right-0 z-30 flex items-center justify-center px-6 text-center">
-                        <span className="py-14 text-xl font-bold font-michroma uppercase text-white tracking-wide wrap-break-word w-full">
+                        <span className="py-11 text-xl font-bold font-michroma uppercase text-white tracking-wide wrap-break-word w-full">
                           {selectedPlayer.name}
                         </span>
                       </div>
@@ -805,7 +805,7 @@ export default function Players() {
 
                     {/* Back face */}
                     <div
-                      className={`absolute inset-0 min-h-144 rounded-3xl border bg-black/30 ${
+                      className={`absolute inset-0 min-h-134 rounded-3xl border bg-black/30 ${
                         isCardFlipped
                           ? "pointer-events-auto"
                           : "pointer-events-none"
@@ -1012,7 +1012,7 @@ export default function Players() {
                         </div>
                       )}
 
-                      <div className="mt-4 flex items-start justify-center gap-10">
+                      <div className="mt-2 flex items-start justify-center gap-10">
                         {/* Insights */}
                         {playerInsights && (
                           <div className="flex w-fit flex-col items-center gap-1">
