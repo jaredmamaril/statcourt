@@ -293,6 +293,8 @@ export default function Lineups() {
   const [savedLineupSearch, setSavedLineupSearch] = useState("");
   const [lineupPendingDelete, setLineupPendingDelete] =
     useState<SavedLineup | null>(null);
+  const [animatedScoutOverall, setAnimatedScoutOverall] = useState(0);
+  const [isLineupSavedOpen, setIsLineupSavedOpen] = useState(false);
 
   const filteredSavedLineups = savedLineups.filter((lineup) => {
     const search = savedLineupSearch.toLowerCase();
@@ -444,6 +446,32 @@ export default function Lineups() {
       [position]: "",
     }));
   }
+
+  useEffect(() => {
+    if (!isScoutOpen || customLineupOverall === null) return;
+
+    const targetOverall = customLineupOverall;
+
+    let frameId: number;
+    const duration = 600;
+    const startTime = performance.now();
+
+    function animate(now: number) {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const nextValue = targetOverall * progress;
+
+      setAnimatedScoutOverall(nextValue);
+
+      if (progress < 1) {
+        frameId = requestAnimationFrame(animate);
+      }
+    }
+
+    setAnimatedScoutOverall(0);
+    frameId = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(frameId);
+  }, [isScoutOpen, customLineupOverall]);
 
   const router = useRouter();
 
@@ -886,7 +914,19 @@ export default function Lineups() {
 
                   <button
                     type="button"
-                    onClick={() => setHasStartedBuilder(true)}
+                    onClick={() => {
+                      setCustomLineup({
+                        PG: "",
+                        SG: "",
+                        SF: "",
+                        PF: "",
+                        C: "",
+                      });
+
+                      setActiveBuildPosition("PG");
+                      setBuildPlayerSearch("");
+                      setHasStartedBuilder(true);
+                    }}
                     className="mt-6 rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-6 py-3 font-michroma text-xs uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20"
                   >
                     Start Draft
@@ -953,7 +993,7 @@ export default function Lineups() {
                               onClick={() => pickBuildPlayer(player.name)}
                               className={`h-48 rounded-md border bg-black/30 p-3 text-center transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/10 ${
                                 isSelected
-                                  ? "border-[#1bc2ec] bg-[#1bc2ec]/15"
+                                  ? "border-[#1bc2ec] bg-[#1bc2ec]/15 shadow-[0_0_18px_rgba(27,194,236,0.35)]"
                                   : "border-white/15"
                               }`}
                             >
@@ -1003,9 +1043,12 @@ export default function Lineups() {
                           OVR
                         </p>
 
-                        <p className="font-michroma text-2xl text-[#1bc2ec]">
+                        <p
+                          key={customLineupOverall?.toFixed(1) ?? "--"}
+                          className="animate-[ovrRise_250ms_ease-out] font-michroma text-2xl text-[#1bc2ec]"
+                        >
                           {customLineupOverall
-                            ? customLineupOverall.toFixed(1)
+                            ? customLineupOverall?.toFixed(1)
                             : "--"}
                         </p>
                       </div>
@@ -1263,13 +1306,15 @@ export default function Lineups() {
                           </p>
 
                           <div className="mt-2 flex flex-wrap gap-2">
-                            {lineupStrengths.map((strength) => (
-                              <span
+                            {lineupStrengths.map((strength, index) => (
+                              <p
                                 key={strength}
-                                className="rounded border border-emerald-400/40 bg-emerald-400/10 px-2 py-1 font-michroma text-[8px] text-emerald-400"
+                                className="animate-[traitReveal_300ms_ease-out_both] font-michroma text-[10px] text-white"
+                                style={{ animationDelay: `${index * 120}ms` }}
                               >
-                                ✓ {strength}
-                              </span>
+                                <span className="text-emerald-400">✓</span>{" "}
+                                {strength}
+                              </p>
                             ))}
                           </div>
                         </div>
@@ -1311,7 +1356,7 @@ export default function Lineups() {
 
       {isScoutOpen && (
         <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 px-4">
-          <div className="relative w-full max-w-xl rounded-md border border-[#1bc2ec]/60 bg-[#07111f] p-6 shadow-[0_0_35px_rgba(27,194,236,0.25)]">
+          <div className="relative w-full max-w-xl animate-[modalIn_260ms_ease-out] rounded-md border border-[#1bc2ec]/60 bg-[#07111f] p-6 shadow-[0_0_35px_rgba(27,194,236,0.25)]">
             <div className="flex items-start justify-between">
               <div className="-mt-2">
                 <h2 className="font-michroma text-xl text-white">
@@ -1374,7 +1419,7 @@ export default function Lineups() {
               <div>
                 <div className="flex items-center gap-2">
                   <p className="font-michroma text-3xl text-[#1bc2ec] -tracking-widest">
-                    {customLineupOverall?.toFixed(1)}
+                    {animatedScoutOverall.toFixed(1)}
                   </p>
                   <p className="font-michroma text-[10px] uppercase text-white/40">
                     Overall
@@ -1548,6 +1593,8 @@ export default function Lineups() {
                 onClick={() => {
                   saveLineup(lineupNameInput);
                   setIsNamingLineup(false);
+                  setIsScoutOpen(false);
+                  setIsLineupSavedOpen(true);
                 }}
                 className="rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-4 py-3 font-michroma text-xs uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20"
               >
@@ -1591,6 +1638,57 @@ export default function Lineups() {
                 className="rounded-md border border-red-500/60 bg-red-500/10 px-4 py-3 font-michroma text-xs uppercase text-red-400 transition hover:bg-red-500/20"
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isLineupSavedOpen && (
+        <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-md rounded-md border border-emerald-400/60 bg-[#07111f] p-6 text-center shadow-[0_0_30px_rgba(34,197,94,0.22)]">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-emerald-400/60 bg-emerald-400/10 font-michroma text-2xl text-emerald-400">
+              ✓
+            </div>
+
+            <h2 className="mt-4 font-michroma text-xl text-white">
+              Lineup Saved
+            </h2>
+
+            <p className="mt-3 font-michroma text-xs text-white/50">
+              What would you like to do next?
+            </p>
+
+            <div className="mt-6 flex justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsLineupSavedOpen(false);
+                  setActiveTab("saved");
+                }}
+                className="rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-4 py-3 font-michroma text-xs uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20"
+              >
+                View Saved
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsLineupSavedOpen(false);
+                  setActiveTab("builder");
+                  setHasStartedBuilder(true);
+                  setActiveBuildPosition("PG");
+                  setCustomLineup({
+                    PG: "",
+                    SG: "",
+                    SF: "",
+                    PF: "",
+                    C: "",
+                  });
+                }}
+                className="rounded-md border border-white/20 px-4 py-3 font-michroma text-xs uppercase text-white/60 transition hover:border-white/50 hover:text-white"
+              >
+                Build Another
               </button>
             </div>
           </div>
