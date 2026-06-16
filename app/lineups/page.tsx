@@ -837,9 +837,11 @@ export default function Lineups() {
       ): slot is { position: Position; player: (typeof players)[number] } =>
         Boolean(slot),
     );
+
   const selectedCustomPlayers = selectedCustomPlayerSlots.map(
     (slot) => slot.player,
   );
+
   const customLineupOverall =
     selectedCustomPlayerSlots.length === 0
       ? null
@@ -849,30 +851,39 @@ export default function Lineups() {
             getBuilderPlayerRatingForPosition(slot.player, slot.position),
           0,
         ) / selectedCustomPlayerSlots.length;
+
+  const selectedBuildPlayerNames = new Set(
+    selectedCustomPlayers.map((player) => player.name),
+  );
+
+  const activePositionPlayerName = customLineup[activeBuildPosition];
+
   const availableBuildPlayers = players
-    .filter((player) =>
-      player.name.toLowerCase().includes(buildPlayerSearch.toLowerCase()),
-    )
+    .filter((player) => {
+      const matchesSearch = player.name
+        .toLowerCase()
+        .includes(buildPlayerSearch.toLowerCase());
+
+      const isAlreadySelectedSomewhere = selectedBuildPlayerNames.has(
+        player.name,
+      );
+
+      const isSelectedInThisPosition = player.name === activePositionPlayerName;
+
+      return (
+        matchesSearch &&
+        (!isAlreadySelectedSomewhere || isSelectedInThisPosition)
+      );
+    })
     .sort((a, b) => {
-      const fitOrder: Record<PositionFit, number> = {
-        natural: 0,
-        secondary: 1,
-        emergency: 2,
-        mismatch: 3,
-      };
-
-      const fitDifference =
-        fitOrder[getPositionFit(a, activeBuildPosition)] -
-        fitOrder[getPositionFit(b, activeBuildPosition)];
-
-      if (fitDifference !== 0) return fitDifference;
-
       return (
         getBuilderPlayerRatingForPosition(b, activeBuildPosition) -
         getBuilderPlayerRatingForPosition(a, activeBuildPosition)
       );
     });
+
   const selectedLineupCount = selectedCustomPlayers.length;
+
   const isLineupComplete = selectedLineupCount === lineupPositions.length;
 
   // Scout report values
