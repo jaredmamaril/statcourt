@@ -34,6 +34,7 @@ type SavedLineup = {
   strengths: string[];
   weaknesses: string[];
   grades: TeamGrades;
+  scores: LineupScoutScores;
   xFactorName: string;
   similarTo: string;
   similarToDescription: string;
@@ -85,6 +86,15 @@ type TeamGrades = {
   rebounding: string;
 };
 
+type LineupScoutScores = {
+  offense: number;
+  defense: number;
+  shooting: number;
+  playmaking: number;
+  rebounding: number;
+  balance: number;
+};
+
 type LineupScoutReport = {
   summary: string;
   tier: string;
@@ -93,6 +103,7 @@ type LineupScoutReport = {
   strengths: string[];
   weaknesses: string[];
   grades: TeamGrades;
+  scores: LineupScoutScores;
   xFactor: (typeof players)[number] | null;
   similarTo: string;
   similarToDescription: string;
@@ -462,6 +473,18 @@ function getGrade(score: number) {
   return "D";
 }
 
+function getScoutReason(scores: LineupScoutScores, archetype: string) {
+  const topScores = Object.entries(scores)
+    .filter(([key]) => key !== "balance")
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 2)
+    .map(([key]) => key);
+
+  return `This lineup earned ${archetype} because its strongest categories are ${topScores.join(
+    " and ",
+  )}.`;
+}
+
 function getLineupScoutReport(
   selectedSlots: {
     position: Position;
@@ -482,6 +505,14 @@ function getLineupScoutReport(
         shooting: "--",
         playmaking: "--",
         rebounding: "--",
+      },
+      scores: {
+        offense: 0,
+        defense: 0,
+        shooting: 0,
+        playmaking: 0,
+        rebounding: 0,
+        balance: 0,
       },
       xFactor: null,
       similarTo: "--",
@@ -533,6 +564,22 @@ function getLineupScoutReport(
     scoringScore * 0.45 + efficiencyScore * 0.3 + playmakingScore * 0.25;
   const defenseScore =
     reboundingScore * 0.45 + efficiencyScore * 0.25 + adjustedOverall * 0.3;
+
+  const scores: LineupScoutScores = {
+    offense: offenseScore,
+    defense: defenseScore,
+    shooting: shootingScore,
+    playmaking: playmakingScore,
+    rebounding: reboundingScore,
+    balance: Math.round(
+      (offenseScore +
+        defenseScore +
+        shootingScore +
+        playmakingScore +
+        reboundingScore) /
+        5,
+    ),
+  };
 
   const strengths = [
     offenseScore >= 88 ? "Offense" : null,
@@ -632,6 +679,7 @@ function getLineupScoutReport(
       playmaking: getGrade(playmakingScore),
       rebounding: getGrade(reboundingScore),
     },
+    scores,
     xFactor,
     similarTo,
     similarToDescription,
@@ -826,14 +874,6 @@ export default function Lineups() {
     });
   const selectedLineupCount = selectedCustomPlayers.length;
   const isLineupComplete = selectedLineupCount === lineupPositions.length;
-  const bestPlayerFit =
-    selectedCustomPlayerSlots.length === 0
-      ? null
-      : selectedCustomPlayerSlots.toSorted(
-          (a, b) =>
-            getBuilderPlayerRatingForPosition(b.player, b.position) -
-            getBuilderPlayerRatingForPosition(a.player, a.position),
-        )[0].player;
 
   // Scout report values
   const scoutReport = getLineupScoutReport(selectedCustomPlayerSlots);
@@ -869,6 +909,10 @@ export default function Lineups() {
   const courtBalanceColor = getCourtBalanceColor(courtBalance);
 
   const teamGrades = scoutedSavedLineup?.grades ?? scoutReport.grades;
+
+  const scoutScores = scoutedSavedLineup?.scores ?? scoutReport.scores;
+
+  const scoutReason = getScoutReason(scoutScores, lineupArchetype);
 
   // Featured lineup display values
   const selectedCategoryColor =
@@ -985,6 +1029,7 @@ export default function Lineups() {
       strengths: lineupStrengths,
       weaknesses: lineupWeaknesses,
       grades: teamGrades,
+      scores: scoutReport.scores,
       xFactorName,
       similarTo: similarLineup,
       similarToDescription,
@@ -2013,6 +2058,16 @@ export default function Lineups() {
                 </p>
                 <p className="font-michroma text-sm text-white">
                   {lineupArchetype}
+                </p>
+              </div>
+
+              <div>
+                <p className="font-michroma text-[10px] uppercase text-white/40">
+                  Why This Archetype
+                </p>
+
+                <p className="mt-1 max-w-75 font-michroma text-[9px] leading-relaxed text-white/45">
+                  {scoutReason}
                 </p>
               </div>
 
