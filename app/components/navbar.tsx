@@ -25,9 +25,6 @@ const navItems: NavItem[] = [
 export default function Navbar() {
   // Path to desired page
   const pathname = usePathname();
-  if (pathname === "/") {
-    return null; // Don't render the navbar on the homepage
-  }
 
   // Scrolling to the top when new page is clicked
   useEffect(() => {
@@ -36,6 +33,10 @@ export default function Navbar() {
       behavior: "auto",
     });
   }, [pathname]);
+
+  if (pathname === "/") {
+    return null; // Don't render the navbar on the homepage
+  }
 
   return (
     <>
