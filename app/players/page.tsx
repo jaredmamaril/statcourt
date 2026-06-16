@@ -30,10 +30,17 @@ import {
 } from "recharts";
 import Image from "next/image";
 import PlayerImage from "../components/player-image";
-import { useState, useRef, useEffect } from "react";
+import { Suspense, useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function Players() {
+export default function PlayersPage() {
+  return (
+    <Suspense fallback={null}>
+      <Players />
+    </Suspense>
+  );
+}
+function Players() {
   // State for filters and dropdowns
   const [currentPlayer, setCurrentPlayer] = useState("");
   const [playerSearch, setPlayerSearch] = useState("");
