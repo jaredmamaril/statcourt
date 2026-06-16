@@ -21,7 +21,6 @@ import {
 
 // Types
 type LineupTab = "featured" | "builder" | "saved";
-
 type SavedLineup = {
   id: string;
   name: string;
@@ -31,7 +30,6 @@ type SavedLineup = {
   teamIdentity: string;
   createdAt: string;
 };
-
 type LineupMarkerProps = {
   position: string;
   name: string;
@@ -41,7 +39,6 @@ type LineupMarkerProps = {
   onViewCard: (playerName: string) => void;
   tooltipPosition?: "top" | "bottom";
 };
-
 type LineupRatings = {
   scoring: number;
   shooting: number;
@@ -49,14 +46,12 @@ type LineupRatings = {
   rebounding: number;
   defense: number;
 };
-
 type LineupAchievements = {
   record?: string;
   result?: string;
   playoffs?: string;
   note?: string;
 };
-
 type LineupDetail = {
   players: Record<Position, string>;
   overall: number;
@@ -76,7 +71,6 @@ const lineupTabs: { label: string; value: LineupTab }[] = [
   { label: "Build Your Own", value: "builder" },
   { label: "Your Saved Lineups", value: "saved" },
 ];
-
 const lineupCards = [
   { title: "Greatest Teams", color: "#EFBF04", Icon: Trophy },
   { title: "Bucket Getters", color: "#EF4444", Icon: Flame },
@@ -265,7 +259,6 @@ const featuredCourtMarkerPositions: Record<Position, string> = {
   PF: "left-[27%] top-62",
   C: "left-[65%] top-42",
 };
-
 const builderCourtMarkerPositions: Record<Position, string> = {
   PG: "left-1/2 top-6",
   SG: "left-[22%] top-16",
@@ -291,14 +284,12 @@ function getBuilderPlayerRating(player: (typeof players)[number]) {
     player.stats.ftPercent,
     statMaxValues.ftPercent,
   );
-
   const scoringScore = ppgScore * 0.75 + fgScore * 0.15 + ftScore * 0.1;
   const shootingScore = threeScore * 0.65 + ftScore * 0.25 + fgScore * 0.1;
   const playmakingScore =
     apgScore * 0.75 + scoringScore * 0.15 + threeScore * 0.1;
   const reboundingScore = rpgScore * 0.9 + fgScore * 0.1;
   const efficiencyScore = fgScore * 0.45 + threeScore * 0.3 + ftScore * 0.25;
-
   const starCategories = [
     ppgScore >= 70,
     rpgScore >= 55,
@@ -307,9 +298,7 @@ function getBuilderPlayerRating(player: (typeof players)[number]) {
     threeScore >= 70,
     ftScore >= 75,
   ].filter(Boolean).length;
-
   const versatilityBonus = starCategories * 2;
-
   const overallScore =
     scoringScore * 0.3 +
     efficiencyScore * 0.23 +
@@ -321,6 +310,87 @@ function getBuilderPlayerRating(player: (typeof players)[number]) {
   return 70 + overallScore * 0.3;
 }
 
+// Position fit helpers
+type PositionFit = "natural" | "secondary" | "emergency" | "mismatch";
+const defaultSecondaryPositions: Record<Position, Position[]> = {
+  PG: ["SG"],
+  SG: ["PG", "SF"],
+  SF: ["SG", "PF"],
+  PF: ["SF", "C"],
+  C: ["PF"],
+};
+const specialPositionOverrides: Partial<
+  Record<
+    string,
+    {
+      secondaryPositions?: Position[];
+      emergencyPositions?: Position[];
+    }
+  >
+> = {
+  "LeBron James": {
+    secondaryPositions: ["PF"],
+    emergencyPositions: ["PG"],
+  },
+  "Magic Johnson": {
+    secondaryPositions: ["SG", "SF"],
+  },
+  "Nikola Jokic": {
+    secondaryPositions: ["PF"],
+    emergencyPositions: ["PG"],
+  },
+  "Giannis Antetokounmpo": {
+    secondaryPositions: ["SF", "C"],
+  },
+};
+function getPlayerSecondaryPositions(
+  player: (typeof players)[number],
+): Position[] {
+  return (
+    specialPositionOverrides[player.name]?.secondaryPositions ??
+    defaultSecondaryPositions[player.position]
+  );
+}
+function getPlayerEmergencyPositions(
+  player: (typeof players)[number],
+): Position[] {
+  return specialPositionOverrides[player.name]?.emergencyPositions ?? [];
+}
+function getPositionFit(
+  player: (typeof players)[number],
+  slot: Position,
+): PositionFit {
+  if (player.position === slot) return "natural";
+
+  if (getPlayerSecondaryPositions(player).includes(slot)) {
+    return "secondary";
+  }
+
+  if (getPlayerEmergencyPositions(player).includes(slot)) {
+    return "emergency";
+  }
+
+  return "mismatch";
+}
+
+function getPositionPenalty(fit: PositionFit) {
+  if (fit === "natural") return 0;
+  if (fit === "secondary") return 1.5;
+  if (fit === "emergency") return 3;
+
+  return 7;
+}
+function getBuilderPlayerRatingForPosition(
+  player: (typeof players)[number],
+  slot: Position,
+) {
+  return (
+    getBuilderPlayerRating(player) -
+    getPositionPenalty(getPositionFit(player, slot))
+  );
+}
+
+// Color helpers
 function getSavedLineupArchetypeColor(archetype: string) {
   if (archetype === "Championship Dynasty") return "#EFBF04";
   if (archetype === "Spacing Superteam") return "#1bc2ec";
@@ -329,7 +399,6 @@ function getSavedLineupArchetypeColor(archetype: string) {
 
   return "#1bc2ec";
 }
-
 function getCourtBalanceColor(courtBalance: string) {
   if (courtBalance === "Excellent") return "#22C55E";
   if (courtBalance === "Good") return "#EFBF04";
@@ -472,31 +541,65 @@ export default function Lineups() {
   const [animatedScoutOverall, setAnimatedScoutOverall] = useState(0);
 
   // Builder derived data
-  const selectedCustomPlayers = lineupPositions
-    .map((position) =>
-      players.find((player) => player.name === customLineup[position]),
-    )
-    .filter((player): player is (typeof players)[number] => Boolean(player));
-  const customLineupOverall =
-    selectedCustomPlayers.length === 0
-      ? null
-      : selectedCustomPlayers.reduce(
-          (total, player) => total + getBuilderPlayerRating(player),
-          0,
-        ) / selectedCustomPlayers.length;
-  const availableBuildPlayers = players.filter(
-    (player) =>
-      player.position === activeBuildPosition &&
-      player.name.toLowerCase().includes(buildPlayerSearch.toLowerCase()),
+  const selectedCustomPlayerSlots = lineupPositions
+    .map((position) => {
+      const player = players.find(
+        (player) => player.name === customLineup[position],
+      );
+
+      return player ? { position, player } : null;
+    })
+    .filter(
+      (
+        slot,
+      ): slot is { position: Position; player: (typeof players)[number] } =>
+        Boolean(slot),
+    );
+  const selectedCustomPlayers = selectedCustomPlayerSlots.map(
+    (slot) => slot.player,
   );
+  const customLineupOverall =
+    selectedCustomPlayerSlots.length === 0
+      ? null
+      : selectedCustomPlayerSlots.reduce(
+          (total, slot) =>
+            total +
+            getBuilderPlayerRatingForPosition(slot.player, slot.position),
+          0,
+        ) / selectedCustomPlayerSlots.length;
+  const availableBuildPlayers = players
+    .filter((player) =>
+      player.name.toLowerCase().includes(buildPlayerSearch.toLowerCase()),
+    )
+    .sort((a, b) => {
+      const fitOrder: Record<PositionFit, number> = {
+        natural: 0,
+        secondary: 1,
+        emergency: 2,
+        mismatch: 3,
+      };
+
+      const fitDifference =
+        fitOrder[getPositionFit(a, activeBuildPosition)] -
+        fitOrder[getPositionFit(b, activeBuildPosition)];
+
+      if (fitDifference !== 0) return fitDifference;
+
+      return (
+        getBuilderPlayerRatingForPosition(b, activeBuildPosition) -
+        getBuilderPlayerRatingForPosition(a, activeBuildPosition)
+      );
+    });
   const selectedLineupCount = selectedCustomPlayers.length;
   const isLineupComplete = selectedLineupCount === lineupPositions.length;
   const bestPlayerFit =
-    selectedCustomPlayers.length === 0
+    selectedCustomPlayerSlots.length === 0
       ? null
-      : selectedCustomPlayers.toSorted(
-          (a, b) => getBuilderPlayerRating(b) - getBuilderPlayerRating(a),
-        )[0];
+      : selectedCustomPlayerSlots.toSorted(
+          (a, b) =>
+            getBuilderPlayerRatingForPosition(b.player, b.position) -
+            getBuilderPlayerRatingForPosition(a.player, a.position),
+        )[0].player;
 
   // Scout report values
   const lineupArchetype = "Championship Dynasty";
@@ -783,7 +886,7 @@ export default function Lineups() {
                         Lineups
                       </p>
 
-                      <p className="mt-1 font-michroma text-xs text-white/70">
+                      <p className="mt-1 font-michroma text-[11px] text-white/70">
                         {lineupCount} {lineupCount === 1 ? "Lineup" : "Lineups"}
                       </p>
                     </div>
@@ -1047,7 +1150,7 @@ export default function Lineups() {
                                 }
                                 className={
                                   featuredCourtMarkerPositions[
-                                    position as keyof typeof featuredCourtMarkerPositions
+                                    position as Position
                                   ]
                                 }
                               />
@@ -1161,13 +1264,22 @@ export default function Lineups() {
                         {availableBuildPlayers.map((player) => {
                           const isSelected =
                             customLineup[activeBuildPosition] === player.name;
+                          const positionFit = getPositionFit(
+                            player,
+                            activeBuildPosition,
+                          );
+                          const positionRating =
+                            getBuilderPlayerRatingForPosition(
+                              player,
+                              activeBuildPosition,
+                            );
 
                           return (
                             <button
                               key={player.id}
                               type="button"
                               onClick={() => pickBuildPlayer(player.name)}
-                              className={`h-48 rounded-md border bg-black/30 p-3 text-center transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/10 ${
+                              className={`h-52 rounded-md border bg-black/30 p-3 text-center transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/10 ${
                                 isSelected
                                   ? "border-[#1bc2ec] bg-[#1bc2ec]/15 shadow-[0_0_18px_rgba(27,194,236,0.35)]"
                                   : "border-white/15"
@@ -1181,7 +1293,7 @@ export default function Lineups() {
                                 className="mx-auto h-20 w-20 rounded-full object-cover"
                               />
 
-                              <p className="mt-1 flex h-10 items-center justify-center text-center font-michroma text-[11px] leading-5 text-white">
+                              <p className="mt-1 flex h-10 items-center justify-center text-center font-michroma text-[11px] leading-4 text-white">
                                 {player.name}
                               </p>
 
@@ -1190,7 +1302,27 @@ export default function Lineups() {
                               </p>
 
                               <p className="mt-1 font-michroma text-[10px] text-[#1bc2ec]">
-                                {getBuilderPlayerRating(player).toFixed(1)} OVR
+                                {positionRating.toFixed(1)} OVR
+                              </p>
+
+                              <p
+                                className={`mt-1 font-michroma text-[8px] uppercase ${
+                                  positionFit === "natural"
+                                    ? "text-emerald-400"
+                                    : positionFit === "secondary"
+                                      ? "text-[#1bc2ec]"
+                                      : positionFit === "emergency"
+                                        ? "text-[#EFBF04]"
+                                        : "text-red-400"
+                                }`}
+                              >
+                                {positionFit === "natural"
+                                  ? "Natural Fit"
+                                  : positionFit === "secondary"
+                                    ? "Secondary Fit"
+                                    : positionFit === "emergency"
+                                      ? "Emergency Fit"
+                                      : "Mismatch -7"}
                               </p>
                             </button>
                           );
@@ -1289,7 +1421,7 @@ export default function Lineups() {
                         type="button"
                         disabled={!isLineupComplete}
                         onClick={() => setIsScoutOpen(true)}
-                        className={`mx-auto rounded-md border px-8 py-5 font-michroma text-[16xpx] uppercase transition ${
+                        className={`mx-auto rounded-md border px-8 py-5 font-michroma text-[16px] uppercase transition ${
                           isLineupComplete
                             ? "cursor-pointer font-bold border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.35)] hover:bg-[#1bc2ec]/20"
                             : "cursor-not-allowed border-white/10 bg-white/5 text-white/30"
