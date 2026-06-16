@@ -42,11 +42,27 @@ type LineupMarkerProps = {
   tooltipPosition?: "top" | "bottom";
 };
 
+type LineupRatings = {
+  scoring: number;
+  shooting: number;
+  playmaking: number;
+  rebounding: number;
+  defense: number;
+};
+
+type LineupAchievements = {
+  record?: string;
+  result?: string;
+  playoffs?: string;
+  note?: string;
+};
+
 type LineupDetail = {
   players: Record<Position, string>;
   overall: number;
+  ratings: LineupRatings;
+  achievements: LineupAchievements;
   archetype: string;
-  accomplishments: string[];
   description: string;
   strengths: string[];
   weaknesses: string[];
@@ -82,10 +98,21 @@ const lineupDetails = {
       C: "Luc Longley",
     },
     overall: 98.2,
+    ratings: {
+      scoring: 94,
+      shooting: 78,
+      playmaking: 86,
+      rebounding: 96,
+      defense: 99,
+    },
+    achievements: {
+      record: "72-10",
+      result: "NBA Champions",
+      playoffs: "15-3",
+    },
     archetype: "Championship Dynasty",
-    accomplishments: ["72-10 Record", "NBA Champions", "15-3 Playoffs"],
     description:
-      "Elite defensive dynasty built around Jordan's scoring, Pippen's versatility, and Rodman's rebounding.",
+      "A defense-first championship lineup built around Jordan's scoring, Pippen's versatility, and Rodman's rebounding pressure.",
     strengths: ["Defense", "Rebounding", "Transition scoring"],
     weaknesses: ["Spacing", "Bench creation"],
   },
@@ -98,18 +125,22 @@ const lineupDetails = {
       C: "Hakeem Olajuwon",
     },
     overall: 95.4,
+    ratings: {
+      scoring: 99,
+      shooting: 88,
+      playmaking: 84,
+      rebounding: 82,
+      defense: 88,
+    },
+    achievements: {
+      note: "Built from elite isolation scorers",
+    },
     archetype: "Shot Creation Core",
-    accomplishments: [
-      "Elite half-court scoring",
-      "Multiple isolation threats",
-      "Late-clock offense",
-    ],
     description:
       "A lineup built around elite one-on-one scorers who can create difficult shots without needing much setup.",
     strengths: ["Shot creation", "Clutch scoring", "Mismatch hunting"],
     weaknesses: ["Ball movement", "Off-ball balance"],
   },
-
   "Pass First Legends": {
     players: {
       PG: "Magic Johnson",
@@ -119,16 +150,21 @@ const lineupDetails = {
       C: "Nikola Jokic",
     },
     overall: 96.1,
+    ratings: {
+      scoring: 92,
+      shooting: 94,
+      playmaking: 99,
+      rebounding: 86,
+      defense: 82,
+    },
+    achievements: {
+      note: "Built from elite passers and offensive organizers",
+    },
     archetype: "Playmaking Engine",
-    accomplishments: [
-      "Elite passing lineup",
-      "High-IQ creators",
-      "Positionless offense",
-    ],
     description:
       "A creation-heavy lineup where every major player can pass, read the floor, and generate efficient looks.",
     strengths: ["Playmaking", "Court vision", "Offensive flow"],
-    weaknesses: ["Point-of-attack defense", "Rim pressure"],
+    weaknesses: ["Point-of-attack defense", "Rim protection"],
   },
 
   "All-Defense Unit": {
@@ -140,12 +176,17 @@ const lineupDetails = {
       C: "Hakeem Olajuwon",
     },
     overall: 95.8,
+    ratings: {
+      scoring: 91,
+      shooting: 78,
+      playmaking: 82,
+      rebounding: 91,
+      defense: 99,
+    },
+    achievements: {
+      note: "Built from elite defenders across every level of the floor",
+    },
     archetype: "Lockdown Unit",
-    accomplishments: [
-      "Elite perimeter defense",
-      "Interior protection",
-      "Switchable size",
-    ],
     description:
       "A defense-first lineup with elite wing pressure, physicality, and dominant back-line rim protection.",
     strengths: ["Defense", "Rim protection", "Physicality"],
@@ -161,12 +202,17 @@ const lineupDetails = {
       C: "Nikola Jokic",
     },
     overall: 95.6,
+    ratings: {
+      scoring: 96,
+      shooting: 99,
+      playmaking: 91,
+      rebounding: 82,
+      defense: 76,
+    },
+    achievements: {
+      note: "Built from elite shooters, passers, and floor spacers",
+    },
     archetype: "Spacing Superteam",
-    accomplishments: [
-      "Elite shooting gravity",
-      "Five-out potential",
-      "High-skill offense",
-    ],
     description:
       "A shooting-heavy lineup that stretches the floor with elite range, passing, and shot-making at nearly every spot.",
     strengths: ["Shooting", "Spacing", "Offensive versatility"],
@@ -178,18 +224,23 @@ const lineupDetails = {
       PG: "Magic Johnson",
       SG: "Kobe Bryant",
       SF: "LeBron James",
-      PF: "Anthony Davis",
+      PF: "Tim Duncan",
       C: "Shaquille O'Neal",
     },
     overall: 96.7,
+    ratings: {
+      scoring: 97,
+      shooting: 76,
+      playmaking: 93,
+      rebounding: 94,
+      defense: 91,
+    },
+    achievements: {
+      note: "Built as a current-pool version of an all-time Lakers-style powerhouse",
+    },
     archetype: "Franchise Powerhouse",
-    accomplishments: [
-      "Historic star power",
-      "Interior dominance",
-      "Championship DNA",
-    ],
     description:
-      "A star-loaded Lakers lineup built around size, transition pressure, post dominance, and elite shot creation.",
+      "A star-loaded lineup built around size, transition pressure, post dominance, and elite shot creation.",
     strengths: ["Star power", "Interior scoring", "Transition offense"],
     weaknesses: ["Three-point volume", "Role balance"],
   },
@@ -472,6 +523,27 @@ export default function Lineups() {
     lineupCards.find((card) => card.title === selectedLineupCategory)?.color ??
     "#1bc2ec";
 
+  const selectedLineup: LineupDetail | null = selectedLineupName
+    ? lineupDetails[selectedLineupName]
+    : null;
+
+  const selectedLineupAchievements = selectedLineup
+    ? [
+        selectedLineup.achievements.record
+          ? `${selectedLineup.achievements.record} Record`
+          : null,
+        selectedLineup.achievements.result ?? null,
+        selectedLineup.achievements.playoffs
+          ? `${selectedLineup.achievements.playoffs} Playoffs`
+          : null,
+        selectedLineup.achievements.note ?? null,
+      ].filter((achievement): achievement is string => Boolean(achievement))
+    : [];
+
+  const selectedLineupNames = selectedLineupCategory
+    ? lineupGroups[selectedLineupCategory]
+    : [];
+
   // Saved lineup derived data
   const filteredSavedLineups = savedLineups.filter((lineup) => {
     const search = savedLineupSearch.toLowerCase();
@@ -488,14 +560,6 @@ export default function Lineups() {
       playerNames.includes(search)
     );
   });
-
-  const selectedLineup = selectedLineupName
-    ? lineupDetails[selectedLineupName]
-    : null;
-
-  const selectedLineupNames = selectedLineupCategory
-    ? lineupGroups[selectedLineupCategory]
-    : [];
 
   // Page display values
   const shouldShowTopText =
@@ -850,9 +914,9 @@ export default function Lineups() {
                           </p>
 
                           <div className="mt-4 flex flex-wrap gap-2">
-                            {selectedLineup.accomplishments.map((item) => (
+                            {selectedLineupAchievements.map((achievement) => (
                               <span
-                                key={item}
+                                key={achievement}
                                 className="rounded border px-2 py-1 font-michroma text-[9px]"
                                 style={{
                                   color: selectedCategoryColor,
@@ -860,7 +924,7 @@ export default function Lineups() {
                                   backgroundColor: `${selectedCategoryColor}14`,
                                 }}
                               >
-                                {item}
+                                {achievement}
                               </span>
                             ))}
                           </div>
