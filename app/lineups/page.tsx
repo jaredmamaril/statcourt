@@ -89,17 +89,121 @@ const lineupDetails = {
     strengths: ["Defense", "Rebounding", "Transition scoring"],
     weaknesses: ["Spacing", "Bench creation"],
   },
+  "Isolation Killers": {
+    players: {
+      PG: "Kobe Bryant",
+      SG: "Michael Jordan",
+      SF: "Kevin Durant",
+      PF: "LeBron James",
+      C: "Hakeem Olajuwon",
+    },
+    overall: 95.4,
+    archetype: "Shot Creation Core",
+    accomplishments: [
+      "Elite half-court scoring",
+      "Multiple isolation threats",
+      "Late-clock offense",
+    ],
+    description:
+      "A lineup built around elite one-on-one scorers who can create difficult shots without needing much setup.",
+    strengths: ["Shot creation", "Clutch scoring", "Mismatch hunting"],
+    weaknesses: ["Ball movement", "Off-ball balance"],
+  },
+
+  "Pass First Legends": {
+    players: {
+      PG: "Magic Johnson",
+      SG: "Stephen Curry",
+      SF: "Larry Bird",
+      PF: "LeBron James",
+      C: "Nikola Jokic",
+    },
+    overall: 96.1,
+    archetype: "Playmaking Engine",
+    accomplishments: [
+      "Elite passing lineup",
+      "High-IQ creators",
+      "Positionless offense",
+    ],
+    description:
+      "A creation-heavy lineup where every major player can pass, read the floor, and generate efficient looks.",
+    strengths: ["Playmaking", "Court vision", "Offensive flow"],
+    weaknesses: ["Point-of-attack defense", "Rim pressure"],
+  },
+
+  "All-Defense Unit": {
+    players: {
+      PG: "Michael Jordan",
+      SG: "Kobe Bryant",
+      SF: "LeBron James",
+      PF: "Tim Duncan",
+      C: "Hakeem Olajuwon",
+    },
+    overall: 95.8,
+    archetype: "Lockdown Unit",
+    accomplishments: [
+      "Elite perimeter defense",
+      "Interior protection",
+      "Switchable size",
+    ],
+    description:
+      "A defense-first lineup with elite wing pressure, physicality, and dominant back-line rim protection.",
+    strengths: ["Defense", "Rim protection", "Physicality"],
+    weaknesses: ["Spacing consistency", "Traditional playmaking"],
+  },
+
+  "Spacing Nightmare": {
+    players: {
+      PG: "Stephen Curry",
+      SG: "Kobe Bryant",
+      SF: "Kevin Durant",
+      PF: "Larry Bird",
+      C: "Nikola Jokic",
+    },
+    overall: 95.6,
+    archetype: "Spacing Superteam",
+    accomplishments: [
+      "Elite shooting gravity",
+      "Five-out potential",
+      "High-skill offense",
+    ],
+    description:
+      "A shooting-heavy lineup that stretches the floor with elite range, passing, and shot-making at nearly every spot.",
+    strengths: ["Shooting", "Spacing", "Offensive versatility"],
+    weaknesses: ["Interior defense", "Rebounding physicality"],
+  },
+
+  "All-Time Lakers": {
+    players: {
+      PG: "Magic Johnson",
+      SG: "Kobe Bryant",
+      SF: "LeBron James",
+      PF: "Anthony Davis",
+      C: "Shaquille O'Neal",
+    },
+    overall: 96.7,
+    archetype: "Franchise Powerhouse",
+    accomplishments: [
+      "Historic star power",
+      "Interior dominance",
+      "Championship DNA",
+    ],
+    description:
+      "A star-loaded Lakers lineup built around size, transition pressure, post dominance, and elite shot creation.",
+    strengths: ["Star power", "Interior scoring", "Transition offense"],
+    weaknesses: ["Three-point volume", "Role balance"],
+  },
 } satisfies Record<string, LineupDetail>;
 
 type LineupName = keyof typeof lineupDetails;
 
 const lineupGroups = {
   "Greatest Teams": ["1996 Bulls"],
-  "Bucket Getters": [],
-  "Floor Generals": [],
-  "Lockdown Squads": [],
-  "Splash Squads": [],
-  "All-Time Teams": [],
+  "Bucket Getters": ["Isolation Killers"],
+  "Floor Generals": ["Pass First Legends"],
+  "Lockdown Squads": ["All-Defense Unit"],
+  "Splash Squads": ["Spacing Nightmare"],
+  "All-Time Teams": ["All-Time Lakers"],
 } satisfies Record<LineupCategory, LineupName[]>;
 
 // Court marker positions
