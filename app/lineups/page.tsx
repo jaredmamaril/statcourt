@@ -21,15 +21,26 @@ import {
 
 // Types
 type LineupTab = "featured" | "builder" | "saved";
+
 type SavedLineup = {
   id: string;
   name: string;
   players: Record<Position, string>;
   overall: number;
+  summary: string;
+  tier: string;
   archetype: string;
   teamIdentity: string;
+  strengths: string[];
+  weaknesses: string[];
+  grades: TeamGrades;
+  xFactorName: string;
+  similarTo: string;
+  similarToDescription: string;
+  courtBalance: string;
   createdAt: string;
 };
+
 type LineupMarkerProps = {
   position: string;
   name: string;
@@ -39,6 +50,7 @@ type LineupMarkerProps = {
   onViewCard: (playerName: string) => void;
   tooltipPosition?: "top" | "bottom";
 };
+
 type LineupRatings = {
   scoring: number;
   shooting: number;
@@ -46,12 +58,14 @@ type LineupRatings = {
   rebounding: number;
   defense: number;
 };
+
 type LineupAchievements = {
   record?: string;
   result?: string;
   playoffs?: string;
   note?: string;
 };
+
 type LineupDetail = {
   players: Record<Position, string>;
   overall: number;
@@ -63,9 +77,30 @@ type LineupDetail = {
   weaknesses: string[];
 };
 
+type TeamGrades = {
+  offense: string;
+  defense: string;
+  shooting: string;
+  playmaking: string;
+  rebounding: string;
+};
+
+type LineupScoutReport = {
+  summary: string;
+  tier: string;
+  archetype: string;
+  teamIdentity: string;
+  strengths: string[];
+  weaknesses: string[];
+  grades: TeamGrades;
+  xFactor: (typeof players)[number] | null;
+  similarTo: string;
+  similarToDescription: string;
+  courtBalance: string;
+};
+
 // Static lineup data
 const lineupPositions: Position[] = ["PG", "SG", "SF", "PF", "C"];
-
 const lineupTabs: { label: string; value: LineupTab }[] = [
   { label: "Featured Lineups", value: "featured" },
   { label: "Build Your Own", value: "builder" },
@@ -259,6 +294,7 @@ const featuredCourtMarkerPositions: Record<Position, string> = {
   PF: "left-[27%] top-62",
   C: "left-[65%] top-42",
 };
+
 const builderCourtMarkerPositions: Record<Position, string> = {
   PG: "left-1/2 top-6",
   SG: "left-[22%] top-16",
@@ -312,6 +348,7 @@ function getBuilderPlayerRating(player: (typeof players)[number]) {
 
 // Position fit helpers
 type PositionFit = "natural" | "secondary" | "emergency" | "mismatch";
+
 const defaultSecondaryPositions: Record<Position, Position[]> = {
   PG: ["SG"],
   SG: ["PG", "SF"],
@@ -319,6 +356,7 @@ const defaultSecondaryPositions: Record<Position, Position[]> = {
   PF: ["SF", "C"],
   C: ["PF"],
 };
+
 const specialPositionOverrides: Partial<
   Record<
     string,
@@ -343,6 +381,7 @@ const specialPositionOverrides: Partial<
     secondaryPositions: ["SF", "C"],
   },
 };
+
 function getPlayerSecondaryPositions(
   player: (typeof players)[number],
 ): Position[] {
@@ -351,11 +390,13 @@ function getPlayerSecondaryPositions(
     defaultSecondaryPositions[player.position]
   );
 }
+
 function getPlayerEmergencyPositions(
   player: (typeof players)[number],
 ): Position[] {
   return specialPositionOverrides[player.name]?.emergencyPositions ?? [];
 }
+
 function getPositionFit(
   player: (typeof players)[number],
   slot: Position,
@@ -380,6 +421,7 @@ function getPositionPenalty(fit: PositionFit) {
 
   return 7;
 }
+
 function getBuilderPlayerRatingForPosition(
   player: (typeof players)[number],
   slot: Position,
@@ -399,12 +441,202 @@ function getSavedLineupArchetypeColor(archetype: string) {
 
   return "#1bc2ec";
 }
+
 function getCourtBalanceColor(courtBalance: string) {
   if (courtBalance === "Excellent") return "#22C55E";
   if (courtBalance === "Good") return "#EFBF04";
   if (courtBalance === "Average") return "#F97316";
 
   return "#EF4444";
+}
+
+// Scouting report helpers
+function getGrade(score: number) {
+  if (score >= 95) return "A+";
+  if (score >= 90) return "A";
+  if (score >= 85) return "B+";
+  if (score >= 80) return "B";
+  if (score >= 75) return "C+";
+  if (score >= 70) return "C";
+
+  return "D";
+}
+
+function getLineupScoutReport(
+  selectedSlots: {
+    position: Position;
+    player: (typeof players)[number];
+  }[],
+): LineupScoutReport {
+  if (selectedSlots.length === 0) {
+    return {
+      summary: "Draft a full lineup to generate a scouting report.",
+      tier: "Incomplete Lineup",
+      archetype: "Unknown",
+      teamIdentity: "Unknown",
+      strengths: [],
+      weaknesses: [],
+      grades: {
+        offense: "--",
+        defense: "--",
+        shooting: "--",
+        playmaking: "--",
+        rebounding: "--",
+      },
+      xFactor: null,
+      similarTo: "--",
+      similarToDescription: "--",
+      courtBalance: "--",
+    };
+  }
+
+  const selectedPlayers = selectedSlots.map((slot) => slot.player);
+
+  const scoring =
+    selectedPlayers.reduce((total, player) => total + player.stats.ppg, 0) /
+    selectedPlayers.length;
+
+  const shooting =
+    selectedPlayers.reduce(
+      (total, player) => total + player.stats.threePercent,
+      0,
+    ) / selectedPlayers.length;
+
+  const playmaking =
+    selectedPlayers.reduce((total, player) => total + player.stats.apg, 0) /
+    selectedPlayers.length;
+
+  const rebounding =
+    selectedPlayers.reduce((total, player) => total + player.stats.rpg, 0) /
+    selectedPlayers.length;
+
+  const efficiency =
+    selectedPlayers.reduce(
+      (total, player) => total + player.stats.fgPercent,
+      0,
+    ) / selectedPlayers.length;
+
+  const adjustedOverall =
+    selectedSlots.reduce(
+      (total, slot) =>
+        total + getBuilderPlayerRatingForPosition(slot.player, slot.position),
+      0,
+    ) / selectedSlots.length;
+
+  const shootingScore = normalizeStat(shooting, 45);
+  const playmakingScore = normalizeStat(playmaking, 11);
+  const reboundingScore = normalizeStat(rebounding, 14);
+  const scoringScore = normalizeStat(scoring, 35);
+  const efficiencyScore = normalizeStat(efficiency, 65);
+
+  const offenseScore =
+    scoringScore * 0.45 + efficiencyScore * 0.3 + playmakingScore * 0.25;
+  const defenseScore =
+    reboundingScore * 0.45 + efficiencyScore * 0.25 + adjustedOverall * 0.3;
+
+  const strengths = [
+    offenseScore >= 88 ? "Offense" : null,
+    shootingScore >= 88 ? "Shooting" : null,
+    playmakingScore >= 88 ? "Playmaking" : null,
+    reboundingScore >= 88 ? "Rebounding" : null,
+    defenseScore >= 88 ? "Defense" : null,
+  ].filter((strength): strength is string => Boolean(strength));
+
+  const weaknesses = [
+    shootingScore < 75 ? "Perimeter Shooting" : null,
+    playmakingScore < 75 ? "Playmaking" : null,
+    reboundingScore < 75 ? "Rebounding" : null,
+    defenseScore < 75 ? "Defense" : null,
+    offenseScore < 75 ? "Half-Court Offense" : null,
+  ].filter((weakness): weakness is string => Boolean(weakness));
+
+  const xFactor = selectedSlots.toSorted(
+    (a, b) =>
+      getBuilderPlayerRatingForPosition(b.player, b.position) -
+      getBuilderPlayerRatingForPosition(a.player, a.position),
+  )[0].player;
+
+  const tier =
+    adjustedOverall >= 94
+      ? "Championship Favorite"
+      : adjustedOverall >= 90
+        ? "Championship Contender"
+        : adjustedOverall >= 86
+          ? "Playoff-Caliber"
+          : "Developmental Lineup";
+
+  const archetype =
+    shootingScore >= 88 && playmakingScore >= 85
+      ? "Spacing Engine"
+      : defenseScore >= 88 && reboundingScore >= 85
+        ? "Defensive Powerhouse"
+        : offenseScore >= 90
+          ? "Offensive Superteam"
+          : reboundingScore >= 90
+            ? "Paint Control Unit"
+            : "Balanced Core";
+
+  const teamIdentity =
+    archetype === "Spacing Engine"
+      ? "Elite shooting and offensive spacing"
+      : archetype === "Defensive Powerhouse"
+        ? "Elite defense and rebounding"
+        : archetype === "Offensive Superteam"
+          ? "Shot creation and scoring pressure"
+          : archetype === "Paint Control Unit"
+            ? "Interior size and rebounding control"
+            : "Balanced two-way production";
+
+  const similarTo =
+    archetype === "Spacing Engine"
+      ? "2017 Warriors (86%)"
+      : archetype === "Defensive Powerhouse"
+        ? "1996 Bulls (89%)"
+        : archetype === "Offensive Superteam"
+          ? "2012 Heat (84%)"
+          : archetype === "Paint Control Unit"
+            ? "2001 Lakers (82%)"
+            : "1986 Celtics (80%)";
+
+  const similarToDescription =
+    archetype === "Spacing Engine"
+      ? "Elite spacing, shooting gravity, and offensive flow."
+      : archetype === "Defensive Powerhouse"
+        ? "Elite defense, rebounding, and physical control."
+        : archetype === "Offensive Superteam"
+          ? "Star-driven scoring pressure and shot creation."
+          : archetype === "Paint Control Unit"
+            ? "Interior dominance and frontcourt physicality."
+            : "Balanced scoring, passing, and lineup structure.";
+
+  const courtBalance =
+    weaknesses.length === 0
+      ? "Excellent"
+      : weaknesses.length <= 1
+        ? "Good"
+        : weaknesses.length <= 2
+          ? "Average"
+          : "Poor";
+
+  return {
+    summary: `A ${tier.toLowerCase()} built around ${teamIdentity.toLowerCase()}.`,
+    tier,
+    archetype,
+    teamIdentity,
+    strengths: strengths.length > 0 ? strengths : ["Balanced production"],
+    weaknesses: weaknesses.length > 0 ? weaknesses : ["No major weakness"],
+    grades: {
+      offense: getGrade(offenseScore),
+      defense: getGrade(defenseScore),
+      shooting: getGrade(shootingScore),
+      playmaking: getGrade(playmakingScore),
+      rebounding: getGrade(reboundingScore),
+    },
+    xFactor,
+    similarTo,
+    similarToDescription,
+    courtBalance,
+  };
 }
 
 // Small components
@@ -536,6 +768,8 @@ export default function Lineups() {
   const [lineupPendingDelete, setLineupPendingDelete] =
     useState<SavedLineup | null>(null);
   const [isLineupSavedOpen, setIsLineupSavedOpen] = useState(false);
+  const [scoutedSavedLineup, setScoutedSavedLineup] =
+    useState<SavedLineup | null>(null);
 
   // Animations
   const [animatedScoutOverall, setAnimatedScoutOverall] = useState(0);
@@ -602,24 +836,39 @@ export default function Lineups() {
         )[0].player;
 
   // Scout report values
-  const lineupArchetype = "Championship Dynasty";
-  const lineupTier =
-    customLineupOverall && customLineupOverall >= 92
-      ? "Championship Favorite"
-      : customLineupOverall && customLineupOverall >= 88
-        ? "Championship Contender"
-        : customLineupOverall && customLineupOverall >= 84
-          ? "Playoff-Caliber"
-          : "Developing Lineup";
-  const scoutSummary =
-    "A championship-caliber lineup built around elite defense, rebounding, and leadership.";
-  const teamIdentity = "Elite Defense & Rebounding";
-  const lineupStrengths = ["Defense", "Rebounding", "Leadership"];
-  const lineupWeaknesses = ["Perimeter Shooting"];
-  const xFactor = bestPlayerFit;
-  const similarLineup = "1996 Bulls (89%)";
-  const courtBalance = "Excellent";
+  const scoutReport = getLineupScoutReport(selectedCustomPlayerSlots);
+
+  const lineupArchetype =
+    scoutedSavedLineup?.archetype ?? scoutReport.archetype;
+
+  const lineupTier = scoutedSavedLineup?.tier ?? scoutReport.tier;
+
+  const scoutSummary = scoutedSavedLineup?.summary ?? scoutReport.summary;
+
+  const teamIdentity =
+    scoutedSavedLineup?.teamIdentity ?? scoutReport.teamIdentity;
+
+  const lineupStrengths =
+    scoutedSavedLineup?.strengths ?? scoutReport.strengths;
+
+  const lineupWeaknesses =
+    scoutedSavedLineup?.weaknesses ?? scoutReport.weaknesses;
+
+  const xFactorName =
+    scoutedSavedLineup?.xFactorName ?? scoutReport.xFactor?.name ?? "--";
+
+  const similarLineup = scoutedSavedLineup?.similarTo ?? scoutReport.similarTo;
+
+  const similarToDescription =
+    scoutedSavedLineup?.similarToDescription ??
+    scoutReport.similarToDescription;
+
+  const courtBalance =
+    scoutedSavedLineup?.courtBalance ?? scoutReport.courtBalance;
+
   const courtBalanceColor = getCourtBalanceColor(courtBalance);
+
+  const teamGrades = scoutedSavedLineup?.grades ?? scoutReport.grades;
 
   // Featured lineup display values
   const selectedCategoryColor =
@@ -658,8 +907,8 @@ export default function Lineups() {
 
     return (
       lineup.name.toLowerCase().includes(search) ||
-      lineup.archetype.toLowerCase().includes(search) ||
-      lineup.teamIdentity.toLowerCase().includes(search) ||
+      (lineup.archetype ?? "").toLowerCase().includes(search) ||
+      (lineup.teamIdentity ?? "").toLowerCase().includes(search) ||
       playerNames.includes(search)
     );
   });
@@ -678,10 +927,12 @@ export default function Lineups() {
   }, []);
 
   // Animate scout report OVR
+  const displayedScoutOverall =
+    scoutedSavedLineup?.overall ?? customLineupOverall;
   useEffect(() => {
-    if (!isScoutOpen || customLineupOverall === null) return;
+    if (!isScoutOpen || displayedScoutOverall === null) return;
 
-    const targetOverall = customLineupOverall;
+    const targetOverall = displayedScoutOverall;
 
     let frameId: number;
     const duration = 600;
@@ -702,7 +953,7 @@ export default function Lineups() {
     frameId = requestAnimationFrame(animate);
 
     return () => cancelAnimationFrame(frameId);
-  }, [isScoutOpen, customLineupOverall]);
+  }, [isScoutOpen, displayedScoutOverall]);
 
   // Builder actions
   function pickBuildPlayer(playerName: string) {
@@ -728,8 +979,17 @@ export default function Lineups() {
       name: lineupName.trim() || `Lineup ${savedLineups.length + 1}`,
       players: customLineup,
       overall: customLineupOverall,
+      summary: scoutSummary,
+      tier: lineupTier,
       archetype: lineupArchetype,
       teamIdentity,
+      strengths: lineupStrengths,
+      weaknesses: lineupWeaknesses,
+      grades: teamGrades,
+      xFactorName,
+      similarTo: similarLineup,
+      similarToDescription,
+      courtBalance,
       createdAt: new Date().toISOString(),
     };
 
@@ -759,9 +1019,11 @@ export default function Lineups() {
     setActiveBuildPosition("PG");
     setIsScoutOpen(false);
     setIsNamingLineup(false);
+    setScoutedSavedLineup(null);
   }
 
   function scoutSavedLineup(lineup: SavedLineup) {
+    setScoutedSavedLineup(lineup);
     setCustomLineup(lineup.players);
     setIsScoutOpen(true);
   }
@@ -1420,7 +1682,10 @@ export default function Lineups() {
                       <button
                         type="button"
                         disabled={!isLineupComplete}
-                        onClick={() => setIsScoutOpen(true)}
+                        onClick={() => {
+                          setScoutedSavedLineup(null);
+                          setIsScoutOpen(true);
+                        }}
                         className={`mx-auto rounded-md border px-8 py-5 font-michroma text-[16px] uppercase transition ${
                           isLineupComplete
                             ? "cursor-pointer font-bold border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.35)] hover:bg-[#1bc2ec]/20"
@@ -1578,7 +1843,7 @@ export default function Lineups() {
                             </p>
 
                             <p className="mt-1 font-michroma text-[12px] text-white/80">
-                              Championship Contender
+                              {lineup.tier ?? "Saved Lineup"}
                             </p>
                           </div>
 
@@ -1615,7 +1880,7 @@ export default function Lineups() {
                           </p>
 
                           <div className="mt-2 flex flex-wrap gap-2">
-                            {lineupStrengths.map((strength, index) => (
+                            {(lineup.strengths ?? []).map((strength, index) => (
                               <p
                                 key={strength}
                                 className="animate-[traitReveal_300ms_ease-out_both] font-michroma text-[10px] text-white"
@@ -1680,7 +1945,10 @@ export default function Lineups() {
 
               <button
                 type="button"
-                onClick={() => setIsScoutOpen(false)}
+                onClick={() => {
+                  setIsScoutOpen(false);
+                  setScoutedSavedLineup(null);
+                }}
                 className="font-michroma text-lg text-white/40 transition hover:text-red-400"
               >
                 x
@@ -1800,19 +2068,34 @@ export default function Lineups() {
 
                   <div className="mt-1 grid gap-1 font-michroma text-[9px] text-white/70">
                     <p>
-                      Offense: <span className="text-[#1bc2ec]">A+</span>
+                      Offense:{" "}
+                      <span className="text-[#1bc2ec]">
+                        {teamGrades.offense}
+                      </span>
                     </p>
                     <p>
-                      Defense: <span className="text-[#1bc2ec]">A</span>
+                      Defense:{" "}
+                      <span className="text-[#1bc2ec]">
+                        {teamGrades.defense}
+                      </span>
                     </p>
                     <p>
-                      Shooting: <span className="text-[#EFBF04]">B+</span>
+                      Shooting:{" "}
+                      <span className="text-[#EFBF04]">
+                        {teamGrades.shooting}
+                      </span>
                     </p>
                     <p>
-                      Playmaking: <span className="text-[#1bc2ec]">A</span>
+                      Playmaking:{" "}
+                      <span className="text-[#1bc2ec]">
+                        {teamGrades.playmaking}
+                      </span>
                     </p>
                     <p>
-                      Rebounding: <span className="text-[#1bc2ec]">A+</span>
+                      Rebounding:{" "}
+                      <span className="text-[#1bc2ec]">
+                        {teamGrades.rebounding}
+                      </span>
                     </p>
                   </div>
                 </div>
@@ -1824,7 +2107,7 @@ export default function Lineups() {
                     X-Factor
                   </p>
                   <p className="font-michroma text-xs text-white">
-                    {xFactor?.name ?? "--"}
+                    {xFactorName}
                   </p>
                   <p className="mt-1 font-michroma text-[8px] leading-relaxed text-white/35">
                     Primary creator and transition engine.
@@ -1839,7 +2122,7 @@ export default function Lineups() {
                     {similarLineup}
                   </p>
                   <p className="mt-1 font-michroma text-[8px] leading-relaxed text-white/35">
-                    Elite defense and rebounding identity.
+                    {similarToDescription}
                   </p>
                 </div>
 
@@ -1848,7 +2131,7 @@ export default function Lineups() {
                     Court Balance
                   </p>
                   <p
-                    className="font-michroma text-lg "
+                    className="font-michroma text-lg"
                     style={{ color: courtBalanceColor }}
                   >
                     {courtBalance}
