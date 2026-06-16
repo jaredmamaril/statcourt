@@ -949,7 +949,6 @@ export default function Lineups() {
       }
     }
 
-    setAnimatedScoutOverall(0);
     frameId = requestAnimationFrame(animate);
 
     return () => cancelAnimationFrame(frameId);
