@@ -42,6 +42,16 @@ type LineupMarkerProps = {
   tooltipPosition?: "top" | "bottom";
 };
 
+type LineupDetail = {
+  players: Record<Position, string>;
+  overall: number;
+  archetype: string;
+  accomplishments: string[];
+  description: string;
+  strengths: string[];
+  weaknesses: string[];
+};
+
 // Static lineup data
 const lineupPositions: Position[] = ["PG", "SG", "SF", "PF", "C"];
 
@@ -58,28 +68,9 @@ const lineupCards = [
   { title: "Lockdown Squads", color: "#A855F7", Icon: Shield },
   { title: "Splash Squads", color: "#14F1D9", Icon: Target },
   { title: "All-Time Teams", color: "#EFBF04", Icon: Crown },
-];
+] as const;
 
-const lineupGroups = {
-  "Greatest Teams": ["1996 Bulls", "2017 Warriors", "1986 Celtics"],
-  "Bucket Getters": [
-    "Isolation Killers",
-    "Three-Level Scorers",
-    "Late-Game Closers",
-  ],
-  "Floor Generals": ["Pass First Legends", "Tempo Controllers", "Assist Kings"],
-  "Lockdown Squads": [
-    "All-Defense Unit",
-    "Paint Protectors",
-    "Perimeter Stoppers",
-  ],
-  "Splash Squads": [
-    "Spacing Nightmare",
-    "Deep Range Lineup",
-    "Catch-and-Shoot Crew",
-  ],
-  "All-Time Teams": ["All-Time Lakers", "All-Time Bulls", "All-Time Warriors"],
-};
+type LineupCategory = (typeof lineupCards)[number]["title"];
 
 const lineupDetails = {
   "1996 Bulls": {
@@ -98,39 +89,18 @@ const lineupDetails = {
     strengths: ["Defense", "Rebounding", "Transition scoring"],
     weaknesses: ["Spacing", "Bench creation"],
   },
-  "2017 Warriors": {
-    players: {
-      PG: "Stephen Curry",
-      SG: "Stephen Curry",
-      SF: "Stephen Curry",
-      PF: "Stephen Curry",
-      C: "Stephen Curry",
-    },
-    overall: 97.6,
-    archetype: "Spacing Superteam",
-    accomplishments: ["72-10 Record", "NBA Champions", "15-3 Playoffs"],
-    description:
-      "Elite defensive dynasty built around Jordan's scoring, Pippen's versatility, and Rodman's rebounding.",
-    strengths: ["Defense", "Rebounding", "Transition scoring"],
-    weaknesses: ["Spacing", "Bench creation"],
-  },
-  "1986 Celtics": {
-    players: {
-      PG: "Dennis Johnson",
-      SG: "Danny Ainge",
-      SF: "Larry Bird",
-      PF: "Kevin McHale",
-      C: "Robert Parish",
-    },
-    overall: 96.8,
-    archetype: "Balanced Dynasty",
-    accomplishments: ["72-10 Record", "NBA Champions", "15-3 Playoffs"],
-    description:
-      "Elite defensive dynasty built around Jordan's scoring, Pippen's versatility, and Rodman's rebounding.",
-    strengths: ["Defense", "Rebounding", "Transition scoring"],
-    weaknesses: ["Spacing", "Bench creation"],
-  },
-};
+} satisfies Record<string, LineupDetail>;
+
+type LineupName = keyof typeof lineupDetails;
+
+const lineupGroups = {
+  "Greatest Teams": ["1996 Bulls"],
+  "Bucket Getters": [],
+  "Floor Generals": [],
+  "Lockdown Squads": [],
+  "Splash Squads": [],
+  "All-Time Teams": [],
+} satisfies Record<LineupCategory, LineupName[]>;
 
 // Court marker positions
 const featuredCourtMarkerPositions: Record<Position, string> = {
@@ -309,8 +279,12 @@ export default function Lineups() {
   const [activeTab, setActiveTab] = useState<LineupTab>("featured");
 
   // Featured lineups
-  const [selectedLineupCategory, setSelectedLineupCategory] = useState("");
-  const [selectedLineupName, setSelectedLineupName] = useState("");
+  const [selectedLineupCategory, setSelectedLineupCategory] = useState<
+    LineupCategory | ""
+  >("");
+  const [selectedLineupName, setSelectedLineupName] = useState<LineupName | "">(
+    "",
+  );
   const [hoveredLineupPlayer, setHoveredLineupPlayer] = useState("");
 
   // Builder
@@ -410,6 +384,14 @@ export default function Lineups() {
       playerNames.includes(search)
     );
   });
+
+  const selectedLineup = selectedLineupName
+    ? lineupDetails[selectedLineupName]
+    : null;
+
+  const selectedLineupNames = selectedLineupCategory
+    ? lineupGroups[selectedLineupCategory]
+    : [];
 
   // Page display values
   const shouldShowTopText =
@@ -576,12 +558,9 @@ export default function Lineups() {
                     onClick={() => {
                       setSelectedLineupCategory(card.title);
 
-                      const firstLineup =
-                        lineupGroups[
-                          card.title as keyof typeof lineupGroups
-                        ][0];
+                      const firstLineup = lineupGroups[card.title][0];
 
-                      setSelectedLineupName(firstLineup);
+                      setSelectedLineupName(firstLineup ?? "");
 
                       setTimeout(() => {
                         lineupSectionRef.current?.scrollIntoView({
@@ -646,9 +625,7 @@ export default function Lineups() {
                 <div className="mt-5 grid gap-6 lg:grid-cols-[220px_1fr]">
                   {/* Lineup selector list */}
                   <div className="flex flex-col gap-2">
-                    {lineupGroups[
-                      selectedLineupCategory as keyof typeof lineupGroups
-                    ].map((lineupName) => (
+                    {selectedLineupNames.map((lineupName) => (
                       <button
                         key={lineupName}
                         type="button"
@@ -678,8 +655,7 @@ export default function Lineups() {
                     className="relative min-h-96 rounded-md border bg-black/30 p-5"
                     style={{ borderColor: `${selectedCategoryColor}55` }}
                   >
-                    {selectedLineupName &&
-                    selectedLineupName in lineupDetails ? (
+                    {selectedLineup ? (
                       <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
                         {/* Lineup stats and scouting text */}
                         <div>
@@ -688,69 +664,63 @@ export default function Lineups() {
                           </h3>
 
                           <div className="mt-5 grid gap-2">
-                            {Object.entries(
-                              lineupDetails[
-                                selectedLineupName as keyof typeof lineupDetails
-                              ].players,
-                            ).map(([position, playerName]) => (
-                              <div
-                                key={position}
-                                onMouseEnter={() =>
-                                  setHoveredLineupPlayer(playerName)
-                                }
-                                onMouseLeave={() => setHoveredLineupPlayer("")}
-                                className="grid grid-cols-[40px_1fr] w-fit font-michroma text-xs transition cursor-pointer"
-                              >
-                                <span
-                                  className="transition-all duration-200"
-                                  style={{
-                                    color:
-                                      hoveredLineupPlayer === playerName
-                                        ? selectedCategoryColor
-                                        : selectedCategoryColor,
-                                    textShadow:
-                                      hoveredLineupPlayer === playerName
-                                        ? `0 0 10px ${selectedCategoryColor}`
-                                        : "none",
-                                  }}
+                            {Object.entries(selectedLineup.players).map(
+                              ([position, playerName]) => (
+                                <div
+                                  key={position}
+                                  onMouseEnter={() =>
+                                    setHoveredLineupPlayer(playerName)
+                                  }
+                                  onMouseLeave={() =>
+                                    setHoveredLineupPlayer("")
+                                  }
+                                  className="grid grid-cols-[40px_1fr] w-fit font-michroma text-xs transition cursor-pointer"
                                 >
-                                  {position}
-                                </span>
+                                  <span
+                                    className="transition-all duration-200"
+                                    style={{
+                                      color:
+                                        hoveredLineupPlayer === playerName
+                                          ? selectedCategoryColor
+                                          : selectedCategoryColor,
+                                      textShadow:
+                                        hoveredLineupPlayer === playerName
+                                          ? `0 0 10px ${selectedCategoryColor}`
+                                          : "none",
+                                    }}
+                                  >
+                                    {position}
+                                  </span>
 
-                                <span
-                                  className="text-white/80 transition-all duration-200"
-                                  style={{
-                                    color:
-                                      hoveredLineupPlayer === playerName
-                                        ? selectedCategoryColor
-                                        : "rgba(255,255,255,0.8)",
-                                    textShadow:
-                                      hoveredLineupPlayer === playerName
-                                        ? `0 0 10px ${selectedCategoryColor}`
-                                        : "none",
-                                  }}
-                                >
-                                  {playerName}
-                                </span>
-                              </div>
-                            ))}
+                                  <span
+                                    className="text-white/80 transition-all duration-200"
+                                    style={{
+                                      color:
+                                        hoveredLineupPlayer === playerName
+                                          ? selectedCategoryColor
+                                          : "rgba(255,255,255,0.8)",
+                                      textShadow:
+                                        hoveredLineupPlayer === playerName
+                                          ? `0 0 10px ${selectedCategoryColor}`
+                                          : "none",
+                                    }}
+                                  >
+                                    {playerName}
+                                  </span>
+                                </div>
+                              ),
+                            )}
                           </div>
 
                           <p className="mt-5 font-michroma text-xs text-white">
                             OVR:{" "}
                             <span style={{ color: selectedCategoryColor }}>
-                              {
-                                lineupDetails[
-                                  selectedLineupName as keyof typeof lineupDetails
-                                ].overall
-                              }
+                              {selectedLineup.overall}
                             </span>
                           </p>
 
                           <div className="mt-4 flex flex-wrap gap-2">
-                            {lineupDetails[
-                              selectedLineupName as keyof typeof lineupDetails
-                            ].accomplishments.map((item) => (
+                            {selectedLineup.accomplishments.map((item) => (
                               <span
                                 key={item}
                                 className="rounded border px-2 py-1 font-michroma text-[9px]"
@@ -776,22 +746,14 @@ export default function Lineups() {
                                 textShadow: `0 0 10px ${selectedCategoryColor}`,
                               }}
                             >
-                              {
-                                lineupDetails[
-                                  selectedLineupName as keyof typeof lineupDetails
-                                ].archetype
-                              }
+                              {selectedLineup.archetype}
                             </p>
                             <div className="mt-5">
                               <p className="font-michroma text-[10px] uppercase text-white/40">
                                 Description
                               </p>
                               <p className="mt-1 font-michroma text-[10px] leading-relaxed text-white/70">
-                                {
-                                  lineupDetails[
-                                    selectedLineupName as keyof typeof lineupDetails
-                                  ].description
-                                }
+                                {selectedLineup.description}
                               </p>
                             </div>
 
@@ -802,9 +764,7 @@ export default function Lineups() {
                                 </p>
 
                                 <div className="mt-2 flex flex-wrap gap-2">
-                                  {lineupDetails[
-                                    selectedLineupName as keyof typeof lineupDetails
-                                  ].strengths.map((strength) => (
+                                  {selectedLineup.strengths.map((strength) => (
                                     <span
                                       key={strength}
                                       className="rounded border border-emerald-600/40 bg-emerald-500/10 px-2 py-1 font-michroma text-[9px] text-emerald-400"
@@ -821,9 +781,7 @@ export default function Lineups() {
                                 </p>
 
                                 <div className="mt-2 flex flex-wrap gap-2">
-                                  {lineupDetails[
-                                    selectedLineupName as keyof typeof lineupDetails
-                                  ].weaknesses.map((weakness) => (
+                                  {selectedLineup.weaknesses.map((weakness) => (
                                     <span
                                       key={weakness}
                                       className="rounded border border-red-700/40 bg-red-700/10 px-2 py-1 font-michroma text-[9px] text-red-700"
@@ -877,30 +835,30 @@ export default function Lineups() {
                             }}
                           />
 
-                          {Object.entries(
-                            lineupDetails[
-                              selectedLineupName as keyof typeof lineupDetails
-                            ].players,
-                          ).map(([position, playerName]) => (
-                            <LineupMarker
-                              key={position}
-                              position={position}
-                              name={playerName}
-                              color={selectedCategoryColor}
-                              isHighlighted={hoveredLineupPlayer === playerName}
-                              onViewCard={viewPlayerCard}
-                              tooltipPosition={
-                                position === "PG" || position === "SG"
-                                  ? "bottom"
-                                  : "top"
-                              }
-                              className={
-                                featuredCourtMarkerPositions[
-                                  position as keyof typeof featuredCourtMarkerPositions
-                                ]
-                              }
-                            />
-                          ))}
+                          {Object.entries(selectedLineup.players).map(
+                            ([position, playerName]) => (
+                              <LineupMarker
+                                key={position}
+                                position={position}
+                                name={playerName}
+                                color={selectedCategoryColor}
+                                isHighlighted={
+                                  hoveredLineupPlayer === playerName
+                                }
+                                onViewCard={viewPlayerCard}
+                                tooltipPosition={
+                                  position === "PG" || position === "SG"
+                                    ? "bottom"
+                                    : "top"
+                                }
+                                className={
+                                  featuredCourtMarkerPositions[
+                                    position as keyof typeof featuredCourtMarkerPositions
+                                  ]
+                                }
+                              />
+                            ),
+                          )}
                         </div>
                       </div>
                     ) : (
