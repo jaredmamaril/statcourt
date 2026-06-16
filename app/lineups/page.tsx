@@ -647,6 +647,7 @@ export default function Lineups() {
             </div>
           )}
         </div>
+
         {/* Featured Lineups tab */}
         {activeTab === "featured" && (
           <section className="min-h-[calc(100vh-140px)]">
@@ -654,6 +655,23 @@ export default function Lineups() {
             <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
               {lineupCards.map((card) => {
                 const Icon = card.Icon;
+                const categoryLineups = lineupGroups[card.title];
+
+                const featuredLineup =
+                  categoryLineups.reduce<LineupName | null>(
+                    (bestLineup, lineupName) => {
+                      if (!bestLineup) return lineupName;
+
+                      const currentOverall = lineupDetails[lineupName].overall;
+                      const bestOverall = lineupDetails[bestLineup].overall;
+
+                      return currentOverall > bestOverall
+                        ? lineupName
+                        : bestLineup;
+                    },
+                    null,
+                  );
+                const lineupCount = categoryLineups.length;
 
                 return (
                   <button
@@ -661,10 +679,7 @@ export default function Lineups() {
                     type="button"
                     onClick={() => {
                       setSelectedLineupCategory(card.title);
-
-                      const firstLineup = lineupGroups[card.title][0];
-
-                      setSelectedLineupName(firstLineup ?? "");
+                      setSelectedLineupName(featuredLineup ?? "");
 
                       setTimeout(() => {
                         lineupSectionRef.current?.scrollIntoView({
@@ -689,12 +704,23 @@ export default function Lineups() {
                         <h2 className="font-michroma text-sm">{card.title}</h2>
                       </div>
 
-                      <p className="mt-3 font-michroma text-xs leading-relaxed text-white/35">
-                        Featured:
+                      <p className="mt-3 font-michroma text-[10px] uppercase text-white/35">
+                        Featured
                       </p>
 
-                      <p className="mt-3 font-michroma text-[10px] leading-relaxed text-white/35">
-                        Lineups:
+                      <p
+                        className="mt-1 font-michroma text-xs"
+                        style={{ color: card.color }}
+                      >
+                        {featuredLineup ?? "Coming Soon"}
+                      </p>
+
+                      <p className="mt-3 font-michroma text-[10px] uppercase text-white/35">
+                        Lineups
+                      </p>
+
+                      <p className="mt-1 font-michroma text-xs text-white/70">
+                        {lineupCount} {lineupCount === 1 ? "Lineup" : "Lineups"}
                       </p>
                     </div>
 
