@@ -477,6 +477,12 @@ export default function Rankings() {
           })}
         </div>
 
+        <p className="mx-auto mt-2 max-w-3xl text-center font-michroma text-xs leading-relaxed text-white/40">
+          {activeTab === "archetypes"
+            ? "Study each player identity class, from generational skills to elite traits, and see the top players who define every archetype."
+            : "Explore leaderboard tabs, filter by team or position, and see which players lead each statistical category."}
+        </p>
+
         {/* Open ranking panel */}
         <div className="pt-2">
           {/* Top ranking leaders */}

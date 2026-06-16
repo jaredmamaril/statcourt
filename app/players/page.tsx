@@ -302,10 +302,15 @@ export default function Players() {
             }
           >
             {/* Header section */}
-            <div className="flex flex-col items-center justify-between gap-2 mb-2">
+            <div className="flex flex-col items-center justify-between gap-1 mb-2">
               <h1 className="font-michroma text-lg font-bold tracking-wide text-[#1bc2ec]">
                 CHOOSE A PLAYER
               </h1>
+
+              <p className="max-w-xl text-center font-michroma text-xs leading-relaxed text-white/40">
+                Browse player cards, filter by team or position, view
+                archetypes, and send players to the comparison court.
+              </p>
 
               {/* Search bar */}
               <input
