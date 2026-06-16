@@ -974,11 +974,15 @@ export default function Lineups() {
 
   // Load saved lineups from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem("statcourt-saved-lineups");
+    const frameId = requestAnimationFrame(() => {
+      const saved = localStorage.getItem("statcourt-saved-lineups");
 
-    if (!saved) return;
+      if (!saved) return;
 
-    setSavedLineups(JSON.parse(saved) as SavedLineup[]);
+      setSavedLineups(JSON.parse(saved) as SavedLineup[]);
+    });
+
+    return () => cancelAnimationFrame(frameId);
   }, []);
 
   // Animate scout report OVR
