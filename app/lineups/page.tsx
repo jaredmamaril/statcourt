@@ -2227,38 +2227,42 @@ export default function Lineups() {
                 </div>
 
                 <div className="text-center">
-                  <p className="font-michroma text-[10px] uppercase text-white/40">
+                  <p className="font-michroma text-[9px] uppercase text-white/30">
                     Team Grades
                   </p>
 
-                  <div className="mt-1 grid gap-1 font-michroma text-[9px] text-white/70">
-                    <p>
+                  <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
+                    <p className="font-michroma text-[8px] text-white/35">
                       Offense:{" "}
-                      <span className="text-[#1bc2ec]">
+                      <span className="text-white/55">
                         {teamGrades.offense}
                       </span>
                     </p>
-                    <p>
+
+                    <p className="font-michroma text-[8px] text-white/35">
                       Defense:{" "}
-                      <span className="text-[#1bc2ec]">
+                      <span className="text-white/55">
                         {teamGrades.defense}
                       </span>
                     </p>
-                    <p>
+
+                    <p className="font-michroma text-[8px] text-white/35">
                       Shooting:{" "}
-                      <span className="text-[#EFBF04]">
+                      <span className="text-white/55">
                         {teamGrades.shooting}
                       </span>
                     </p>
-                    <p>
+
+                    <p className="font-michroma text-[8px] text-white/35">
                       Playmaking:{" "}
-                      <span className="text-[#1bc2ec]">
+                      <span className="text-white/55">
                         {teamGrades.playmaking}
                       </span>
                     </p>
-                    <p>
+
+                    <p className="font-michroma text-[8px] text-white/35">
                       Rebounding:{" "}
-                      <span className="text-[#1bc2ec]">
+                      <span className="text-white/55">
                         {teamGrades.rebounding}
                       </span>
                     </p>
