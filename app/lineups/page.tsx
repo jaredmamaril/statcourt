@@ -2403,12 +2403,12 @@ export default function Lineups() {
                     </div>
                   </div>
 
-                  <div className="text-center">
+                  <div>
                     <p className="font-michroma text-[10px] uppercase text-white/30">
                       Team Grades
                     </p>
 
-                    <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
+                    <div className="mt-2 grid gap-1">
                       <p className="font-michroma text-[8px] text-white/35">
                         Offense:{" "}
                         <span className="text-white/55">
