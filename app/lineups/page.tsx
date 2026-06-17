@@ -487,6 +487,26 @@ function getScoutReason(scores: LineupScoutScores, archetype: string) {
   )}, while its weaker area creates the main tradeoff.`;
 }
 
+function getRankedScoutScores(scores: LineupScoutScores) {
+  return Object.entries(scores)
+    .filter(([key]) => key !== "balance")
+    .sort(([, a], [, b]) => b - a)
+    .map(([key, value]) => ({
+      key,
+      value,
+      label:
+        key === "offense"
+          ? "Offense"
+          : key === "defense"
+            ? "Defense"
+            : key === "shooting"
+              ? "Shooting"
+              : key === "playmaking"
+                ? "Playmaking"
+                : "Rebounding",
+    }));
+}
+
 function clampScore(score: number) {
   return Math.max(0, Math.min(100, score));
 }
@@ -2382,6 +2402,36 @@ export default function Lineups() {
                       </div>
                     );
                   })}
+                </div>
+
+                <div className="mt-1">
+                  <p className="font-michroma text-[10px] uppercase text-white/40 text-center">
+                    Score Profile
+                  </p>
+
+                  <div className="mt-2 grid gap-2">
+                    {getRankedScoutScores(scoutScores).map((score) => (
+                      <div
+                        key={score.key}
+                        className="grid grid-cols-[90px_1fr_28px] items-center gap-2"
+                      >
+                        <p className="font-michroma text-[8px] text-white/40">
+                          {score.label}
+                        </p>
+
+                        <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+                          <div
+                            className="h-full rounded-full bg-[#1bc2ec]"
+                            style={{ width: `${Math.min(score.value, 100)}%` }}
+                          />
+                        </div>
+
+                        <p className="text-right font-michroma text-[8px] text-white/45">
+                          {Math.round(score.value)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
