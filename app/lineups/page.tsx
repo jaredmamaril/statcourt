@@ -570,6 +570,29 @@ function getLineupScoutReport(
     (player) => player.stats.rpg >= 10,
   ).length;
 
+  const superstarCount = selectedPlayers.filter(
+    (player) => player.starPower >= 95,
+  ).length;
+
+  const eliteDefenders = selectedPlayers.filter(
+    (player) => player.defenseRating >= 90,
+  ).length;
+
+  const eliteBigs = selectedSlots.filter(
+    (slot) =>
+      (slot.position === "PF" || slot.position === "C") &&
+      slot.player.starPower >= 90 &&
+      slot.player.stats.rpg >= 9,
+  ).length;
+
+  const traditionalCenters = selectedSlots.filter(
+    (slot) => slot.position === "C" && slot.player.position === "C",
+  ).length;
+
+  const passablePlayers = selectedPlayers.filter(
+    (player) => player.stats.apg >= 4.5,
+  ).length;
+
   const hasCurry = selectedPlayers.some(
     (player) => player.name === "Stephen Curry",
   );
@@ -1015,27 +1038,30 @@ function getLineupScoutReport(
           ? "Average"
           : "Poor";
 
-  const badges = [
+  const chemistryBadges = [
+    superstarCount >= 3 ? "Big Three" : null,
+    passablePlayers >= 5 ? "Positionless" : null,
+    eliteBigs >= 2 ? "Twin Towers" : null,
+    traditionalCenters === 0 ? "Small Ball" : null,
+    eliteShooters >= 4 ? "Floor Spacing" : null,
+    eliteDefenders >= 3 ? "Defensive Wall" : null,
+  ].filter((badge): badge is string => Boolean(badge));
+
+  const scoreBadges = [
     adjustedShootingScore >= 85 || eliteShooters >= 3 ? "Elite Shooting" : null,
-
     adjustedDefenseScore >= 85 ? "Defensive Identity" : null,
-
-    adjustedShootingScore >= 82 || eliteShooters >= 2 ? "Floor Spacing" : null,
-
     adjustedOffenseScore >= 85 && adjustedPlaymakingScore >= 80
       ? "Transition Threat"
       : null,
-
     adjustedPlaymakingScore >= 85 || elitePlaymakers >= 3
       ? "High IQ Basketball"
       : null,
-
     adjustedReboundingScore >= 85 || eliteRebounders >= 3
       ? "Physical Frontcourt"
       : null,
-  ]
-    .filter((badge): badge is string => Boolean(badge))
-    .slice(0, 3);
+  ].filter((badge): badge is string => Boolean(badge));
+
+  const badges = [...chemistryBadges, ...scoreBadges].slice(0, 3);
 
   return {
     summary,
@@ -2479,7 +2505,7 @@ export default function Lineups() {
                     {lineupBadges.map((badge) => (
                       <span
                         key={badge}
-                        className="rounded-md border border-[#1bc2ec]/30 bg-[#1bc2ec]/10 px-1 py-1 font-michroma text-[7px] text-[#1bc2ec]"
+                        className="rounded-md border border-[#1bc2ec]/30 bg-[#1bc2ec]/10 px-1 py-1 font-michroma text-[8px] text-[#1bc2ec]"
                       >
                         {badge}
                       </span>
