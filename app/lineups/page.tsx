@@ -759,16 +759,22 @@ function getLineupScoutReport(
   }
 
   const xFactor =
-    archetype === "Spacing Superteam"
+    archetype === "Spacing Superteam" || archetype === "Floor Spacing Machine"
       ? selectedPlayers.toSorted(
           (a, b) => b.stats.threePercent - a.stats.threePercent,
         )[0]
-      : archetype === "Playmaking Engine"
+      : archetype === "Playmaking Engine" ||
+          archetype === "Point-Center Offense" ||
+          archetype === "Positionless Basketball"
         ? selectedPlayers.toSorted((a, b) => b.stats.apg - a.stats.apg)[0]
         : archetype === "Paint Control Unit" ||
-            archetype === "Defensive Powerhouse"
+            archetype === "Rim Pressure Unit" ||
+            archetype === "Defensive Powerhouse" ||
+            archetype === "Defensive Juggernaut"
           ? selectedPlayers.toSorted((a, b) => b.stats.rpg - a.stats.rpg)[0]
-          : archetype === "Offensive Superteam"
+          : archetype === "Offensive Superteam" ||
+              archetype === "Iso Superteam" ||
+              archetype === "Transition Attack"
             ? selectedPlayers.toSorted((a, b) => b.stats.ppg - a.stats.ppg)[0]
             : selectedSlots.toSorted(
                 (a, b) =>
