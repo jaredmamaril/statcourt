@@ -590,11 +590,11 @@ function getLineupScoutReport(
       0,
     ) / selectedSlots.length;
 
-  const shootingScore = normalizeStat(shooting, 45);
-  const playmakingScore = normalizeStat(playmaking, 11);
-  const reboundingScore = normalizeStat(rebounding, 14);
-  const scoringScore = normalizeStat(scoring, 35);
-  const efficiencyScore = normalizeStat(efficiency, 65);
+  const shootingScore = normalizeStat(shooting, 40);
+  const playmakingScore = normalizeStat(playmaking, 8);
+  const reboundingScore = normalizeStat(rebounding, 11);
+  const scoringScore = normalizeStat(scoring, 25);
+  const efficiencyScore = normalizeStat(efficiency, 58);
 
   const offenseScore =
     scoringScore * 0.45 + efficiencyScore * 0.3 + playmakingScore * 0.25;
