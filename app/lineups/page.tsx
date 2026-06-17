@@ -2086,229 +2086,230 @@ export default function Lineups() {
       {/* Scout report modal */}
       {isScoutOpen && (
         <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 px-4">
-          <div className="relative w-full max-w-xl animate-[modalIn_260ms_ease-out] rounded-md border border-[#1bc2ec]/60 bg-[#07111f] p-6 shadow-[0_0_35px_rgba(27,194,236,0.25)]">
-            <div className="flex items-start justify-between">
-              <div className="-mt-2">
-                <h2 className="font-michroma text-xl text-white">
-                  Scouting Report
-                </h2>
+          <div className="relative w-full max-w-xl animate-[modalIn_260ms_ease-out] rounded-md border border-[#1bc2ec]/60 bg-[#07111f] shadow-[0_0_35px_rgba(27,194,236,0.25)]">
+            <div className="max-h-[78vh] overflow-y-auto p-5 scrollbar-none [&::-webkit-scrollbar]:hidden">
+              <div className="flex items-start justify-between">
+                <div className="-mt-2">
+                  <h2 className="font-michroma text-xl text-white">
+                    Scouting Report
+                  </h2>
 
-                <p className="mt-1 max-w-60 font-michroma text-[10px] leading-relaxed text-white/35">
-                  {scoutSummary}
-                </p>
+                  <p className="mt-1 max-w-60 font-michroma text-[10px] leading-relaxed text-white/35">
+                    {scoutSummary}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsScoutOpen(false);
+                    setScoutedSavedLineup(null);
+                  }}
+                  className="font-michroma text-lg text-white/40 transition hover:text-red-400"
+                >
+                  x
+                </button>
               </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setIsScoutOpen(false);
-                  setScoutedSavedLineup(null);
-                }}
-                className="font-michroma text-lg text-white/40 transition hover:text-red-400"
-              >
-                x
-              </button>
-            </div>
+              <div className="absolute right-25 top-6">
+                <p className="font-michroma text-[10px] uppercase text-white/40">
+                  Lineup
+                </p>
 
-            <div className="absolute right-25 top-6">
-              <p className="font-michroma text-[10px] uppercase text-white/40">
-                Lineup
-              </p>
+                <div className="mt-2 grid gap-1">
+                  {lineupPositions.map((position) => {
+                    const playerName = customLineup[position];
+                    const player = players.find(
+                      (player) => player.name === playerName,
+                    );
 
-              <div className="mt-2 grid gap-1">
-                {lineupPositions.map((position) => {
-                  const playerName = customLineup[position];
-                  const player = players.find(
-                    (player) => player.name === playerName,
-                  );
+                    return (
+                      <div
+                        key={position}
+                        className="grid grid-cols-[34px_1fr] items-center gap-3"
+                      >
+                        <span className="font-michroma text-[10px] text-[#1bc2ec]">
+                          {position}
+                        </span>
 
-                  return (
-                    <div
-                      key={position}
-                      className="grid grid-cols-[34px_1fr] items-center gap-3"
-                    >
-                      <span className="font-michroma text-[10px] text-[#1bc2ec]">
-                        {position}
-                      </span>
+                        <div>
+                          <p className="truncate font-michroma text-[10px] text-white">
+                            {player?.name ?? "Empty"}
+                          </p>
 
-                      <div>
-                        <p className="truncate font-michroma text-[10px] text-white">
-                          {player?.name ?? "Empty"}
-                        </p>
-
-                        <p className="mt-1 font-michroma text-[8px] text-white/35">
-                          {player
-                            ? `${player.team} • #${player.jerseyNumber}`
-                            : "--"}
-                        </p>
+                          <p className="mt-1 font-michroma text-[8px] text-white/35">
+                            {player
+                              ? `${player.team} • #${player.jerseyNumber}`
+                              : "--"}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="mt-1 grid max-w-xl gap-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="font-michroma text-3xl text-[#1bc2ec] -tracking-widest">
-                    {animatedScoutOverall.toFixed(1)}
-                  </p>
-                  <p className="font-michroma text-[10px] uppercase text-white/40">
-                    Overall
-                  </p>
+                    );
+                  })}
                 </div>
-                <p className="font-michroma text-xs text-[#1bc2ec]">
-                  {lineupTier}
-                </p>
               </div>
 
-              <div>
-                <p className="font-michroma text-[10px] uppercase text-white/40">
-                  Archetype
-                </p>
-                <p className="font-michroma text-sm text-white">
-                  {lineupArchetype}
-                </p>
-              </div>
-
-              <div>
-                <p className="font-michroma text-[10px] uppercase text-white/40">
-                  Why This Archetype
-                </p>
-
-                <p className="mt-1 max-w-75 font-michroma text-[9px] leading-relaxed text-white/45">
-                  {scoutReason}
-                </p>
-              </div>
-
-              <div>
-                <p className="font-michroma text-[10px] uppercase text-white/40">
-                  Team Identity
-                </p>
-                <p className="font-michroma text-sm text-white">
-                  {teamIdentity}
-                </p>
-              </div>
-
-              <div className="grid grid-cols-[120px_180px_160px] items-start gap-3">
+              <div className="mt-1 grid max-w-xl gap-2">
                 <div>
-                  <p className="font-michroma text-[10px] uppercase text-emerald-400/60">
-                    Strengths
-                  </p>
-
-                  <div className="mt-2 grid gap-2">
-                    {lineupStrengths.map((strength) => (
-                      <p
-                        key={strength}
-                        className="font-michroma text-[10px] text-white"
-                      >
-                        <span className="text-emerald-400">✓</span> {strength}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <p className="font-michroma text-[10px] uppercase text-red-400/60">
-                    Weaknesses
-                  </p>
-
-                  <div className="mt-2 grid gap-2">
-                    {lineupWeaknesses.map((weakness) => (
-                      <p
-                        key={weakness}
-                        className="font-michroma text-[10px] text-white"
-                      >
-                        <span className="text-red-400">!</span> {weakness}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="text-center">
-                  <p className="font-michroma text-[9px] uppercase text-white/30">
-                    Team Grades
-                  </p>
-
-                  <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
-                    <p className="font-michroma text-[8px] text-white/35">
-                      Offense:{" "}
-                      <span className="text-white/55">
-                        {teamGrades.offense}
-                      </span>
+                  <div className="flex items-center gap-2">
+                    <p className="font-michroma text-3xl text-[#1bc2ec] -tracking-widest">
+                      {animatedScoutOverall.toFixed(1)}
                     </p>
-
-                    <p className="font-michroma text-[8px] text-white/35">
-                      Defense:{" "}
-                      <span className="text-white/55">
-                        {teamGrades.defense}
-                      </span>
-                    </p>
-
-                    <p className="font-michroma text-[8px] text-white/35">
-                      Shooting:{" "}
-                      <span className="text-white/55">
-                        {teamGrades.shooting}
-                      </span>
-                    </p>
-
-                    <p className="font-michroma text-[8px] text-white/35">
-                      Playmaking:{" "}
-                      <span className="text-white/55">
-                        {teamGrades.playmaking}
-                      </span>
-                    </p>
-
-                    <p className="font-michroma text-[8px] text-white/35">
-                      Rebounding:{" "}
-                      <span className="text-white/55">
-                        {teamGrades.rebounding}
-                      </span>
+                    <p className="font-michroma text-[10px] uppercase text-white/40">
+                      Overall
                     </p>
                   </div>
-                </div>
-              </div>
-
-              <div className="grid gap-3 border-t border-white/10 pt-4 sm:grid-cols-3">
-                <div>
-                  <p className="font-michroma text-[10px] uppercase text-white/40">
-                    X-Factor
-                  </p>
-                  <p className="font-michroma text-xs text-white">
-                    {xFactorName}
-                  </p>
-                  <p className="mt-1 font-michroma text-[8px] leading-relaxed text-white/35">
-                    Primary creator and transition engine.
-                  </p>
-                </div>
-
-                <div>
-                  <p className="font-michroma text-[10px] uppercase text-white/40">
-                    Similar To
-                  </p>
                   <p className="font-michroma text-xs text-[#1bc2ec]">
-                    {similarLineup}
-                  </p>
-                  <p className="mt-1 font-michroma text-[8px] leading-relaxed text-white/35">
-                    {similarToDescription}
+                    {lineupTier}
                   </p>
                 </div>
 
                 <div>
                   <p className="font-michroma text-[10px] uppercase text-white/40">
-                    Court Balance
+                    Archetype
                   </p>
-                  <p
-                    className="font-michroma text-lg"
-                    style={{ color: courtBalanceColor }}
-                  >
-                    {courtBalance}
+                  <p className="font-michroma text-sm text-white">
+                    {lineupArchetype}
                   </p>
+                </div>
+
+                <div>
+                  <p className="font-michroma text-[10px] uppercase text-white/40">
+                    Why This Archetype
+                  </p>
+
+                  <p className="mt-1 max-w-75 font-michroma text-[9px] leading-relaxed text-white/45">
+                    {scoutReason}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-michroma text-[10px] uppercase text-white/40">
+                    Team Identity
+                  </p>
+                  <p className="font-michroma text-sm text-white">
+                    {teamIdentity}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-[120px_180px_160px] items-start gap-3">
+                  <div>
+                    <p className="font-michroma text-[10px] uppercase text-emerald-400/60">
+                      Strengths
+                    </p>
+
+                    <div className="mt-2 grid gap-2">
+                      {lineupStrengths.map((strength) => (
+                        <p
+                          key={strength}
+                          className="font-michroma text-[10px] text-white"
+                        >
+                          <span className="text-emerald-400">✓</span> {strength}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="font-michroma text-[10px] uppercase text-red-400/60">
+                      Weaknesses
+                    </p>
+
+                    <div className="mt-2 grid gap-2">
+                      {lineupWeaknesses.map((weakness) => (
+                        <p
+                          key={weakness}
+                          className="font-michroma text-[10px] text-white"
+                        >
+                          <span className="text-red-400">!</span> {weakness}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="text-center">
+                    <p className="font-michroma text-[10px] uppercase text-white/30">
+                      Team Grades
+                    </p>
+
+                    <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
+                      <p className="font-michroma text-[8px] text-white/35">
+                        Offense:{" "}
+                        <span className="text-white/55">
+                          {teamGrades.offense}
+                        </span>
+                      </p>
+
+                      <p className="font-michroma text-[8px] text-white/35">
+                        Defense:{" "}
+                        <span className="text-white/55">
+                          {teamGrades.defense}
+                        </span>
+                      </p>
+
+                      <p className="font-michroma text-[8px] text-white/35">
+                        Shooting:{" "}
+                        <span className="text-white/55">
+                          {teamGrades.shooting}
+                        </span>
+                      </p>
+
+                      <p className="font-michroma text-[8px] text-white/35">
+                        Playmaking:{" "}
+                        <span className="text-white/55">
+                          {teamGrades.playmaking}
+                        </span>
+                      </p>
+
+                      <p className="font-michroma text-[8px] text-white/35">
+                        Rebounding:{" "}
+                        <span className="text-white/55">
+                          {teamGrades.rebounding}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 border-t border-white/10 pt-4 sm:grid-cols-3">
+                  <div>
+                    <p className="font-michroma text-[10px] uppercase text-white/40">
+                      X-Factor
+                    </p>
+                    <p className="font-michroma text-xs text-white">
+                      {xFactorName}
+                    </p>
+                    <p className="mt-1 font-michroma text-[8px] leading-relaxed text-white/35">
+                      Primary creator and transition engine.
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="font-michroma text-[10px] uppercase text-white/40">
+                      Similar To
+                    </p>
+                    <p className="font-michroma text-xs text-[#1bc2ec]">
+                      {similarLineup}
+                    </p>
+                    <p className="mt-1 font-michroma text-[8px] leading-relaxed text-white/35">
+                      {similarToDescription}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="font-michroma text-[10px] uppercase text-white/40">
+                      Court Balance
+                    </p>
+                    <p
+                      className="font-michroma text-lg"
+                      style={{ color: courtBalanceColor }}
+                    >
+                      {courtBalance}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-
             <button
               type="button"
               onClick={() => {
