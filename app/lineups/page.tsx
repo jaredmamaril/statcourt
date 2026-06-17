@@ -729,6 +729,21 @@ function getLineupScoutReport(
                 ? "Legendary top-end talent across every position."
                 : "Balanced scoring, passing, and lineup structure.";
 
+  const summary =
+    archetype === "Spacing Superteam"
+      ? `An elite spacing lineup built around shooting gravity, ball movement, and offensive versatility.`
+      : archetype === "Playmaking Engine"
+        ? `A high-IQ creation lineup built around passing, pace control, and easy shot generation.`
+        : archetype === "Offensive Superteam"
+          ? `A star-powered scoring lineup built around shot creation, isolation pressure, and matchup hunting.`
+          : archetype === "Paint Control Unit"
+            ? `A physical interior lineup built around rebounding, size, and paint pressure.`
+            : archetype === "Defensive Powerhouse"
+              ? `A defensive lineup built around physicality, rebounding, and matchup control.`
+              : archetype === "Star-Powered Contender"
+                ? `A championship-level lineup built around elite talent, versatility, and star power.`
+                : `A balanced lineup built around two-way production, lineup flexibility, and reliable scoring.`;
+
   const scoreValues = [
     offenseScore,
     defenseScore,
@@ -751,7 +766,7 @@ function getLineupScoutReport(
           : "Poor";
 
   return {
-    summary: `A ${tier.toLowerCase()} powered by ${topScore.label.toLowerCase()} and ${secondScore.label.toLowerCase()}, with ${weakestScore.label.toLowerCase()} as the main pressure point.`,
+    summary,
     tier,
     archetype,
     teamIdentity,
