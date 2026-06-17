@@ -504,7 +504,9 @@ function getRankedScoutScores(scores: LineupScoutScores) {
               ? "Shooting"
               : key === "playmaking"
                 ? "Playmaking"
-                : "Rebounding",
+                : key === "rebounding"
+                  ? "Rebounding"
+                  : "Star Power",
     }));
 }
 
@@ -2420,11 +2422,11 @@ export default function Lineups() {
                     Score Profile
                   </p>
 
-                  <div className="mt-1 grid gap-2">
+                  <div className="mt-1 grid gap-1">
                     {getRankedScoutScores(scoutScores).map((score) => (
                       <div
                         key={score.key}
-                        className="grid grid-cols-[90px_1fr_28px] items-center gap-2"
+                        className="grid grid-cols-[68px_120px_24px] items-center gap-1"
                       >
                         <p className="font-michroma text-[8px] text-white/40">
                           {score.label}
@@ -2554,35 +2556,35 @@ export default function Lineups() {
                     </p>
 
                     <div className="mt-2 grid gap-1">
-                      <p className="font-michroma text-[8px] text-white/35">
+                      <p className="font-michroma text-[9px] text-white/35">
                         Offense:{" "}
                         <span className="text-white/55">
                           {teamGrades.offense}
                         </span>
                       </p>
 
-                      <p className="font-michroma text-[8px] text-white/35">
+                      <p className="font-michroma text-[9px] text-white/35">
                         Defense:{" "}
                         <span className="text-white/55">
                           {teamGrades.defense}
                         </span>
                       </p>
 
-                      <p className="font-michroma text-[8px] text-white/35">
+                      <p className="font-michroma text-[9px] text-white/35">
                         Shooting:{" "}
                         <span className="text-white/55">
                           {teamGrades.shooting}
                         </span>
                       </p>
 
-                      <p className="font-michroma text-[8px] text-white/35">
+                      <p className="font-michroma text-[9px] text-white/35">
                         Playmaking:{" "}
                         <span className="text-white/55">
                           {teamGrades.playmaking}
                         </span>
                       </p>
 
-                      <p className="font-michroma text-[8px] text-white/35">
+                      <p className="font-michroma text-[9px] text-white/35">
                         Rebounding:{" "}
                         <span className="text-white/55">
                           {teamGrades.rebounding}
