@@ -716,7 +716,9 @@ function getLineupScoutReport(
       : null,
 
     adjustedOverall >= 92 ? "Leadership" : null,
-  ].filter((strength): strength is string => Boolean(strength));
+  ]
+    .filter((strength): strength is string => Boolean(strength))
+    .slice(0, 4);
 
   const weaknesses = [
     adjustedShootingScore < 68 && eliteShooters === 0 ? "Spacing" : null,
