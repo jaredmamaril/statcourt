@@ -40,6 +40,7 @@ type SavedLineup = {
   similarToDescription: string;
   courtBalance: string;
   createdAt: string;
+  badges: string[];
 };
 
 type LineupMarkerProps = {
@@ -108,6 +109,7 @@ type LineupScoutReport = {
   similarTo: string;
   similarToDescription: string;
   courtBalance: string;
+  badges: string[];
 };
 
 // Static lineup data
@@ -522,6 +524,7 @@ function getLineupScoutReport(
       similarTo: "--",
       similarToDescription: "--",
       courtBalance: "--",
+      badges: [],
     };
   }
 
@@ -977,6 +980,28 @@ function getLineupScoutReport(
           ? "Average"
           : "Poor";
 
+  const badges = [
+    adjustedShootingScore >= 85 || eliteShooters >= 3 ? "Elite Shooting" : null,
+
+    adjustedDefenseScore >= 85 ? "Defensive Identity" : null,
+
+    adjustedShootingScore >= 82 || eliteShooters >= 2 ? "Floor Spacing" : null,
+
+    adjustedOffenseScore >= 85 && adjustedPlaymakingScore >= 80
+      ? "Transition Threat"
+      : null,
+
+    adjustedPlaymakingScore >= 85 || elitePlaymakers >= 3
+      ? "High IQ Basketball"
+      : null,
+
+    adjustedReboundingScore >= 85 || eliteRebounders >= 3
+      ? "Physical Frontcourt"
+      : null,
+  ]
+    .filter((badge): badge is string => Boolean(badge))
+    .slice(0, 3);
+
   return {
     summary,
     tier,
@@ -996,6 +1021,7 @@ function getLineupScoutReport(
     similarTo,
     similarToDescription,
     courtBalance,
+    badges,
   };
 }
 
@@ -1237,6 +1263,8 @@ export default function Lineups() {
 
   const scoutReason = getScoutReason(scoutScores, lineupArchetype);
 
+  const lineupBadges = scoutedSavedLineup?.badges ?? scoutReport.badges;
+
   // Featured lineup display values
   const selectedCategoryColor =
     lineupCards.find((card) => card.title === selectedLineupCategory)?.color ??
@@ -1362,6 +1390,7 @@ export default function Lineups() {
       similarToDescription,
       courtBalance,
       createdAt: new Date().toISOString(),
+      badges: scoutReport.badges,
     };
 
     const nextLineups = [newLineup, ...savedLineups];
@@ -2371,13 +2400,26 @@ export default function Lineups() {
                     <p className="font-michroma text-3xl text-[#1bc2ec] -tracking-widest">
                       {animatedScoutOverall.toFixed(1)}
                     </p>
+
                     <p className="font-michroma text-[10px] uppercase text-white/40">
                       Overall
                     </p>
                   </div>
+
                   <p className="font-michroma text-xs text-[#1bc2ec]">
                     {lineupTier}
                   </p>
+
+                  <div className="max-w-80 mt-2 flex flex-wrap gap-1">
+                    {lineupBadges.map((badge) => (
+                      <span
+                        key={badge}
+                        className="rounded-md border border-[#1bc2ec]/30 bg-[#1bc2ec]/10 px-1 py-1 font-michroma text-[7px] text-[#1bc2ec]"
+                      >
+                        {badge}
+                      </span>
+                    ))}
+                  </div>
                 </div>
 
                 <div>
