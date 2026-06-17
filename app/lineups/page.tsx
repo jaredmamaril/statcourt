@@ -485,24 +485,8 @@ function getScoutReason(scores: LineupScoutScores, archetype: string) {
   )}, while its weaker area creates the main tradeoff.`;
 }
 
-function getRankedScoutScores(scores: LineupScoutScores) {
-  return Object.entries(scores)
-    .filter(([key]) => key !== "balance")
-    .sort(([, a], [, b]) => b - a)
-    .map(([key, value]) => ({
-      key,
-      value,
-      label:
-        key === "offense"
-          ? "Offense"
-          : key === "defense"
-            ? "Defense"
-            : key === "shooting"
-              ? "Shooting"
-              : key === "playmaking"
-                ? "Playmaking"
-                : "Rebounding",
-    }));
+function clampScore(score: number) {
+  return Math.max(0, Math.min(100, score));
 }
 
 function getLineupScoutReport(
@@ -559,6 +543,28 @@ function getLineupScoutReport(
     (player) => player.stats.rpg >= 10,
   ).length;
 
+  const hasCurry = selectedPlayers.some(
+    (player) => player.name === "Stephen Curry",
+  );
+  const hasJokic = selectedPlayers.some(
+    (player) => player.name === "Nikola Jokic",
+  );
+  const hasLeBron = selectedPlayers.some(
+    (player) => player.name === "LeBron James",
+  );
+  const hasDurant = selectedPlayers.some(
+    (player) => player.name === "Kevin Durant",
+  );
+  const hasShaq = selectedPlayers.some(
+    (player) => player.name === "Shaquille O'Neal",
+  );
+  const hasWilt = selectedPlayers.some(
+    (player) => player.name === "Wilt Chamberlain",
+  );
+  const hasHakeem = selectedPlayers.some(
+    (player) => player.name === "Hakeem Olajuwon",
+  );
+
   const scoring =
     selectedPlayers.reduce((total, player) => total + player.stats.ppg, 0) /
     selectedPlayers.length;
@@ -595,47 +601,89 @@ function getLineupScoutReport(
   const reboundingScore = normalizeStat(rebounding, 11);
   const scoringScore = normalizeStat(scoring, 25);
   const efficiencyScore = normalizeStat(efficiency, 58);
-
   const offenseScore =
     scoringScore * 0.45 + efficiencyScore * 0.3 + playmakingScore * 0.25;
   const defenseScore =
     reboundingScore * 0.45 + efficiencyScore * 0.25 + adjustedOverall * 0.3;
 
+  let adjustedShootingScore = shootingScore;
+  let adjustedPlaymakingScore = playmakingScore;
+  let adjustedReboundingScore = reboundingScore;
+  let adjustedOffenseScore = offenseScore;
+  let adjustedDefenseScore = defenseScore;
+
+  if (hasCurry && hasJokic && hasLeBron) {
+    adjustedPlaymakingScore += 8;
+    adjustedOffenseScore += 6;
+  }
+
+  if (hasCurry && hasDurant && hasLeBron) {
+    adjustedShootingScore += 6;
+    adjustedOffenseScore += 5;
+  }
+
+  if (hasShaq && hasWilt && hasHakeem) {
+    adjustedShootingScore -= 10;
+    adjustedOffenseScore -= 4;
+    adjustedReboundingScore += 8;
+    adjustedDefenseScore += 6;
+  }
+
+  if (eliteRebounders >= 3) {
+    adjustedReboundingScore += 6;
+  }
+
+  if (eliteScorers >= 3) {
+    adjustedOffenseScore += 5;
+  }
+
+  if (eliteShooters >= 3) {
+    adjustedShootingScore += 6;
+  }
+
+  if (elitePlaymakers >= 3) {
+    adjustedPlaymakingScore += 6;
+    adjustedOffenseScore += 4;
+  }
+
+  adjustedShootingScore = clampScore(adjustedShootingScore);
+  adjustedPlaymakingScore = clampScore(adjustedPlaymakingScore);
+  adjustedReboundingScore = clampScore(adjustedReboundingScore);
+  adjustedOffenseScore = clampScore(adjustedOffenseScore);
+  adjustedDefenseScore = clampScore(adjustedDefenseScore);
+
   const scores: LineupScoutScores = {
-    offense: offenseScore,
-    defense: defenseScore,
-    shooting: shootingScore,
-    playmaking: playmakingScore,
-    rebounding: reboundingScore,
+    offense: adjustedOffenseScore,
+    defense: adjustedDefenseScore,
+    shooting: adjustedShootingScore,
+    playmaking: adjustedPlaymakingScore,
+    rebounding: adjustedReboundingScore,
     balance: Math.round(
-      (offenseScore +
-        defenseScore +
-        shootingScore +
-        playmakingScore +
-        reboundingScore) /
+      (adjustedOffenseScore +
+        adjustedDefenseScore +
+        adjustedShootingScore +
+        adjustedPlaymakingScore +
+        adjustedReboundingScore) /
         5,
     ),
   };
 
-  const rankedScores = getRankedScoutScores(scores);
-  const topScore = rankedScores[0];
-  const secondScore = rankedScores[1];
-  const weakestScore = rankedScores[rankedScores.length - 1];
-
   const strengths = [
-    offenseScore >= 82 || eliteScorers >= 2 ? "Offense" : null,
-    shootingScore >= 82 || eliteShooters >= 2 ? "Shooting" : null,
-    playmakingScore >= 82 || elitePlaymakers >= 2 ? "Playmaking" : null,
-    reboundingScore >= 82 || eliteRebounders >= 2 ? "Rebounding" : null,
-    defenseScore >= 82 ? "Defense" : null,
+    adjustedOffenseScore >= 82 || eliteScorers >= 2 ? "Offense" : null,
+    adjustedShootingScore >= 82 || eliteShooters >= 2 ? "Shooting" : null,
+    adjustedPlaymakingScore >= 82 || elitePlaymakers >= 2 ? "Playmaking" : null,
+    adjustedReboundingScore >= 82 || eliteRebounders >= 2 ? "Rebounding" : null,
+    adjustedDefenseScore >= 82 ? "Defense" : null,
   ].filter((strength): strength is string => Boolean(strength));
 
   const weaknesses = [
-    shootingScore < 68 && eliteShooters === 0 ? "Perimeter Shooting" : null,
-    playmakingScore < 68 && elitePlaymakers === 0 ? "Playmaking" : null,
-    reboundingScore < 68 && eliteRebounders === 0 ? "Rebounding" : null,
-    defenseScore < 68 ? "Defense" : null,
-    offenseScore < 68 && eliteScorers < 2 ? "Half-Court Offense" : null,
+    adjustedShootingScore < 68 && eliteShooters === 0
+      ? "Perimeter Shooting"
+      : null,
+    adjustedPlaymakingScore < 68 && elitePlaymakers === 0 ? "Playmaking" : null,
+    adjustedReboundingScore < 68 && eliteRebounders === 0 ? "Rebounding" : null,
+    adjustedDefenseScore < 68 ? "Defense" : null,
+    adjustedOffenseScore < 68 && eliteScorers < 2 ? "Half-Court Offense" : null,
   ].filter((weakness): weakness is string => Boolean(weakness));
 
   const tier =
@@ -648,15 +696,16 @@ function getLineupScoutReport(
           : "Developmental Lineup";
 
   let archetype = "Balanced Core";
-  if (eliteShooters >= 3 && shootingScore >= 80) {
+
+  if (eliteShooters >= 3 && adjustedShootingScore >= 80) {
     archetype = "Spacing Superteam";
-  } else if (elitePlaymakers >= 3 && playmakingScore >= 80) {
+  } else if (elitePlaymakers >= 3 && adjustedPlaymakingScore >= 80) {
     archetype = "Playmaking Engine";
-  } else if (eliteScorers >= 3 && offenseScore >= 85) {
+  } else if (eliteScorers >= 3 && adjustedOffenseScore >= 85) {
     archetype = "Offensive Superteam";
-  } else if (eliteRebounders >= 3 && reboundingScore >= 85) {
+  } else if (eliteRebounders >= 3 && adjustedReboundingScore >= 85) {
     archetype = "Paint Control Unit";
-  } else if (defenseScore >= 85 && reboundingScore >= 85) {
+  } else if (adjustedDefenseScore >= 85 && adjustedReboundingScore >= 85) {
     archetype = "Defensive Powerhouse";
   } else if (adjustedOverall >= 92) {
     archetype = "Star-Powered Contender";
@@ -741,11 +790,11 @@ function getLineupScoutReport(
                 : `A balanced lineup built around two-way production, lineup flexibility, and reliable scoring.`;
 
   const scoreValues = [
-    offenseScore,
-    defenseScore,
-    shootingScore,
-    playmakingScore,
-    reboundingScore,
+    adjustedOffenseScore,
+    adjustedDefenseScore,
+    adjustedShootingScore,
+    adjustedPlaymakingScore,
+    adjustedReboundingScore,
   ];
 
   const highestScore = Math.max(...scoreValues);
@@ -769,11 +818,11 @@ function getLineupScoutReport(
     strengths: strengths.length > 0 ? strengths : ["Balanced production"],
     weaknesses: weaknesses.length > 0 ? weaknesses : ["No major weakness"],
     grades: {
-      offense: getGrade(offenseScore),
-      defense: getGrade(defenseScore),
-      shooting: getGrade(shootingScore),
-      playmaking: getGrade(playmakingScore),
-      rebounding: getGrade(reboundingScore),
+      offense: getGrade(adjustedOffenseScore),
+      defense: getGrade(adjustedDefenseScore),
+      shooting: getGrade(adjustedShootingScore),
+      playmaking: getGrade(adjustedPlaymakingScore),
+      rebounding: getGrade(adjustedReboundingScore),
     },
     scores,
     xFactor,
