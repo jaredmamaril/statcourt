@@ -638,12 +638,6 @@ function getLineupScoutReport(
     offenseScore < 75 && eliteScorers < 2 ? "Half-Court Offense" : null,
   ].filter((weakness): weakness is string => Boolean(weakness));
 
-  const xFactor = selectedSlots.toSorted(
-    (a, b) =>
-      getBuilderPlayerRatingForPosition(b.player, b.position) -
-      getBuilderPlayerRatingForPosition(a.player, a.position),
-  )[0].player;
-
   const tier =
     adjustedOverall >= 94
       ? "Championship Favorite"
@@ -667,6 +661,24 @@ function getLineupScoutReport(
   } else if (adjustedOverall >= 92) {
     archetype = "Star-Powered Contender";
   }
+
+  const xFactor =
+    archetype === "Spacing Superteam"
+      ? selectedPlayers.toSorted(
+          (a, b) => b.stats.threePercent - a.stats.threePercent,
+        )[0]
+      : archetype === "Playmaking Engine"
+        ? selectedPlayers.toSorted((a, b) => b.stats.apg - a.stats.apg)[0]
+        : archetype === "Paint Control Unit" ||
+            archetype === "Defensive Powerhouse"
+          ? selectedPlayers.toSorted((a, b) => b.stats.rpg - a.stats.rpg)[0]
+          : archetype === "Offensive Superteam"
+            ? selectedPlayers.toSorted((a, b) => b.stats.ppg - a.stats.ppg)[0]
+            : selectedSlots.toSorted(
+                (a, b) =>
+                  getBuilderPlayerRatingForPosition(b.player, b.position) -
+                  getBuilderPlayerRatingForPosition(a.player, a.position),
+              )[0].player;
 
   const teamIdentity =
     archetype === "Spacing Superteam"
