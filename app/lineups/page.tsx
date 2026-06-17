@@ -22,27 +22,6 @@ import {
 // Types
 type LineupTab = "featured" | "builder" | "saved";
 
-type SavedLineup = {
-  id: string;
-  name: string;
-  players: Record<Position, string>;
-  overall: number;
-  summary: string;
-  tier: string;
-  archetype: string;
-  teamIdentity: string;
-  strengths: string[];
-  weaknesses: string[];
-  grades: TeamGrades;
-  scores: LineupScoutScores;
-  xFactorName: string;
-  similarTo: string;
-  similarToDescription: string;
-  courtBalance: string;
-  createdAt: string;
-  badges: string[];
-};
-
 type LineupMarkerProps = {
   position: string;
   name: string;
@@ -93,7 +72,29 @@ type LineupScoutScores = {
   shooting: number;
   playmaking: number;
   rebounding: number;
+  starPower: number;
   balance: number;
+};
+
+type SavedLineup = {
+  id: string;
+  name: string;
+  players: Record<Position, string>;
+  overall: number;
+  summary: string;
+  tier: string;
+  archetype: string;
+  teamIdentity: string;
+  strengths: string[];
+  weaknesses: string[];
+  grades: TeamGrades;
+  scores: LineupScoutScores;
+  xFactorName: string;
+  similarTo: string;
+  similarToDescription: string;
+  courtBalance: string;
+  createdAt: string;
+  badges: string[];
 };
 
 type LineupScoutReport = {
@@ -538,6 +539,7 @@ function getLineupScoutReport(
         shooting: 0,
         playmaking: 0,
         rebounding: 0,
+        starPower: 0,
         balance: 0,
       },
       xFactor: null,
@@ -645,6 +647,9 @@ function getLineupScoutReport(
     selectedPlayers.reduce((total, player) => total + player.defenseRating, 0) /
     selectedPlayers.length;
   const defenseScore = defense * 0.75 + reboundingScore * 0.25;
+  const starPower =
+    selectedPlayers.reduce((total, player) => total + player.starPower, 0) /
+    selectedPlayers.length;
 
   let adjustedShootingScore = shootingScore;
   let adjustedPlaymakingScore = playmakingScore;
@@ -698,13 +703,15 @@ function getLineupScoutReport(
     shooting: adjustedShootingScore,
     playmaking: adjustedPlaymakingScore,
     rebounding: adjustedReboundingScore,
+    starPower,
     balance: Math.round(
       (adjustedOffenseScore +
         adjustedDefenseScore +
         adjustedShootingScore +
         adjustedPlaymakingScore +
-        adjustedReboundingScore) /
-        5,
+        adjustedReboundingScore +
+        starPower) /
+        6,
     ),
   };
 
@@ -762,12 +769,14 @@ function getLineupScoutReport(
     selectedPlayers.length < 5 ? "Bench Creation" : null,
   ].filter((weakness): weakness is string => Boolean(weakness));
 
+  const lineupCeiling = adjustedOverall * 0.75 + starPower * 0.25;
+
   const tier =
-    adjustedOverall >= 94
+    lineupCeiling >= 94
       ? "Championship Favorite"
-      : adjustedOverall >= 90
+      : lineupCeiling >= 90
         ? "Championship Contender"
-        : adjustedOverall >= 86
+        : lineupCeiling >= 86
           ? "Playoff-Caliber"
           : "Developmental Lineup";
 
@@ -815,7 +824,7 @@ function getLineupScoutReport(
     archetype = "Paint Control Unit";
   } else if (adjustedDefenseScore >= 85 && adjustedReboundingScore >= 85) {
     archetype = "Defensive Powerhouse";
-  } else if (adjustedOverall >= 92) {
+  } else if (starPower >= 94 && adjustedOverall >= 88) {
     archetype = "Star-Powered Contender";
   }
 
@@ -2411,7 +2420,7 @@ export default function Lineups() {
                     Score Profile
                   </p>
 
-                  <div className="mt-2 grid gap-2">
+                  <div className="mt-1 grid gap-2">
                     {getRankedScoutScores(scoutScores).map((score) => (
                       <div
                         key={score.key}

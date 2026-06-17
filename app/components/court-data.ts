@@ -123,6 +123,7 @@ export type Player = {
   position: Position;
   jerseyNumber: number;
   defenseRating: number;
+  starPower: number;
   stats: PlayerStats;
 };
 
@@ -136,6 +137,7 @@ export const players: Player[] = [
     position: "SF",
     jerseyNumber: 23,
     defenseRating: 89,
+    starPower: 100,
     stats: {
       ppg: 27.0,
       rpg: 7.4,
@@ -145,6 +147,7 @@ export const players: Player[] = [
       ftPercent: 73.4,
     },
   },
+
   {
     id: 2,
     name: "Michael Jordan",
@@ -153,6 +156,7 @@ export const players: Player[] = [
     position: "SG",
     jerseyNumber: 23,
     defenseRating: 96,
+    starPower: 100,
     stats: {
       ppg: 30.1,
       rpg: 6.2,
@@ -162,6 +166,7 @@ export const players: Player[] = [
       ftPercent: 83.5,
     },
   },
+
   {
     id: 3,
     name: "Kobe Bryant",
@@ -170,6 +175,7 @@ export const players: Player[] = [
     position: "SG",
     jerseyNumber: 24,
     defenseRating: 91,
+    starPower: 97,
     stats: {
       ppg: 25.0,
       rpg: 5.2,
@@ -179,6 +185,7 @@ export const players: Player[] = [
       ftPercent: 83.7,
     },
   },
+
   {
     id: 4,
     name: "Stephen Curry",
@@ -187,6 +194,7 @@ export const players: Player[] = [
     position: "PG",
     jerseyNumber: 30,
     defenseRating: 72,
+    starPower: 98,
     stats: {
       ppg: 24.2,
       rpg: 4.6,
@@ -196,6 +204,7 @@ export const players: Player[] = [
       ftPercent: 90.6,
     },
   },
+
   {
     id: 5,
     name: "Kevin Durant",
@@ -204,6 +213,7 @@ export const players: Player[] = [
     position: "SF",
     jerseyNumber: 35,
     defenseRating: 82,
+    starPower: 96,
     stats: {
       ppg: 27.3,
       rpg: 7.0,
@@ -213,6 +223,7 @@ export const players: Player[] = [
       ftPercent: 88.4,
     },
   },
+
   {
     id: 6,
     name: "Shaquille O'Neal",
@@ -221,6 +232,7 @@ export const players: Player[] = [
     position: "C",
     jerseyNumber: 34,
     defenseRating: 88,
+    starPower: 97,
     stats: {
       ppg: 23.7,
       rpg: 10.9,
@@ -230,6 +242,7 @@ export const players: Player[] = [
       ftPercent: 52.7,
     },
   },
+
   {
     id: 7,
     name: "Magic Johnson",
@@ -238,6 +251,7 @@ export const players: Player[] = [
     position: "PG",
     jerseyNumber: 32,
     defenseRating: 78,
+    starPower: 98,
     stats: {
       ppg: 19.5,
       rpg: 7.2,
@@ -247,6 +261,7 @@ export const players: Player[] = [
       ftPercent: 84.8,
     },
   },
+
   {
     id: 8,
     name: "Larry Bird",
@@ -255,6 +270,7 @@ export const players: Player[] = [
     position: "SF",
     jerseyNumber: 33,
     defenseRating: 82,
+    starPower: 97,
     stats: {
       ppg: 24.3,
       rpg: 10.0,
@@ -264,6 +280,7 @@ export const players: Player[] = [
       ftPercent: 88.6,
     },
   },
+
   {
     id: 9,
     name: "Tim Duncan",
@@ -272,6 +289,7 @@ export const players: Player[] = [
     position: "PF",
     jerseyNumber: 21,
     defenseRating: 97,
+    starPower: 94,
     stats: {
       ppg: 19.0,
       rpg: 10.8,
@@ -281,6 +299,7 @@ export const players: Player[] = [
       ftPercent: 69.6,
     },
   },
+
   {
     id: 10,
     name: "Hakeem Olajuwon",
@@ -289,6 +308,7 @@ export const players: Player[] = [
     position: "C",
     jerseyNumber: 34,
     defenseRating: 98,
+    starPower: 94,
     stats: {
       ppg: 21.8,
       rpg: 11.1,
@@ -298,6 +318,7 @@ export const players: Player[] = [
       ftPercent: 71.2,
     },
   },
+
   {
     id: 11,
     name: "Wilt Chamberlain",
@@ -306,6 +327,7 @@ export const players: Player[] = [
     position: "C",
     jerseyNumber: 13,
     defenseRating: 93,
+    starPower: 98,
     stats: {
       ppg: 30.1,
       rpg: 22.9,
@@ -315,6 +337,7 @@ export const players: Player[] = [
       ftPercent: 51.1,
     },
   },
+
   {
     id: 12,
     name: "Giannis Antetokounmpo",
@@ -323,6 +346,7 @@ export const players: Player[] = [
     position: "PF",
     jerseyNumber: 34,
     defenseRating: 94,
+    starPower: 94,
     stats: {
       ppg: 23.4,
       rpg: 9.8,
@@ -332,6 +356,7 @@ export const players: Player[] = [
       ftPercent: 70.0,
     },
   },
+
   {
     id: 13,
     name: "Nikola Jokic",
@@ -340,6 +365,7 @@ export const players: Player[] = [
     position: "C",
     jerseyNumber: 15,
     defenseRating: 75,
+    starPower: 95,
     stats: {
       ppg: 21.1,
       rpg: 10.8,
