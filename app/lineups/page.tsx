@@ -685,20 +685,54 @@ function getLineupScoutReport(
 
   const strengths = [
     adjustedOffenseScore >= 82 || eliteScorers >= 2 ? "Offense" : null,
+    adjustedDefenseScore >= 82 ? "Defense" : null,
     adjustedShootingScore >= 82 || eliteShooters >= 2 ? "Shooting" : null,
     adjustedPlaymakingScore >= 82 || elitePlaymakers >= 2 ? "Playmaking" : null,
     adjustedReboundingScore >= 82 || eliteRebounders >= 2 ? "Rebounding" : null,
-    adjustedDefenseScore >= 82 ? "Defense" : null,
+
+    eliteScorers >= 3 && adjustedOffenseScore >= 85 ? "Shot Creation" : null,
+
+    eliteShooters >= 3 ? "Floor Spacing" : null,
+
+    elitePlaymakers >= 3 ? "Ball Movement" : null,
+
+    eliteRebounders >= 3 ? "Rim Pressure" : null,
+
+    adjustedDefenseScore >= 88 && eliteRebounders >= 2
+      ? "Interior Defense"
+      : null,
+
+    adjustedOffenseScore >= 86 && adjustedPlaymakingScore >= 82
+      ? "Transition Scoring"
+      : null,
+
+    adjustedOffenseScore >= 82 &&
+    adjustedDefenseScore >= 82 &&
+    adjustedPlaymakingScore >= 78
+      ? "Versatility"
+      : null,
+
+    adjustedOverall >= 92 ? "Leadership" : null,
   ].filter((strength): strength is string => Boolean(strength));
 
   const weaknesses = [
-    adjustedShootingScore < 68 && eliteShooters === 0
-      ? "Perimeter Shooting"
-      : null,
+    adjustedShootingScore < 68 && eliteShooters === 0 ? "Spacing" : null,
+
     adjustedPlaymakingScore < 68 && elitePlaymakers === 0 ? "Playmaking" : null,
-    adjustedReboundingScore < 68 && eliteRebounders === 0 ? "Rebounding" : null,
-    adjustedDefenseScore < 68 ? "Defense" : null,
+
     adjustedOffenseScore < 68 && eliteScorers < 2 ? "Half-Court Offense" : null,
+
+    adjustedReboundingScore < 68 && eliteRebounders === 0
+      ? "Rim Protection"
+      : null,
+
+    adjustedDefenseScore < 68 ? "Perimeter Defense" : null,
+
+    adjustedOffenseScore < 72 && eliteScorers === 0
+      ? "Isolation Scoring"
+      : null,
+
+    selectedPlayers.length < 5 ? "Bench Creation" : null,
   ].filter((weakness): weakness is string => Boolean(weakness));
 
   const tier =
