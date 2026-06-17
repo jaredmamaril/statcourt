@@ -701,24 +701,24 @@ function getLineupScoutReport(
 
   const similarTo =
     archetype === "Spacing Superteam"
-      ? "2017 Warriors (86%)"
+      ? "2017 Warriors (88%)"
       : archetype === "Playmaking Engine"
-        ? "1987 Lakers (85%)"
+        ? "1986 Celtics (86%)"
         : archetype === "Offensive Superteam"
-          ? "2012 Heat (84%)"
+          ? "2012 Heat (85%)"
           : archetype === "Paint Control Unit"
-            ? "2001 Lakers (82%)"
+            ? "2001 Lakers (84%)"
             : archetype === "Defensive Powerhouse"
               ? "1996 Bulls (89%)"
               : archetype === "Star-Powered Contender"
-                ? "2020 Lakers (83%)"
-                : "1986 Celtics (80%)";
+                ? "All-Time Lakers (87%)"
+                : "Balanced All-Time Core (80%)";
 
   const similarToDescription =
     archetype === "Spacing Superteam"
       ? "Elite spacing, shooting gravity, and offensive flow."
       : archetype === "Playmaking Engine"
-        ? "Multiple creators controlling tempo and generating easy looks."
+        ? "High-IQ passing, spacing, and connected team offense."
         : archetype === "Offensive Superteam"
           ? "Star-driven scoring pressure and shot creation."
           : archetype === "Paint Control Unit"
@@ -726,7 +726,7 @@ function getLineupScoutReport(
             : archetype === "Defensive Powerhouse"
               ? "Elite defense, rebounding, and physical control."
               : archetype === "Star-Powered Contender"
-                ? "Top-end talent carrying the lineup across matchups."
+                ? "Legendary top-end talent across every position."
                 : "Balanced scoring, passing, and lineup structure.";
 
   const scoreValues = [
