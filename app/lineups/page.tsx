@@ -697,7 +697,39 @@ function getLineupScoutReport(
 
   let archetype = "Balanced Core";
 
-  if (eliteShooters >= 3 && adjustedShootingScore >= 80) {
+  if (
+    adjustedDefenseScore >= 88 &&
+    adjustedOffenseScore >= 88 &&
+    adjustedOverall >= 92
+  ) {
+    archetype = "Two-Way Dynasty";
+  } else if (
+    hasJokic &&
+    adjustedPlaymakingScore >= 88 &&
+    adjustedReboundingScore >= 82
+  ) {
+    archetype = "Point-Center Offense";
+  } else if (eliteShooters >= 4 && adjustedShootingScore >= 88) {
+    archetype = "Floor Spacing Machine";
+  } else if (eliteScorers >= 4 && adjustedOffenseScore >= 90) {
+    archetype = "Iso Superteam";
+  } else if (adjustedDefenseScore >= 92 && eliteRebounders >= 2) {
+    archetype = "Defensive Juggernaut";
+  } else if (
+    eliteScorers >= 3 &&
+    elitePlaymakers >= 2 &&
+    adjustedOffenseScore >= 86
+  ) {
+    archetype = "Transition Attack";
+  } else if (eliteRebounders >= 3 && adjustedOffenseScore >= 82) {
+    archetype = "Rim Pressure Unit";
+  } else if (
+    elitePlaymakers >= 3 &&
+    adjustedDefenseScore >= 82 &&
+    adjustedOffenseScore >= 82
+  ) {
+    archetype = "Positionless Basketball";
+  } else if (eliteShooters >= 3 && adjustedShootingScore >= 80) {
     archetype = "Spacing Superteam";
   } else if (elitePlaymakers >= 3 && adjustedPlaymakingScore >= 80) {
     archetype = "Playmaking Engine";
@@ -730,64 +762,128 @@ function getLineupScoutReport(
               )[0].player;
 
   const teamIdentity =
-    archetype === "Spacing Superteam"
-      ? "Shooting Gravity"
-      : archetype === "Playmaking Engine"
-        ? "Five-Man Creation"
-        : archetype === "Offensive Superteam"
-          ? "Transition Pressure"
-          : archetype === "Paint Control Unit"
-            ? "Paint Dominance"
-            : archetype === "Defensive Powerhouse"
-              ? "Defensive Control"
-              : archetype === "Star-Powered Contender"
-                ? "Star-Powered Balance"
-                : "Balanced Two-Way Core";
+    archetype === "Two-Way Dynasty"
+      ? "Championship Control"
+      : archetype === "Transition Attack"
+        ? "Open-Floor Pressure"
+        : archetype === "Point-Center Offense"
+          ? "Hub Creation"
+          : archetype === "Iso Superteam"
+            ? "Mismatch Hunting"
+            : archetype === "Defensive Juggernaut"
+              ? "Defensive Suppression"
+              : archetype === "Floor Spacing Machine"
+                ? "Maximum Spacing"
+                : archetype === "Positionless Basketball"
+                  ? "Role Flexibility"
+                  : archetype === "Rim Pressure Unit"
+                    ? "Paint Pressure"
+                    : archetype === "Spacing Superteam"
+                      ? "Shooting Gravity"
+                      : archetype === "Playmaking Engine"
+                        ? "Five-Man Creation"
+                        : archetype === "Offensive Superteam"
+                          ? "Transition Pressure"
+                          : archetype === "Paint Control Unit"
+                            ? "Paint Dominance"
+                            : archetype === "Defensive Powerhouse"
+                              ? "Defensive Control"
+                              : archetype === "Star-Powered Contender"
+                                ? "Star-Powered Balance"
+                                : "Balanced Two-Way Core";
 
   const similarTo =
-    archetype === "Spacing Superteam"
-      ? "2017 Warriors (88%)"
-      : archetype === "Playmaking Engine"
-        ? "1986 Celtics (86%)"
-        : archetype === "Offensive Superteam"
-          ? "2012 Heat (85%)"
-          : archetype === "Paint Control Unit"
-            ? "2001 Lakers (84%)"
-            : archetype === "Defensive Powerhouse"
-              ? "1996 Bulls (89%)"
-              : archetype === "Star-Powered Contender"
-                ? "All-Time Lakers (87%)"
-                : "Balanced All-Time Core (80%)";
+    archetype === "Two-Way Dynasty"
+      ? "1996 Bulls (91%)"
+      : archetype === "Transition Attack"
+        ? "2012 Heat (88%)"
+        : archetype === "Point-Center Offense"
+          ? "2023 Nuggets (87%)"
+          : archetype === "Iso Superteam"
+            ? "2018 Warriors (86%)"
+            : archetype === "Defensive Juggernaut"
+              ? "2004 Pistons (85%)"
+              : archetype === "Floor Spacing Machine"
+                ? "2017 Warriors (90%)"
+                : archetype === "Positionless Basketball"
+                  ? "2020 Lakers (84%)"
+                  : archetype === "Rim Pressure Unit"
+                    ? "2001 Lakers (86%)"
+                    : archetype === "Spacing Superteam"
+                      ? "2017 Warriors (88%)"
+                      : archetype === "Playmaking Engine"
+                        ? "1986 Celtics (86%)"
+                        : archetype === "Offensive Superteam"
+                          ? "2012 Heat (85%)"
+                          : archetype === "Paint Control Unit"
+                            ? "2001 Lakers (84%)"
+                            : archetype === "Defensive Powerhouse"
+                              ? "1996 Bulls (89%)"
+                              : archetype === "Star-Powered Contender"
+                                ? "All-Time Lakers (87%)"
+                                : "Balanced All-Time Core (80%)";
 
   const similarToDescription =
-    archetype === "Spacing Superteam"
-      ? "Elite spacing, shooting gravity, and offensive flow."
-      : archetype === "Playmaking Engine"
-        ? "High-IQ passing, spacing, and connected team offense."
-        : archetype === "Offensive Superteam"
-          ? "Star-driven scoring pressure and shot creation."
-          : archetype === "Paint Control Unit"
-            ? "Interior dominance and frontcourt physicality."
-            : archetype === "Defensive Powerhouse"
-              ? "Elite defense, rebounding, and physical control."
-              : archetype === "Star-Powered Contender"
-                ? "Legendary top-end talent across every position."
-                : "Balanced scoring, passing, and lineup structure.";
+    archetype === "Two-Way Dynasty"
+      ? "Elite two-way control with championship-level matchup versatility."
+      : archetype === "Transition Attack"
+        ? "Open-floor pressure created by speed, creation, and downhill scoring."
+        : archetype === "Point-Center Offense"
+          ? "A hub-centered offense built around passing from the frontcourt."
+          : archetype === "Iso Superteam"
+            ? "Multiple elite scorers capable of creating offense without setup."
+            : archetype === "Defensive Juggernaut"
+              ? "A defense-first group built around size, pressure, and physical control."
+              : archetype === "Floor Spacing Machine"
+                ? "Maximum spacing created by elite shooting threats across the lineup."
+                : archetype === "Positionless Basketball"
+                  ? "Flexible roles, switchable matchups, and multi-position creation."
+                  : archetype === "Rim Pressure Unit"
+                    ? "Paint pressure, rebounding force, and interior scoring dominance."
+                    : archetype === "Spacing Superteam"
+                      ? "Elite spacing, shooting gravity, and offensive flow."
+                      : archetype === "Playmaking Engine"
+                        ? "High-IQ passing, spacing, and connected team offense."
+                        : archetype === "Offensive Superteam"
+                          ? "Star-driven scoring pressure and shot creation."
+                          : archetype === "Paint Control Unit"
+                            ? "Interior dominance and frontcourt physicality."
+                            : archetype === "Defensive Powerhouse"
+                              ? "Elite defense, rebounding, and physical control."
+                              : archetype === "Star-Powered Contender"
+                                ? "Legendary top-end talent across every position."
+                                : "Balanced scoring, passing, and lineup structure.";
 
   const summary =
-    archetype === "Spacing Superteam"
-      ? `An elite spacing lineup built around shooting gravity, ball movement, and offensive versatility.`
-      : archetype === "Playmaking Engine"
-        ? `A high-IQ creation lineup built around passing, pace control, and easy shot generation.`
-        : archetype === "Offensive Superteam"
-          ? `A star-powered scoring lineup built around shot creation, isolation pressure, and matchup hunting.`
-          : archetype === "Paint Control Unit"
-            ? `A physical interior lineup built around rebounding, size, and paint pressure.`
-            : archetype === "Defensive Powerhouse"
-              ? `A defensive lineup built around physicality, rebounding, and matchup control.`
-              : archetype === "Star-Powered Contender"
-                ? `A championship-level lineup built around elite talent, versatility, and star power.`
-                : `A balanced lineup built around two-way production, lineup flexibility, and reliable scoring.`;
+    archetype === "Two-Way Dynasty"
+      ? "A complete championship lineup built around elite two-way control, star power, and matchup answers."
+      : archetype === "Transition Attack"
+        ? "A fast-paced lineup built around rim pressure, open-floor creation, and defensive-to-offensive bursts."
+        : archetype === "Point-Center Offense"
+          ? "A hub-based offense built around a center who can pass, score, and organize the floor."
+          : archetype === "Iso Superteam"
+            ? "A shot-creation lineup built around elite isolation scorers and matchup hunting."
+            : archetype === "Defensive Juggernaut"
+              ? "A suffocating defensive lineup built around size, pressure, and rebounding control."
+              : archetype === "Floor Spacing Machine"
+                ? "A spacing-heavy lineup built around elite shooting gravity and clean driving lanes."
+                : archetype === "Positionless Basketball"
+                  ? "A flexible lineup built around interchangeable roles, passing, and two-way versatility."
+                  : archetype === "Rim Pressure Unit"
+                    ? "A physical lineup built around paint attacks, rim pressure, and interior dominance."
+                    : archetype === "Spacing Superteam"
+                      ? `An elite spacing lineup built around shooting gravity, ball movement, and offensive versatility.`
+                      : archetype === "Playmaking Engine"
+                        ? `A high-IQ creation lineup built around passing, pace control, and easy shot generation.`
+                        : archetype === "Offensive Superteam"
+                          ? `A star-powered scoring lineup built around shot creation, isolation pressure, and matchup hunting.`
+                          : archetype === "Paint Control Unit"
+                            ? `A physical interior lineup built around rebounding, size, and paint pressure.`
+                            : archetype === "Defensive Powerhouse"
+                              ? `A defensive lineup built around physicality, rebounding, and matchup control.`
+                              : archetype === "Star-Powered Contender"
+                                ? `A championship-level lineup built around elite talent, versatility, and star power.`
+                                : `A balanced lineup built around two-way production, lineup flexibility, and reliable scoring.`;
 
   const scoreValues = [
     adjustedOffenseScore,
