@@ -682,22 +682,18 @@ function getLineupScoutReport(
 
   const teamIdentity =
     archetype === "Spacing Superteam"
-      ? "Elite shooting and offensive spacing"
+      ? "Shooting Gravity"
       : archetype === "Playmaking Engine"
-        ? "Elite passing and offensive organization"
+        ? "Five-Man Creation"
         : archetype === "Offensive Superteam"
-          ? "Shot creation and scoring pressure"
+          ? "Transition Pressure"
           : archetype === "Paint Control Unit"
-            ? "Interior size and rebounding control"
+            ? "Paint Dominance"
             : archetype === "Defensive Powerhouse"
-              ? "Elite defense and rebounding"
+              ? "Defensive Control"
               : archetype === "Star-Powered Contender"
-                ? "High-end talent across multiple roles"
-                : topScore.key === "defense"
-                  ? `Defensive foundation with ${secondScore.label.toLowerCase()} support`
-                  : topScore.key === "shooting"
-                    ? `Spacing-led offense with ${secondScore.label.toLowerCase()} support`
-                    : "Balanced two-way production";
+                ? "Star-Powered Balance"
+                : "Balanced Two-Way Core";
 
   const similarTo =
     archetype === "Spacing Superteam"
