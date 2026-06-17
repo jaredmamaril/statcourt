@@ -2087,8 +2087,8 @@ export default function Lineups() {
       {isScoutOpen && (
         <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 px-4">
           <div className="relative w-full max-w-xl animate-[modalIn_260ms_ease-out] rounded-md border border-[#1bc2ec]/60 bg-[#07111f] shadow-[0_0_35px_rgba(27,194,236,0.25)]">
-            <div className="max-h-[78vh] overflow-y-auto p-5 scrollbar-none [&::-webkit-scrollbar]:hidden">
-              <div className="flex items-start justify-between">
+            <div className="relative max-h-[78vh] overflow-y-auto p-5 scrollbar-none [&::-webkit-scrollbar]:hidden">
+              <div className="pr-58">
                 <div className="-mt-2">
                   <h2 className="font-michroma text-xl text-white">
                     Scouting Report
@@ -2098,20 +2098,9 @@ export default function Lineups() {
                     {scoutSummary}
                   </p>
                 </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsScoutOpen(false);
-                    setScoutedSavedLineup(null);
-                  }}
-                  className="font-michroma text-lg text-white/40 transition hover:text-red-400"
-                >
-                  x
-                </button>
               </div>
 
-              <div className="absolute right-25 top-6">
+              <div className="absolute right-5 top-5 w-56">
                 <p className="font-michroma text-[10px] uppercase text-white/40">
                   Lineup
                 </p>
@@ -2148,6 +2137,17 @@ export default function Lineups() {
                   })}
                 </div>
               </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsScoutOpen(false);
+                  setScoutedSavedLineup(null);
+                }}
+                className="absolute right-5 top-4 font-michroma text-lg text-white/40 transition hover:text-red-400"
+              >
+                x
+              </button>
 
               <div className="mt-1 grid max-w-xl gap-2">
                 <div>
