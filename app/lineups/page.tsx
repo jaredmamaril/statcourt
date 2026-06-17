@@ -717,12 +717,24 @@ function getLineupScoutReport(
                 ? "Top-end talent carrying the lineup across matchups."
                 : "Balanced scoring, passing, and lineup structure.";
 
+  const scoreValues = [
+    offenseScore,
+    defenseScore,
+    shootingScore,
+    playmakingScore,
+    reboundingScore,
+  ];
+
+  const highestScore = Math.max(...scoreValues);
+  const lowestScore = Math.min(...scoreValues);
+  const scoreSpread = highestScore - lowestScore;
+
   const courtBalance =
-    weaknesses.length === 0
+    scoreSpread <= 12
       ? "Excellent"
-      : weaknesses.length <= 1
+      : scoreSpread <= 20
         ? "Good"
-        : weaknesses.length <= 2
+        : scoreSpread <= 30
           ? "Average"
           : "Poor";
 
