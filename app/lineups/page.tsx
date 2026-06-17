@@ -482,7 +482,27 @@ function getScoutReason(scores: LineupScoutScores, archetype: string) {
 
   return `This lineup earned ${archetype} because its strongest categories are ${topScores.join(
     " and ",
-  )}.`;
+  )}, while its weaker area creates the main tradeoff.`;
+}
+
+function getRankedScoutScores(scores: LineupScoutScores) {
+  return Object.entries(scores)
+    .filter(([key]) => key !== "balance")
+    .sort(([, a], [, b]) => b - a)
+    .map(([key, value]) => ({
+      key,
+      value,
+      label:
+        key === "offense"
+          ? "Offense"
+          : key === "defense"
+            ? "Defense"
+            : key === "shooting"
+              ? "Shooting"
+              : key === "playmaking"
+                ? "Playmaking"
+                : "Rebounding",
+    }));
 }
 
 function getLineupScoutReport(
@@ -522,6 +542,22 @@ function getLineupScoutReport(
   }
 
   const selectedPlayers = selectedSlots.map((slot) => slot.player);
+
+  const eliteShooters = selectedPlayers.filter(
+    (player) => player.stats.threePercent >= 38,
+  ).length;
+
+  const eliteScorers = selectedPlayers.filter(
+    (player) => player.stats.ppg >= 25,
+  ).length;
+
+  const elitePlaymakers = selectedPlayers.filter(
+    (player) => player.stats.apg >= 7,
+  ).length;
+
+  const eliteRebounders = selectedPlayers.filter(
+    (player) => player.stats.rpg >= 10,
+  ).length;
 
   const scoring =
     selectedPlayers.reduce((total, player) => total + player.stats.ppg, 0) /
@@ -581,20 +617,25 @@ function getLineupScoutReport(
     ),
   };
 
+  const rankedScores = getRankedScoutScores(scores);
+  const topScore = rankedScores[0];
+  const secondScore = rankedScores[1];
+  const weakestScore = rankedScores[rankedScores.length - 1];
+
   const strengths = [
-    offenseScore >= 88 ? "Offense" : null,
-    shootingScore >= 88 ? "Shooting" : null,
-    playmakingScore >= 88 ? "Playmaking" : null,
-    reboundingScore >= 88 ? "Rebounding" : null,
+    offenseScore >= 88 || eliteScorers >= 2 ? "Offense" : null,
+    shootingScore >= 88 || eliteShooters >= 2 ? "Shooting" : null,
+    playmakingScore >= 88 || elitePlaymakers >= 2 ? "Playmaking" : null,
+    reboundingScore >= 88 || eliteRebounders >= 2 ? "Rebounding" : null,
     defenseScore >= 88 ? "Defense" : null,
   ].filter((strength): strength is string => Boolean(strength));
 
   const weaknesses = [
-    shootingScore < 75 ? "Perimeter Shooting" : null,
-    playmakingScore < 75 ? "Playmaking" : null,
-    reboundingScore < 75 ? "Rebounding" : null,
+    shootingScore < 75 && eliteShooters === 0 ? "Perimeter Shooting" : null,
+    playmakingScore < 75 && elitePlaymakers === 0 ? "Playmaking" : null,
+    reboundingScore < 75 && eliteRebounders === 0 ? "Rebounding" : null,
     defenseScore < 75 ? "Defense" : null,
-    offenseScore < 75 ? "Half-Court Offense" : null,
+    offenseScore < 75 && eliteScorers < 2 ? "Half-Court Offense" : null,
   ].filter((weakness): weakness is string => Boolean(weakness));
 
   const xFactor = selectedSlots.toSorted(
@@ -612,49 +653,69 @@ function getLineupScoutReport(
           ? "Playoff-Caliber"
           : "Developmental Lineup";
 
-  const archetype =
-    shootingScore >= 88 && playmakingScore >= 85
-      ? "Spacing Engine"
-      : defenseScore >= 88 && reboundingScore >= 85
-        ? "Defensive Powerhouse"
-        : offenseScore >= 90
-          ? "Offensive Superteam"
-          : reboundingScore >= 90
-            ? "Paint Control Unit"
-            : "Balanced Core";
+  let archetype = "Balanced Core";
+  if (eliteShooters >= 3 && shootingScore >= 80) {
+    archetype = "Spacing Superteam";
+  } else if (elitePlaymakers >= 3 && playmakingScore >= 80) {
+    archetype = "Playmaking Engine";
+  } else if (eliteScorers >= 3 && offenseScore >= 85) {
+    archetype = "Offensive Superteam";
+  } else if (eliteRebounders >= 3 && reboundingScore >= 85) {
+    archetype = "Paint Control Unit";
+  } else if (defenseScore >= 85 && reboundingScore >= 85) {
+    archetype = "Defensive Powerhouse";
+  } else if (adjustedOverall >= 92) {
+    archetype = "Star-Powered Contender";
+  }
 
   const teamIdentity =
-    archetype === "Spacing Engine"
+    archetype === "Spacing Superteam"
       ? "Elite shooting and offensive spacing"
-      : archetype === "Defensive Powerhouse"
-        ? "Elite defense and rebounding"
+      : archetype === "Playmaking Engine"
+        ? "Elite passing and offensive organization"
         : archetype === "Offensive Superteam"
           ? "Shot creation and scoring pressure"
           : archetype === "Paint Control Unit"
             ? "Interior size and rebounding control"
-            : "Balanced two-way production";
+            : archetype === "Defensive Powerhouse"
+              ? "Elite defense and rebounding"
+              : archetype === "Star-Powered Contender"
+                ? "High-end talent across multiple roles"
+                : topScore.key === "defense"
+                  ? `Defensive foundation with ${secondScore.label.toLowerCase()} support`
+                  : topScore.key === "shooting"
+                    ? `Spacing-led offense with ${secondScore.label.toLowerCase()} support`
+                    : "Balanced two-way production";
 
   const similarTo =
-    archetype === "Spacing Engine"
+    archetype === "Spacing Superteam"
       ? "2017 Warriors (86%)"
-      : archetype === "Defensive Powerhouse"
-        ? "1996 Bulls (89%)"
+      : archetype === "Playmaking Engine"
+        ? "1987 Lakers (85%)"
         : archetype === "Offensive Superteam"
           ? "2012 Heat (84%)"
           : archetype === "Paint Control Unit"
             ? "2001 Lakers (82%)"
-            : "1986 Celtics (80%)";
+            : archetype === "Defensive Powerhouse"
+              ? "1996 Bulls (89%)"
+              : archetype === "Star-Powered Contender"
+                ? "2020 Lakers (83%)"
+                : "1986 Celtics (80%)";
 
   const similarToDescription =
-    archetype === "Spacing Engine"
+    archetype === "Spacing Superteam"
       ? "Elite spacing, shooting gravity, and offensive flow."
-      : archetype === "Defensive Powerhouse"
-        ? "Elite defense, rebounding, and physical control."
+      : archetype === "Playmaking Engine"
+        ? "Multiple creators controlling tempo and generating easy looks."
         : archetype === "Offensive Superteam"
           ? "Star-driven scoring pressure and shot creation."
           : archetype === "Paint Control Unit"
             ? "Interior dominance and frontcourt physicality."
-            : "Balanced scoring, passing, and lineup structure.";
+            : archetype === "Defensive Powerhouse"
+              ? "Elite defense, rebounding, and physical control."
+              : archetype === "Star-Powered Contender"
+                ? "Top-end talent carrying the lineup across matchups."
+                : "Balanced scoring, passing, and lineup structure.";
 
   const courtBalance =
     weaknesses.length === 0
@@ -666,7 +727,7 @@ function getLineupScoutReport(
           : "Poor";
 
   return {
-    summary: `A ${tier.toLowerCase()} built around ${teamIdentity.toLowerCase()}.`,
+    summary: `A ${tier.toLowerCase()} powered by ${topScore.label.toLowerCase()} and ${secondScore.label.toLowerCase()}, with ${weakestScore.label.toLowerCase()} as the main pressure point.`,
     tier,
     archetype,
     teamIdentity,
@@ -1997,7 +2058,7 @@ export default function Lineups() {
                   Scouting Report
                 </h2>
 
-                <p className="mt-1 max-w-62.5 font-michroma text-[10px] leading-relaxed text-white/35">
+                <p className="mt-1 max-w-60 font-michroma text-[10px] leading-relaxed text-white/35">
                   {scoutSummary}
                 </p>
               </div>
