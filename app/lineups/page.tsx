@@ -623,19 +623,19 @@ function getLineupScoutReport(
   const weakestScore = rankedScores[rankedScores.length - 1];
 
   const strengths = [
-    offenseScore >= 88 || eliteScorers >= 2 ? "Offense" : null,
-    shootingScore >= 88 || eliteShooters >= 2 ? "Shooting" : null,
-    playmakingScore >= 88 || elitePlaymakers >= 2 ? "Playmaking" : null,
-    reboundingScore >= 88 || eliteRebounders >= 2 ? "Rebounding" : null,
-    defenseScore >= 88 ? "Defense" : null,
+    offenseScore >= 82 || eliteScorers >= 2 ? "Offense" : null,
+    shootingScore >= 82 || eliteShooters >= 2 ? "Shooting" : null,
+    playmakingScore >= 82 || elitePlaymakers >= 2 ? "Playmaking" : null,
+    reboundingScore >= 82 || eliteRebounders >= 2 ? "Rebounding" : null,
+    defenseScore >= 82 ? "Defense" : null,
   ].filter((strength): strength is string => Boolean(strength));
 
   const weaknesses = [
-    shootingScore < 75 && eliteShooters === 0 ? "Perimeter Shooting" : null,
-    playmakingScore < 75 && elitePlaymakers === 0 ? "Playmaking" : null,
-    reboundingScore < 75 && eliteRebounders === 0 ? "Rebounding" : null,
-    defenseScore < 75 ? "Defense" : null,
-    offenseScore < 75 && eliteScorers < 2 ? "Half-Court Offense" : null,
+    shootingScore < 68 && eliteShooters === 0 ? "Perimeter Shooting" : null,
+    playmakingScore < 68 && elitePlaymakers === 0 ? "Playmaking" : null,
+    reboundingScore < 68 && eliteRebounders === 0 ? "Rebounding" : null,
+    defenseScore < 68 ? "Defense" : null,
+    offenseScore < 68 && eliteScorers < 2 ? "Half-Court Offense" : null,
   ].filter((weakness): weakness is string => Boolean(weakness));
 
   const tier =
