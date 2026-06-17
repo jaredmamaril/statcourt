@@ -641,8 +641,10 @@ function getLineupScoutReport(
   const efficiencyScore = normalizeStat(efficiency, 58);
   const offenseScore =
     scoringScore * 0.45 + efficiencyScore * 0.3 + playmakingScore * 0.25;
-  const defenseScore =
-    reboundingScore * 0.45 + efficiencyScore * 0.25 + adjustedOverall * 0.3;
+  const defense =
+    selectedPlayers.reduce((total, player) => total + player.defenseRating, 0) /
+    selectedPlayers.length;
+  const defenseScore = defense * 0.75 + reboundingScore * 0.25;
 
   let adjustedShootingScore = shootingScore;
   let adjustedPlaymakingScore = playmakingScore;

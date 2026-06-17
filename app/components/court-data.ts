@@ -122,6 +122,7 @@ export type Player = {
   team: Team;
   position: Position;
   jerseyNumber: number;
+  defenseRating: number;
   stats: PlayerStats;
 };
 
@@ -134,6 +135,7 @@ export const players: Player[] = [
     team: "LAL",
     position: "SF",
     jerseyNumber: 23,
+    defenseRating: 89,
     stats: {
       ppg: 27.0,
       rpg: 7.4,
@@ -150,6 +152,7 @@ export const players: Player[] = [
     team: "CHI",
     position: "SG",
     jerseyNumber: 23,
+    defenseRating: 96,
     stats: {
       ppg: 30.1,
       rpg: 6.2,
@@ -166,6 +169,7 @@ export const players: Player[] = [
     team: "LAL",
     position: "SG",
     jerseyNumber: 24,
+    defenseRating: 91,
     stats: {
       ppg: 25.0,
       rpg: 5.2,
@@ -182,6 +186,7 @@ export const players: Player[] = [
     team: "GSW",
     position: "PG",
     jerseyNumber: 30,
+    defenseRating: 72,
     stats: {
       ppg: 24.2,
       rpg: 4.6,
@@ -198,6 +203,7 @@ export const players: Player[] = [
     team: "PHX",
     position: "SF",
     jerseyNumber: 35,
+    defenseRating: 82,
     stats: {
       ppg: 27.3,
       rpg: 7.0,
@@ -214,6 +220,7 @@ export const players: Player[] = [
     team: "LAL",
     position: "C",
     jerseyNumber: 34,
+    defenseRating: 88,
     stats: {
       ppg: 23.7,
       rpg: 10.9,
@@ -230,6 +237,7 @@ export const players: Player[] = [
     team: "LAL",
     position: "PG",
     jerseyNumber: 32,
+    defenseRating: 78,
     stats: {
       ppg: 19.5,
       rpg: 7.2,
@@ -246,6 +254,7 @@ export const players: Player[] = [
     team: "BOS",
     position: "SF",
     jerseyNumber: 33,
+    defenseRating: 82,
     stats: {
       ppg: 24.3,
       rpg: 10.0,
@@ -262,6 +271,7 @@ export const players: Player[] = [
     team: "SAS",
     position: "PF",
     jerseyNumber: 21,
+    defenseRating: 97,
     stats: {
       ppg: 19.0,
       rpg: 10.8,
@@ -278,6 +288,7 @@ export const players: Player[] = [
     team: "HOU",
     position: "C",
     jerseyNumber: 34,
+    defenseRating: 98,
     stats: {
       ppg: 21.8,
       rpg: 11.1,
@@ -294,6 +305,7 @@ export const players: Player[] = [
     team: "LAL",
     position: "C",
     jerseyNumber: 13,
+    defenseRating: 93,
     stats: {
       ppg: 30.1,
       rpg: 22.9,
@@ -310,6 +322,7 @@ export const players: Player[] = [
     team: "MIL",
     position: "PF",
     jerseyNumber: 34,
+    defenseRating: 94,
     stats: {
       ppg: 23.4,
       rpg: 9.8,
@@ -326,6 +339,7 @@ export const players: Player[] = [
     team: "DEN",
     position: "C",
     jerseyNumber: 15,
+    defenseRating: 75,
     stats: {
       ppg: 21.1,
       rpg: 10.8,
