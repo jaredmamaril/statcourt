@@ -76,6 +76,15 @@ type LineupScoutScores = {
   balance: number;
 };
 
+type SimilarLineupProfile = {
+  name: string;
+  scores: Pick<
+    LineupScoutScores,
+    "offense" | "defense" | "shooting" | "playmaking" | "rebounding"
+  >;
+  description: string;
+};
+
 type SavedLineup = {
   id: string;
   name: string;
@@ -514,6 +523,105 @@ function clampScore(score: number) {
   return Math.max(0, Math.min(100, score));
 }
 
+const similarLineupProfiles: SimilarLineupProfile[] = [
+  {
+    name: "2017 Warriors",
+    scores: {
+      offense: 96,
+      defense: 86,
+      shooting: 99,
+      playmaking: 92,
+      rebounding: 78,
+    },
+    description: "Elite spacing, shooting gravity, and offensive flow.",
+  },
+  {
+    name: "1986 Celtics",
+    scores: {
+      offense: 91,
+      defense: 88,
+      shooting: 84,
+      playmaking: 92,
+      rebounding: 90,
+    },
+    description: "High-IQ passing, frontcourt skill, and connected offense.",
+  },
+  {
+    name: "2012 Heat",
+    scores: {
+      offense: 92,
+      defense: 90,
+      shooting: 78,
+      playmaking: 86,
+      rebounding: 76,
+    },
+    description:
+      "Downhill pressure, transition attacks, and elite athletic creation.",
+  },
+  {
+    name: "2001 Lakers",
+    scores: {
+      offense: 90,
+      defense: 84,
+      shooting: 65,
+      playmaking: 72,
+      rebounding: 95,
+    },
+    description:
+      "Interior dominance paired with elite perimeter shot creation.",
+  },
+  {
+    name: "1996 Bulls",
+    scores: {
+      offense: 89,
+      defense: 97,
+      shooting: 76,
+      playmaking: 82,
+      rebounding: 92,
+    },
+    description: "Elite defense, rebounding, and physical control.",
+  },
+  {
+    name: "All-Time Lakers",
+    scores: {
+      offense: 94,
+      defense: 88,
+      shooting: 75,
+      playmaking: 90,
+      rebounding: 94,
+    },
+    description: "Legendary top-end talent across every position.",
+  },
+];
+
+function getClosestSimilarLineup(scores: LineupScoutScores) {
+  const categoryKeys: Array<keyof SimilarLineupProfile["scores"]> = [
+    "offense",
+    "defense",
+    "shooting",
+    "playmaking",
+    "rebounding",
+  ];
+
+  return similarLineupProfiles
+    .map((profile) => {
+      const totalDifference = categoryKeys.reduce(
+        (total, key) => total + Math.abs(scores[key] - profile.scores[key]),
+        0,
+      );
+
+      const averageDifference = totalDifference / categoryKeys.length;
+      const matchScore = Math.max(0, Math.round(100 - averageDifference));
+
+      return {
+        name: `${profile.name} (${matchScore}%)`,
+        description: profile.description,
+        matchScore,
+      };
+    })
+    .toSorted((a, b) => b.matchScore - a.matchScore)[0];
+}
+
 function getLineupScoutReport(
   selectedSlots: {
     position: Position;
@@ -740,6 +848,8 @@ function getLineupScoutReport(
     ),
   };
 
+  const closestSimilarLineup = getClosestSimilarLineup(scores);
+
   const strengths = [
     adjustedOffenseScore >= 82 || eliteScorers >= 2 ? "Offense" : null,
     adjustedDefenseScore >= 82 ? "Defense" : null,
@@ -908,83 +1018,8 @@ function getLineupScoutReport(
                                 ? "Star-Powered Balance"
                                 : "Balanced Two-Way Core";
 
-  const similarTo =
-    hasCurry && hasDurant
-      ? "2017 Warriors (92%)"
-      : hasMagic && hasBird
-        ? "1986 Celtics (88%)"
-        : hasShaq && hasKobe
-          ? "2001 Lakers (90%)"
-          : hasLeBron && hasWade
-            ? "2012 Heat (89%)"
-            : archetype === "Two-Way Dynasty"
-              ? "1996 Bulls (91%)"
-              : archetype === "Transition Attack"
-                ? "2012 Heat (88%)"
-                : archetype === "Point-Center Offense"
-                  ? "2023 Nuggets (87%)"
-                  : archetype === "Iso Superteam"
-                    ? "2018 Warriors (86%)"
-                    : archetype === "Defensive Juggernaut"
-                      ? "2004 Pistons (85%)"
-                      : archetype === "Floor Spacing Machine"
-                        ? "2017 Warriors (90%)"
-                        : archetype === "Positionless Basketball"
-                          ? "2020 Lakers (84%)"
-                          : archetype === "Rim Pressure Unit"
-                            ? "2001 Lakers (86%)"
-                            : archetype === "Spacing Superteam"
-                              ? "2017 Warriors (88%)"
-                              : archetype === "Playmaking Engine"
-                                ? "1986 Celtics (86%)"
-                                : archetype === "Offensive Superteam"
-                                  ? "2012 Heat (85%)"
-                                  : archetype === "Paint Control Unit"
-                                    ? "2001 Lakers (84%)"
-                                    : archetype === "Defensive Powerhouse"
-                                      ? "1996 Bulls (89%)"
-                                      : archetype === "Star-Powered Contender"
-                                        ? "All-Time Lakers (87%)"
-                                        : "Balanced All-Time Core (80%)";
-
-  const similarToDescription =
-    hasCurry && hasDurant
-      ? "Elite spacing, shot creation, and matchup-breaking scoring."
-      : hasMagic && hasBird
-        ? "Passing, frontcourt skill, and high-IQ half-court creation."
-        : hasShaq && hasKobe
-          ? "Interior dominance paired with elite perimeter shot creation."
-          : hasLeBron && hasWade
-            ? "Downhill pressure, transition attacks, and elite athletic creation."
-            : archetype === "Two-Way Dynasty"
-              ? "Elite two-way control with championship-level matchup versatility."
-              : archetype === "Transition Attack"
-                ? "Open-floor pressure created by speed, creation, and downhill scoring."
-                : archetype === "Point-Center Offense"
-                  ? "A hub-centered offense built around passing from the frontcourt."
-                  : archetype === "Iso Superteam"
-                    ? "Multiple elite scorers capable of creating offense without setup."
-                    : archetype === "Defensive Juggernaut"
-                      ? "A defense-first group built around size, pressure, and physical control."
-                      : archetype === "Floor Spacing Machine"
-                        ? "Maximum spacing created by elite shooting threats across the lineup."
-                        : archetype === "Positionless Basketball"
-                          ? "Flexible roles, switchable matchups, and multi-position creation."
-                          : archetype === "Rim Pressure Unit"
-                            ? "Paint pressure, rebounding force, and interior scoring dominance."
-                            : archetype === "Spacing Superteam"
-                              ? "Elite spacing, shooting gravity, and offensive flow."
-                              : archetype === "Playmaking Engine"
-                                ? "High-IQ passing, spacing, and connected team offense."
-                                : archetype === "Offensive Superteam"
-                                  ? "Star-driven scoring pressure and shot creation."
-                                  : archetype === "Paint Control Unit"
-                                    ? "Interior dominance and frontcourt physicality."
-                                    : archetype === "Defensive Powerhouse"
-                                      ? "Elite defense, rebounding, and physical control."
-                                      : archetype === "Star-Powered Contender"
-                                        ? "Legendary top-end talent across every position."
-                                        : "Balanced scoring, passing, and lineup structure.";
+  const similarTo = closestSimilarLineup.name;
+  const similarToDescription = closestSimilarLineup.description;
 
   const summary =
     archetype === "Two-Way Dynasty"
