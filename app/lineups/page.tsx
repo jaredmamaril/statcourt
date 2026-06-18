@@ -863,6 +863,37 @@ function getXFactorForArchetype(
   };
 }
 
+function getPlayerTraits(
+  player: (typeof players)[number],
+  slotPosition?: Position,
+) {
+  const isBig = player.position === "PF" || player.position === "C";
+  const isForward = player.position === "SF" || player.position === "PF";
+
+  return {
+    eliteShooter: player.stats.threePercent >= 38,
+    eliteScorer: player.stats.ppg >= 25,
+    elitePlaymaker: player.stats.apg >= 7,
+    eliteRebounder: player.stats.rpg >= 10,
+    eliteDefender: player.defenseRating >= 90,
+    highStarPower: player.starPower >= 95,
+
+    eliteCreator: player.stats.ppg >= 24 && player.stats.apg >= 5,
+    elitePasser: player.stats.apg >= 7,
+    eliteTwoWay: player.stats.ppg >= 22 && player.defenseRating >= 88,
+
+    versatileForward: isForward && player.stats.apg >= 5,
+    stretchBig: isBig && player.stats.threePercent >= 35,
+    interiorBig:
+      isBig && (player.stats.rpg >= 10 || player.defenseRating >= 88),
+
+    eliteBig:
+      (slotPosition === "PF" || slotPosition === "C") &&
+      player.starPower >= 90 &&
+      player.stats.rpg >= 9,
+  };
+}
+
 function getLineupScoutReport(
   selectedSlots: {
     position: Position;
@@ -911,51 +942,69 @@ function getLineupScoutReport(
 
   const selectedPlayers = selectedSlots.map((slot) => slot.player);
 
-  const eliteShooters = selectedPlayers.filter(
-    (player) => player.stats.threePercent >= 38,
+  const selectedPlayerTraits = selectedSlots.map((slot) => ({
+    player: slot.player,
+    position: slot.position,
+    traits: getPlayerTraits(slot.player, slot.position),
+  }));
+
+  const eliteShooters = selectedPlayerTraits.filter(
+    (item) => item.traits.eliteShooter,
   ).length;
 
-  const eliteScorers = selectedPlayers.filter(
-    (player) => player.stats.ppg >= 25,
+  const eliteScorers = selectedPlayerTraits.filter(
+    (item) => item.traits.eliteScorer,
   ).length;
 
-  const elitePlaymakers = selectedPlayers.filter(
-    (player) => player.stats.apg >= 7,
+  const elitePlaymakers = selectedPlayerTraits.filter(
+    (item) => item.traits.elitePlaymaker,
   ).length;
 
-  const eliteRebounders = selectedPlayers.filter(
-    (player) => player.stats.rpg >= 10,
+  const eliteRebounders = selectedPlayerTraits.filter(
+    (item) => item.traits.eliteRebounder,
   ).length;
 
-  const eliteDefenders = selectedPlayers.filter(
-    (player) => player.defenseRating >= 90,
+  const eliteDefenders = selectedPlayerTraits.filter(
+    (item) => item.traits.eliteDefender,
   ).length;
 
-  const eliteBigs = selectedSlots.filter(
-    (slot) =>
-      (slot.position === "PF" || slot.position === "C") &&
-      slot.player.starPower >= 90 &&
-      slot.player.stats.rpg >= 9,
+  const eliteBigs = selectedPlayerTraits.filter(
+    (item) => item.traits.eliteBig,
   ).length;
 
-  const eliteCreators = selectedPlayers.filter(
-    (player) => player.stats.ppg >= 24 && player.stats.apg >= 5,
+  const eliteCreators = selectedPlayerTraits.filter(
+    (item) => item.traits.eliteCreator,
   ).length;
 
-  const elitePassers = selectedPlayers.filter(
-    (player) => player.stats.apg >= 7,
+  const elitePassers = selectedPlayerTraits.filter(
+    (item) => item.traits.elitePasser,
   ).length;
 
-  const eliteInteriorPlayers = selectedPlayers.filter(
-    (player) => player.stats.rpg >= 10 || player.defenseRating >= 90,
+  const eliteInteriorPlayers = selectedPlayerTraits.filter(
+    (item) => item.traits.interiorBig,
   ).length;
 
-  const eliteTwoWayPlayers = selectedPlayers.filter(
-    (player) => player.stats.ppg >= 22 && player.defenseRating >= 88,
+  const eliteTwoWayPlayers = selectedPlayerTraits.filter(
+    (item) => item.traits.eliteTwoWay,
   ).length;
 
-  const superstarCount = selectedPlayers.filter(
-    (player) => player.starPower >= 95,
+  const superstarCount = selectedPlayerTraits.filter(
+    (item) => item.traits.highStarPower,
+  ).length;
+
+  const stretchBigs = selectedPlayerTraits.filter(
+    (item) => item.traits.stretchBig,
+  ).length;
+
+  const pointCenterBigs = selectedPlayerTraits.filter(
+    (item) =>
+      (item.position === "PF" || item.position === "C") &&
+      item.player.stats.apg >= 6 &&
+      item.player.stats.rpg >= 8,
+  ).length;
+
+  const versatileForwards = selectedPlayerTraits.filter(
+    (item) => item.traits.versatileForward,
   ).length;
 
   const traditionalCenters = selectedSlots.filter(
@@ -1175,12 +1224,7 @@ function getLineupScoutReport(
   ) {
     archetype = "Two-Way Dynasty";
   } else if (
-    selectedSlots.some(
-      (slot) =>
-        (slot.position === "PF" || slot.position === "C") &&
-        slot.player.stats.apg >= 6 &&
-        slot.player.stats.rpg >= 8,
-    ) &&
+    pointCenterBigs >= 1 &&
     adjustedPlaymakingScore >= 88 &&
     adjustedReboundingScore >= 82
   ) {
@@ -1332,6 +1376,7 @@ function getLineupScoutReport(
       : null,
 
     superstarCount >= 3 ? "Big Three" : null,
+    versatileForwards >= 2 && elitePassers >= 2 ? "Positionless Core" : null,
     passablePlayers >= 5 ? "Positionless" : null,
     eliteBigs >= 2 ? "Twin Towers" : null,
     traditionalCenters === 0 ? "Small Ball" : null,
