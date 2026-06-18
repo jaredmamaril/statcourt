@@ -474,9 +474,9 @@ function getSavedLineupArchetypeColor(archetype: string) {
 function getCourtBalanceColor(courtBalance: string) {
   if (courtBalance === "Excellent") return "#22C55E";
   if (courtBalance === "Good") return "#EFBF04";
-  if (courtBalance === "Average") return "#F97316";
+  if (courtBalance === "Uneven") return "#F97316";
 
-  return "#EF4444";
+  return "#A855F7";
 }
 
 // Scouting report helpers
@@ -628,6 +628,81 @@ function getClosestSimilarLineup(scores: LineupScoutScores) {
     .toSorted((a, b) => b.matchScore - a.matchScore)[0];
 }
 
+function getXFactorDescription(
+  archetype: string,
+  player: (typeof players)[number],
+): string {
+  const isBig = player.position === "PF" || player.position === "C";
+  const isWing = player.position === "SG" || player.position === "SF";
+  const isGuard = player.position === "PG" || player.position === "SG";
+  const isPrimaryScorer = player.stats.ppg >= 25;
+  const isElitePlaymaker = player.stats.apg >= 7;
+  const isEliteDefender = player.defenseRating >= 90;
+
+  if (
+    archetype === "Spacing Superteam" ||
+    archetype === "Floor Spacing Machine"
+  ) {
+    return isGuard
+      ? "Shooting gravity bends the defense and opens the floor early."
+      : isBig
+        ? "Frontcourt spacing pulls rim protection away from the paint."
+        : "Elite off-ball shooting creates clean driving lanes.";
+  }
+
+  if (
+    archetype === "Playmaking Engine" ||
+    archetype === "Point-Center Offense" ||
+    archetype === "Positionless Basketball"
+  ) {
+    return isBig && isElitePlaymaker
+      ? "Frontcourt hub who organizes the offense through passing and touch."
+      : isGuard && isElitePlaymaker
+        ? "Primary initiator who controls tempo and creates advantages."
+        : "Connector who keeps the offense moving across positions.";
+  }
+
+  if (
+    archetype === "Offensive Superteam" ||
+    archetype === "Iso Superteam" ||
+    archetype === "Transition Attack"
+  ) {
+    return isPrimaryScorer && isWing
+      ? "Primary closer and matchup scorer from the wing."
+      : isPrimaryScorer && isGuard
+        ? "Perimeter creator who drives the team's scoring pressure."
+        : isBig
+          ? "Interior scoring force who collapses the defense."
+          : "Scoring engine who creates pressure across matchups.";
+  }
+
+  if (archetype === "Paint Control Unit" || archetype === "Rim Pressure Unit") {
+    return isBig
+      ? "Interior force that controls the glass and pressures the rim."
+      : "Downhill attacker who adds pressure around the rim.";
+  }
+
+  if (
+    archetype === "Defensive Powerhouse" ||
+    archetype === "Defensive Juggernaut" ||
+    archetype === "Two-Way Dynasty"
+  ) {
+    return isBig
+      ? "Defensive anchor who shapes the lineup's interior identity."
+      : isWing && isPrimaryScorer && isEliteDefender
+        ? "Primary closer and elite two-way wing pressure."
+        : isWing && isEliteDefender
+          ? "Elite wing stopper who drives the team's perimeter pressure."
+          : "Point-of-attack defender who sets the tone on the perimeter.";
+  }
+
+  return isPrimaryScorer
+    ? "Highest-impact star who drives the lineup's ceiling."
+    : isElitePlaymaker
+      ? "Primary organizer who ties the star talent together."
+      : "Highest-impact player across the lineup structure.";
+}
+
 function getXFactorForArchetype(
   archetype: string,
   selectedSlots: {
@@ -637,86 +712,37 @@ function getXFactorForArchetype(
 ): XFactorResult {
   const selectedPlayers = selectedSlots.map((slot) => slot.player);
 
-  if (
-    archetype === "Spacing Superteam" ||
-    archetype === "Floor Spacing Machine"
-  ) {
-    const player = selectedPlayers.toSorted(
-      (a, b) => b.stats.threePercent - a.stats.threePercent,
-    )[0];
-
-    return {
-      player,
-      description: "Shooting gravity creates the entire offensive ecosystem.",
-    };
-  }
-
-  if (
-    archetype === "Playmaking Engine" ||
-    archetype === "Point-Center Offense" ||
-    archetype === "Positionless Basketball"
-  ) {
-    const player = selectedPlayers.toSorted(
-      (a, b) => b.stats.apg - a.stats.apg,
-    )[0];
-
-    return {
-      player,
-      description: "Primary initiator and matchup manipulator.",
-    };
-  }
-
-  if (
-    archetype === "Offensive Superteam" ||
-    archetype === "Iso Superteam" ||
-    archetype === "Transition Attack"
-  ) {
-    const player = selectedPlayers.toSorted(
-      (a, b) => b.stats.ppg - a.stats.ppg,
-    )[0];
-
-    return {
-      player,
-      description: "Main scoring pressure point and late-clock creator.",
-    };
-  }
-
-  if (archetype === "Paint Control Unit" || archetype === "Rim Pressure Unit") {
-    const player = selectedPlayers.toSorted(
-      (a, b) => b.stats.rpg - a.stats.rpg,
-    )[0];
-
-    return {
-      player,
-      description:
-        "Interior force that drives paint pressure and rebounding control.",
-    };
-  }
-
-  if (
-    archetype === "Defensive Powerhouse" ||
-    archetype === "Defensive Juggernaut" ||
-    archetype === "Two-Way Dynasty"
-  ) {
-    const player = selectedPlayers.toSorted(
-      (a, b) => b.defenseRating - a.defenseRating,
-    )[0];
-
-    return {
-      player,
-      description: "Defensive anchor who shapes the lineup's identity.",
-    };
-  }
-
-  const bestPlayer = selectedSlots.toSorted(
-    (a, b) =>
-      getBuilderPlayerRatingForPosition(b.player, b.position) -
-      getBuilderPlayerRatingForPosition(a.player, a.position),
-  )[0].player;
+  const player =
+    archetype === "Spacing Superteam" || archetype === "Floor Spacing Machine"
+      ? selectedPlayers.toSorted(
+          (a, b) => b.stats.threePercent - a.stats.threePercent,
+        )[0]
+      : archetype === "Playmaking Engine" ||
+          archetype === "Point-Center Offense" ||
+          archetype === "Positionless Basketball"
+        ? selectedPlayers.toSorted((a, b) => b.stats.apg - a.stats.apg)[0]
+        : archetype === "Paint Control Unit" ||
+            archetype === "Rim Pressure Unit"
+          ? selectedPlayers.toSorted((a, b) => b.stats.rpg - a.stats.rpg)[0]
+          : archetype === "Defensive Powerhouse" ||
+              archetype === "Defensive Juggernaut" ||
+              archetype === "Two-Way Dynasty"
+            ? selectedPlayers.toSorted(
+                (a, b) => b.defenseRating - a.defenseRating,
+              )[0]
+            : archetype === "Offensive Superteam" ||
+                archetype === "Iso Superteam" ||
+                archetype === "Transition Attack"
+              ? selectedPlayers.toSorted((a, b) => b.stats.ppg - a.stats.ppg)[0]
+              : selectedSlots.toSorted(
+                  (a, b) =>
+                    getBuilderPlayerRatingForPosition(b.player, b.position) -
+                    getBuilderPlayerRatingForPosition(a.player, a.position),
+                )[0].player;
 
   return {
-    player: bestPlayer,
-    description: "Highest-impact star across the lineup structure.",
+    player,
+    description: getXFactorDescription(archetype, player),
   };
 }
 
@@ -1146,8 +1172,8 @@ function getLineupScoutReport(
       : scoreSpread <= 20
         ? "Good"
         : scoreSpread <= 30
-          ? "Average"
-          : "Poor";
+          ? "Uneven"
+          : "Specialized";
 
   const chemistryBadges = [
     superstarCount >= 3 ? "Big Three" : null,
@@ -2513,7 +2539,7 @@ export default function Lineups() {
             <div className="relative max-h-[78vh] overflow-y-auto p-5 scrollbar-none [&::-webkit-scrollbar]:hidden">
               <div className="pr-58">
                 <div className="-mt-2">
-                  <h2 className="font-michroma text-xl text-white">
+                  <h2 className="font-michroma text-lg text-white">
                     Scouting Report
                   </h2>
 
