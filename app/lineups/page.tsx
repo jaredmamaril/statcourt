@@ -491,16 +491,58 @@ function getGrade(score: number) {
   return "D";
 }
 
-function getScoutReason(scores: LineupScoutScores, archetype: string) {
-  const topScores = Object.entries(scores)
-    .filter(([key]) => key !== "balance")
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 2)
-    .map(([key]) => key);
+function getScoutReason(archetype: string) {
+  const reasons: Record<string, string> = {
+    "Two-Way Dynasty":
+      "Elite star power, interior control, and defensive versatility create a championship-caliber foundation.",
 
-  return `This lineup earned ${archetype} because its strongest categories are ${topScores.join(
-    " and ",
-  )}, while its weaker area creates the main tradeoff.`;
+    "Spacing Superteam":
+      "Multiple elite shooters stretch defenses beyond their limits while maintaining high-level creation.",
+
+    "Point-Center Offense":
+      "The offense flows through a frontcourt playmaker capable of creating advantages from every area of the floor.",
+
+    "Floor Spacing Machine":
+      "Shooting depth across the lineup creates constant spacing pressure and opens clean driving lanes.",
+
+    "Iso Superteam":
+      "Multiple elite shot creators can win individual matchups without needing a perfect offensive structure.",
+
+    "Defensive Juggernaut":
+      "High-end defenders and physical size give this lineup control over possessions, matchups, and the glass.",
+
+    "Transition Attack":
+      "Athletic creators and downhill scoring pressure make this lineup dangerous before defenses can get set.",
+
+    "Rim Pressure Unit":
+      "Interior scoring, rebounding, and paint pressure force opponents to collapse toward the basket.",
+
+    "Positionless Basketball":
+      "Versatile passers and multi-position talent let this lineup create offense without traditional role limits.",
+
+    "Playmaking Engine":
+      "Multiple high-level passers keep the ball moving and create efficient looks from every spot on the floor.",
+
+    "Offensive Superteam":
+      "Elite scoring talent gives this lineup constant pressure, even when the first action breaks down.",
+
+    "Paint Control Unit":
+      "Dominant size and rebounding give this lineup control of the interior on both ends.",
+
+    "Defensive Powerhouse":
+      "Defense, rebounding, and physicality define this lineup's identity and raise its playoff ceiling.",
+
+    "Star-Powered Contender":
+      "Top-end talent gives this lineup a championship ceiling, even if the fit is not perfectly balanced.",
+
+    "Balanced Core":
+      "This lineup has enough talent across categories to avoid relying on only one path to winning.",
+  };
+
+  return (
+    reasons[archetype] ??
+    "This lineup has a strong statistical identity built around its best players."
+  );
 }
 
 function getRankedScoutScores(scores: LineupScoutScores) {
@@ -1009,7 +1051,7 @@ function getLineupScoutReport(
     .slice(0, 4);
 
   const weaknesses = [
-    adjustedShootingScore < 68 && eliteShooters === 0 ? "Spacing" : null,
+    adjustedShootingScore < 70 && eliteShooters < 2 ? "Floor Spacing" : null,
 
     adjustedPlaymakingScore < 68 && elitePlaymakers === 0 ? "Playmaking" : null,
 
@@ -1027,6 +1069,23 @@ function getLineupScoutReport(
 
     selectedPlayers.length < 5 ? "Bench Creation" : null,
   ].filter((weakness): weakness is string => Boolean(weakness));
+
+  const weakestScore = getRankedScoutScores(scores).at(-1);
+
+  const finalWeaknesses =
+    weaknesses.length > 0
+      ? weaknesses
+      : weakestScore?.key === "shooting"
+        ? ["Floor Spacing"]
+        : weakestScore?.key === "playmaking"
+          ? ["Playmaking"]
+          : weakestScore?.key === "offense"
+            ? ["Half-Court Offense"]
+            : weakestScore?.key === "defense"
+              ? ["Perimeter Defense"]
+              : weakestScore?.key === "rebounding"
+                ? ["Rim Protection"]
+                : ["No major weakness"];
 
   const lineupCeiling = adjustedOverall * 0.75 + starPower * 0.25;
 
@@ -1206,7 +1265,7 @@ function getLineupScoutReport(
     archetype,
     teamIdentity,
     strengths: strengths.length > 0 ? strengths : ["Balanced production"],
-    weaknesses: weaknesses.length > 0 ? weaknesses : ["No major weakness"],
+    weaknesses: finalWeaknesses,
     grades: {
       offense: getGrade(adjustedOffenseScore),
       defense: getGrade(adjustedDefenseScore),
@@ -1464,7 +1523,7 @@ export default function Lineups() {
 
   const scoutScores = scoutedSavedLineup?.scores ?? scoutReport.scores;
 
-  const scoutReason = getScoutReason(scoutScores, lineupArchetype);
+  const scoutReason = getScoutReason(lineupArchetype);
 
   const lineupBadges = scoutedSavedLineup?.badges ?? scoutReport.badges;
 
@@ -2554,7 +2613,7 @@ export default function Lineups() {
                   Lineup
                 </p>
 
-                <div className="mt-2 grid gap-1">
+                <div className="mt-0.5 grid gap-1">
                   {lineupPositions.map((position) => {
                     const playerName = customLineup[position];
                     const player = players.find(
