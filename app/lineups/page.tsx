@@ -124,6 +124,11 @@ type LineupScoutReport = {
   xFactor: XFactorResult | null;
   similarTo: string;
   similarToDescription: string;
+  similarLineupMatches: {
+    name: string;
+    description: string;
+    matchScore: number;
+  }[];
   courtBalance: string;
   badges: string[];
 };
@@ -642,7 +647,7 @@ const similarLineupProfiles: SimilarLineupProfile[] = [
   },
 ];
 
-function getClosestSimilarLineup(scores: LineupScoutScores) {
+function getSimilarLineupMatches(scores: LineupScoutScores) {
   const categoryKeys: Array<keyof SimilarLineupProfile["scores"]> = [
     "offense",
     "defense",
@@ -662,12 +667,13 @@ function getClosestSimilarLineup(scores: LineupScoutScores) {
       const matchScore = Math.max(0, Math.round(100 - averageDifference));
 
       return {
-        name: `${profile.name} (${matchScore}%)`,
+        name: profile.name,
         description: profile.description,
         matchScore,
       };
     })
-    .toSorted((a, b) => b.matchScore - a.matchScore)[0];
+    .toSorted((a, b) => b.matchScore - a.matchScore)
+    .slice(0, 3);
 }
 
 function getXFactorDescription(
@@ -821,6 +827,13 @@ function getLineupScoutReport(
       xFactor: null,
       similarTo: "--",
       similarToDescription: "--",
+      similarLineupMatches: [
+        {
+          name: "--",
+          description: "--",
+          matchScore: 0,
+        },
+      ],
       courtBalance: "--",
       badges: [],
     };
@@ -1014,7 +1027,8 @@ function getLineupScoutReport(
     ),
   };
 
-  const closestSimilarLineup = getClosestSimilarLineup(scores);
+  const similarLineupMatches = getSimilarLineupMatches(scores);
+  const closestSimilarLineup = similarLineupMatches[0];
 
   const strengths = [
     adjustedOffenseScore >= 82 || eliteScorers >= 2 ? "Offense" : null,
@@ -1277,6 +1291,7 @@ function getLineupScoutReport(
     xFactor,
     similarTo,
     similarToDescription,
+    similarLineupMatches,
     courtBalance,
     badges,
   };
@@ -1513,6 +1528,8 @@ export default function Lineups() {
   const similarToDescription =
     scoutedSavedLineup?.similarToDescription ??
     scoutReport.similarToDescription;
+
+  const similarLineupMatches = scoutReport.similarLineupMatches;
 
   const courtBalance =
     scoutedSavedLineup?.courtBalance ?? scoutReport.courtBalance;
@@ -2839,12 +2856,19 @@ export default function Lineups() {
                     <p className="font-michroma text-[10px] uppercase text-white/40">
                       Similar To
                     </p>
-                    <p className="font-michroma text-xs text-[#1bc2ec]">
-                      {similarLineup}
-                    </p>
-                    <p className="mt-1 font-michroma text-[8px] leading-relaxed text-white/35">
-                      {similarToDescription}
-                    </p>
+
+                    <div className="mt-1 grid gap-1">
+                      {similarLineupMatches.map((match) => (
+                        <div key={match.name}>
+                          <p className="font-michroma text-[10px] text-[#1bc2ec]">
+                            {match.name} ({match.matchScore}%)
+                          </p>
+                          <p className="font-michroma text-[8px] leading-relaxed text-white/35">
+                            {match.description}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   <div>
