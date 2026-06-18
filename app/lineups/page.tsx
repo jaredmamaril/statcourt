@@ -763,35 +763,62 @@ function getXFactorForArchetype(
     player: (typeof players)[number];
   }[],
 ): XFactorResult {
-  const selectedPlayers = selectedSlots.map((slot) => slot.player);
+  const rankedPlayers = selectedSlots
+    .map((slot) => {
+      const player = slot.player;
 
-  const player =
-    archetype === "Spacing Superteam" || archetype === "Floor Spacing Machine"
-      ? selectedPlayers.toSorted(
-          (a, b) => b.stats.threePercent - a.stats.threePercent,
-        )[0]
-      : archetype === "Playmaking Engine" ||
-          archetype === "Point-Center Offense" ||
-          archetype === "Positionless Basketball"
-        ? selectedPlayers.toSorted((a, b) => b.stats.apg - a.stats.apg)[0]
-        : archetype === "Paint Control Unit" ||
-            archetype === "Rim Pressure Unit"
-          ? selectedPlayers.toSorted((a, b) => b.stats.rpg - a.stats.rpg)[0]
-          : archetype === "Defensive Powerhouse" ||
-              archetype === "Defensive Juggernaut" ||
-              archetype === "Two-Way Dynasty"
-            ? selectedPlayers.toSorted(
-                (a, b) => b.defenseRating - a.defenseRating,
-              )[0]
-            : archetype === "Offensive Superteam" ||
-                archetype === "Iso Superteam" ||
-                archetype === "Transition Attack"
-              ? selectedPlayers.toSorted((a, b) => b.stats.ppg - a.stats.ppg)[0]
-              : selectedSlots.toSorted(
-                  (a, b) =>
-                    getBuilderPlayerRatingForPosition(b.player, b.position) -
-                    getBuilderPlayerRatingForPosition(a.player, a.position),
-                )[0].player;
+      let fitScore =
+        getBuilderPlayerRatingForPosition(player, slot.position) * 0.35 +
+        player.starPower * 0.25 +
+        player.defenseRating * 0.15 +
+        player.stats.ppg * 0.8;
+
+      if (
+        archetype === "Spacing Superteam" ||
+        archetype === "Floor Spacing Machine"
+      ) {
+        fitScore += player.stats.threePercent * 0.9;
+      }
+
+      if (
+        archetype === "Playmaking Engine" ||
+        archetype === "Point-Center Offense" ||
+        archetype === "Positionless Basketball"
+      ) {
+        fitScore += player.stats.apg * 5;
+      }
+
+      if (
+        archetype === "Paint Control Unit" ||
+        archetype === "Rim Pressure Unit"
+      ) {
+        fitScore += player.stats.rpg * 4;
+      }
+
+      if (
+        archetype === "Defensive Powerhouse" ||
+        archetype === "Defensive Juggernaut" ||
+        archetype === "Two-Way Dynasty"
+      ) {
+        fitScore += player.defenseRating * 0.6;
+      }
+
+      if (
+        archetype === "Offensive Superteam" ||
+        archetype === "Iso Superteam" ||
+        archetype === "Transition Attack"
+      ) {
+        fitScore += player.stats.ppg * 2;
+      }
+
+      return {
+        player,
+        fitScore,
+      };
+    })
+    .toSorted((a, b) => b.fitScore - a.fitScore);
+
+  const player = rankedPlayers[0].player;
 
   return {
     player,
