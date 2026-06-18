@@ -992,10 +992,6 @@ function getLineupScoutReport(
     (item) => item.traits.highStarPower,
   ).length;
 
-  const stretchBigs = selectedPlayerTraits.filter(
-    (item) => item.traits.stretchBig,
-  ).length;
-
   const pointCenterBigs = selectedPlayerTraits.filter(
     (item) =>
       (item.position === "PF" || item.position === "C") &&
@@ -1067,43 +1063,64 @@ function getLineupScoutReport(
   let adjustedOffenseScore = offenseScore;
   let adjustedDefenseScore = defenseScore;
 
-  if (eliteShooters >= 1 && elitePassers >= 1 && eliteCreators >= 1) {
-    adjustedPlaymakingScore += 8;
-    adjustedOffenseScore += 6;
+  // Trait-based chemistry bonuses
+  if (eliteShooters >= 3) {
+    adjustedShootingScore += 6;
   }
 
-  if (eliteShooters >= 2 && eliteCreators >= 2) {
-    adjustedShootingScore += 6;
+  if (eliteShooters >= 4) {
+    adjustedShootingScore += 4;
+    adjustedOffenseScore += 3;
+  }
+
+  if (elitePlaymakers >= 2) {
+    adjustedPlaymakingScore += 5;
+  }
+
+  if (elitePlaymakers >= 3) {
+    adjustedPlaymakingScore += 4;
+    adjustedOffenseScore += 4;
+  }
+
+  if (eliteShooters >= 1 && pointCenterBigs >= 1) {
+    adjustedOffenseScore += 5;
+    adjustedPlaymakingScore += 3;
+  }
+
+  if (eliteCreators >= 2 && eliteShooters >= 2) {
     adjustedOffenseScore += 5;
   }
 
+  if (eliteInteriorPlayers >= 2) {
+    adjustedReboundingScore += 5;
+  }
+
   if (eliteInteriorPlayers >= 3) {
-    adjustedShootingScore -= 10;
-    adjustedOffenseScore -= 4;
-    adjustedReboundingScore += 8;
+    adjustedReboundingScore += 4;
+    adjustedDefenseScore += 4;
+  }
+
+  if (eliteDefenders >= 3) {
     adjustedDefenseScore += 6;
   }
 
   if (eliteTwoWayPlayers >= 3) {
-    adjustedDefenseScore += 6;
-    adjustedOffenseScore += 4;
+    adjustedDefenseScore += 4;
+    adjustedOffenseScore += 3;
   }
 
   if (eliteRebounders >= 3) {
-    adjustedReboundingScore += 6;
+    adjustedReboundingScore += 4;
   }
 
   if (eliteScorers >= 3) {
     adjustedOffenseScore += 5;
   }
 
-  if (eliteShooters >= 3) {
-    adjustedShootingScore += 6;
-  }
-
-  if (elitePlaymakers >= 3) {
-    adjustedPlaymakingScore += 6;
-    adjustedOffenseScore += 4;
+  // Spacing penalty for big-heavy, low-shooting builds
+  if (eliteInteriorPlayers >= 3 && eliteShooters < 2) {
+    adjustedShootingScore -= 10;
+    adjustedOffenseScore -= 4;
   }
 
   adjustedShootingScore = clampScore(adjustedShootingScore);
