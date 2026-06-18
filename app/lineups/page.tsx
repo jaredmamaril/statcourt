@@ -927,10 +927,6 @@ function getLineupScoutReport(
     (player) => player.stats.rpg >= 10,
   ).length;
 
-  const superstarCount = selectedPlayers.filter(
-    (player) => player.starPower >= 95,
-  ).length;
-
   const eliteDefenders = selectedPlayers.filter(
     (player) => player.defenseRating >= 90,
   ).length;
@@ -942,6 +938,26 @@ function getLineupScoutReport(
       slot.player.stats.rpg >= 9,
   ).length;
 
+  const eliteCreators = selectedPlayers.filter(
+    (player) => player.stats.ppg >= 24 && player.stats.apg >= 5,
+  ).length;
+
+  const elitePassers = selectedPlayers.filter(
+    (player) => player.stats.apg >= 7,
+  ).length;
+
+  const eliteInteriorPlayers = selectedPlayers.filter(
+    (player) => player.stats.rpg >= 10 || player.defenseRating >= 90,
+  ).length;
+
+  const eliteTwoWayPlayers = selectedPlayers.filter(
+    (player) => player.stats.ppg >= 22 && player.defenseRating >= 88,
+  ).length;
+
+  const superstarCount = selectedPlayers.filter(
+    (player) => player.starPower >= 95,
+  ).length;
+
   const traditionalCenters = selectedSlots.filter(
     (slot) => slot.position === "C" && slot.player.position === "C",
   ).length;
@@ -949,43 +965,6 @@ function getLineupScoutReport(
   const passablePlayers = selectedPlayers.filter(
     (player) => player.stats.apg >= 4.5,
   ).length;
-
-  const hasCurry = selectedPlayers.some(
-    (player) => player.name === "Stephen Curry",
-  );
-  const hasJokic = selectedPlayers.some(
-    (player) => player.name === "Nikola Jokic",
-  );
-  const hasLeBron = selectedPlayers.some(
-    (player) => player.name === "LeBron James",
-  );
-  const hasDurant = selectedPlayers.some(
-    (player) => player.name === "Kevin Durant",
-  );
-  const hasShaq = selectedPlayers.some(
-    (player) => player.name === "Shaquille O'Neal",
-  );
-  const hasWilt = selectedPlayers.some(
-    (player) => player.name === "Wilt Chamberlain",
-  );
-  const hasHakeem = selectedPlayers.some(
-    (player) => player.name === "Hakeem Olajuwon",
-  );
-  const hasMagic = selectedPlayers.some(
-    (player) => player.name === "Magic Johnson",
-  );
-
-  const hasBird = selectedPlayers.some(
-    (player) => player.name === "Larry Bird",
-  );
-
-  const hasKobe = selectedPlayers.some(
-    (player) => player.name === "Kobe Bryant",
-  );
-
-  const hasWade = selectedPlayers.some(
-    (player) => player.name === "Dwyane Wade",
-  );
 
   const scoring =
     selectedPlayers.reduce((total, player) => total + player.stats.ppg, 0) /
@@ -1039,21 +1018,26 @@ function getLineupScoutReport(
   let adjustedOffenseScore = offenseScore;
   let adjustedDefenseScore = defenseScore;
 
-  if (hasCurry && hasJokic && hasLeBron) {
+  if (eliteShooters >= 1 && elitePassers >= 1 && eliteCreators >= 1) {
     adjustedPlaymakingScore += 8;
     adjustedOffenseScore += 6;
   }
 
-  if (hasCurry && hasDurant && hasLeBron) {
+  if (eliteShooters >= 2 && eliteCreators >= 2) {
     adjustedShootingScore += 6;
     adjustedOffenseScore += 5;
   }
 
-  if (hasShaq && hasWilt && hasHakeem) {
+  if (eliteInteriorPlayers >= 3) {
     adjustedShootingScore -= 10;
     adjustedOffenseScore -= 4;
     adjustedReboundingScore += 8;
     adjustedDefenseScore += 6;
+  }
+
+  if (eliteTwoWayPlayers >= 3) {
+    adjustedDefenseScore += 6;
+    adjustedOffenseScore += 4;
   }
 
   if (eliteRebounders >= 3) {
@@ -1191,7 +1175,12 @@ function getLineupScoutReport(
   ) {
     archetype = "Two-Way Dynasty";
   } else if (
-    hasJokic &&
+    selectedSlots.some(
+      (slot) =>
+        (slot.position === "PF" || slot.position === "C") &&
+        slot.player.stats.apg >= 6 &&
+        slot.player.stats.rpg >= 8,
+    ) &&
     adjustedPlaymakingScore >= 88 &&
     adjustedReboundingScore >= 82
   ) {
