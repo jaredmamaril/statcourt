@@ -107,6 +107,11 @@ type SavedLineup = {
   xFactorDescription: string;
   similarTo: string;
   similarToDescription: string;
+  similarLineupMatches: {
+    name: string;
+    description: string;
+    matchScore: number;
+  }[];
   courtBalance: string;
   createdAt: string;
   badges: string[];
@@ -1529,7 +1534,9 @@ export default function Lineups() {
     scoutedSavedLineup?.similarToDescription ??
     scoutReport.similarToDescription;
 
-  const similarLineupMatches = scoutReport.similarLineupMatches;
+  const similarLineupMatches =
+    scoutedSavedLineup?.similarLineupMatches ??
+    scoutReport.similarLineupMatches;
 
   const courtBalance =
     scoutedSavedLineup?.courtBalance ?? scoutReport.courtBalance;
@@ -1668,6 +1675,7 @@ export default function Lineups() {
       xFactorDescription,
       similarTo: similarLineup,
       similarToDescription,
+      similarLineupMatches,
       courtBalance,
       createdAt: new Date().toISOString(),
       badges: scoutReport.badges,
