@@ -1254,6 +1254,24 @@ function getLineupScoutReport(
           : "Specialized";
 
   const chemistryBadges = [
+    starPower >= 96 ? "GOAT Collection" : null,
+
+    superstarCount >= 4 && adjustedOverall >= 92 ? "Dynasty Core" : null,
+
+    adjustedPlaymakingScore >= 88 && adjustedOffenseScore >= 88
+      ? "Showtime Offense"
+      : null,
+
+    eliteShooters >= 4 && traditionalCenters === 0 ? "Five-Out Attack" : null,
+
+    eliteBigs >= 2 && adjustedReboundingScore >= 88
+      ? "Historic Frontcourt"
+      : null,
+
+    eliteScorers >= 3 && adjustedOffenseScore >= 88
+      ? "Elite Shot Creation"
+      : null,
+
     superstarCount >= 3 ? "Big Three" : null,
     passablePlayers >= 5 ? "Positionless" : null,
     eliteBigs >= 2 ? "Twin Towers" : null,
