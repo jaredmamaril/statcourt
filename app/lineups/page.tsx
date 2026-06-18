@@ -1374,9 +1374,11 @@ function getLineupScoutReport(
   );
 
   const chemistryBadges = [
-    starPower >= 96 ? "GOAT Collection" : null,
+    superstarCount >= 4 ? "GOAT Collection" : null,
 
-    superstarCount >= 4 && adjustedOverall >= 92 ? "Dynasty Core" : null,
+    superstarCount >= 3 && eliteDefenders >= 2 && adjustedOverall >= 92
+      ? "Dynasty Core"
+      : null,
 
     adjustedPlaymakingScore >= 88 && adjustedOffenseScore >= 88
       ? "Showtime Offense"
