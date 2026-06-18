@@ -1198,7 +1198,7 @@ function getLineupScoutReport(
                                 ? "Star-Powered Balance"
                                 : "Balanced Two-Way Core";
 
-  const similarTo = closestSimilarLineup.name;
+  const similarTo = `${closestSimilarLineup.name} (${closestSimilarLineup.matchScore}%)`;
   const similarToDescription = closestSimilarLineup.description;
 
   const summary =
@@ -2883,18 +2883,13 @@ export default function Lineups() {
                       Similar To
                     </p>
 
-                    <div className="mt-1 grid gap-1">
-                      {similarLineupMatches.map((match) => (
-                        <div key={match.name}>
-                          <p className="font-michroma text-[10px] text-[#1bc2ec]">
-                            {match.name} ({match.matchScore}%)
-                          </p>
-                          <p className="font-michroma text-[8px] leading-relaxed text-white/35">
-                            {match.description}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
+                    <p className="font-michroma text-[11px] text-[#1bc2ec]">
+                      {similarLineup}
+                    </p>
+
+                    <p className="font-michroma text-[8px] leading-relaxed text-white/35">
+                      {similarToDescription}
+                    </p>
                   </div>
 
                   <div>
