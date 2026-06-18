@@ -113,6 +113,7 @@ type SavedLineup = {
     matchScore: number;
   }[];
   courtBalance: string;
+  courtBalanceDescription: string;
   createdAt: string;
   badges: string[];
 };
@@ -135,6 +136,7 @@ type LineupScoutReport = {
     matchScore: number;
   }[];
   courtBalance: string;
+  courtBalanceDescription: string;
   badges: string[];
 };
 
@@ -555,6 +557,41 @@ function getScoutReason(archetype: string) {
   );
 }
 
+function getCourtBalanceDescription(
+  scores: LineupScoutScores,
+  courtBalance: string,
+) {
+  const rankedScores = getRankedScoutScores(scores).filter(
+    (score) => score.key !== "starPower",
+  );
+
+  const strongestScore = rankedScores[0];
+  const secondStrongestScore = rankedScores[1];
+  const weakestScore = rankedScores.at(-1);
+
+  if (!strongestScore || !secondStrongestScore || !weakestScore) {
+    return "This lineup has a balanced statistical profile across its main categories.";
+  }
+
+  const strongestLabel = strongestScore.label.toLowerCase();
+  const secondStrongestLabel = secondStrongestScore.label.toLowerCase();
+  const weakestLabel = weakestScore.label.toLowerCase();
+
+  if (courtBalance === "Excellent") {
+    return `Elite ${strongestLabel} and ${secondStrongestLabel} give this lineup a complete championship profile with very few pressure points.`;
+  }
+
+  if (courtBalance === "Good") {
+    return `Strong ${strongestLabel} and ${secondStrongestLabel} create a dependable profile, while ${weakestLabel} is the main area to monitor.`;
+  }
+
+  if (courtBalance === "Uneven") {
+    return `Elite ${strongestLabel} and ${secondStrongestLabel} outweigh below-average ${weakestLabel}, creating a powerful but uneven team shape.`;
+  }
+
+  return `Elite ${strongestLabel} and ${secondStrongestLabel} outweigh below-average ${weakestLabel}, creating a specialized championship profile.`;
+}
+
 function getRankedScoutScores(scores: LineupScoutScores) {
   return Object.entries(scores)
     .filter(([key]) => key !== "balance")
@@ -867,6 +904,7 @@ function getLineupScoutReport(
         },
       ],
       courtBalance: "--",
+      courtBalanceDescription: "--",
       badges: [],
     };
   }
@@ -1280,6 +1318,11 @@ function getLineupScoutReport(
           ? "Uneven"
           : "Specialized";
 
+  const courtBalanceDescription = getCourtBalanceDescription(
+    scores,
+    courtBalance,
+  );
+
   const chemistryBadges = [
     starPower >= 96 ? "GOAT Collection" : null,
 
@@ -1343,6 +1386,7 @@ function getLineupScoutReport(
     similarToDescription,
     similarLineupMatches,
     courtBalance,
+    courtBalanceDescription,
     badges,
   };
 }
@@ -1586,6 +1630,10 @@ export default function Lineups() {
   const courtBalance =
     scoutedSavedLineup?.courtBalance ?? scoutReport.courtBalance;
 
+  const courtBalanceDescription =
+    scoutedSavedLineup?.courtBalanceDescription ??
+    scoutReport.courtBalanceDescription;
+
   const courtBalanceColor = getCourtBalanceColor(courtBalance);
 
   const teamGrades = scoutedSavedLineup?.grades ?? scoutReport.grades;
@@ -1722,6 +1770,7 @@ export default function Lineups() {
       similarToDescription,
       similarLineupMatches,
       courtBalance,
+      courtBalanceDescription,
       createdAt: new Date().toISOString(),
       badges: scoutReport.badges,
     };
@@ -2923,11 +2972,16 @@ export default function Lineups() {
                     <p className="font-michroma text-[10px] uppercase text-white/40">
                       Court Balance
                     </p>
+
                     <p
-                      className="font-michroma text-lg"
+                      className="font-michroma text-[14px]"
                       style={{ color: courtBalanceColor }}
                     >
                       {courtBalance}
+                    </p>
+
+                    <p className="mt-1 font-michroma text-[8px] leading-relaxed text-white/35">
+                      {courtBalanceDescription}
                     </p>
                   </div>
                 </div>
