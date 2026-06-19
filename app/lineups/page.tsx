@@ -101,6 +101,7 @@ type SavedLineup = {
   teamIdentity: string;
   strengths: string[];
   weaknesses: string[];
+  tradeoff: string;
   grades: TeamGrades;
   scores: LineupScoutScores;
   xFactorName: string;
@@ -125,6 +126,7 @@ type LineupScoutReport = {
   teamIdentity: string;
   strengths: string[];
   weaknesses: string[];
+  tradeoff: string;
   grades: TeamGrades;
   scores: LineupScoutScores;
   xFactor: XFactorResult | null;
@@ -882,6 +884,7 @@ function getLineupScoutReport(
       teamIdentity: "Unknown",
       strengths: [],
       weaknesses: [],
+      tradeoff: "--",
       grades: {
         offense: "--",
         defense: "--",
@@ -1178,22 +1181,22 @@ function getLineupScoutReport(
     selectedPlayers.length < 5 ? "Bench Creation" : null,
   ].filter((weakness): weakness is string => Boolean(weakness));
 
-  const weakestScore = getRankedScoutScores(scores).at(-1);
+  const weakestScore = getRankedScoutScores(scores)
+    .filter((score) => score.key !== "starPower")
+    .at(-1);
 
-  const finalWeaknesses =
-    weaknesses.length > 0
-      ? weaknesses
-      : weakestScore?.key === "shooting"
-        ? ["Floor Spacing"]
-        : weakestScore?.key === "playmaking"
-          ? ["Playmaking"]
-          : weakestScore?.key === "offense"
-            ? ["Half-Court Offense"]
-            : weakestScore?.key === "defense"
-              ? ["Perimeter Defense"]
-              : weakestScore?.key === "rebounding"
-                ? ["Rim Protection"]
-                : ["No major weakness"];
+  const tradeoff =
+    weakestScore?.key === "shooting"
+      ? "This lineup sacrifices spacing for size, rebounding, and interior control."
+      : weakestScore?.key === "playmaking"
+        ? "This lineup leans more on individual talent than constant table-setting."
+        : weakestScore?.key === "offense"
+          ? "This lineup wins through structure and defense more than pure scoring pressure."
+          : weakestScore?.key === "defense"
+            ? "This lineup prioritizes offensive talent over defensive coverage."
+            : weakestScore?.key === "rebounding"
+              ? "This lineup trades some glass control for skill, speed, or spacing."
+              : "No major tradeoff.";
 
   const lineupCeiling = adjustedOverall * 0.75 + starPower * 0.25;
 
@@ -1399,7 +1402,8 @@ function getLineupScoutReport(
     archetype,
     teamIdentity,
     strengths: strengths.length > 0 ? strengths : ["Balanced production"],
-    weaknesses: finalWeaknesses,
+    weaknesses: weaknesses.length > 0 ? weaknesses : ["No major weakness"],
+    tradeoff,
     grades: {
       offense: getGrade(adjustedOffenseScore),
       defense: getGrade(adjustedDefenseScore),
@@ -1636,6 +1640,8 @@ export default function Lineups() {
   const lineupWeaknesses =
     scoutedSavedLineup?.weaknesses ?? scoutReport.weaknesses;
 
+  const lineupTradeoff = scoutedSavedLineup?.tradeoff ?? scoutReport.tradeoff;
+
   const xFactorName =
     scoutedSavedLineup?.xFactorName ?? scoutReport.xFactor?.player.name ?? "--";
 
@@ -1789,6 +1795,7 @@ export default function Lineups() {
       teamIdentity,
       strengths: lineupStrengths,
       weaknesses: lineupWeaknesses,
+      tradeoff: lineupTradeoff,
       grades: teamGrades,
       scores: scoutReport.scores,
       xFactorName,
@@ -2889,7 +2896,7 @@ export default function Lineups() {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-[120px_180px_160px] items-start gap-3">
+                <div className="grid grid-cols-[130px_130px_130px_130px] items-start gap-3">
                   <div>
                     <p className="font-michroma text-[10px] uppercase text-emerald-400/60">
                       Strengths
@@ -2922,6 +2929,15 @@ export default function Lineups() {
                         </p>
                       ))}
                     </div>
+                  </div>
+
+                  <div>
+                    <p className="font-michroma text-[10px] uppercase text-[#EFBF04]">
+                      Tradeoff
+                    </p>
+                    <p className="mt-2 max-w-25 font-michroma text-[10px] text-white">
+                      {lineupTradeoff}
+                    </p>
                   </div>
 
                   <div>
