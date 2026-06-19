@@ -2757,9 +2757,14 @@ export default function Lineups() {
                     Scouting Report
                   </h2>
 
-                  <p className="mt-1 max-w-60 font-michroma text-[10px] leading-relaxed text-white/35">
-                    {scoutSummary}
-                  </p>
+                  <div
+                    className="scout-section-reveal"
+                    style={{ animationDelay: "80ms" }}
+                  >
+                    <p className="mt-1 max-w-60 font-michroma text-[10px] leading-relaxed text-white/35">
+                      {scoutSummary}
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -2801,32 +2806,39 @@ export default function Lineups() {
                 </div>
 
                 <div className="mt-1">
-                  <p className="font-michroma text-[10px] uppercase text-white/40 text-center">
-                    Score Profile
-                  </p>
+                  <div
+                    className="scout-section-reveal"
+                    style={{ animationDelay: "140ms" }}
+                  >
+                    <p className="font-michroma text-[10px] uppercase text-white/40 text-center">
+                      Score Profile
+                    </p>
 
-                  <div className="mt-1 grid gap-1">
-                    {getRankedScoutScores(scoutScores).map((score) => (
-                      <div
-                        key={score.key}
-                        className="grid grid-cols-[68px_120px_24px] items-center gap-1"
-                      >
-                        <p className="font-michroma text-[8px] text-white/40">
-                          {score.label}
-                        </p>
+                    <div className="mt-1 grid gap-1">
+                      {getRankedScoutScores(scoutScores).map((score) => (
+                        <div
+                          key={score.key}
+                          className="grid grid-cols-[68px_120px_24px] items-center gap-1"
+                        >
+                          <p className="font-michroma text-[8px] text-white/40">
+                            {score.label}
+                          </p>
 
-                        <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
-                          <div
-                            className="h-full rounded-full bg-[#1bc2ec]"
-                            style={{ width: `${Math.min(score.value, 100)}%` }}
-                          />
+                          <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+                            <div
+                              className="h-full rounded-full bg-[#1bc2ec]"
+                              style={{
+                                width: `${Math.min(score.value, 100)}%`,
+                              }}
+                            />
+                          </div>
+
+                          <p className="text-right font-michroma text-[8px] text-white/45">
+                            {Math.round(score.value)}
+                          </p>
                         </div>
-
-                        <p className="text-right font-michroma text-[8px] text-white/45">
-                          {Math.round(score.value)}
-                        </p>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2870,23 +2882,28 @@ export default function Lineups() {
                   </div>
                 </div>
 
-                <div>
-                  <p className="font-michroma text-[10px] uppercase text-white/40">
-                    Archetype
-                  </p>
-                  <p className="font-michroma text-sm text-white">
-                    {lineupArchetype}
-                  </p>
-                </div>
+                <div
+                  className="scout-section-reveal"
+                  style={{ animationDelay: "200ms" }}
+                >
+                  <div>
+                    <p className="font-michroma text-[10px] uppercase text-white/40">
+                      Archetype
+                    </p>
+                    <p className="font-michroma text-sm text-white">
+                      {lineupArchetype}
+                    </p>
+                  </div>
 
-                <div>
-                  <p className="font-michroma text-[10px] uppercase text-white/40">
-                    Why This Archetype
-                  </p>
+                  <div>
+                    <p className="font-michroma text-[10px] uppercase text-white/40">
+                      Why This Archetype
+                    </p>
 
-                  <p className="mt-1 max-w-75 font-michroma text-[9px] leading-relaxed text-white/45">
-                    {scoutReason}
-                  </p>
+                    <p className="mt-1 max-w-75 font-michroma text-[9px] leading-relaxed text-white/45">
+                      {scoutReason}
+                    </p>
+                  </div>
                 </div>
 
                 <div>
@@ -2898,136 +2915,147 @@ export default function Lineups() {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-[130px_130px_130px_130px] items-start gap-3">
-                  <div>
-                    <p className="font-michroma text-[10px] uppercase text-emerald-400/60">
-                      Strengths
-                    </p>
+                <div
+                  className="scout-section-reveal"
+                  style={{ animationDelay: "260ms" }}
+                >
+                  <div className="grid grid-cols-[130px_130px_130px_130px] items-start gap-3 mt-2">
+                    <div>
+                      <p className="font-michroma text-[10px] uppercase text-emerald-400/60">
+                        Strengths
+                      </p>
 
-                    <div className="mt-2 grid gap-2">
-                      {lineupStrengths.map((strength) => (
-                        <p
-                          key={strength}
-                          className="font-michroma text-[10px] text-white"
-                        >
-                          <span className="text-emerald-400">✓</span> {strength}
-                        </p>
-                      ))}
+                      <div className="mt-2 grid gap-2">
+                        {lineupStrengths.map((strength) => (
+                          <p
+                            key={strength}
+                            className="font-michroma text-[10px] text-white"
+                          >
+                            <span className="text-emerald-400">✓</span>{" "}
+                            {strength}
+                          </p>
+                        ))}
+                      </div>
                     </div>
-                  </div>
 
-                  <div>
-                    <p className="font-michroma text-[10px] uppercase text-red-400/60">
-                      Weaknesses
-                    </p>
+                    <div>
+                      <p className="font-michroma text-[10px] uppercase text-red-400/60">
+                        Weaknesses
+                      </p>
 
-                    <div className="mt-2 grid gap-2">
-                      {lineupWeaknesses.map((weakness) => (
-                        <p
-                          key={weakness}
-                          className="font-michroma text-[10px] text-white"
-                        >
-                          <span className="text-red-400">!</span> {weakness}
-                        </p>
-                      ))}
+                      <div className="mt-2 grid gap-2">
+                        {lineupWeaknesses.map((weakness) => (
+                          <p
+                            key={weakness}
+                            className="font-michroma text-[10px] text-white"
+                          >
+                            <span className="text-red-400">!</span> {weakness}
+                          </p>
+                        ))}
+                      </div>
                     </div>
-                  </div>
 
-                  <div>
-                    <p className="font-michroma text-[10px] uppercase text-[#EFBF04]">
-                      Tradeoff
-                    </p>
-                    <p className="mt-2 max-w-25 font-michroma text-[10px] text-white">
-                      {lineupTradeoff}
-                    </p>
-                  </div>
+                    <div>
+                      <p className="font-michroma text-[10px] uppercase text-[#EFBF04]">
+                        Tradeoff
+                      </p>
+                      <p className="mt-2 max-w-25 font-michroma text-[10px] text-white">
+                        {lineupTradeoff}
+                      </p>
+                    </div>
 
-                  <div>
-                    <p className="font-michroma text-[10px] uppercase text-white/30">
-                      Team Grades
-                    </p>
-
-                    <div className="mt-2 grid gap-1">
-                      <p className="font-michroma text-[9px] text-white/35">
-                        Offense:{" "}
-                        <span className="text-white/55">
-                          {teamGrades.offense}
-                        </span>
+                    <div>
+                      <p className="font-michroma text-[10px] uppercase text-white/30">
+                        Team Grades
                       </p>
 
-                      <p className="font-michroma text-[9px] text-white/35">
-                        Defense:{" "}
-                        <span className="text-white/55">
-                          {teamGrades.defense}
-                        </span>
-                      </p>
+                      <div className="mt-2 grid gap-1">
+                        <p className="font-michroma text-[9px] text-white/35">
+                          Offense:{" "}
+                          <span className="text-white/55">
+                            {teamGrades.offense}
+                          </span>
+                        </p>
 
-                      <p className="font-michroma text-[9px] text-white/35">
-                        Shooting:{" "}
-                        <span className="text-white/55">
-                          {teamGrades.shooting}
-                        </span>
-                      </p>
+                        <p className="font-michroma text-[9px] text-white/35">
+                          Defense:{" "}
+                          <span className="text-white/55">
+                            {teamGrades.defense}
+                          </span>
+                        </p>
 
-                      <p className="font-michroma text-[9px] text-white/35">
-                        Playmaking:{" "}
-                        <span className="text-white/55">
-                          {teamGrades.playmaking}
-                        </span>
-                      </p>
+                        <p className="font-michroma text-[9px] text-white/35">
+                          Shooting:{" "}
+                          <span className="text-white/55">
+                            {teamGrades.shooting}
+                          </span>
+                        </p>
 
-                      <p className="font-michroma text-[9px] text-white/35">
-                        Rebounding:{" "}
-                        <span className="text-white/55">
-                          {teamGrades.rebounding}
-                        </span>
-                      </p>
+                        <p className="font-michroma text-[9px] text-white/35">
+                          Playmaking:{" "}
+                          <span className="text-white/55">
+                            {teamGrades.playmaking}
+                          </span>
+                        </p>
+
+                        <p className="font-michroma text-[9px] text-white/35">
+                          Rebounding:{" "}
+                          <span className="text-white/55">
+                            {teamGrades.rebounding}
+                          </span>
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid gap-3 border-t border-white/10 pt-4 sm:grid-cols-3">
-                  <div>
-                    <p className="font-michroma text-[10px] uppercase text-white/40">
-                      X-Factor
-                    </p>
-                    <p className="font-michroma text-xs text-white">
-                      {xFactorName}
-                    </p>
-                    <p className="mt-1 font-michroma text-[8px] leading-relaxed text-white/35">
-                      {xFactorDescription}
-                    </p>
-                  </div>
+                <div
+                  className="scout-section-reveal"
+                  style={{ animationDelay: "320ms" }}
+                >
+                  <div className="grid gap-3 border-t border-white/10 pt-4 sm:grid-cols-3">
+                    <div>
+                      <p className="font-michroma text-[10px] uppercase text-white/40">
+                        X-Factor
+                      </p>
+                      <p className="font-michroma text-xs text-white">
+                        {xFactorName}
+                      </p>
+                      <p className="mt-1 font-michroma text-[8px] leading-relaxed text-white/35">
+                        {xFactorDescription}
+                      </p>
+                    </div>
 
-                  <div>
-                    <p className="font-michroma text-[10px] uppercase text-white/40">
-                      Similar To
-                    </p>
+                    <div>
+                      <p className="font-michroma text-[10px] uppercase text-white/40">
+                        Similar To
+                      </p>
 
-                    <p className="font-michroma text-[11px] text-[#1bc2ec]">
-                      {similarLineup}
-                    </p>
+                      <p className="font-michroma text-[11px] text-[#1bc2ec]">
+                        {similarLineup}
+                      </p>
 
-                    <p className="font-michroma text-[8px] leading-relaxed text-white/35">
-                      {similarToDescription}
-                    </p>
-                  </div>
+                      <p className="font-michroma text-[8px] leading-relaxed text-white/35">
+                        {similarToDescription}
+                      </p>
+                    </div>
 
-                  <div>
-                    <p className="font-michroma text-[10px] uppercase text-white/40">
-                      Court Balance
-                    </p>
+                    <div>
+                      <p className="font-michroma text-[10px] uppercase text-white/40">
+                        Court Balance
+                      </p>
 
-                    <p
-                      className="font-michroma text-[14px]"
-                      style={{ color: courtBalanceColor }}
-                    >
-                      {courtBalance}
-                    </p>
+                      <p
+                        className="font-michroma text-[14px]"
+                        style={{ color: courtBalanceColor }}
+                      >
+                        {courtBalance}
+                      </p>
 
-                    <p className="mt-1 font-michroma text-[8px] leading-relaxed text-white/35">
-                      {courtBalanceDescription}
-                    </p>
+                      <p className="mt-1 font-michroma text-[8px] leading-relaxed text-white/35">
+                        {courtBalanceDescription}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>

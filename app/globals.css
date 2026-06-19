@@ -114,6 +114,23 @@
   animation: playerAddToCourt 220ms ease-out both;
 }
 
+/* For sections in the scout report to be delayed coming in */
+@keyframes scoutSectionReveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.scout-section-reveal {
+  opacity: 0;
+  animation: scoutSectionReveal 240ms ease-out forwards;
+}
+
 * {
   box-sizing: border-box;
 }
