@@ -1545,6 +1545,13 @@ export default function Lineups() {
   // Saved lineups
   const [savedLineups, setSavedLineups] = useState<SavedLineup[]>([]);
   const [savedLineupSearch, setSavedLineupSearch] = useState("");
+  const [savedLineupSort, setSavedLineupSort] = useState("highestOvr");
+  const [savedLineupTierFilter, setSavedLineupTierFilter] = useState("");
+  const [savedLineupArchetypeFilter, setSavedLineupArchetypeFilter] =
+    useState("");
+  const [openSavedDropdown, setOpenSavedDropdown] = useState<string | null>(
+    null,
+  );
 
   // Modals
   const [isScoutOpen, setIsScoutOpen] = useState(false);
@@ -1706,25 +1713,62 @@ export default function Lineups() {
     : [];
 
   // Saved lineup derived data
-  const filteredSavedLineups = savedLineups.filter((lineup) => {
-    const search = savedLineupSearch.toLowerCase();
+  const filteredSavedLineups = savedLineups
+    .filter((lineup) => {
+      const search = savedLineupSearch.toLowerCase();
 
-    const playerNames = lineupPositions
-      .map((position) => lineup.players[position])
-      .join(" ")
-      .toLowerCase();
+      const playerNames = lineupPositions
+        .map((position) => lineup.players[position])
+        .join(" ")
+        .toLowerCase();
 
-    return (
-      lineup.name.toLowerCase().includes(search) ||
-      (lineup.archetype ?? "").toLowerCase().includes(search) ||
-      (lineup.teamIdentity ?? "").toLowerCase().includes(search) ||
-      playerNames.includes(search)
-    );
-  });
+      const matchesSearch =
+        lineup.name.toLowerCase().includes(search) ||
+        (lineup.archetype ?? "").toLowerCase().includes(search) ||
+        (lineup.teamIdentity ?? "").toLowerCase().includes(search) ||
+        playerNames.includes(search);
+
+      const matchesTier =
+        savedLineupTierFilter === "" || lineup.tier === savedLineupTierFilter;
+
+      const matchesArchetype =
+        savedLineupArchetypeFilter === "" ||
+        lineup.archetype === savedLineupArchetypeFilter;
+
+      return matchesSearch && matchesTier && matchesArchetype;
+    })
+    .toSorted((a, b) => {
+      if (savedLineupSort === "lowestOvr") {
+        return a.overall - b.overall;
+      }
+
+      if (savedLineupSort === "newest") {
+        return (
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      }
+
+      if (savedLineupSort === "oldest") {
+        return (
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+      }
+
+      return b.overall - a.overall;
+    });
 
   // Page display values
   const shouldShowTopText =
     activeTab === "featured" || activeTab === "saved" || hasStartedBuilder;
+
+  const savedSortLabel =
+    savedLineupSort === "lowestOvr"
+      ? "Lowest OVR"
+      : savedLineupSort === "newest"
+        ? "Newest Saved"
+        : savedLineupSort === "oldest"
+          ? "Oldest Saved"
+          : "Highest OVR";
 
   // Load saved lineups from localStorage
   useEffect(() => {
@@ -2605,13 +2649,53 @@ export default function Lineups() {
                     className="w-full max-w-md rounded-md border border-white/15 bg-black/30 px-4 py-3 font-michroma text-xs text-white outline-none placeholder:text-white/30 focus:border-white"
                   />
 
-                  <button
-                    type="button"
-                    className="rounded-md border border-white/15 bg-black/30 px-4 py-3 font-michroma text-xs text-white/60"
-                  >
-                    Sort: Highest OVR ▾
-                  </button>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setOpenSavedDropdown(
+                          openSavedDropdown === "sort" ? null : "sort",
+                        )
+                      }
+                      className={`flex min-w-48 cursor-pointer items-center justify-between gap-3 rounded-md border px-4 py-3 font-michroma text-xs transition ${
+                        savedLineupSort !== "highestOvr"
+                          ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]"
+                          : "border-white/15 bg-black/30 text-white/60 hover:border-white/40"
+                      }`}
+                    >
+                      <span>Sort: {savedSortLabel}</span>
+                      <span className="text-[#1bc2ec]">▾</span>
+                    </button>
+
+                    {openSavedDropdown === "sort" && (
+                      <div className="absolute right-0 top-full z-100 mt-2 w-full overflow-hidden rounded-md border border-white/15 bg-[#07111f] shadow-[0_0_20px_rgba(0,0,0,0.45)]">
+                        {[
+                          { label: "Highest OVR", value: "highestOvr" },
+                          { label: "Lowest OVR", value: "lowestOvr" },
+                          { label: "Newest Saved", value: "newest" },
+                          { label: "Oldest Saved", value: "oldest" },
+                        ].map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => {
+                              setSavedLineupSort(option.value);
+                              setOpenSavedDropdown(null);
+                            }}
+                            className={`block w-full cursor-pointer px-4 py-3 text-left font-michroma text-xs transition ${
+                              savedLineupSort === option.value
+                                ? "bg-[#1bc2ec]/10 text-[#1bc2ec]"
+                                : "text-white/60 hover:bg-white/10 hover:text-white"
+                            }`}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
+
                 <div className="mt-2">
                   <p className="mb-4 text-center font-michroma text-xs text-white/40">
                     {savedLineups.length} Saved{" "}
