@@ -458,30 +458,49 @@ function getBuilderPlayerRatingForPosition(
 
 // Color helpers
 function getSavedLineupArchetypeColor(archetype: string) {
-  if (archetype === "Two-Way Dynasty") return "#EFBF04";
-  if (archetype === "Championship Dynasty") return "#EFBF04";
-
+  // Speed, pace, movement
   if (archetype === "Transition Attack") return "#1bc2ec";
   if (archetype === "Showtime Offense") return "#1bc2ec";
 
+  // Defense, stops, physicality
   if (archetype === "Defensive Powerhouse") return "#22C55E";
   if (archetype === "Defensive Juggernaut") return "#22C55E";
   if (archetype === "Lockdown Unit") return "#22C55E";
 
+  // Shooting and floor spacing
   if (archetype === "Spacing Superteam") return "#A855F7";
   if (archetype === "Floor Spacing Machine") return "#A855F7";
+  if (archetype === "Spacing Engine") return "#A855F7";
 
+  // Firepower and scoring
   if (archetype === "Offensive Superteam") return "#F97316";
   if (archetype === "Iso Superteam") return "#F97316";
 
-  if (archetype === "Point-Center Offense") return "#14B8A6";
+  // Elite on both ends
+  if (archetype === "Two-Way Dynasty") return "#EFBF04";
+  if (archetype === "Championship Dynasty") return "#EFBF04";
+
+  // No dominant strength
+  if (archetype === "Balanced Core") return "#CBD5E1";
+
+  // Talent-driven lineup
+  if (archetype === "Star-Powered Contender") return "#38BDF8";
+
+  // Interior dominance
   if (archetype === "Paint Control Unit") return "#EF4444";
   if (archetype === "Rim Pressure Unit") return "#EF4444";
+  if (archetype === "Point-Center Offense") return "#EF4444";
 
-  if (archetype === "Star-Powered Contender") return "#FACC15";
-  if (archetype === "Balanced Core") return "#94A3B8";
+  return "#CBD5E1";
+}
 
-  return "#1bc2ec";
+function getLineupTierColor(tier: string) {
+  if (tier === "Championship Favorite") return "#EFBF04";
+  if (tier === "Championship Contender") return "#1bc2ec";
+  if (tier === "Playoff-Caliber") return "#FFFFFF";
+  if (tier === "Developmental Lineup") return "#94A3B8";
+
+  return "#94A3B8";
 }
 
 function getCourtBalanceColor(courtBalance: string) {
@@ -1663,6 +1682,10 @@ export default function Lineups() {
 
   const lineupTier = scoutedSavedLineup?.tier ?? scoutReport.tier;
 
+  const scoutArchetypeColor = getSavedLineupArchetypeColor(lineupArchetype);
+
+  const scoutTierColor = getLineupTierColor(lineupTier);
+
   const scoutSummary = scoutedSavedLineup?.summary ?? scoutReport.summary;
 
   const teamIdentity =
@@ -2767,6 +2790,7 @@ export default function Lineups() {
                       const archetypeColor = getSavedLineupArchetypeColor(
                         lineup.archetype,
                       );
+                      const tierColor = getLineupTierColor(lineup.tier);
                       const topScore = getSavedLineupTopScore(lineup);
                       return (
                         <div
@@ -2832,17 +2856,27 @@ export default function Lineups() {
                           </div>
 
                           <p
-                            className="truncate font-michroma text-[14px]"
+                            className="truncate font-michroma text-[15px]"
                             style={{ color: archetypeColor }}
                           >
                             {lineup.archetype}
                           </p>
 
-                          <p className="mt-1 truncate font-michroma text-[12px] text-white/80">
+                          <p
+                            className="mt-1 truncate font-michroma text-[12px]"
+                            style={{
+                              color: `${archetypeColor}bb`,
+                            }}
+                          >
                             {lineup.teamIdentity}
                           </p>
 
-                          <p className="mt-1 font-michroma text-[10px] text-white/45">
+                          <p
+                            className="mt-1 font-michroma text-[10px]"
+                            style={{
+                              color: tierColor,
+                            }}
+                          >
                             {lineup.tier ?? "Saved Lineup"}
                           </p>
 
@@ -3028,7 +3062,13 @@ export default function Lineups() {
               <div className="mt-1 grid max-w-xl gap-2">
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="font-michroma text-3xl text-[#1bc2ec] -tracking-widest">
+                    <p
+                      className="font-michroma text-3xl -tracking-widest"
+                      style={{
+                        color: scoutArchetypeColor,
+                        textShadow: `0 0 12px ${scoutArchetypeColor}99`,
+                      }}
+                    >
                       {animatedScoutOverall.toFixed(1)}
                     </p>
 
@@ -3037,7 +3077,10 @@ export default function Lineups() {
                     </p>
                   </div>
 
-                  <p className="font-michroma text-xs text-[#1bc2ec]">
+                  <p
+                    className="font-michroma text-xs"
+                    style={{ color: scoutTierColor }}
+                  >
                     {lineupTier}
                   </p>
 
@@ -3045,8 +3088,14 @@ export default function Lineups() {
                     {lineupBadges.map((badge) => (
                       <span
                         key={badge}
-                        className="rounded-md border border-[#1bc2ec]/30 bg-[#1bc2ec]/10 px-1 py-1 font-michroma text-[8px] text-[#1bc2ec]"
+                        className="flex items-center gap-1 rounded-md border px-1 py-1 font-michroma text-[6.5px]"
+                        style={{
+                          color: scoutArchetypeColor,
+                          borderColor: `${scoutArchetypeColor}55`,
+                          backgroundColor: `${scoutArchetypeColor}18`,
+                        }}
                       >
+                        <LineupBadgeIcon badge={badge} />
                         {badge}
                       </span>
                     ))}
@@ -3061,13 +3110,20 @@ export default function Lineups() {
                     <p className="font-michroma text-[10px] uppercase text-white/40">
                       Archetype
                     </p>
-                    <p className="font-michroma text-sm text-white">
+
+                    <p
+                      className="font-michroma text-sm"
+                      style={{
+                        color: scoutArchetypeColor,
+                        textShadow: `0 0 10px ${scoutArchetypeColor}88`,
+                      }}
+                    >
                       {lineupArchetype}
                     </p>
                   </div>
 
                   <div>
-                    <p className="font-michroma text-[10px] uppercase text-white/40">
+                    <p className="mt-1 font-michroma text-[10px] uppercase text-white/40">
                       Why This Archetype
                     </p>
 
@@ -3081,7 +3137,11 @@ export default function Lineups() {
                   <p className="font-michroma text-[10px] uppercase text-white/40">
                     Team Identity
                   </p>
-                  <p className="font-michroma text-sm text-white">
+
+                  <p
+                    className="font-michroma text-sm"
+                    style={{ color: `${scoutArchetypeColor}bb` }}
+                  >
                     {teamIdentity}
                   </p>
                 </div>
