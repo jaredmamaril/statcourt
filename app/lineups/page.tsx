@@ -2920,7 +2920,7 @@ export default function Lineups() {
                           </div>
 
                           <p
-                            className="truncate font-michroma text-[15px]"
+                            className="-mt-3 truncate font-michroma text-[15px]"
                             style={{ color: archetypeColor }}
                           >
                             {lineup.archetype}
@@ -2944,19 +2944,7 @@ export default function Lineups() {
                             {lineup.tier ?? "Saved Lineup"}
                           </p>
 
-                          <p className="mt-2 line-clamp-2 font-michroma text-[8px] leading-relaxed text-white/35">
-                            {lineupPositions
-                              .map((position) => {
-                                const playerName = lineup.players[position];
-                                return playerName
-                                  ? `${playerName.split(" ").at(-1)}`
-                                  : null;
-                              })
-                              .filter(Boolean)
-                              .join("  •  ")}
-                          </p>
-
-                          <div className="mt-3 flex flex-wrap gap-1.5">
+                          <div className="mt-2 flex flex-wrap gap-1.5">
                             {(lineup.badges ?? []).slice(0, 3).map((badge) => (
                               <span
                                 key={badge}
@@ -2972,6 +2960,18 @@ export default function Lineups() {
                               </span>
                             ))}
                           </div>
+
+                          <p className="mt-2 line-clamp-2 font-michroma text-[8px] leading-relaxed text-white/35 text-center">
+                            {lineupPositions
+                              .map((position) => {
+                                const playerName = lineup.players[position];
+                                return playerName
+                                  ? `${playerName.split(" ").at(-1)}`
+                                  : null;
+                              })
+                              .filter(Boolean)
+                              .join("  •  ")}
+                          </p>
 
                           <div className="mt-4 flex flex-wrap justify-center gap-2">
                             <button
