@@ -511,6 +511,50 @@ function getCourtBalanceColor(courtBalance: string) {
   return "#A855F7";
 }
 
+const archetypeColorLegend = [
+  {
+    label: "Transition Attack",
+    color: "#1bc2ec",
+    description:
+      "Fast-paced offense built around transition scoring and playmaking.",
+  },
+  {
+    label: "Defensive Powerhouse",
+    color: "#22C55E",
+    description: "Elite defense, rebounding, and physical control.",
+  },
+  {
+    label: "Spacing Engine",
+    color: "#A855F7",
+    description: "High-level shooting and floor spacing.",
+  },
+  {
+    label: "Offensive Superteam",
+    color: "#F97316",
+    description: "Explosive scoring from multiple creators.",
+  },
+  {
+    label: "Two-Way Dynasty",
+    color: "#EFBF04",
+    description: "Dominance on both offense and defense.",
+  },
+  {
+    label: "Balanced Core",
+    color: "#CBD5E1",
+    description: "Well-rounded lineup with no major specialization.",
+  },
+  {
+    label: "Star-Powered Contender",
+    color: "#38BDF8",
+    description: "Driven by elite individual talent and star power.",
+  },
+  {
+    label: "Paint Control Unit",
+    color: "#EF4444",
+    description: "Interior scoring, rim protection, and rebounding.",
+  },
+];
+
 // Scouting report helpers
 function getGrade(score: number) {
   if (score >= 95) return "A+";
@@ -3103,13 +3147,49 @@ export default function Lineups() {
                 </div>
 
                 <div
-                  className="scout-section-reveal"
+                  className="scout-section-reveal relative z-500"
                   style={{ animationDelay: "200ms" }}
                 >
                   <div>
-                    <p className="font-michroma text-[10px] uppercase text-white/40">
-                      Archetype
-                    </p>
+                    <div className="group/archetype relative z-900 flex w-fit items-center gap-2">
+                      <p className="font-michroma text-[10px] uppercase text-white/40">
+                        Archetype
+                      </p>
+
+                      <span
+                        className="h-2 w-2 rounded-full"
+                        style={{ backgroundColor: scoutArchetypeColor }}
+                      />
+
+                      <div className="pointer-events-none absolute left-full -top-20 z-999 ml-3 w-80 rounded-md border border-white/15 bg-black/95 p-3 opacity-0 shadow-[0_0_24px_rgba(0,0,0,0.55)] transition-opacity duration-200 group-hover/archetype:pointer-events-auto group-hover/archetype:opacity-100">
+                        <p className="font-michroma text-[10px] uppercase text-white/60">
+                          Archetype Colors
+                        </p>
+
+                        <div className="mt-3 grid gap-2">
+                          {archetypeColorLegend.map((item) => (
+                            <div
+                              key={item.label}
+                              className="grid grid-cols-[10px_1fr] gap-2"
+                            >
+                              <span
+                                className="mt-1 h-2 w-2 rounded-full"
+                                style={{ backgroundColor: item.color }}
+                              />
+
+                              <div>
+                                <p className="font-michroma text-[9px] text-white">
+                                  {item.label}
+                                </p>
+                                <p className="mt-0.5 font-michroma text-[8px] leading-relaxed text-white/40">
+                                  {item.description}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
 
                     <p
                       className="font-michroma text-sm"
@@ -3147,7 +3227,7 @@ export default function Lineups() {
                 </div>
 
                 <div
-                  className="scout-section-reveal"
+                  className="scout-section-reveal relative z-10"
                   style={{ animationDelay: "260ms" }}
                 >
                   <div className="grid grid-cols-[130px_130px_130px_130px] items-start gap-3 mt-2">
@@ -3241,7 +3321,7 @@ export default function Lineups() {
                 </div>
 
                 <div
-                  className="scout-section-reveal"
+                  className="scout-section-reveal relative z-10"
                   style={{ animationDelay: "320ms" }}
                 >
                   <div className="grid gap-3 border-t border-white/10 pt-4 sm:grid-cols-3">
