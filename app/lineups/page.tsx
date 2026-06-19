@@ -17,6 +17,13 @@ import {
   Target,
   Crown,
   Save,
+  Zap,
+  Gem,
+  Swords,
+  Layers,
+  BrickWall,
+  Sparkles,
+  CircleDot,
 } from "lucide-react";
 
 // Types
@@ -451,10 +458,28 @@ function getBuilderPlayerRatingForPosition(
 
 // Color helpers
 function getSavedLineupArchetypeColor(archetype: string) {
+  if (archetype === "Two-Way Dynasty") return "#EFBF04";
   if (archetype === "Championship Dynasty") return "#EFBF04";
-  if (archetype === "Spacing Superteam") return "#1bc2ec";
-  if (archetype === "Lockdown Unit") return "#A855F7";
-  if (archetype === "Showtime Offense") return "#EF4444";
+
+  if (archetype === "Transition Attack") return "#1bc2ec";
+  if (archetype === "Showtime Offense") return "#1bc2ec";
+
+  if (archetype === "Defensive Powerhouse") return "#22C55E";
+  if (archetype === "Defensive Juggernaut") return "#22C55E";
+  if (archetype === "Lockdown Unit") return "#22C55E";
+
+  if (archetype === "Spacing Superteam") return "#A855F7";
+  if (archetype === "Floor Spacing Machine") return "#A855F7";
+
+  if (archetype === "Offensive Superteam") return "#F97316";
+  if (archetype === "Iso Superteam") return "#F97316";
+
+  if (archetype === "Point-Center Offense") return "#14B8A6";
+  if (archetype === "Paint Control Unit") return "#EF4444";
+  if (archetype === "Rim Pressure Unit") return "#EF4444";
+
+  if (archetype === "Star-Powered Contender") return "#FACC15";
+  if (archetype === "Balanced Core") return "#94A3B8";
 
   return "#1bc2ec";
 }
@@ -1890,6 +1915,34 @@ export default function Lineups() {
     setIsScoutOpen(true);
   }
 
+  // Saved lineups helpers
+  function LineupBadgeIcon({ badge }: { badge: string }) {
+    const iconClass = "h-3 w-3";
+
+    if (badge === "GOAT Collection") return <Trophy className={iconClass} />;
+    if (badge === "Showtime Offense") return <Zap className={iconClass} />;
+    if (badge === "Dynasty Core") return <Crown className={iconClass} />;
+    if (badge === "Five-Out Attack") return <CircleDot className={iconClass} />;
+    if (badge === "Historic Frontcourt")
+      return <BrickWall className={iconClass} />;
+    if (badge === "Elite Shot Creation")
+      return <Swords className={iconClass} />;
+    if (badge === "Big Three") return <Gem className={iconClass} />;
+    if (badge === "Positionless Core") return <Layers className={iconClass} />;
+    if (badge === "Defensive Wall") return <Shield className={iconClass} />;
+    if (badge === "Floor Spacing") return <Target className={iconClass} />;
+
+    return <Sparkles className={iconClass} />;
+  }
+
+  function getSavedLineupTopScore(lineup: SavedLineup) {
+    const rankedScores = getRankedScoutScores(lineup.scores).filter(
+      (score) => score.key !== "starPower",
+    );
+
+    return rankedScores[0];
+  }
+
   // Navigation
   function viewPlayerCard(playerName: string) {
     router.push(`/players?player=${encodeURIComponent(playerName)}`);
@@ -2710,118 +2763,152 @@ export default function Lineups() {
                 ) : (
                   <div className="mt-2 grid gap-4 md:grid-cols-3">
                     {/* Saved lineup cards */}
-                    {filteredSavedLineups.map((lineup) => (
-                      <div
-                        key={lineup.id}
-                        className="group rounded-md border border-white/10 bg-black/25 p-4 transition-all duration-200 hover:-translate-y-1 hover:border-[#1bc2ec]/50"
-                      >
-                        <div className="flex items-start justify-between gap-4">
-                          <div>
-                            <p className="font-michroma text-[19px] text-white">
-                              {lineup.name}
-                            </p>
+                    {filteredSavedLineups.map((lineup) => {
+                      const archetypeColor = getSavedLineupArchetypeColor(
+                        lineup.archetype,
+                      );
+                      const topScore = getSavedLineupTopScore(lineup);
+                      return (
+                        <div
+                          key={lineup.id}
+                          className="group rounded-md border border-white/10 bg-black/25 p-4 transition-all duration-200 hover:-translate-y-1"
+                          style={{
+                            borderColor: `${archetypeColor}33`,
+                          }}
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0">
+                              <p className="truncate font-michroma text-[17px] text-white">
+                                {lineup.name}
+                              </p>
 
-                            <p className="mt-1 font-michroma text-[9px] text-white/30">
-                              Saved{" "}
-                              {new Date(lineup.createdAt).toLocaleDateString(
-                                "en-US",
-                                {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                },
-                              )}
-                            </p>
+                              <p className="mt-1 font-michroma text-[8px] text-white/30">
+                                Saved{" "}
+                                {new Date(lineup.createdAt).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  },
+                                )}
+                              </p>
+                            </div>
 
-                            <p
-                              className="mt-2 font-michroma text-[14px]"
+                            <div
+                              className="rounded-md border px-3 py-2 text-center transition-all duration-200"
                               style={{
-                                color: getSavedLineupArchetypeColor(
-                                  lineup.archetype,
-                                ),
+                                borderColor: `${archetypeColor}80`,
+                                backgroundColor: `${archetypeColor}18`,
+                                boxShadow: `0 0 14px ${archetypeColor}22`,
                               }}
                             >
-                              {lineup.archetype}
-                            </p>
+                              <p
+                                className="font-michroma text-lg"
+                                style={{
+                                  color: archetypeColor,
+                                  textShadow: `0 0 12px ${archetypeColor}99`,
+                                }}
+                              >
+                                {lineup.overall.toFixed(1)}
+                              </p>
 
-                            <p className="mt-1 font-michroma text-[12px] text-white/80">
-                              {lineup.tier ?? "Saved Lineup"}
-                            </p>
+                              <p className="font-michroma text-[8px] uppercase text-white/40">
+                                OVR
+                              </p>
+
+                              {topScore && (
+                                <p
+                                  className="mt-1 font-michroma text-[7px] uppercase"
+                                  style={{
+                                    color: archetypeColor,
+                                    textShadow: `0 0 10px ${archetypeColor}88`,
+                                  }}
+                                >
+                                  {Math.round(topScore.value)} {topScore.label}
+                                </p>
+                              )}
+                            </div>
                           </div>
 
-                          <div className="rounded-md border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-3 py-2 text-center transition-all duration-200 group-hover:border-[#1bc2ec] group-hover:shadow-[0_0_18px_rgba(27,194,236,0.3)]">
-                            <p className="font-michroma text-xl text-[#1bc2ec]">
-                              {lineup.overall.toFixed(1)}
-                            </p>
-
-                            <p className="font-michroma text-[8px] uppercase text-white/40">
-                              OVR
-                            </p>
-                          </div>
-                        </div>
-
-                        <p className="mt-2 truncate font-michroma text-[10px] text-white/50">
-                          {lineupPositions
-                            .map((position) => {
-                              const playerName = lineup.players[position];
-                              return playerName
-                                ? playerName.split(" ").at(-1)
-                                : null;
-                            })
-                            .filter(Boolean)
-                            .join(" • ")}
-                        </p>
-
-                        <div className="mt-2">
-                          <p className="font-michroma text-[9px] uppercase text-white/35">
-                            Team Identity
+                          <p
+                            className="truncate font-michroma text-[14px]"
+                            style={{ color: archetypeColor }}
+                          >
+                            {lineup.archetype}
                           </p>
 
-                          <p className="mt-1 font-michroma text-[12px] text-white">
+                          <p className="mt-1 truncate font-michroma text-[12px] text-white/80">
                             {lineup.teamIdentity}
                           </p>
 
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            {(lineup.strengths ?? []).map((strength, index) => (
-                              <p
-                                key={strength}
-                                className="animate-[traitReveal_300ms_ease-out_both] font-michroma text-[10px] text-white"
-                                style={{ animationDelay: `${index * 120}ms` }}
+                          <p className="mt-1 font-michroma text-[10px] text-white/45">
+                            {lineup.tier ?? "Saved Lineup"}
+                          </p>
+
+                          <p className="mt-2 line-clamp-2 font-michroma text-[8px] leading-relaxed text-white/35">
+                            {lineupPositions
+                              .map((position) => {
+                                const playerName = lineup.players[position];
+                                return playerName
+                                  ? `${playerName.split(" ").at(-1)}`
+                                  : null;
+                              })
+                              .filter(Boolean)
+                              .join("  •  ")}
+                          </p>
+
+                          <div className="mt-3 flex flex-wrap gap-1.5">
+                            {(lineup.badges ?? []).slice(0, 3).map((badge) => (
+                              <span
+                                key={badge}
+                                className="flex items-center gap-1 rounded border px-1.5 py-0.5 font-michroma text-[8px]"
+                                style={{
+                                  color: archetypeColor,
+                                  borderColor: `${archetypeColor}55`,
+                                  backgroundColor: `${archetypeColor}18`,
+                                }}
                               >
-                                <span className="text-emerald-400">✓</span>{" "}
-                                {strength}
-                              </p>
+                                <LineupBadgeIcon badge={badge} />
+                                {badge}
+                              </span>
                             ))}
                           </div>
+
+                          <div className="mt-4 flex flex-wrap justify-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => loadSavedLineup(lineup)}
+                              className="rounded-md border px-3 py-2 font-michroma text-[8px] uppercase transition hover:brightness-125"
+                              style={{
+                                color: archetypeColor,
+                                borderColor: `${archetypeColor}cc`,
+                                backgroundColor: `${archetypeColor}22`,
+                                boxShadow: `0 0 14px ${archetypeColor}33`,
+                              }}
+                            >
+                              Load
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => scoutSavedLineup(lineup)}
+                              className="rounded-md border border-white/15 bg-white/5 px-3 py-2 font-michroma text-[8px] uppercase text-white/55 transition hover:border-[#1bc2ec]/40 hover:text-[#1bc2ec]"
+                            >
+                              Scout
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setLineupPendingDelete(lineup)}
+                              className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 font-michroma text-[8px] uppercase text-red-400 transition hover:bg-red-500/20"
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </div>
-
-                        <div className="mt-2 flex flex-wrap justify-center">
-                          <button
-                            type="button"
-                            onClick={() => loadSavedLineup(lineup)}
-                            className="rounded-md border border-[#1bc2ec]/80 bg-[#1bc2ec]/15 px-3 py-2 font-michroma text-[9px] uppercase text-[#1bc2ec] shadow-[0_0_14px_rgba(27,194,236,0.25)] transition hover:bg-[#1bc2ec]/25"
-                          >
-                            Load Lineup
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => scoutSavedLineup(lineup)}
-                            className="rounded-md border border-white/15 bg-white/5 px-3 py-2 font-michroma text-[9px] uppercase text-white/55 transition hover:border-[#1bc2ec]/40 hover:text-[#1bc2ec]"
-                          >
-                            Scout Report
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => setLineupPendingDelete(lineup)}
-                            className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 font-michroma text-[9px] uppercase text-red-400 transition hover:bg-red-500/20"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
