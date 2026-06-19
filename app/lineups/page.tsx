@@ -398,44 +398,18 @@ const defaultSecondaryPositions: Record<Position, Position[]> = {
   C: ["PF"],
 };
 
-const specialPositionOverrides: Partial<
-  Record<
-    string,
-    {
-      secondaryPositions?: Position[];
-      emergencyPositions?: Position[];
-    }
-  >
-> = {
-  "LeBron James": {
-    secondaryPositions: ["PF"],
-    emergencyPositions: ["PG"],
-  },
-  "Magic Johnson": {
-    secondaryPositions: ["SG", "SF"],
-  },
-  "Nikola Jokic": {
-    secondaryPositions: ["PF"],
-    emergencyPositions: ["PG"],
-  },
-  "Giannis Antetokounmpo": {
-    secondaryPositions: ["SF", "C"],
-  },
-};
-
 function getPlayerSecondaryPositions(
   player: (typeof players)[number],
 ): Position[] {
   return (
-    specialPositionOverrides[player.name]?.secondaryPositions ??
-    defaultSecondaryPositions[player.position]
+    player.secondaryPositions ?? defaultSecondaryPositions[player.position]
   );
 }
 
 function getPlayerEmergencyPositions(
   player: (typeof players)[number],
 ): Position[] {
-  return specialPositionOverrides[player.name]?.emergencyPositions ?? [];
+  return player.emergencyPositions ?? [];
 }
 
 function getPositionFit(
