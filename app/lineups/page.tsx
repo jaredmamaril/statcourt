@@ -3155,11 +3155,15 @@ export default function Lineups() {
                       <p className="font-michroma text-[10px] uppercase text-white/40">
                         Archetype
                       </p>
-
-                      <span
-                        className="h-2 w-2 rounded-full"
-                        style={{ backgroundColor: scoutArchetypeColor }}
-                      />
+                      <div className="flex items-center gap-1">
+                        <span
+                          className="flex h-2 w-2 rounded-full"
+                          style={{ backgroundColor: scoutArchetypeColor }}
+                        />
+                        <span className="mt-0.5 text-[8px] text-white/40">
+                          Hover over me!
+                        </span>
+                      </div>
 
                       <div className="pointer-events-none absolute left-full -top-20 z-999 ml-3 w-80 rounded-md border border-white/15 bg-black/95 p-3 opacity-0 shadow-[0_0_24px_rgba(0,0,0,0.55)] transition-opacity duration-200 group-hover/archetype:pointer-events-auto group-hover/archetype:opacity-100">
                         <p className="font-michroma text-[10px] uppercase text-white/60">
