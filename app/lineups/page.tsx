@@ -1647,6 +1647,9 @@ export default function Lineups() {
   const [lineupNameInput, setLineupNameInput] = useState("");
   const [lineupPendingDelete, setLineupPendingDelete] =
     useState<SavedLineup | null>(null);
+  const [lineupPendingRename, setLineupPendingRename] =
+    useState<SavedLineup | null>(null);
+  const [renameLineupInput, setRenameLineupInput] = useState("");
   const [isLineupSavedOpen, setIsLineupSavedOpen] = useState(false);
   const [scoutedSavedLineup, setScoutedSavedLineup] =
     useState<SavedLineup | null>(null);
@@ -1958,6 +1961,23 @@ export default function Lineups() {
 
   function deleteSavedLineup(lineupId: string) {
     const nextLineups = savedLineups.filter((lineup) => lineup.id !== lineupId);
+
+    setSavedLineups(nextLineups);
+    localStorage.setItem(
+      "statcourt-saved-lineups",
+      JSON.stringify(nextLineups),
+    );
+  }
+
+  function renameSavedLineup(lineupId: string, newName: string) {
+    const nextLineups = savedLineups.map((lineup) =>
+      lineup.id === lineupId
+        ? {
+            ...lineup,
+            name: newName.trim() || lineup.name,
+          }
+        : lineup,
+    );
 
     setSavedLineups(nextLineups);
     localStorage.setItem(
@@ -2978,6 +2998,17 @@ export default function Lineups() {
 
                             <button
                               type="button"
+                              onClick={() => {
+                                setLineupPendingRename(lineup);
+                                setRenameLineupInput(lineup.name);
+                              }}
+                              className="rounded-md border border-white/15 bg-white/5 px-3 py-2 font-michroma text-[8px] uppercase text-white/55 transition hover:border-white/40 hover:text-white"
+                            >
+                              Rename
+                            </button>
+
+                            <button
+                              type="button"
                               onClick={() => setLineupPendingDelete(lineup)}
                               className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 font-michroma text-[8px] uppercase text-red-400 transition hover:bg-red-500/20"
                             >
@@ -3468,6 +3499,48 @@ export default function Lineups() {
                 className="rounded-md border border-red-500/60 bg-red-500/10 px-4 py-3 font-michroma text-xs uppercase text-red-400 transition hover:bg-red-500/20"
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Renaming modal */}
+      {lineupPendingRename && (
+        <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-md rounded-md border border-[#1bc2ec]/60 bg-[#07111f] p-6 shadow-[0_0_35px_rgba(27,194,236,0.25)]">
+            <p className="font-michroma text-lg text-white">Rename Lineup</p>
+
+            <input
+              type="text"
+              value={renameLineupInput}
+              onChange={(event) => setRenameLineupInput(event.target.value)}
+              placeholder="Lineup name"
+              className="mt-5 w-full rounded-md border border-white/15 bg-black/30 px-4 py-3 font-michroma text-xs text-white outline-none placeholder:text-white/30 focus:border-[#1bc2ec]"
+            />
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setLineupPendingRename(null);
+                  setRenameLineupInput("");
+                }}
+                className="rounded-md border border-white/15 bg-black/20 px-4 py-3 font-michroma text-xs uppercase text-white/50 transition hover:text-white"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  renameSavedLineup(lineupPendingRename.id, renameLineupInput);
+                  setLineupPendingRename(null);
+                  setRenameLineupInput("");
+                }}
+                className="rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-4 py-3 font-michroma text-xs uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20"
+              >
+                Save Name
               </button>
             </div>
           </div>
