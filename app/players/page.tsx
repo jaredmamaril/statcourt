@@ -717,10 +717,12 @@ function Players() {
                               setIsCardFlipped(false);
                               addRecentlyViewedPlayer(playerName);
                             }}
+                            className="pointer-events-auto flex items-center justify-between gap-2 rounded border px-2 py-1 text-left font-michroma text-[8px] brightness-125 transition hover:scale-[1.02]"
                             style={{
                               borderColor: `${teamColors[recentPlayer.team]}50`,
+                              backgroundColor: `${teamColors[recentPlayer.team]}10`,
+                              boxShadow: `0 0 8px ${teamColors[recentPlayer.team]}22`,
                             }}
-                            className="pointer-events-auto flex items-center justify-between gap-2 rounded border border-white/10 px-2 py-1 text-left font-michroma text-[8px] text-white/45 transition hover:brightness-175"
                           >
                             <span
                               style={{
