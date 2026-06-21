@@ -1557,28 +1557,10 @@ function LineupMarker({
               {name}
             </p>
 
-            <p className="mt-1 font-michroma text-[8px] text-white/50">
-              {position} • {player?.team ?? "N/A"}
-            </p>
-
-            <p className="mt-3 font-michroma text-[9px] text-white">
-              OVR <span style={{ color }}>{player ? "93.4" : "N/A"}</span>
-            </p>
-
-            <p className="mt-2 font-michroma text-[8px]" style={{ color }}>
-              {archetype?.label ?? "Unknown Archetype"}
-            </p>
-
-            <div className="mt-3 grid grid-cols-3 gap-2 font-michroma text-[8px] text-white/70">
-              <span>{player?.stats.ppg ?? "-"} PPG</span>
-              <span>{player?.stats.rpg ?? "-"} RPG</span>
-              <span>{player?.stats.apg ?? "-"} APG</span>
-            </div>
-
             <button
               type="button"
               onClick={() => onViewCard(name)}
-              className="mt-3 w-full cursor-pointer rounded border px-3 py-2 font-michroma text-[9px] uppercase transition hover:brightness-150"
+              className="mt-2 w-full cursor-pointer rounded border px-3 py-2 font-michroma text-[9px] uppercase transition hover:brightness-150"
               style={{
                 color,
                 borderColor: `${color}99`,
