@@ -1383,13 +1383,13 @@ function Players() {
                       </div>
 
                       {/* Team logo - top left corner */}
-                      <div className="absolute top-18 left-12 z-30 opacity-70">
+                      <div className="absolute top-15 left-12 z-30 opacity-70">
                         <Image
                           src={teamLogos[selectedPlayer.team]}
                           alt={`${selectedPlayer.team} logo`}
                           width={32}
                           height={32}
-                          className="h-20 w-20 object-contain"
+                          className="h-24 w-24 object-contain"
                         />
                       </div>
 
@@ -1726,7 +1726,7 @@ function Players() {
                             by Career Statistical Match
                           </span>
 
-                          <div className="mt-1 flex flex-col items-center gap-0.5">
+                          <div className="mt-1 flex flex-col items-center gap-0.5 brightness-125">
                             {similarPlayers.map(({ player, matchScore }) => (
                               <button
                                 key={player.id}
@@ -1763,7 +1763,7 @@ function Players() {
                             {bestLineupFits.map((fit) => (
                               <span
                                 key={fit}
-                                className="rounded border px-1.5 py-0.5 font-michroma text-[8px]"
+                                className="rounded border px-1.5 py-0.5 font-michroma text-[8px] brightness-125"
                                 style={getLineupFitStyles(fit)}
                               >
                                 ✓ {fit}
