@@ -290,6 +290,37 @@ function Players() {
     }, 450);
   }
 
+  // Get player overall
+  function getPlayerListOverall(player: (typeof players)[number]) {
+    const ppgScore = normalizeStat(player.stats.ppg, statMaxValues.ppg);
+    const rpgScore = normalizeStat(player.stats.rpg, statMaxValues.rpg);
+    const apgScore = normalizeStat(player.stats.apg, statMaxValues.apg);
+    const fgScore = normalizeStat(
+      player.stats.fgPercent,
+      statMaxValues.fgPercent,
+    );
+    const threeScore = normalizeStat(
+      player.stats.threePercent,
+      statMaxValues.threePercent,
+    );
+    const ftScore = normalizeStat(
+      player.stats.ftPercent,
+      statMaxValues.ftPercent,
+    );
+
+    const overallScore =
+      ppgScore * 0.28 +
+      rpgScore * 0.14 +
+      apgScore * 0.18 +
+      fgScore * 0.14 +
+      threeScore * 0.12 +
+      ftScore * 0.06 +
+      player.defenseRating * 0.04 +
+      player.starPower * 0.04;
+
+    return 70 + overallScore * 0.3;
+  }
+
   return (
     <main className="min-h-screen overflow-x-hidden text-white">
       <section className="relative mx-auto w-full max-w-6xl px-6 pt-4 pb-12">
@@ -551,7 +582,7 @@ function Players() {
             </div>
 
             {/* Player list */}
-            <div className="player-list-scroll max-h-[450px] overflow-y-auto pr-2">
+            <div className="player-list-scroll max-h-112.5 overflow-y-auto pr-2">
               <div className="mx-auto flex w-full max-w-100 flex-col gap-1">
                 {/* No player(s) cases */}
                 {filteredPlayers.length === 0 ? (
@@ -566,6 +597,7 @@ function Players() {
                     const isSelected = player.name === currentPlayer;
                     const isFavorite = favorites.includes(player.name);
                     const teamColor = teamColors[player.team];
+                    const playerOverall = getPlayerListOverall(player);
                     const selectedStatValue =
                       sortBy &&
                       sortBy !== "first-name" &&
@@ -610,15 +642,24 @@ function Players() {
                             );
                             setIsCardFlipped(false);
                           }}
-                          className="flex min-w-0 flex-1 cursor-pointer px-1 py-3.5 text-left font-michroma text-xs"
+                          className="flex min-w-0 flex-1 cursor-pointer items-center justify-between gap-3 px-2 py-2 text-left font-michroma text-xs"
                         >
+                          <PlayerImage
+                            src={player.image}
+                            alt={player.name}
+                            width={44}
+                            height={44}
+                            className="h-11 w-11 shrink-0 rounded-full object-cover"
+                          />
+
                           <span className="min-w-0 flex-1">
                             <span className="block truncate">
                               {player.name}
                             </span>
+
                             <span className="mt-1 flex items-center gap-1.5">
                               <span
-                                className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/80"
+                                className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[8px] text-white/80"
                                 style={{
                                   backgroundColor: teamColor,
                                   borderColor: teamColor,
@@ -626,10 +667,10 @@ function Players() {
                               >
                                 {player.team}
                               </span>
-                              <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
+                              <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[8px] text-white/60">
                                 {player.position}
                               </span>
-                              <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60">
+                              <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[8px] text-white/60">
                                 #{player.jerseyNumber}
                               </span>
                               {/* Show value of currently selected sorting stat */}
@@ -643,6 +684,22 @@ function Players() {
                                     : ""}
                                 </span>
                               )}
+                            </span>
+                          </span>
+
+                          <span className="ml-auto flex w-20 shrink-0 flex-col items-end justify-center text-right">
+                            <span
+                              className="block leading-none font-michroma text-[13px]"
+                              style={{
+                                color: teamColor,
+                                textShadow: `0 0 10px ${teamColor}88`,
+                              }}
+                            >
+                              {playerOverall.toFixed(1)}
+                            </span>
+
+                            <span className="mt-1 block leading-none font-michroma text-[7px] uppercase text-white/35">
+                              OVR
                             </span>
                           </span>
                         </button>
