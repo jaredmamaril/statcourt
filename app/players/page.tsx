@@ -130,17 +130,42 @@ function Players() {
     (player) => player.name === currentPlayer,
   );
 
+  function getPlayerNameTextClass(name: string) {
+    if (name.length >= 20) {
+      return "max-w-72 text-[18px] leading-tight whitespace-normal";
+    }
+
+    if (name.length >= 16) {
+      return "max-w-80 text-[22px] leading-tight whitespace-normal";
+    }
+
+    if (name.length >= 15) {
+      return "max-w-80 text-[24px] leading-tight whitespace-normal";
+    }
+
+    if (name.length >= 12) {
+      return "max-w-80 text-[26px] leading-tight whitespace-normal";
+    }
+
+    return "max-w-88 text-2xl leading-none whitespace-nowrap";
+  }
+
   // Get player insights of selected player
   const playerInsights = selectedPlayer
     ? getPlayerInsights(selectedPlayer)
     : null;
 
   // Get trait rarity
-  function getInsightRarityStyles(insight: PlayerInsightDisplay) {
+  function getInsightRarityStyles(
+    insight: PlayerInsightDisplay,
+    isArchetype = false,
+  ) {
+    const backgroundOpacity = isArchetype ? "99" : "33";
+
     if (insight.rarity === "gold") {
       return {
         borderColor: "#EFBF04",
-        backgroundColor: "#EFBF0499",
+        backgroundColor: `#EFBF04${backgroundOpacity}`,
         color: "#FFE88A",
       };
     }
@@ -148,7 +173,7 @@ function Players() {
     if (insight.rarity === "purple") {
       return {
         borderColor: "#A855F7",
-        backgroundColor: "#A855F766",
+        backgroundColor: `#A855F7${backgroundOpacity}`,
         color: "#E9D5FF",
       };
     }
@@ -156,7 +181,7 @@ function Players() {
     if (insight.rarity === "blue") {
       return {
         borderColor: "#38BDF8",
-        backgroundColor: "#38BDF866",
+        backgroundColor: `#38BDF8${backgroundOpacity}`,
         color: "#E0F2FE",
       };
     }
@@ -164,15 +189,53 @@ function Players() {
     if (insight.rarity === "red") {
       return {
         borderColor: "#EF4444",
-        backgroundColor: "#EF444455",
+        backgroundColor: `#EF4444${backgroundOpacity}`,
         color: "#FECACA",
       };
     }
 
     return {
       borderColor: "#94A3B8",
-      backgroundColor: "#94A3B840",
+      backgroundColor: `#94A3B8${backgroundOpacity}`,
       color: "#E2E8F0",
+    };
+  }
+
+  function getLineupFitStyles(fit: string) {
+    let color = "#CBD5E1";
+
+    if (fit === "Transition Attack" || fit === "Showtime Offense") {
+      color = "#1bc2ec";
+    }
+
+    if (fit === "Defensive Powerhouse") {
+      color = "#22C55E";
+    }
+
+    if (fit === "Spacing Superteam" || fit === "Floor Spacing Machine") {
+      color = "#A855F7";
+    }
+
+    if (fit === "Offensive Superteam") {
+      color = "#F97316";
+    }
+
+    if (fit === "Two-Way Dynasty") {
+      color = "#EFBF04";
+    }
+
+    if (fit === "Star-Powered Contender") {
+      color = "#38BDF8";
+    }
+
+    if (fit === "Paint Control Unit") {
+      color = "#EF4444";
+    }
+
+    return {
+      color,
+      borderColor: `${color}99`,
+      backgroundColor: `${color}33`,
     };
   }
 
@@ -185,9 +248,14 @@ function Players() {
     return "Basic";
   }
 
-  // Get players similar to current player
+  // Players similar to current player
   const similarPlayers = selectedPlayer
     ? getSimilarPlayers(selectedPlayer)
+    : [];
+
+  // Lineups the player fits with
+  const bestLineupFits = selectedPlayer
+    ? getBestLineupFits(selectedPlayer)
     : [];
 
   // Function to toggle a player as a favorite, adding them to the favorites list if they're not already in it or removing them if they are
@@ -319,6 +387,41 @@ function Players() {
       player.starPower * 0.04;
 
     return 70 + overallScore * 0.3;
+  }
+
+  // Best lineup fit for player
+  function getBestLineupFits(player: (typeof players)[number]) {
+    const fits = [];
+
+    if (player.stats.ppg >= 25 && player.stats.apg >= 5) {
+      fits.push("Transition Attack");
+    }
+
+    if (player.stats.apg >= 7) {
+      fits.push("Showtime Offense");
+    }
+
+    if (player.starPower >= 95) {
+      fits.push("Star-Powered Contender");
+    }
+
+    if (player.stats.threePercent >= 38) {
+      fits.push("Spacing Superteam");
+    }
+
+    if (player.defenseRating >= 90) {
+      fits.push("Defensive Powerhouse");
+    }
+
+    if (player.stats.rpg >= 10 || player.position === "C") {
+      fits.push("Paint Control Unit");
+    }
+
+    if (player.stats.ppg >= 22 && player.defenseRating >= 88) {
+      fits.push("Two-Way Dynasty");
+    }
+
+    return fits.slice(0, 3);
   }
 
   return (
@@ -667,12 +770,15 @@ function Players() {
                               >
                                 {player.team}
                               </span>
+
                               <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[8px] text-white/60">
                                 {player.position}
                               </span>
+
                               <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[8px] text-white/60">
                                 #{player.jerseyNumber}
                               </span>
+
                               {/* Show value of currently selected sorting stat */}
                               {selectedStatValue !== null && (
                                 <span className="shrink-0 rounded border border-[#1bc2ec]/30 bg-[#1bc2ec]/10 px-1.5 py-0.5 text-10px text-[#1bc2ec]">
@@ -895,23 +1001,39 @@ function Players() {
                         />
                       </div>
 
-                      <div className="flex items-center justify-center gap-2 font-michroma uppercase pt-1">
-                        {/* Player headshot */}
+                      <div className="relative z-10 grid grid-cols-[88px_1fr_52px] items-center gap-4 px-3 pt-1 font-michroma uppercase">
                         <PlayerImage
                           src={selectedPlayer.image}
                           alt={selectedPlayer.name}
-                          width={96}
-                          height={96}
-                          className="rounded-md object-contain z-10"
+                          width={88}
+                          height={88}
+                          className="h-22 w-22 rounded-md object-contain"
                         />
-                        {/* Player info */}
-                        <span className="font-bold z-10">
-                          {selectedPlayer.name}
-                        </span>
-                        <span className="text-xs opacity-80 z-10">
-                          {selectedPlayer.position} • {selectedPlayer.team} • #
-                          {selectedPlayer.jerseyNumber}
-                        </span>
+
+                        <div className="flex min-w-0 justify-center text-center">
+                          <p
+                            className={`line-clamp-2 text-center font-bold text-white ${getPlayerNameTextClass(
+                              selectedPlayer.name,
+                            )}`}
+                          >
+                            {selectedPlayer.name}
+                          </p>
+                        </div>
+
+                        <div className="flex flex-col items-center gap-1">
+                          <p className="shrink-0 text-xs text-white/55">
+                            {selectedPlayer.position}
+                          </p>
+                          <p
+                            className="shrink-0 text-xs text-white/55"
+                            style={{}}
+                          >
+                            {selectedPlayer.team}
+                          </p>
+                          <p className="shrink-0 text-xs text-white/55">
+                            #{selectedPlayer.jerseyNumber}
+                          </p>
+                        </div>
                       </div>
 
                       {/* Player stats radar chart */}
@@ -1081,7 +1203,7 @@ function Players() {
                         </div>
                       )}
 
-                      <div className="mt-2 flex items-start justify-center gap-10">
+                      <div className="flex items-start justify-center gap-10">
                         {/* Insights */}
                         {playerInsights && (
                           <div className="flex w-fit flex-col items-center gap-1">
@@ -1100,6 +1222,7 @@ function Players() {
                                   style={{
                                     ...getInsightRarityStyles(
                                       playerInsights.archetype,
+                                      true,
                                     ),
                                   }}
                                 >
@@ -1161,15 +1284,15 @@ function Players() {
                         )}
 
                         {/* Similar To */}
-                        <div className="relative z-30 flex w-fit flex-col items-center gap-1">
-                          <span className="font-michroma text-[14px] uppercase tracking-wide text-white/50">
+                        <div className="relative z-30 flex w-40 flex-col items-center gap-0.5">
+                          <span className="font-michroma text-[12px] uppercase tracking-wide text-white/50">
                             Similar To
                           </span>
-                          <span className="font-michroma text-[6px] text-white/50 -mt-1">
+                          <span className="-mt-1 font-michroma text-[6px] text-white/45">
                             by Career Statistical Match
                           </span>
 
-                          <div className="flex flex-col items-center gap-1">
+                          <div className="mt-1 flex flex-col items-center gap-0.5">
                             {similarPlayers.map(({ player, matchScore }) => (
                               <button
                                 key={player.id}
@@ -1182,10 +1305,10 @@ function Players() {
                                   setCurrentPlayer(player.name);
                                   setIsCardFlipped(false);
                                 }}
-                                className="flex w-44 cursor-pointer items-center justify-between gap-3 rounded border px-2 py-1 font-michroma text-[10px] text-white/70 transition-all duration-150 hover:brightness-150 mr-2"
+                                className="mr-2 flex w-44 cursor-pointer items-center justify-between gap-2 rounded border px-1.5 py-0.5 font-michroma text-[9px] text-white/70 transition-all duration-150 hover:brightness-150"
                                 style={{
                                   borderColor: `${teamColors[player.team]}`,
-                                  backgroundColor: `${teamColors[player.team]}80`,
+                                  backgroundColor: `${teamColors[player.team]}50`,
                                 }}
                               >
                                 <span className="min-w-0 flex-1 truncate text-left text-white">
@@ -1197,12 +1320,28 @@ function Players() {
                               </button>
                             ))}
                           </div>
+
+                          <div className="mt-1 flex flex-col items-center gap-0.5">
+                            <span className="font-michroma text-[9px] uppercase tracking-wide text-white/50">
+                              Best Lineup Fits
+                            </span>
+
+                            {bestLineupFits.map((fit) => (
+                              <span
+                                key={fit}
+                                className="rounded border px-1.5 py-0.5 font-michroma text-[8px]"
+                                style={getLineupFitStyles(fit)}
+                              >
+                                ✓ {fit}
+                              </span>
+                            ))}
+                          </div>
                         </div>
                       </div>
 
                       {/* Send to court page to compare with other player(s) button */}
                       <div
-                        className="group absolute bottom-4 left-1/2 z-200 w-88 -translate-x-1/2"
+                        className="group absolute bottom-2 left-1/2 z-200 w-88 -translate-x-1/2"
                         onClick={(e) => e.stopPropagation()}
                         onPointerDown={(e) => e.stopPropagation()}
                       >
