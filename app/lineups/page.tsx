@@ -2470,6 +2470,7 @@ export default function Lineups() {
             )}
           </section>
         )}
+
         {/* Build Your Own tab */}
         {activeTab === "builder" && (
           <section className="min-h-[calc(100vh-140px)]">
@@ -3152,7 +3153,12 @@ export default function Lineups() {
                             <button
                               type="button"
                               onClick={() => scoutSavedLineup(lineup)}
-                              className="rounded-md border border-white/15 bg-white/5 px-3 py-2 font-michroma text-[8px] uppercase text-white/55 transition hover:border-[#1bc2ec]/40 hover:text-[#1bc2ec]"
+                              className="rounded-md border px-3 py-2 font-michroma text-[8px] uppercase transition hover:brightness-125"
+                              style={{
+                                color: `${archetypeColor}cc`,
+                                borderColor: `${archetypeColor}55`,
+                                backgroundColor: `${archetypeColor}10`,
+                              }}
                             >
                               Scout
                             </button>
@@ -3190,7 +3196,13 @@ export default function Lineups() {
       {/* Scout report modal */}
       {isScoutOpen && (
         <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 px-4">
-          <div className="relative w-full max-w-xl animate-[modalIn_260ms_ease-out] rounded-md border border-[#1bc2ec]/60 bg-[#07111f] shadow-[0_0_35px_rgba(27,194,236,0.25)]">
+          <div
+            className="relative w-full max-w-xl animate-[modalIn_260ms_ease-out] rounded-md border bg-[#07111f]"
+            style={{
+              borderColor: `${scoutArchetypeColor}99`,
+              boxShadow: `0 0 35px ${scoutArchetypeColor}40`,
+            }}
+          >
             <div className="relative max-h-[78vh] overflow-y-auto p-5 scrollbar-none [&::-webkit-scrollbar]:hidden">
               <div className="pr-58">
                 <div className="-mt-2">
@@ -3226,7 +3238,10 @@ export default function Lineups() {
                         key={position}
                         className="grid grid-cols-[34px_1fr] items-center gap-3"
                       >
-                        <span className="font-michroma text-[10px] text-[#1bc2ec]">
+                        <span
+                          className="font-michroma text-[10px] text-[#1bc2ec]"
+                          style={{ color: scoutArchetypeColor }}
+                        >
                           {position}
                         </span>
 
@@ -3235,7 +3250,10 @@ export default function Lineups() {
                             {player?.name ?? "Empty"}
                           </p>
 
-                          <p className="mt-1 font-michroma text-[8px] text-white/35">
+                          <p
+                            className="mt-1 font-michroma text-[8px]"
+                            style={{ color: `${scoutArchetypeColor}99` }}
+                          >
                             {player
                               ? `${player.team} • #${player.jerseyNumber}`
                               : "--"}
@@ -3267,9 +3285,11 @@ export default function Lineups() {
 
                           <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
                             <div
-                              className="h-full rounded-full bg-[#1bc2ec]"
+                              className="h-full rounded-full"
                               style={{
                                 width: `${Math.min(score.value, 100)}%`,
+                                backgroundColor: scoutArchetypeColor,
+                                boxShadow: `0 0 8px ${scoutArchetypeColor}88`,
                               }}
                             />
                           </div>
@@ -3559,7 +3579,7 @@ export default function Lineups() {
                         {courtBalance}
                       </p>
 
-                      <p className="mt-1 font-michroma text-[8px] leading-relaxed text-white/35">
+                      <p className="mt-1 max-w-41.25 font-michroma text-[8px] leading-relaxed text-white/35">
                         {courtBalanceDescription}
                       </p>
                     </div>
@@ -3574,6 +3594,10 @@ export default function Lineups() {
                 setIsNamingLineup(true);
               }}
               className="absolute -bottom-10.5 right-0 rounded-md border border-[#1bc2ec]/70 bg-[#07111f] px-5 py-3 font-michroma text-xs uppercase text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.25)] transition hover:bg-[#1bc2ec]/10"
+              style={{
+                color: scoutArchetypeColor,
+                borderColor: scoutArchetypeColor,
+              }}
             >
               Save Lineup
             </button>
