@@ -1647,6 +1647,7 @@ export default function Lineups() {
   const [lineupNameInput, setLineupNameInput] = useState("");
   const [lineupPendingDelete, setLineupPendingDelete] =
     useState<SavedLineup | null>(null);
+  const [isLineupDeletedOpen, setIsLineupDeletedOpen] = useState(false);
   const [lineupPendingRename, setLineupPendingRename] =
     useState<SavedLineup | null>(null);
   const [renameLineupInput, setRenameLineupInput] = useState("");
@@ -2750,7 +2751,7 @@ export default function Lineups() {
           <section className="min-h-[calc(100vh-140px)]">
             {/* Empty saved lineups state */}
             {savedLineups.length === 0 ? (
-              <div className="flex min-h-[420px] flex-col items-center justify-center text-center">
+              <div className="flex min-h-105 flex-col items-center justify-center text-center">
                 <Save
                   size={56}
                   strokeWidth={1.5}
@@ -3495,6 +3496,7 @@ export default function Lineups() {
                 onClick={() => {
                   deleteSavedLineup(lineupPendingDelete.id);
                   setLineupPendingDelete(null);
+                  setIsLineupDeletedOpen(true);
                 }}
                 className="rounded-md border border-red-500/60 bg-red-500/10 px-4 py-3 font-michroma text-xs uppercase text-red-400 transition hover:bg-red-500/20"
               >
@@ -3543,6 +3545,26 @@ export default function Lineups() {
                 Save Name
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {isLineupDeletedOpen && (
+        <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-sm rounded-md border border-red-500/60 bg-[#07111f] p-6 text-center shadow-[0_0_35px_rgba(239,68,68,0.25)]">
+            <p className="font-michroma text-lg text-red-400">Lineup Deleted</p>
+
+            <p className="mt-3 font-michroma text-xs leading-relaxed text-white/40">
+              This lineup was removed from your saved lineups.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setIsLineupDeletedOpen(false)}
+              className="mt-6 rounded-md border border-red-500/60 bg-red-500/10 px-4 py-3 font-michroma text-xs uppercase text-red-400 transition hover:bg-red-500/20"
+            >
+              Done
+            </button>
           </div>
         </div>
       )}
