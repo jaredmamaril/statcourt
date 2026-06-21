@@ -1712,6 +1712,10 @@ export default function Lineups() {
 
   const isLineupComplete = selectedLineupCount === lineupPositions.length;
 
+  const hasExistingDraft = lineupPositions.some(
+    (position) => customLineup[position] !== "",
+  );
+
   // Scout report values
   const scoutReport = getLineupScoutReport(selectedCustomPlayerSlots);
 
@@ -2487,25 +2491,40 @@ export default function Lineups() {
                     you can track your lineup.
                   </p>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCustomLineup({
-                        PG: "",
-                        SG: "",
-                        SF: "",
-                        PF: "",
-                        C: "",
-                      });
+                  <div className="mt-6 flex justify-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCustomLineup({
+                          PG: "",
+                          SG: "",
+                          SF: "",
+                          PF: "",
+                          C: "",
+                        });
 
-                      setActiveBuildPosition("PG");
-                      setBuildPlayerSearch("");
-                      setHasStartedBuilder(true);
-                    }}
-                    className="mt-6 rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-6 py-3 font-michroma text-xs uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20"
-                  >
-                    Start Draft
-                  </button>
+                        setActiveBuildPosition("PG");
+                        setBuildPlayerSearch("");
+                        setHasStartedBuilder(true);
+                      }}
+                      className="rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-5 py-3 font-michroma text-xs uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20"
+                    >
+                      Start New Draft
+                    </button>
+
+                    {hasExistingDraft && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setBuildPlayerSearch("");
+                          setHasStartedBuilder(true);
+                        }}
+                        className="rounded-md border border-white/20 bg-white/5 px-5 py-3 font-michroma text-xs uppercase text-white/60 transition hover:border-[#1bc2ec]/60 hover:text-[#1bc2ec]"
+                      >
+                        Continue Draft
+                      </button>
+                    )}
+                  </div>
                 </div>
               </section>
             ) : (
