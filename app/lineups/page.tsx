@@ -2570,13 +2570,51 @@ export default function Lineups() {
                               player,
                               activeBuildPosition,
                             );
+                          const baseRating = getBuilderPlayerRating(player);
+                          const positionPenalty =
+                            getPositionPenalty(positionFit);
+
+                          const scoutStats = [
+                            {
+                              label: "Scoring",
+                              value: Math.round(
+                                normalizeStat(player.stats.ppg, 25),
+                              ),
+                            },
+                            {
+                              label: "Shooting",
+                              value: Math.round(
+                                normalizeStat(player.stats.threePercent, 40),
+                              ),
+                            },
+                            {
+                              label: "Playmaking",
+                              value: Math.round(
+                                normalizeStat(player.stats.apg, 8),
+                              ),
+                            },
+                            {
+                              label: "Rebounding",
+                              value: Math.round(
+                                normalizeStat(player.stats.rpg, 11),
+                              ),
+                            },
+                            {
+                              label: "Defense",
+                              value: Math.round(player.defenseRating),
+                            },
+                            {
+                              label: "Star",
+                              value: Math.round(player.starPower),
+                            },
+                          ];
 
                           return (
                             <button
                               key={player.id}
                               type="button"
                               onClick={() => pickBuildPlayer(player.name)}
-                              className={`h-52 rounded-md border bg-black/30 p-3 text-center transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/10 ${
+                              className={`group relative h-52 overflow-hidden rounded-md border bg-black/30 p-3 text-center transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/10 ${
                                 isSelected
                                   ? "border-[#1bc2ec] bg-[#1bc2ec]/15 shadow-[0_0_18px_rgba(27,194,236,0.35)]"
                                   : "border-white/15"
@@ -2621,6 +2659,71 @@ export default function Lineups() {
                                       ? "Emergency Fit"
                                       : "Mismatch -7"}
                               </p>
+
+                              <div className="pointer-events-none absolute inset-0 flex flex-col justify-between bg-black/95 p-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                                <div>
+                                  <p className="font-michroma text-[8px] uppercase text-[#1bc2ec]">
+                                    Scout Impact
+                                  </p>
+
+                                  <div className="mt-2 grid gap-1">
+                                    {scoutStats.map((stat) => (
+                                      <div
+                                        key={stat.label}
+                                        className="grid grid-cols-[45px_1fr_15px] items-center gap-2"
+                                      >
+                                        <p className="font-michroma text-[7px] text-white/45">
+                                          {stat.label}
+                                        </p>
+
+                                        <div className="h-1 overflow-hidden rounded-full bg-white/10 ml-1">
+                                          <div
+                                            className="h-full rounded-full bg-[#1bc2ec]"
+                                            style={{
+                                              width: `${Math.min(stat.value, 100)}%`,
+                                            }}
+                                          />
+                                        </div>
+
+                                        <p className="text-right font-michroma text-[7px] text-white/55">
+                                          {stat.value}
+                                        </p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2 border-t border-white/10">
+                                  <div>
+                                    <p className="font-michroma text-[7px] uppercase text-white/35">
+                                      Base
+                                    </p>
+                                    <p className="font-michroma text-[10px] text-white">
+                                      {baseRating.toFixed(1)}
+                                    </p>
+                                  </div>
+
+                                  <div>
+                                    <p className="font-michroma text-[7px] uppercase text-white/35">
+                                      Slot
+                                    </p>
+                                    <p className="font-michroma text-[10px] text-[#1bc2ec]">
+                                      {positionRating.toFixed(1)}
+                                    </p>
+                                  </div>
+
+                                  <div className="col-span-2">
+                                    <p className="font-michroma text-[7px] uppercase text-white/35">
+                                      Position Impact
+                                    </p>
+                                    <p className="font-michroma text-[9px] text-white/60">
+                                      {positionPenalty === 0
+                                        ? "No OVR rating penalty"
+                                        : `-${positionPenalty} OVR position penalty`}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
                             </button>
                           );
                         })}
