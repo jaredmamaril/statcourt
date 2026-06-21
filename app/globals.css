@@ -111,7 +111,7 @@
   }
 }
 .player-add-to-court {
-  animation: playerAddToCourt 220ms ease-out both;
+  animation: playerAddToCourt 360ms ease-out both;
 }
 
 /* For sections in the scout report to be delayed coming in */
@@ -129,6 +129,19 @@
 .scout-section-reveal {
   opacity: 0;
   animation: scoutSectionReveal 240ms ease-out forwards;
+}
+
+/* Players in draft board loading in one at a time from saved lineups 'Load' function */
+@keyframes loadedPlayerReveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 * {

@@ -37,6 +37,7 @@ type LineupMarkerProps = {
   isHighlighted: boolean;
   onViewCard: (playerName: string) => void;
   tooltipPosition?: "top" | "bottom";
+  animationDelay?: string;
 };
 
 type LineupRatings = {
@@ -1519,10 +1520,10 @@ function LineupMarker({
   isHighlighted,
   onViewCard,
   tooltipPosition = "top",
+  animationDelay = "0ms",
 }: LineupMarkerProps) {
   const player = players.find((player) => player.name === name);
   const imageSrc = player?.image || "/blank-player.svg";
-  const archetype = player ? getPlayerInsights(player).archetype : null;
   const tooltipClass =
     tooltipPosition === "bottom" ? "top-full" : "bottom-full";
 
@@ -1532,7 +1533,10 @@ function LineupMarker({
         isHighlighted ? "z-900 scale-125" : "z-10 scale-100"
       } ${className}`}
     >
-      <div className={player ? "player-add-to-court" : ""}>
+      <div
+        className={player ? "player-add-to-court" : ""}
+        style={{ animationDelay }}
+      >
         <div className="group/headshot relative inline-block">
           <PlayerImage
             src={imageSrc}
@@ -1636,9 +1640,13 @@ export default function Lineups() {
   const [isLineupSavedOpen, setIsLineupSavedOpen] = useState(false);
   const [scoutedSavedLineup, setScoutedSavedLineup] =
     useState<SavedLineup | null>(null);
+  const [isLoadingSavedLineup, setIsLoadingSavedLineup] = useState(false);
 
   // Animations
   const [animatedScoutOverall, setAnimatedScoutOverall] = useState(0);
+  const [loadLineupStep, setLoadLineupStep] = useState(0);
+  const [loadLineupProgress, setLoadLineupProgress] = useState(0);
+  const [isLoadLineupExiting, setIsLoadLineupExiting] = useState(false);
 
   // Builder derived data
   const selectedCustomPlayerSlots = lineupPositions
@@ -1848,6 +1856,14 @@ export default function Lineups() {
           ? "Oldest Saved"
           : "Highest OVR";
 
+  const loadLineupSteps = [
+    "Restoring saved players...",
+    "Calculating chemistry...",
+    "Evaluating archetype fit...",
+    "Rebuilding score profile...",
+    "Syncing court preview...",
+  ];
+
   // Load saved lineups from localStorage
   useEffect(() => {
     const frameId = requestAnimationFrame(() => {
@@ -1970,13 +1986,47 @@ export default function Lineups() {
   }
 
   function loadSavedLineup(lineup: SavedLineup) {
-    setCustomLineup(lineup.players);
-    setActiveTab("builder");
-    setHasStartedBuilder(true);
-    setActiveBuildPosition("PG");
-    setIsScoutOpen(false);
-    setIsNamingLineup(false);
-    setScoutedSavedLineup(null);
+    setIsLoadingSavedLineup(true);
+    setLoadLineupStep(0);
+    setLoadLineupProgress(0);
+
+    const totalDuration = 3200;
+    const stepDuration = totalDuration / loadLineupSteps.length;
+    const progressInterval = 40;
+
+    loadLineupSteps.forEach((_, index) => {
+      window.setTimeout(() => {
+        setLoadLineupStep(index);
+      }, index * stepDuration);
+    });
+
+    const progressTimer = window.setInterval(() => {
+      setLoadLineupProgress((currentProgress) => {
+        const nextProgress =
+          currentProgress + 100 / (totalDuration / progressInterval);
+
+        return Math.min(nextProgress, 100);
+      });
+    }, progressInterval);
+
+    window.setTimeout(() => {
+      window.clearInterval(progressTimer);
+
+      setLoadLineupProgress(100);
+      setIsLoadLineupExiting(true);
+
+      window.setTimeout(() => {
+        setCustomLineup(lineup.players);
+        setActiveTab("builder");
+        setHasStartedBuilder(true);
+        setActiveBuildPosition("PG");
+        setIsScoutOpen(false);
+        setIsNamingLineup(false);
+        setScoutedSavedLineup(null);
+        setIsLoadingSavedLineup(false);
+        setIsLoadLineupExiting(false);
+      }, 350);
+    }, totalDuration);
   }
 
   function scoutSavedLineup(lineup: SavedLineup) {
@@ -2616,17 +2666,21 @@ export default function Lineups() {
                         const player = players.find(
                           (player) => player.name === playerName,
                         );
+                        const positionIndex = lineupPositions.indexOf(position);
 
                         return (
                           <div
-                            key={position}
+                            key={`${position}-${playerName || "empty"}`}
+                            style={{
+                              animationDelay: `${positionIndex * 180}ms`,
+                            }}
                             onMouseEnter={() => {
                               if (player) {
                                 setHoveredBuildPlayer(player.name);
                               }
                             }}
                             onMouseLeave={() => setHoveredBuildPlayer("")}
-                            className={`h-fit grid grid-cols-[44px_1fr_auto] items-center gap-2 rounded-md border px-3 py-2 transition ${
+                            className={`animate-[loadedPlayerReveal_360ms_ease-out_both] h-fit grid grid-cols-[44px_1fr_auto] items-center gap-2 rounded-md border px-3 py-2 transition ${
                               player
                                 ? "border-emerald-400/50 bg-emerald-400/10 hover:border-[#1bc2ec]/70 hover:bg-[#1bc2ec]/10"
                                 : "border-white/10 bg-black/20"
@@ -2695,10 +2749,11 @@ export default function Lineups() {
 
                       <div className="absolute left-1/2 bottom-20 h-3 w-3 -translate-x-1/2 rounded-full border border-[#1bc2ec]/60" />
 
-                      <div className="absolute left-1/2 bottom-24 h-px w-16 -translate-x-1/2 bg-[#1bc2ec]/60" />
+                      <div className="absolute left-1/2 bottom-20 h-px w-16 -translate-x-1/2 bg-[#1bc2ec]/60" />
 
                       {lineupPositions.map((position) => {
                         const playerName = customLineup[position];
+                        const positionIndex = lineupPositions.indexOf(position);
 
                         return (
                           <LineupMarker
@@ -2716,6 +2771,7 @@ export default function Lineups() {
                                 ? "bottom"
                                 : "top"
                             }
+                            animationDelay={`${positionIndex * 180}ms`}
                             className={builderCourtMarkerPositions[position]}
                           />
                         );
@@ -3531,6 +3587,7 @@ export default function Lineups() {
         </div>
       )}
 
+      {/* Lineup deleted modal */}
       {isLineupDeletedOpen && (
         <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-sm rounded-md border border-red-500/60 bg-[#07111f] p-6 text-center shadow-[0_0_35px_rgba(239,68,68,0.25)]">
@@ -3598,6 +3655,58 @@ export default function Lineups() {
               >
                 Build Another
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Content before lineup modal */}
+      {isLoadingSavedLineup && (
+        <div
+          className={`fixed inset-0 z-1000 flex items-center justify-center bg-black/75 px-4 transition-opacity duration-300 ${
+            isLoadLineupExiting ? "opacity-0" : "opacity-100"
+          }`}
+        >
+          <div
+            className={`w-full max-w-md rounded-md border border-[#1bc2ec]/60 bg-[#07111f] p-6 shadow-[0_0_35px_rgba(27,194,236,0.25)] transition-all duration-300 ${
+              isLoadLineupExiting
+                ? "translate-y-2 scale-95 opacity-0"
+                : "translate-y-0 scale-100 opacity-100"
+            }`}
+          >
+            <p className="font-michroma text-lg text-white">Loading Lineup</p>
+
+            <p className="mt-3 min-h-5 font-michroma text-sm text-[#1bc2ec]">
+              {loadLineupSteps[loadLineupStep]}
+            </p>
+
+            <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/10">
+              <div
+                className="h-full rounded-full bg-[#1bc2ec] transition-all duration-100"
+                style={{
+                  width: `${loadLineupProgress}%`,
+                }}
+              />
+            </div>
+
+            <div className="mt-5 grid gap-2">
+              {loadLineupSteps.map((step, index) => (
+                <p
+                  key={step}
+                  className={`font-michroma text-xs transition ${
+                    index <= loadLineupStep ? "text-white/70" : "text-white/25"
+                  }`}
+                >
+                  <span className="text-[#1bc2ec]">
+                    {index < loadLineupStep
+                      ? "✓"
+                      : index === loadLineupStep
+                        ? "•"
+                        : "·"}
+                  </span>{" "}
+                  {step}
+                </p>
+              ))}
             </div>
           </div>
         </div>
