@@ -54,6 +54,75 @@ function Players() {
     const randomPlayer = players[Math.floor(Math.random() * players.length)];
     setFeaturedPlayer(randomPlayer);
   }, []);
+
+  const positionBreakdown = positions.reduce(
+    (counts, position) => {
+      counts[position] = players.filter(
+        (player) => player.position === position,
+      ).length;
+      return counts;
+    },
+    {} as Record<Position, number>,
+  );
+  const archetypeDistribution = players.reduce(
+    (counts, player) => {
+      const archetype = getPlayerInsights(player).archetype;
+
+      const label = archetype?.label ?? "Unclassified";
+      const rarity = archetype?.rarity ?? "gray";
+
+      if (!counts[label]) {
+        counts[label] = {
+          count: 0,
+          rarity,
+        };
+      }
+
+      counts[label].count += 1;
+
+      return counts;
+    },
+    {} as Record<
+      string,
+      {
+        count: number;
+        rarity: PlayerInsightDisplay["rarity"];
+      }
+    >,
+  );
+
+  const topArchetypeDistribution = Object.entries(archetypeDistribution)
+    .sort((a, b) => b[1].count - a[1].count)
+    .slice(0, 4);
+
+  const [recentlyViewedPlayers, setRecentlyViewedPlayers] = useState<string[]>(
+    [],
+  );
+
+  useEffect(() => {
+    const savedRecentPlayers = localStorage.getItem("statcourt-recent-players");
+
+    if (!savedRecentPlayers) return;
+
+    setRecentlyViewedPlayers(JSON.parse(savedRecentPlayers) as string[]);
+  }, []);
+
+  function addRecentlyViewedPlayer(playerName: string) {
+    setRecentlyViewedPlayers((currentRecentPlayers) => {
+      const nextRecentPlayers = [
+        playerName,
+        ...currentRecentPlayers.filter((name) => name !== playerName),
+      ].slice(0, 6);
+
+      localStorage.setItem(
+        "statcourt-recent-players",
+        JSON.stringify(nextRecentPlayers),
+      );
+
+      return nextRecentPlayers;
+    });
+  }
+
   // State for filters and dropdowns
   const [currentPlayer, setCurrentPlayer] = useState("");
   const [playerSearch, setPlayerSearch] = useState("");
@@ -70,6 +139,7 @@ function Players() {
   // State for front face and back face of card
   const [isCardFlipped, setIsCardFlipped] = useState(false);
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   // Open a player card when coming from rankings with /players?player=name
   useEffect(() => {
@@ -85,11 +155,14 @@ function Players() {
 
     const timer = window.setTimeout(() => {
       setCurrentPlayer(matchingPlayer.name);
+      addRecentlyViewedPlayer(matchingPlayer.name);
       setIsCardFlipped(false);
+
+      router.replace("/players", { scroll: false });
     }, 0);
 
     return () => window.clearTimeout(timer);
-  }, [searchParams]);
+  }, [searchParams, router]);
 
   // Filter and sort players based on search input, favorites toggle, team and position filters, and sorting options
   const filteredPlayers = players
@@ -214,6 +287,15 @@ function Players() {
     };
   }
 
+  function getRarityColor(rarity: PlayerInsightDisplay["rarity"]) {
+    if (rarity === "gold") return "#EFBF04";
+    if (rarity === "purple") return "#A855F7";
+    if (rarity === "blue") return "#1bc2ec";
+    if (rarity === "red") return "#EF4444";
+
+    return "#94A3B8";
+  }
+
   function getLineupFitStyles(fit: string) {
     let color = "#CBD5E1";
 
@@ -333,9 +415,6 @@ function Players() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
-  // Router to travel to court page
-  const router = useRouter();
 
   // Current players being compared on court
   function getSavedCompareSlots(): CompareSlots {
@@ -511,38 +590,138 @@ function Players() {
           >
             {featuredPlayer && (
               <div className="absolute -right-55 top-4 hidden w-64 font-michroma uppercase xl:block text-center">
-                <p className="text-[8px] tracking-wide text-white/25">
-                  Featured Player
-                </p>
-
                 <div className="mt-2 rounded-md border border-white/10 bg-black/10 p-3">
-                  <p className="text-sm text-white/70">{featuredPlayer.name}</p>
+                  <p className="mb-2 text-[8px] tracking-wide text-white/25">
+                    Featured Player
+                  </p>
 
-                  <p className="mt-1 text-xs text-[#1bc2ec]/80">
+                  <p
+                    className="text-sm brightness-125"
+                    style={{
+                      color: teamColors[featuredPlayer.team],
+                      textShadow: `0 0 6px ${teamColors[featuredPlayer.team]}, 0 0 14px ${teamColors[featuredPlayer.team]}, 0 0 26px ${teamColors[featuredPlayer.team]}66`,
+                    }}
+                  >
+                    {featuredPlayer.name}
+                  </p>
+
+                  <p className="mt-1 text-xs text-[#1bc2ec]">
                     {getPlayerListOverall(featuredPlayer).toFixed(1)} OVR
                   </p>
 
-                  <div className="mt-3 flex flex-col gap-1 text-[8px] text-white/35">
-                    {featuredPlayerInsights?.archetype && (
-                      <span>{featuredPlayerInsights.archetype.label}</span>
-                    )}
+                  <div className="mt-3 flex flex-col items-center gap-1">
+                    {featuredPlayerInsights?.archetype &&
+                      (() => {
+                        const archetypeStyle = getInsightRarityStyles(
+                          featuredPlayerInsights.archetype,
+                          true,
+                        );
 
-                    {featuredPlayerInsights?.traits.slice(0, 2).map((trait) => (
-                      <span key={trait.label}>{trait.label}</span>
-                    ))}
+                        return (
+                          <span
+                            className="rounded border px-2 py-0.5 text-[8px]"
+                            style={{
+                              ...archetypeStyle,
+                              backgroundColor: `${archetypeStyle.color}18`,
+                              boxShadow: "none",
+                              opacity: 0.7,
+                            }}
+                          >
+                            {featuredPlayerInsights.archetype.label}
+                          </span>
+                        );
+                      })()}
+
+                    {featuredPlayerInsights?.traits.slice(0, 2).map((trait) => {
+                      const traitStyle = getInsightRarityStyles(trait);
+
+                      return (
+                        <span
+                          key={trait.label}
+                          className="rounded border px-2 py-0.5 text-[8px]"
+                          style={{
+                            ...traitStyle,
+                            backgroundColor: `${traitStyle.color}14`,
+                            boxShadow: "none",
+                            opacity: 0.7,
+                          }}
+                        >
+                          {trait.label}
+                        </span>
+                      );
+                    })}
                   </div>
 
                   <button
                     type="button"
                     onClick={() => {
                       setCurrentPlayer(featuredPlayer.name);
+                      addRecentlyViewedPlayer(featuredPlayer.name);
                       setIsCardFlipped(false);
                     }}
-                    className="pointer-events-auto mt-3 rounded-md border border-[#1bc2ec]/40 px-5 py-1 text-xs text-[#1bc2ec] transition hover:bg-[#1bc2ec]/10"
+                    className="pointer-events-auto mt-3 rounded-md border px-5 py-1 text-xs brightness-125 transition hover:brightness-175"
+                    style={{
+                      color: teamColors[featuredPlayer.team],
+                      borderColor: `${teamColors[featuredPlayer.team]}`,
+                      backgroundColor: `${teamColors[featuredPlayer.team]}14`,
+                      boxShadow: `0 0 10px ${teamColors[featuredPlayer.team]}22`,
+                    }}
                   >
                     View Player
                   </button>
                 </div>
+
+                {recentlyViewedPlayers.length > 0 && (
+                  <div className="mt-4 rounded-md border border-white/10 bg-black/10 p-3">
+                    <p className="mb-2 text-[8px] tracking-wide text-white/25">
+                      Recently Scouted
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      {recentlyViewedPlayers.map((playerName) => {
+                        const recentPlayer = players.find(
+                          (player) => player.name === playerName,
+                        );
+
+                        if (!recentPlayer) return null;
+
+                        return (
+                          <button
+                            key={playerName}
+                            type="button"
+                            onClick={() => {
+                              setCurrentPlayer(playerName);
+                              setIsCardFlipped(false);
+                              addRecentlyViewedPlayer(playerName);
+                            }}
+                            style={{
+                              borderColor: `${teamColors[recentPlayer.team]}50`,
+                            }}
+                            className="pointer-events-auto flex items-center justify-between gap-2 rounded border border-white/10 px-2 py-1 text-left font-michroma text-[8px] text-white/45 transition hover:brightness-175"
+                          >
+                            <span
+                              style={{
+                                color: teamColors[recentPlayer.team],
+                                textShadow: `0 0 8px ${teamColors[recentPlayer.team]}66`,
+                              }}
+                              className="text-[9px]"
+                            >
+                              {playerName}
+                            </span>
+
+                            <span
+                              style={{
+                                color: teamColors[recentPlayer.team],
+                                textShadow: `0 0 8px ${teamColors[recentPlayer.team]}66`,
+                              }}
+                            >
+                              View Card
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -601,11 +780,58 @@ function Players() {
               </div>
 
               <div className="mt-2 rounded-md border border-white/10 bg-black/10 p-3">
-                <div className="mb-4">
+                <div className="mb-1">
                   <p className="text-[8px] tracking-wide text-white/25">
                     Players In Database
                   </p>
-                  <p className="text-lg text-[#1bc2ec]/70">{players.length}</p>
+                  <p className="text-lg text-[#1bc2ec]">{players.length}</p>
+                </div>
+
+                <div className="mb-2 border-t border-white/10 pt-3">
+                  <p className="mb-2 text-[8px] tracking-wide text-white/25">
+                    Position Breakdown
+                  </p>
+
+                  <div className="grid grid-cols-5 gap-1 text-center">
+                    {positions.map((position) => (
+                      <div key={position}>
+                        <p className="text-[8px] text-[#1bc2ec]">{position}</p>
+                        <p className="text-[10px] text-white/45">
+                          {positionBreakdown[position]}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mb-4 border-t border-white/10 pt-3">
+                  <p className="mb-2 text-[8px] tracking-wide text-white/25">
+                    Common Archetypes
+                  </p>
+
+                  <div className="space-y-1">
+                    {topArchetypeDistribution.map(([archetype, data]) => {
+                      const rarityColor = getRarityColor(data.rarity);
+
+                      return (
+                        <div
+                          key={archetype}
+                          className="flex items-center justify-between gap-2 text-[8px]"
+                        >
+                          <span
+                            className="truncate"
+                            style={{ color: rarityColor }}
+                          >
+                            {archetype}
+                          </span>
+
+                          <span style={{ color: rarityColor }}>
+                            {data.count}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div className="mb-4">
@@ -649,8 +875,8 @@ function Players() {
 
             {/* Header section */}
             <div className="flex flex-col items-center justify-between gap-1 mb-2">
-              <h1 className="font-michroma text-lg font-bold tracking-wide text-[#1bc2ec]">
-                CHOOSE A PLAYER
+              <h1 className="font-michroma text-2xl font-bold tracking-wide text-[#1bc2ec]">
+                PICK A PLAYER
               </h1>
 
               <p className="max-w-xl text-center font-michroma text-xs leading-relaxed text-white/40">
@@ -945,9 +1171,12 @@ function Players() {
                         <button
                           type="button"
                           onClick={() => {
-                            setCurrentPlayer(
-                              currentPlayer === player.name ? "" : player.name,
-                            );
+                            if (currentPlayer === player.name) {
+                              setCurrentPlayer("");
+                            } else {
+                              setCurrentPlayer(player.name);
+                              addRecentlyViewedPlayer(player.name);
+                            }
                             setIsCardFlipped(false);
                           }}
                           className="flex min-w-0 flex-1 cursor-pointer items-center justify-between gap-3 px-2 py-2 text-left font-michroma text-xs"
