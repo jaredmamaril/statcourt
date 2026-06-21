@@ -29,6 +29,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import Image from "next/image";
+import { Info } from "lucide-react";
 import PlayerImage from "../components/player-image";
 import { Suspense, useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -41,6 +42,18 @@ export default function PlayersPage() {
   );
 }
 function Players() {
+  const [featuredPlayer, setFeaturedPlayer] = useState<
+    (typeof players)[number] | null
+  >(null);
+
+  const featuredPlayerInsights = featuredPlayer
+    ? getPlayerInsights(featuredPlayer)
+    : null;
+
+  useEffect(() => {
+    const randomPlayer = players[Math.floor(Math.random() * players.length)];
+    setFeaturedPlayer(randomPlayer);
+  }, []);
   // State for filters and dropdowns
   const [currentPlayer, setCurrentPlayer] = useState("");
   const [playerSearch, setPlayerSearch] = useState("");
@@ -359,6 +372,10 @@ function Players() {
   }
 
   // Get player overall
+  function toDisplayRating(rawScore: number) {
+    return 70 + rawScore * 0.3;
+  }
+
   function getPlayerListOverall(player: (typeof players)[number]) {
     const ppgScore = normalizeStat(player.stats.ppg, statMaxValues.ppg);
     const rpgScore = normalizeStat(player.stats.rpg, statMaxValues.rpg);
@@ -376,18 +393,68 @@ function Players() {
       statMaxValues.ftPercent,
     );
 
-    const overallScore =
-      ppgScore * 0.28 +
-      rpgScore * 0.14 +
-      apgScore * 0.18 +
-      fgScore * 0.14 +
-      threeScore * 0.12 +
-      ftScore * 0.06 +
-      player.defenseRating * 0.04 +
-      player.starPower * 0.04;
+    const scoringScore = ppgScore * 0.75 + fgScore * 0.15 + ftScore * 0.1;
+    const shootingScore = threeScore * 0.65 + ftScore * 0.25 + fgScore * 0.1;
+    const playmakingScore =
+      apgScore * 0.75 + scoringScore * 0.15 + threeScore * 0.1;
+    const reboundingScore = rpgScore * 0.9 + fgScore * 0.1;
+    const efficiencyScore = fgScore * 0.45 + threeScore * 0.3 + ftScore * 0.25;
 
-    return 70 + overallScore * 0.3;
+    const starCategories = [
+      ppgScore >= 70,
+      rpgScore >= 55,
+      apgScore >= 55,
+      fgScore >= 70,
+      threeScore >= 70,
+      ftScore >= 75,
+    ].filter(Boolean).length;
+
+    const versatilityBonus = starCategories * 2;
+
+    const overallScore =
+      scoringScore * 0.3 +
+      efficiencyScore * 0.23 +
+      playmakingScore * 0.19 +
+      reboundingScore * 0.15 +
+      shootingScore * 0.13 +
+      versatilityBonus;
+
+    return toDisplayRating(overallScore);
   }
+
+  const highestOverallPlayer = [...players].sort(
+    (a, b) => getPlayerListOverall(b) - getPlayerListOverall(a),
+  )[0];
+
+  const mostVersatilePlayer = [...players].sort((a, b) => {
+    function getVersatilityScore(player: (typeof players)[number]) {
+      const ppgScore = normalizeStat(player.stats.ppg, statMaxValues.ppg);
+      const rpgScore = normalizeStat(player.stats.rpg, statMaxValues.rpg);
+      const apgScore = normalizeStat(player.stats.apg, statMaxValues.apg);
+      const threeScore = normalizeStat(
+        player.stats.threePercent,
+        statMaxValues.threePercent,
+      );
+
+      return (
+        ppgScore * 0.28 +
+        rpgScore * 0.2 +
+        apgScore * 0.25 +
+        threeScore * 0.12 +
+        player.defenseRating * 0.15
+      );
+    }
+
+    return getVersatilityScore(b) - getVersatilityScore(a);
+  })[0];
+
+  const bestShooter = [...players].sort(
+    (a, b) => b.stats.threePercent - a.stats.threePercent,
+  )[0];
+
+  const bestPlaymaker = [...players].sort(
+    (a, b) => b.stats.apg - a.stats.apg,
+  )[0];
 
   // Best lineup fit for player
   function getBestLineupFits(player: (typeof players)[number]) {
@@ -442,6 +509,144 @@ function Players() {
                 : "relative flex h-full w-full flex-col transition-all duration-500 ease-out opacity-100 translate-x-0"
             }
           >
+            {featuredPlayer && (
+              <div className="absolute -right-55 top-4 hidden w-64 font-michroma uppercase xl:block text-center">
+                <p className="text-[8px] tracking-wide text-white/25">
+                  Featured Player
+                </p>
+
+                <div className="mt-2 rounded-md border border-white/10 bg-black/10 p-3">
+                  <p className="text-sm text-white/70">{featuredPlayer.name}</p>
+
+                  <p className="mt-1 text-xs text-[#1bc2ec]/80">
+                    {getPlayerListOverall(featuredPlayer).toFixed(1)} OVR
+                  </p>
+
+                  <div className="mt-3 flex flex-col gap-1 text-[8px] text-white/35">
+                    {featuredPlayerInsights?.archetype && (
+                      <span>{featuredPlayerInsights.archetype.label}</span>
+                    )}
+
+                    {featuredPlayerInsights?.traits.slice(0, 2).map((trait) => (
+                      <span key={trait.label}>{trait.label}</span>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCurrentPlayer(featuredPlayer.name);
+                      setIsCardFlipped(false);
+                    }}
+                    className="pointer-events-auto mt-3 rounded-md border border-[#1bc2ec]/40 px-5 py-1 text-xs text-[#1bc2ec] transition hover:bg-[#1bc2ec]/10"
+                  >
+                    View Player
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="absolute -left-55 top-4 z-500 hidden w-64 font-michroma uppercase text-center xl:block">
+              <div className="group/database relative inline-block">
+                <p className="flex cursor-help items-center justify-center gap-1 text-[8px] tracking-wide text-white/25 transition group-hover/database:text-white/50">
+                  Database Snapshot
+                  <Info className="h-4 w-4 text-[#1bc2ec]/60 transition group-hover/database:text-[#1bc2ec]" />
+                </p>
+
+                <div className="pointer-events-none absolute left-1/2 top-full z-999 mt-2 w-72 -translate-x-1/2 rounded-md border border-white/15 bg-black/95 p-3 text-left opacity-0 shadow-[0_0_24px_rgba(0,0,0,0.55)] transition-opacity duration-200 group-hover/database:opacity-100">
+                  <p className="mb-2 text-[8px] uppercase tracking-wide text-white/45">
+                    Snapshot Colors
+                  </p>
+
+                  <div className="space-y-2 text-[8px] leading-relaxed">
+                    <p>
+                      <span className="text-[#1bc2ec]">
+                        Players In Database
+                      </span>
+                      <span className="text-white/45">
+                        {" "}
+                        - total players loaded.
+                      </span>
+                    </p>
+                    <p>
+                      <span className="text-[#EFBF04]">Highest OVR</span>
+                      <span className="text-white/45">
+                        {" "}
+                        - best overall rating.
+                      </span>
+                    </p>
+                    <p>
+                      <span className="text-[#A855F7]">Most Versatile</span>
+                      <span className="text-white/45">
+                        {" "}
+                        - best all-around profile.
+                      </span>
+                    </p>
+                    <p>
+                      <span className="text-[#22C55E]">Best Shooter</span>
+                      <span className="text-white/45">
+                        {" "}
+                        - best three-point shooter.
+                      </span>
+                    </p>
+                    <p>
+                      <span className="text-[#38BDF8]">Best Playmaker</span>
+                      <span className="text-white/45">
+                        {" "}
+                        - highest assist creator.
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-2 rounded-md border border-white/10 bg-black/10 p-3">
+                <div className="mb-4">
+                  <p className="text-[8px] tracking-wide text-white/25">
+                    Players In Database
+                  </p>
+                  <p className="text-lg text-[#1bc2ec]/70">{players.length}</p>
+                </div>
+
+                <div className="mb-4">
+                  <p className="text-[8px] tracking-wide text-white/25">
+                    Highest OVR
+                  </p>
+                  <p className="text-[10px] text-[#EFBF04]/80">
+                    {highestOverallPlayer.name} (
+                    {getPlayerListOverall(highestOverallPlayer).toFixed(1)})
+                  </p>
+                </div>
+
+                <div className="mb-4">
+                  <p className="text-[8px] tracking-wide text-white/25">
+                    Most Versatile
+                  </p>
+                  <p className="text-[10px] text-[#A855F7]/80">
+                    {mostVersatilePlayer.name}
+                  </p>
+                </div>
+
+                <div className="mb-4">
+                  <p className="text-[8px] tracking-wide text-white/25">
+                    Best Shooter
+                  </p>
+                  <p className="text-[10px] text-[#22C55E]/80">
+                    {bestShooter.name}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-[8px] tracking-wide text-white/25">
+                    Best Playmaker
+                  </p>
+                  <p className="text-[10px] text-[#38BDF8]/80">
+                    {bestPlaymaker.name}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Header section */}
             <div className="flex flex-col items-center justify-between gap-1 mb-2">
               <h1 className="font-michroma text-lg font-bold tracking-wide text-[#1bc2ec]">
