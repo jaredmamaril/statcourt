@@ -492,7 +492,7 @@ export default function Rankings() {
               <div>
                 <div>
                   <div className="flex flex-wrap items-center justify-center gap-3">
-                    <h1 className="font-michroma text-sm uppercase tracking-wide text-white">
+                    <h1 className="font-michroma text-lg uppercase tracking-wide text-white">
                       Archetypes
                     </h1>
 
@@ -810,7 +810,7 @@ export default function Rankings() {
               </div>
             ) : (
               <>
-                <h1 className="font-michroma text-sm uppercase tracking-wide text-white text-center">
+                <h1 className="font-michroma text-lg uppercase tracking-wide text-white text-center">
                   {rankingHeading}
                 </h1>
 
