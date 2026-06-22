@@ -20,6 +20,7 @@ import {
   PlayerCardInsights,
   PlayerCardRadar,
   PlayerCardSimilarPanel,
+  PlayerCardAddToCompare,
 } from "../components/player-card";
 import {
   DatabaseSnapshot,
@@ -1111,51 +1112,11 @@ function Players() {
                       </div>
 
                       {/* Send to court page to compare with other player(s) button */}
-                      <div
-                        className="group absolute bottom-2 left-1/2 z-200 w-88 -translate-x-1/2"
-                        onClick={(e) => e.stopPropagation()}
-                        onPointerDown={(e) => e.stopPropagation()}
-                      >
-                        <button
-                          type="button"
-                          className="w-full cursor-pointer rounded-md border bg-black/60 px-4 py-2 font-michroma text-lg uppercase tracking-wide text-white backdrop-blur-sm transition-all duration-200 hover:brightness-250"
-                          style={{
-                            borderColor: teamColors[selectedPlayer.team],
-                          }}
-                        >
-                          Add to Compare
-                        </button>
-
-                        <div className="pointer-events-none absolute bottom-full left-1/2 z-210 w-full -translate-x-1/2 rounded-md border border-white/20 bg-black/90 p-3 opacity-0 transition-opacity duration-200 after:absolute after:left-0 after:top-full after:h-3 after:w-full after:content-[''] group-hover:pointer-events-auto group-hover:opacity-100">
-                          <p className="mb-2 text-center font-michroma text-[10px] uppercase text-white/60">
-                            Replace on Court
-                          </p>
-
-                          <div className="flex flex-col gap-2">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                addPlayerToCompare("left");
-                              }}
-                              className="cursor-pointer rounded border border-white/20 px-3 py-2 text-left font-michroma text-[10px] text-white/80 transition hover:bg-white/10"
-                            >
-                              Left: {compareSlots.left || "Empty"}
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                addPlayerToCompare("right");
-                              }}
-                              className="cursor-pointer rounded border border-white/20 px-3 py-2 text-left font-michroma text-[10px] text-white/80 transition hover:bg-white/10"
-                            >
-                              Right: {compareSlots.right || "Empty"}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
+                      <PlayerCardAddToCompare
+                        player={selectedPlayer}
+                        compareSlots={compareSlots}
+                        onAddPlayerToCompare={addPlayerToCompare}
+                      />
                     </div>
                   </div>
                 </div>
