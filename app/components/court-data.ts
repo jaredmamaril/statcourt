@@ -118,7 +118,7 @@ export type PlayerStats = {
 export type Player = {
   id: number;
   name: string;
-  image: string;
+  fallbackImage: string; // Local fallback if CDN headshot is unavailable
   team: Team;
   position: Position;
   secondaryPositions?: Position[];
@@ -134,7 +134,7 @@ export const players: Player[] = [
   {
     id: 1,
     name: "LeBron James",
-    image: "/temp-players/lebron-james.png",
+    fallbackImage: "/players/headshots/lebron-james.png",
     team: "LAL",
     position: "SF",
     secondaryPositions: ["PF"],
@@ -155,7 +155,7 @@ export const players: Player[] = [
   {
     id: 2,
     name: "Michael Jordan",
-    image: "/temp-players/michael-jordan.jpg",
+    fallbackImage: "/players/headshots/michael-jordan.png",
     team: "CHI",
     position: "SG",
     secondaryPositions: ["SF", "PG"],
@@ -175,7 +175,7 @@ export const players: Player[] = [
   {
     id: 3,
     name: "Kobe Bryant",
-    image: "/temp-players/kobe-bryant.jpg",
+    fallbackImage: "/players/headshots/kobe-bryant.png",
     team: "LAL",
     position: "SG",
     secondaryPositions: ["SF", "PG"],
@@ -195,7 +195,7 @@ export const players: Player[] = [
   {
     id: 4,
     name: "Stephen Curry",
-    image: "/temp-players/stephen-curry.png",
+    fallbackImage: "/players/headshots/stephen-curry.png",
     team: "GSW",
     position: "PG",
     secondaryPositions: ["SG"],
@@ -215,7 +215,7 @@ export const players: Player[] = [
   {
     id: 5,
     name: "Kevin Durant",
-    image: "/temp-players/kevin-durant.png",
+    fallbackImage: "/players/headshots/kevin-durant.png",
     team: "PHX",
     position: "SF",
     secondaryPositions: ["PF"],
@@ -235,7 +235,7 @@ export const players: Player[] = [
   {
     id: 6,
     name: "Shaquille O'Neal",
-    image: "/temp-players/shaquille-oneal.png",
+    fallbackImage: "/players/headshots/shaquille-oneal.png",
     team: "LAL",
     position: "C",
     secondaryPositions: ["PF"],
@@ -255,7 +255,7 @@ export const players: Player[] = [
   {
     id: 7,
     name: "Magic Johnson",
-    image: "/temp-players/magic-johnson.png",
+    fallbackImage: "/players/headshots/magic-johnson.png",
     team: "LAL",
     position: "PG",
     secondaryPositions: ["SG", "SF"],
@@ -276,7 +276,7 @@ export const players: Player[] = [
   {
     id: 8,
     name: "Larry Bird",
-    image: "/temp-players/larry-bird.png",
+    fallbackImage: "/players/headshots/larry-bird.png",
     team: "BOS",
     position: "SF",
     secondaryPositions: ["PF"],
@@ -296,7 +296,7 @@ export const players: Player[] = [
   {
     id: 9,
     name: "Tim Duncan",
-    image: "/temp-players/tim-duncan.png",
+    fallbackImage: "/players/headshots/tim-duncan.png",
     team: "SAS",
     position: "PF",
     secondaryPositions: ["C"],
@@ -316,7 +316,7 @@ export const players: Player[] = [
   {
     id: 10,
     name: "Hakeem Olajuwon",
-    image: "/temp-players/hakeem-olajuwon.png",
+    fallbackImage: "/players/headshots/hakeem-olajuwon.png",
     team: "HOU",
     position: "C",
     secondaryPositions: ["PF"],
@@ -336,7 +336,7 @@ export const players: Player[] = [
   {
     id: 11,
     name: "Wilt Chamberlain",
-    image: "/temp-players/wilt-chamberlain.png",
+    fallbackImage: "/players/headshots/wilt-chamberlain.png",
     team: "LAL",
     position: "C",
     secondaryPositions: ["PF"],
@@ -356,7 +356,7 @@ export const players: Player[] = [
   {
     id: 12,
     name: "Giannis Antetokounmpo",
-    image: "/temp-players/giannis-antetokounmpo.png",
+    fallbackImage: "/players/headshots/giannis-antetokounmpo.png",
     team: "MIL",
     position: "PF",
     secondaryPositions: ["SF", "C"],
@@ -376,7 +376,7 @@ export const players: Player[] = [
   {
     id: 13,
     name: "Nikola Jokic",
-    image: "/temp-players/nikola-jokic.png",
+    fallbackImage: "/players/headshots/nikola-jokic.png",
     team: "DEN",
     position: "C",
     secondaryPositions: ["PF"],
