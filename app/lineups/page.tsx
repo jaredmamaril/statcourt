@@ -16,26 +16,27 @@ import {
   type LineupCategory,
   type LineupName,
 } from "../components/lineups/featured-lineups";
+import {
+  getBuilderPlayerRating,
+  getBuilderPlayerRatingForPosition,
+  getPositionFit,
+  getPositionPenalty,
+} from "../components/lineups/builder-position-helpers";
 import { players, normalizeStat } from "../components/court-data";
 import type { Position } from "../components/court-data";
 import PlayerImage from "../components/player-image";
 import { getPlayerHeadshot } from "../components/player-images";
-import { getPlayerRating } from "../components/player-ratings";
 import {
   getCourtBalanceColor,
   getLineupScoutReport,
   getLineupTierColor,
   getRankedScoutScores,
   getScoutReason,
-  type LineupScoutScores,
-  type TeamGrades,
 } from "../components/lineup-scouting";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Trophy,
-  Flame,
-  Brain,
   Shield,
   Target,
   Crown,
@@ -50,7 +51,6 @@ import {
 } from "lucide-react";
 
 // Types
-
 type LineupMarkerProps = {
   position: string;
   name: string;
@@ -61,71 +61,6 @@ type LineupMarkerProps = {
   tooltipPosition?: "top" | "bottom";
   animationDelay?: string;
 };
-
-// Rating helpers
-function getBuilderPlayerRating(player: (typeof players)[number]) {
-  return getPlayerRating(player, "overall");
-}
-
-// Position fit helpers
-type PositionFit = "natural" | "secondary" | "emergency" | "mismatch";
-
-const defaultSecondaryPositions: Record<Position, Position[]> = {
-  PG: ["SG"],
-  SG: ["PG", "SF"],
-  SF: ["SG", "PF"],
-  PF: ["SF", "C"],
-  C: ["PF"],
-};
-
-function getPlayerSecondaryPositions(
-  player: (typeof players)[number],
-): Position[] {
-  return (
-    player.secondaryPositions ?? defaultSecondaryPositions[player.position]
-  );
-}
-
-function getPlayerEmergencyPositions(
-  player: (typeof players)[number],
-): Position[] {
-  return player.emergencyPositions ?? [];
-}
-
-function getPositionFit(
-  player: (typeof players)[number],
-  slot: Position,
-): PositionFit {
-  if (player.position === slot) return "natural";
-
-  if (getPlayerSecondaryPositions(player).includes(slot)) {
-    return "secondary";
-  }
-
-  if (getPlayerEmergencyPositions(player).includes(slot)) {
-    return "emergency";
-  }
-
-  return "mismatch";
-}
-
-function getPositionPenalty(fit: PositionFit) {
-  if (fit === "natural") return 0;
-  if (fit === "secondary") return 1.5;
-  if (fit === "emergency") return 3;
-
-  return 7;
-}
-
-function getBuilderPlayerRatingForPosition(
-  player: (typeof players)[number],
-  slot: Position,
-) {
-  return (
-    getBuilderPlayerRating(player) -
-    getPositionPenalty(getPositionFit(player, slot))
-  );
-}
 
 // Color helpers
 function getSavedLineupArchetypeColor(archetype: string) {
