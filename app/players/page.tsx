@@ -14,6 +14,7 @@ import {
 } from "../components/court-data";
 import { getPlayerHeadshot } from "../components/player-images";
 import { getPlayerRating } from "../components/player-ratings";
+import { PlayerCardFront } from "../components/player-card";
 import {
   DatabaseSnapshot,
   FeaturedPlayerPanel,
@@ -1049,103 +1050,11 @@ function Players() {
                     }}
                   >
                     {/* Front face */}
-                    <div
-                      className={`absolute inset-0 min-h-134 border border-[#1bc2ec]/10 bg-black/30 p-6 rounded-3xl ${
-                        isCardFlipped
-                          ? "pointer-events-none"
-                          : "pointer-events-auto"
-                      }`}
-                      style={{ backfaceVisibility: "hidden" }}
-                    >
-                      {/* Team-colored card border */}
-                      <svg
-                        className="pointer-events-none absolute inset-0 z-20 h-full w-full"
-                        viewBox="0 0 100 100"
-                        preserveAspectRatio="none"
-                      >
-                        <defs>
-                          {/* Mask */}
-                          <mask id={`team-frame-mask-${selectedPlayer.id}`}>
-                            <rect width="100" height="100" fill="white" />
-                            <polygon
-                              points="8,8 82,8 92,18 92,92 18,92 8,82"
-                              fill="black"
-                            />
-                          </mask>
-                        </defs>
-
-                        {/* Base team color frame */}
-                        <rect
-                          x="0"
-                          y="0"
-                          width="100"
-                          height="100"
-                          fill={teamColors[selectedPlayer.team]}
-                          mask={`url(#team-frame-mask-${selectedPlayer.id})`}
-                        />
-
-                        {/* Inner white trim */}
-                        <polygon
-                          points="8,8 82,8 92,18 92,92 18,92 8,82"
-                          fill="none"
-                          stroke="white"
-                          strokeWidth="3"
-                          vectorEffect="non-scaling-stroke"
-                        />
-                      </svg>
-                      {/* Card background (court) */}
-                      <div className="absolute -inset-30 z-10 transform rotate-90 opacity-50">
-                        <Image
-                          src={"/court.svg"}
-                          alt={"Court background"}
-                          fill
-                          className="object-contain"
-                        />
-                      </div>
-                      {/* Jersey number and position - top right corner */}
-                      <div
-                        className="absolute top-18 right-14 z-30"
-                        style={{ color: teamColors[selectedPlayer.team] }}
-                      >
-                        <div className="flex flex-col items-center">
-                          <span className="text-3xl font-bold font-michroma opacity-70">
-                            #{selectedPlayer.jerseyNumber}
-                          </span>
-                          <span className="text-white text-2xl font-bold font-michroma opacity-70">
-                            {selectedPlayer.position}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Team logo - top left corner */}
-                      <div className="absolute top-15 left-12 z-30 opacity-70">
-                        <Image
-                          src={teamLogos[selectedPlayer.team]}
-                          alt={`${selectedPlayer.team} logo`}
-                          width={32}
-                          height={32}
-                          className="h-24 w-24 object-contain"
-                        />
-                      </div>
-
-                      {/* Player image */}
-                      <div className="absolute inset-0 z-20 flex items-center justify-center -top-18">
-                        <PlayerImage
-                          src={getPlayerHeadshot(selectedPlayer)}
-                          alt={selectedPlayer.name}
-                          width={520}
-                          height={380}
-                          className="h-84 w-84 rounded-md object-cover"
-                        />
-                      </div>
-
-                      {/* Player name */}
-                      <div className="absolute bottom-8 left-0 right-0 z-30 flex items-center justify-center px-6 text-center">
-                        <span className="py-11 text-xl font-bold font-michroma uppercase text-white tracking-wide wrap-break-word w-full">
-                          {selectedPlayer.name}
-                        </span>
-                      </div>
-                    </div>
+                    {/* Front face */}
+                    <PlayerCardFront
+                      player={selectedPlayer}
+                      isCardFlipped={isCardFlipped}
+                    />
 
                     {/* Back face */}
                     <div
