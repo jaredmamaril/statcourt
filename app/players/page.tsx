@@ -16,6 +16,7 @@ import { getPlayerHeadshot } from "../components/player-images";
 import { getPlayerRating } from "../components/player-ratings";
 import {
   DatabaseSnapshot,
+  FeaturedPlayerPanel,
   RecentlyScouted,
 } from "../components/player-side-panels";
 import type {
@@ -568,88 +569,16 @@ function Players() {
             }
           >
             {!selectedPlayer && featuredPlayer && (
-              <div className="absolute -right-55 top-4 hidden w-64 font-michroma uppercase xl:block text-center">
-                <div className="mt-2 rounded-md border border-white/10 bg-black/10 p-3">
-                  <p className="mb-2 text-[8px] tracking-wide text-white/25">
-                    Featured Player
-                  </p>
-
-                  <p
-                    className="text-sm brightness-125"
-                    style={{
-                      color: teamColors[featuredPlayer.team],
-                      textShadow: `0 0 6px ${teamColors[featuredPlayer.team]}, 0 0 14px ${teamColors[featuredPlayer.team]}, 0 0 26px ${teamColors[featuredPlayer.team]}66`,
-                    }}
-                  >
-                    {featuredPlayer.name}
-                  </p>
-
-                  <p className="mt-1 text-xs text-[#1bc2ec]">
-                    {getPlayerRating(featuredPlayer).toFixed(1)} OVR
-                  </p>
-
-                  <div className="mt-3 flex flex-col items-center gap-1">
-                    {featuredPlayerInsights?.archetype &&
-                      (() => {
-                        const archetypeStyle = getInsightRarityStyles(
-                          featuredPlayerInsights.archetype,
-                          true,
-                        );
-
-                        return (
-                          <span
-                            className="rounded border px-2 py-0.5 text-[8px]"
-                            style={{
-                              ...archetypeStyle,
-                              backgroundColor: `${archetypeStyle.color}18`,
-                              boxShadow: "none",
-                              opacity: 0.7,
-                            }}
-                          >
-                            {featuredPlayerInsights.archetype.label}
-                          </span>
-                        );
-                      })()}
-
-                    {featuredPlayerInsights?.traits.slice(0, 2).map((trait) => {
-                      const traitStyle = getInsightRarityStyles(trait);
-
-                      return (
-                        <span
-                          key={trait.label}
-                          className="rounded border px-2 py-0.5 text-[8px]"
-                          style={{
-                            ...traitStyle,
-                            backgroundColor: `${traitStyle.color}14`,
-                            boxShadow: "none",
-                            opacity: 0.7,
-                          }}
-                        >
-                          {trait.label}
-                        </span>
-                      );
-                    })}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCurrentPlayer(featuredPlayer.name);
-                      addRecentlyViewedPlayer(featuredPlayer.name);
-                      setIsCardFlipped(false);
-                    }}
-                    className="pointer-events-auto mt-3 rounded-md border px-5 py-1 text-xs brightness-125 transition hover:brightness-175"
-                    style={{
-                      color: teamColors[featuredPlayer.team],
-                      borderColor: `${teamColors[featuredPlayer.team]}`,
-                      backgroundColor: `${teamColors[featuredPlayer.team]}14`,
-                      boxShadow: `0 0 10px ${teamColors[featuredPlayer.team]}22`,
-                    }}
-                  >
-                    View Player
-                  </button>
-                </div>
-
+              <FeaturedPlayerPanel
+                featuredPlayer={featuredPlayer}
+                featuredPlayerInsights={featuredPlayerInsights}
+                getInsightRarityStyles={getInsightRarityStyles}
+                onViewPlayer={(playerName) => {
+                  setCurrentPlayer(playerName);
+                  addRecentlyViewedPlayer(playerName);
+                  setIsCardFlipped(false);
+                }}
+              >
                 <RecentlyScouted
                   recentlyViewedPlayers={recentlyViewedPlayers}
                   onViewPlayer={(playerName) => {
@@ -658,7 +587,7 @@ function Players() {
                     addRecentlyViewedPlayer(playerName);
                   }}
                 />
-              </div>
+              </FeaturedPlayerPanel>
             )}
 
             {!selectedPlayer && (
