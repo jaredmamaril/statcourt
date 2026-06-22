@@ -118,7 +118,7 @@ export type PlayerStats = {
 export type Player = {
   id: number;
   name: string;
-  fallbackImage: string; // Local fallback if CDN headshot is unavailable
+  fallbackImage?: string; // Local fallback if CDN headshot is unavailable
   team: Team;
   position: Position;
   secondaryPositions?: Position[];
@@ -215,7 +215,6 @@ export const players: Player[] = [
   {
     id: 5,
     name: "Kevin Durant",
-    fallbackImage: "/players/headshots/kevin-durant.png",
     team: "PHX",
     position: "SF",
     secondaryPositions: ["PF"],
@@ -235,7 +234,6 @@ export const players: Player[] = [
   {
     id: 6,
     name: "Shaquille O'Neal",
-    fallbackImage: "/players/headshots/shaquille-oneal.png",
     team: "LAL",
     position: "C",
     secondaryPositions: ["PF"],
@@ -255,7 +253,6 @@ export const players: Player[] = [
   {
     id: 7,
     name: "Magic Johnson",
-    fallbackImage: "/players/headshots/magic-johnson.png",
     team: "LAL",
     position: "PG",
     secondaryPositions: ["SG", "SF"],
@@ -276,7 +273,6 @@ export const players: Player[] = [
   {
     id: 8,
     name: "Larry Bird",
-    fallbackImage: "/players/headshots/larry-bird.png",
     team: "BOS",
     position: "SF",
     secondaryPositions: ["PF"],
@@ -296,7 +292,6 @@ export const players: Player[] = [
   {
     id: 9,
     name: "Tim Duncan",
-    fallbackImage: "/players/headshots/tim-duncan.png",
     team: "SAS",
     position: "PF",
     secondaryPositions: ["C"],
@@ -316,7 +311,6 @@ export const players: Player[] = [
   {
     id: 10,
     name: "Hakeem Olajuwon",
-    fallbackImage: "/players/headshots/hakeem-olajuwon.png",
     team: "HOU",
     position: "C",
     secondaryPositions: ["PF"],
@@ -336,7 +330,6 @@ export const players: Player[] = [
   {
     id: 11,
     name: "Wilt Chamberlain",
-    fallbackImage: "/players/headshots/wilt-chamberlain.png",
     team: "LAL",
     position: "C",
     secondaryPositions: ["PF"],
@@ -356,7 +349,6 @@ export const players: Player[] = [
   {
     id: 12,
     name: "Giannis Antetokounmpo",
-    fallbackImage: "/players/headshots/giannis-antetokounmpo.png",
     team: "MIL",
     position: "PF",
     secondaryPositions: ["SF", "C"],
@@ -376,7 +368,6 @@ export const players: Player[] = [
   {
     id: 13,
     name: "Nikola Jokic",
-    fallbackImage: "/players/headshots/nikola-jokic.png",
     team: "DEN",
     position: "C",
     secondaryPositions: ["PF"],

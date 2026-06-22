@@ -28,11 +28,11 @@ export function getPlayerHeadshot(player: Player) {
   const slug = getPlayerSlug(player.name);
   const nbaId = nbaIdByPlayerSlug[slug];
 
-  if (!nbaId) return player.fallbackImage;
+  if (!nbaId) return player.fallbackImage ?? "/blank-player.svg";
 
   return `https://cdn.nba.com/headshots/nba/latest/1040x760/${nbaId}.png`;
 }
 
 export function getPlayerFallbackHeadshot(player: Player) {
-  return player.fallbackImage;
+  return player.fallbackImage ?? "/blank-player.svg";
 }

@@ -1523,7 +1523,7 @@ function LineupMarker({
   animationDelay = "0ms",
 }: LineupMarkerProps) {
   const player = players.find((player) => player.name === name);
-  const imageSrc = player?.image || "/blank-player.svg";
+  const imageSrc = player ? getPlayerHeadshot(player) : "/blank-player.svg";
   const tooltipClass =
     tooltipPosition === "bottom" ? "top-full" : "bottom-full";
 
