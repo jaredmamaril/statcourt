@@ -3,9 +3,6 @@
 import {
   players,
   positions,
-  teams,
-  teamColors,
-  teamLogos,
   sortOptions,
   normalizeStat,
   statMaxValues,
@@ -15,6 +12,7 @@ import {
 import { getPlayerRating } from "../components/player-ratings";
 import { SelectedPlayerCard } from "../components/player-card";
 import { PlayerList } from "../components/player-list-panel";
+import { PlayerFilters } from "../components/player-filters";
 import {
   DatabaseSnapshot,
   FeaturedPlayerPanel,
@@ -28,7 +26,6 @@ import type {
   PlayerInsightDisplay,
   CompareSlots,
 } from "../components/court-data";
-import Image from "next/image";
 import { Suspense, useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -404,8 +401,10 @@ function Players() {
   );
 
   // Determine if any filters are active to show reset button
-  const hasActiveFilters =
-    playerSearch || showFavorites || filteredTeam || filteredPosition || sortBy;
+  const hasActiveFilters = Boolean(
+    showFavorites || filteredTeam || filteredPosition || sortBy || playerSearch,
+  );
+
   // Function to reset all filters and put sorting options to default setting when button is clicked
   function resetAllFilters() {
     setPlayerSearch("");
@@ -623,220 +622,35 @@ function Players() {
             </div>
 
             {/* Filter buttons row */}
-            <div
-              ref={filtersRef}
-              className="flex flex-wrap items-center justify-center gap-2 mb-4"
-            >
-              {/* Favorites filter */}
-              <button
-                type="button"
-                onClick={() => setShowFavorites(!showFavorites)}
-                className={`cursor-pointer flex items-center gap-1.5 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
-                  showFavorites
-                    ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]/90"
-                    : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
-                }`}
-              >
-                <span>☆</span>
-                Favorites
-                {favorites.length > 0 && (
-                  <span className="ml-0.5 text-10px opacity-70">
-                    ({favorites.length})
-                  </span>
-                )}
-              </button>
-
-              {/* Team filter */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setOpenDropdown(openDropdown === "team" ? null : "team")
-                  }
-                  className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
-                    filteredTeam
-                      ? "bg-[#1bc2ec]/10"
-                      : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
-                  }`}
-                  style={{
-                    color: filteredTeam ? teamColors[filteredTeam] : undefined,
-                    borderColor: filteredTeam
-                      ? teamColors[filteredTeam]
-                      : undefined,
-                  }}
-                >
-                  {filteredTeam && (
-                    <Image
-                      src={teamLogos[filteredTeam]}
-                      alt={`${filteredTeam} logo`}
-                      width={16}
-                      height={16}
-                      className="h-4 w-4 shrink-0 object-contain"
-                    />
-                  )}
-                  <span>{filteredTeam ? filteredTeam : "All Teams"}</span>
-                  <span className="text-[#1bc2ec]">▾</span>
-                </button>
-
-                {openDropdown === "team" && (
-                  <div className="absolute left-0 top-full z-30 mt-2 max-h-40 w-36 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setFilteredTeam("");
-                        setOpenDropdown(null);
-                      }}
-                      className="block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs text-white/70 hover:bg-white/10"
-                    >
-                      All Teams
-                    </button>
-
-                    {teams.map((team) => (
-                      <button
-                        key={team}
-                        type="button"
-                        onClick={() => {
-                          setFilteredTeam(team);
-                          setOpenDropdown(null);
-                        }}
-                        className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs ${
-                          filteredTeam === team
-                            ? "bg-[#1bc2ec]/10 text-[#1bc2ec]"
-                            : "text-white/70 hover:bg-white/10"
-                        }`}
-                        style={{ color: teamColors[team] }}
-                      >
-                        <span className="flex items-center gap-2">
-                          <Image
-                            src={teamLogos[team]}
-                            alt={`${team} logo`}
-                            width={16}
-                            height={16}
-                            className="h-4 w-4 object-contain"
-                          />
-                          <span>{team}</span>
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Position filter */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setOpenDropdown(
-                      openDropdown === "position" ? null : "position",
-                    )
-                  }
-                  className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
-                    filteredPosition
-                      ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]"
-                      : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
-                  }`}
-                >
-                  <span>
-                    {filteredPosition ? filteredPosition : "All Positions"}
-                  </span>
-                  <span className="text-[#1bc2ec]">▾</span>
-                </button>
-                {openDropdown === "position" && (
-                  <div className="absolute left-0 top-full z-30 mt-2 max-h-40 w-36 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setFilteredPosition("");
-                        setOpenDropdown(null);
-                      }}
-                      className="block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs text-white/70 hover:bg-white/10"
-                    >
-                      All Positions
-                    </button>
-                    {positions.map((position) => (
-                      <button
-                        key={position}
-                        type="button"
-                        onClick={() => {
-                          setFilteredPosition(position);
-                          setOpenDropdown(null);
-                        }}
-                        className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs ${
-                          filteredPosition === position
-                            ? "bg-[#1bc2ec]/10 text-[#1bc2ec]"
-                            : "text-white/70 hover:bg-white/10"
-                        }`}
-                      >
-                        {position}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Sort by ... */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setOpenDropdown(openDropdown === "sort" ? null : "sort")
-                  }
-                  className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
-                    sortBy
-                      ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]"
-                      : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
-                  }`}
-                >
-                  <span>
-                    Sort:{" "}
-                    {selectedSortOption ? selectedSortOption.label : "None"}{" "}
-                    {sortBy &&
-                      (sortBy === "first-name" || sortBy === "last-name"
-                        ? sortDirection === "primary"
-                          ? "A-Z"
-                          : "Z-A"
-                        : sortDirection === "primary"
-                          ? "Hi-Lo"
-                          : "Lo-Hi")}
-                  </span>
-                  <span className="text-[#1bc2ec]">▾</span>
-                </button>
-
-                {openDropdown === "sort" && (
-                  <div className="absolute left-0 top-full z-30 mt-2 max-h-52 w-44 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
-                    {sortOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => {
-                          handleSortClick(option.value);
-                          setOpenDropdown(null);
-                        }}
-                        className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs ${
-                          sortBy === option.value
-                            ? "bg-[#1bc2ec]/10 text-[#1bc2ec]"
-                            : "text-white/70 hover:bg-white/10"
-                        }`}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Reset filters button */}
-              {hasActiveFilters && (
-                <button
-                  type="button"
-                  onClick={resetAllFilters}
-                  className="cursor-pointer rounded-md border border-white/20 bg-black/10 px-2 py-1 font-michroma text-xs text-white/60 transition-all duration-200 hover:border-red-700/60 hover:text-red-700"
-                >
-                  Reset Filters
-                </button>
-              )}
-            </div>
+            <PlayerFilters
+              filtersRef={filtersRef}
+              showFavorites={showFavorites}
+              favoritesCount={favorites.length}
+              filteredTeam={filteredTeam}
+              filteredPosition={filteredPosition}
+              sortBy={sortBy}
+              sortDirection={sortDirection}
+              selectedSortLabel={
+                selectedSortOption ? selectedSortOption.label : "None"
+              }
+              openDropdown={openDropdown}
+              hasActiveFilters={hasActiveFilters}
+              onToggleFavorites={() => setShowFavorites(!showFavorites)}
+              onOpenDropdown={setOpenDropdown}
+              onSelectTeam={(team) => {
+                setFilteredTeam(team);
+                setOpenDropdown(null);
+              }}
+              onSelectPosition={(position) => {
+                setFilteredPosition(position);
+                setOpenDropdown(null);
+              }}
+              onSelectSort={(sort) => {
+                handleSortClick(sort);
+                setOpenDropdown(null);
+              }}
+              onResetFilters={resetAllFilters}
+            />
 
             {/* Player list */}
             <PlayerList
