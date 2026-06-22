@@ -27,6 +27,10 @@ import {
   getSavedLineupArchetypeColor,
   getSavedLineupTopScore,
 } from "../components/lineups/lineup-style-helpers";
+import {
+  getSavedLineups,
+  saveSavedLineups,
+} from "../components/lineups/lineup-storage";
 import { players, normalizeStat } from "../components/court-data";
 import type { Position } from "../components/court-data";
 import PlayerImage from "../components/player-image";
@@ -414,11 +418,7 @@ export default function Lineups() {
   // Load saved lineups from localStorage
   useEffect(() => {
     const frameId = requestAnimationFrame(() => {
-      const saved = localStorage.getItem("statcourt-saved-lineups");
-
-      if (!saved) return;
-
-      setSavedLineups(JSON.parse(saved) as SavedLineup[]);
+      setSavedLineups(getSavedLineups());
     });
 
     return () => cancelAnimationFrame(frameId);
@@ -499,20 +499,14 @@ export default function Lineups() {
     const nextLineups = [newLineup, ...savedLineups];
 
     setSavedLineups(nextLineups);
-    localStorage.setItem(
-      "statcourt-saved-lineups",
-      JSON.stringify(nextLineups),
-    );
+    saveSavedLineups(nextLineups);
   }
 
   function deleteSavedLineup(lineupId: string) {
     const nextLineups = savedLineups.filter((lineup) => lineup.id !== lineupId);
 
     setSavedLineups(nextLineups);
-    localStorage.setItem(
-      "statcourt-saved-lineups",
-      JSON.stringify(nextLineups),
-    );
+    saveSavedLineups(nextLineups);
   }
 
   function renameSavedLineup(lineupId: string, newName: string) {
@@ -526,10 +520,7 @@ export default function Lineups() {
     );
 
     setSavedLineups(nextLineups);
-    localStorage.setItem(
-      "statcourt-saved-lineups",
-      JSON.stringify(nextLineups),
-    );
+    saveSavedLineups(nextLineups);
   }
 
   function loadSavedLineup(lineup: SavedLineup) {
