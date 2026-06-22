@@ -12,19 +12,9 @@ import {
   getPlayerInsights,
   getSimilarPlayers,
 } from "../components/court-data";
-import { getPlayerHeadshot } from "../components/player-images";
 import { getPlayerRating } from "../components/player-ratings";
-import {
-  PlayerCardBackHeader,
-  PlayerCardFront,
-  PlayerCardBack,
-  PlayerCardInsights,
-  PlayerCardRadar,
-  PlayerCardSimilarPanel,
-  PlayerCardAddToCompare,
-  PlayerCardShell,
-} from "../components/player-card";
 import { SelectedPlayerCard } from "../components/player-card";
+import { PlayerList } from "../components/player-list-panel";
 import {
   DatabaseSnapshot,
   FeaturedPlayerPanel,
@@ -39,7 +29,6 @@ import type {
   CompareSlots,
 } from "../components/court-data";
 import Image from "next/image";
-import PlayerImage from "../components/player-image";
 import { Suspense, useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -850,139 +839,24 @@ function Players() {
             </div>
 
             {/* Player list */}
-            <div className="player-list-scroll max-h-112.5 overflow-y-auto pr-2">
-              <div className="mx-auto flex w-full max-w-100 flex-col gap-1">
-                {/* No player(s) cases */}
-                {filteredPlayers.length === 0 ? (
-                  <p className="text-center text-white/40 font-michroma text-xs py-8">
-                    {showFavorites
-                      ? "No favorites yet. Click ☆ to add a player."
-                      : "No players found."}
-                  </p>
-                ) : (
-                  /* Filter based on chosen filters */
-                  filteredPlayers.map((player) => {
-                    const isSelected = player.name === currentPlayer;
-                    const isFavorite = favorites.includes(player.name);
-                    const teamColor = teamColors[player.team];
-                    const playerOverall = getPlayerRating(player);
-                    const selectedStatValue =
-                      sortBy &&
-                      sortBy !== "first-name" &&
-                      sortBy !== "last-name"
-                        ? player.stats[sortBy]
-                        : null;
-                    return (
-                      <div
-                        key={player.id}
-                        className={`flex w-full items-stretch text-left font-michroma text-xs rounded-md border transition-all duration-200 ${
-                          isSelected
-                            ? "border-[#178aa7] bg-[#1bc2ec]/10 text-[#1bc2ec]"
-                            : "border-white/10 bg-black/20 text-white/90 hover:bg-white/5 hover:border-white/30"
-                        }`}
-                      >
-                        {/* Favorite star button */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            toggleFavorite(player.name);
-                          }}
-                          aria-label={
-                            isFavorite
-                              ? `Remove ${player.name} from favorites`
-                              : `Add ${player.name} to favorites`
-                          }
-                          className={`cursor-pointer px-1.5 py-1 text-sm transition-colors duration-200 shrink-0 ${
-                            isFavorite
-                              ? "text-[#1bc2ec]"
-                              : "text-white/20 hover:text-[#1bc2ec]/60"
-                          }`}
-                        >
-                          {isFavorite ? "★" : "☆"}
-                        </button>
+            <PlayerList
+              players={filteredPlayers}
+              currentPlayer={currentPlayer}
+              favorites={favorites}
+              showFavorites={showFavorites}
+              sortBy={sortBy}
+              onToggleFavorite={toggleFavorite}
+              onSelectPlayer={(playerName) => {
+                if (currentPlayer === playerName) {
+                  setCurrentPlayer("");
+                } else {
+                  setCurrentPlayer(playerName);
+                  addRecentlyViewedPlayer(playerName);
+                }
 
-                        {/* Select player button */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (currentPlayer === player.name) {
-                              setCurrentPlayer("");
-                            } else {
-                              setCurrentPlayer(player.name);
-                              addRecentlyViewedPlayer(player.name);
-                            }
-                            setIsCardFlipped(false);
-                          }}
-                          className="flex min-w-0 flex-1 cursor-pointer items-center justify-between gap-3 px-2 py-2 text-left font-michroma text-xs"
-                        >
-                          <PlayerImage
-                            src={getPlayerHeadshot(player)}
-                            alt={player.name}
-                            width={44}
-                            height={44}
-                            className="h-11 w-11 shrink-0 rounded-full object-cover"
-                          />
-
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate">
-                              {player.name}
-                            </span>
-
-                            <span className="mt-1 flex items-center gap-1.5">
-                              <span
-                                className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[8px] text-white/80"
-                                style={{
-                                  backgroundColor: teamColor,
-                                  borderColor: teamColor,
-                                }}
-                              >
-                                {player.team}
-                              </span>
-
-                              <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[8px] text-white/60">
-                                {player.position}
-                              </span>
-
-                              <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[8px] text-white/60">
-                                #{player.jerseyNumber}
-                              </span>
-
-                              {/* Show value of currently selected sorting stat */}
-                              {selectedStatValue !== null && (
-                                <span className="shrink-0 rounded border border-[#1bc2ec]/30 bg-[#1bc2ec]/10 px-1.5 py-0.5 text-10px text-[#1bc2ec]">
-                                  {selectedStatValue}{" "}
-                                  {sortBy === "fgPercent" ||
-                                  sortBy === "threePercent" ||
-                                  sortBy === "ftPercent"
-                                    ? "%"
-                                    : ""}
-                                </span>
-                              )}
-                            </span>
-                          </span>
-
-                          <span className="ml-auto flex w-20 shrink-0 flex-col items-end justify-center text-right">
-                            <span
-                              className="block leading-none font-michroma text-[13px]"
-                              style={{
-                                color: teamColor,
-                                textShadow: `0 0 10px ${teamColor}88`,
-                              }}
-                            >
-                              {playerOverall.toFixed(1)}
-                            </span>
-
-                            <span className="mt-1 block leading-none font-michroma text-[7px] uppercase text-white/35">
-                              OVR
-                            </span>
-                          </span>
-                        </button>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
+                setIsCardFlipped(false);
+              }}
+            />
           </div>
 
           <div className="flex items-start justify-center">
