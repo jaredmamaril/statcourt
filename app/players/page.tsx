@@ -13,6 +13,7 @@ import {
   getSimilarPlayers,
 } from "../components/court-data";
 import { getPlayerHeadshot } from "../components/player-images";
+import { getPlayerRating } from "../components/player-ratings";
 import type {
   SortValue,
   Team,
@@ -475,59 +476,8 @@ function Players() {
     }, 450);
   }
 
-  // Get player overall
-  function toDisplayRating(rawScore: number) {
-    return 70 + rawScore * 0.3;
-  }
-
-  function getPlayerListOverall(player: (typeof players)[number]) {
-    const ppgScore = normalizeStat(player.stats.ppg, statMaxValues.ppg);
-    const rpgScore = normalizeStat(player.stats.rpg, statMaxValues.rpg);
-    const apgScore = normalizeStat(player.stats.apg, statMaxValues.apg);
-    const fgScore = normalizeStat(
-      player.stats.fgPercent,
-      statMaxValues.fgPercent,
-    );
-    const threeScore = normalizeStat(
-      player.stats.threePercent,
-      statMaxValues.threePercent,
-    );
-    const ftScore = normalizeStat(
-      player.stats.ftPercent,
-      statMaxValues.ftPercent,
-    );
-
-    const scoringScore = ppgScore * 0.75 + fgScore * 0.15 + ftScore * 0.1;
-    const shootingScore = threeScore * 0.65 + ftScore * 0.25 + fgScore * 0.1;
-    const playmakingScore =
-      apgScore * 0.75 + scoringScore * 0.15 + threeScore * 0.1;
-    const reboundingScore = rpgScore * 0.9 + fgScore * 0.1;
-    const efficiencyScore = fgScore * 0.45 + threeScore * 0.3 + ftScore * 0.25;
-
-    const starCategories = [
-      ppgScore >= 70,
-      rpgScore >= 55,
-      apgScore >= 55,
-      fgScore >= 70,
-      threeScore >= 70,
-      ftScore >= 75,
-    ].filter(Boolean).length;
-
-    const versatilityBonus = starCategories * 2;
-
-    const overallScore =
-      scoringScore * 0.3 +
-      efficiencyScore * 0.23 +
-      playmakingScore * 0.19 +
-      reboundingScore * 0.15 +
-      shootingScore * 0.13 +
-      versatilityBonus;
-
-    return toDisplayRating(overallScore);
-  }
-
   const highestOverallPlayer = [...players].sort(
-    (a, b) => getPlayerListOverall(b) - getPlayerListOverall(a),
+    (a, b) => getPlayerRating(b) - getPlayerRating(a),
   )[0];
 
   const mostVersatilePlayer = [...players].sort((a, b) => {
@@ -631,7 +581,7 @@ function Players() {
                   </p>
 
                   <p className="mt-1 text-xs text-[#1bc2ec]">
-                    {getPlayerListOverall(featuredPlayer).toFixed(1)} OVR
+                    {getPlayerRating(featuredPlayer).toFixed(1)} OVR
                   </p>
 
                   <div className="mt-3 flex flex-col items-center gap-1">
@@ -870,7 +820,7 @@ function Players() {
                     </p>
                     <p className="text-[10px] text-[#EFBF04]/80">
                       {highestOverallPlayer.name} (
-                      {getPlayerListOverall(highestOverallPlayer).toFixed(1)})
+                      {getPlayerRating(highestOverallPlayer).toFixed(1)}
                     </p>
                   </div>
 
@@ -1162,7 +1112,7 @@ function Players() {
                     const isSelected = player.name === currentPlayer;
                     const isFavorite = favorites.includes(player.name);
                     const teamColor = teamColors[player.team];
-                    const playerOverall = getPlayerListOverall(player);
+                    const playerOverall = getPlayerRating(player);
                     const selectedStatValue =
                       sortBy &&
                       sortBy !== "first-name" &&
