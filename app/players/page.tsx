@@ -14,7 +14,10 @@ import {
 } from "../components/court-data";
 import { getPlayerHeadshot } from "../components/player-images";
 import { getPlayerRating } from "../components/player-ratings";
-import { PlayerCardFront } from "../components/player-card";
+import {
+  PlayerCardBackHeader,
+  PlayerCardFront,
+} from "../components/player-card";
 import {
   DatabaseSnapshot,
   FeaturedPlayerPanel,
@@ -1050,13 +1053,11 @@ function Players() {
                     }}
                   >
                     {/* Front face */}
-                    {/* Front face */}
                     <PlayerCardFront
                       player={selectedPlayer}
                       isCardFlipped={isCardFlipped}
                     />
 
-                    {/* Back face */}
                     <div
                       className={`absolute inset-0 min-h-134 rounded-3xl border bg-black/30 ${
                         isCardFlipped
@@ -1079,40 +1080,11 @@ function Players() {
                         />
                       </div>
 
-                      <div className="relative z-10 grid grid-cols-[88px_1fr_52px] items-center gap-4 px-3 pt-1 font-michroma uppercase">
-                        <PlayerImage
-                          src={getPlayerHeadshot(selectedPlayer)}
-                          alt={selectedPlayer.name}
-                          width={88}
-                          height={88}
-                          className="h-22 w-22 rounded-md object-contain"
-                        />
-
-                        <div className="flex min-w-0 justify-center text-center">
-                          <p
-                            className={`line-clamp-2 text-center font-bold text-white ${getPlayerNameTextClass(
-                              selectedPlayer.name,
-                            )}`}
-                          >
-                            {selectedPlayer.name}
-                          </p>
-                        </div>
-
-                        <div className="flex flex-col items-center gap-1">
-                          <p className="shrink-0 text-xs text-white/55">
-                            {selectedPlayer.position}
-                          </p>
-                          <p
-                            className="shrink-0 text-xs text-white/55"
-                            style={{}}
-                          >
-                            {selectedPlayer.team}
-                          </p>
-                          <p className="shrink-0 text-xs text-white/55">
-                            #{selectedPlayer.jerseyNumber}
-                          </p>
-                        </div>
-                      </div>
+                      {/* Back face */}
+                      <PlayerCardBackHeader
+                        player={selectedPlayer}
+                        getPlayerNameTextClass={getPlayerNameTextClass}
+                      />
 
                       {/* Player stats radar chart */}
                       {isCardFlipped && (

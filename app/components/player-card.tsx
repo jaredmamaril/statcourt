@@ -100,3 +100,41 @@ export function PlayerCardFront({
     </div>
   );
 }
+
+type PlayerCardBackHeaderProps = {
+  player: Player;
+  getPlayerNameTextClass: (name: string) => string;
+};
+
+export function PlayerCardBackHeader({
+  player,
+  getPlayerNameTextClass,
+}: PlayerCardBackHeaderProps) {
+  return (
+    <div className="relative z-10 grid grid-cols-[88px_1fr_52px] items-center gap-4 px-3 pt-1 font-michroma uppercase">
+      <PlayerImage
+        src={getPlayerHeadshot(player)}
+        alt={player.name}
+        width={88}
+        height={88}
+        className="h-22 w-22 rounded-md object-contain"
+      />
+
+      <div className="flex min-w-0 justify-center text-center">
+        <p
+          className={`line-clamp-2 text-center font-bold text-white ${getPlayerNameTextClass(
+            player.name,
+          )}`}
+        >
+          {player.name}
+        </p>
+      </div>
+
+      <div className="flex flex-col items-center gap-1">
+        <p className="shrink-0 text-xs text-white/55">{player.position}</p>
+        <p className="shrink-0 text-xs text-white/55">{player.team}</p>
+        <p className="shrink-0 text-xs text-white/55">#{player.jerseyNumber}</p>
+      </div>
+    </div>
+  );
+}
