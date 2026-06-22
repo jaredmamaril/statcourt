@@ -1,12 +1,12 @@
 "use client";
 import {
   players,
-  getPlayerInsights,
   normalizeStat,
   statMaxValues,
 } from "../components/court-data";
 import type { Position } from "../components/court-data";
 import PlayerImage from "../components/player-image";
+import { getPlayerHeadshot } from "../components/player-images";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -2641,10 +2641,10 @@ export default function Lineups() {
                               }`}
                             >
                               <PlayerImage
-                                src={player.image}
+                                src={getPlayerHeadshot(player)}
                                 alt={player.name}
-                                width={64}
-                                height={64}
+                                width={120}
+                                height={120}
                                 className="mx-auto h-20 w-20 rounded-full object-cover"
                               />
 

@@ -6,6 +6,7 @@ import {
   normalizeStat,
   teamColors,
 } from "../components/court-data";
+import { getPlayerHeadshot } from "../components/player-images";
 import type { RadarStatRow, CompareSlots } from "../components/court-data";
 import PlayerImage from "../components/player-image";
 import { useState, useRef, useEffect } from "react";
@@ -264,7 +265,7 @@ export default function Court() {
             <div className="mt-2 flex h-64 w-64 items-center justify-center rounded-md border border-[#347A99]/50 bg-black/5 text-sm text-white/70">
               {selectedLeftPlayer ? (
                 <PlayerImage
-                  src={selectedLeftPlayer.image}
+                  src={getPlayerHeadshot(selectedLeftPlayer)}
                   alt={selectedLeftPlayer.name}
                   width={200}
                   height={200}
@@ -407,7 +408,7 @@ export default function Court() {
             <div className="mt-2 flex h-64 w-64 items-center justify-center rounded-md border border-[#347A99]/50 bg-black/5 text-sm text-white/70">
               {selectedRightPlayer ? (
                 <PlayerImage
-                  src={selectedRightPlayer.image}
+                  src={getPlayerHeadshot(selectedRightPlayer)}
                   alt={selectedRightPlayer.name}
                   width={200}
                   height={200}

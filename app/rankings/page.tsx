@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import PlayerImage from "../components/player-image";
+import { getPlayerHeadshot } from "../components/player-images";
 import {
   players,
   positions,
@@ -736,11 +737,11 @@ export default function Rankings() {
                           </span>
 
                           <PlayerImage
-                            src={player.image}
+                            src={getPlayerHeadshot(player)}
                             alt={player.name}
-                            width={48}
-                            height={48}
-                            className="-ml-3 h-12 w-12 rounded-md object-cover"
+                            width={120}
+                            height={120}
+                            className="-ml-3 h-16 w-16 rounded-md object-cover"
                           />
 
                           <div className="min-w-0">
@@ -1148,11 +1149,11 @@ export default function Rankings() {
                         {/* Player headshot */}
                         <div className="mt-3 flex justify-center">
                           <PlayerImage
-                            src={player.image}
+                            src={getPlayerHeadshot(player)}
                             alt={player.name}
-                            width={120}
-                            height={120}
-                            className="h-28 w-28 rounded-md object-cover"
+                            width={240}
+                            height={240}
+                            className="h-32 w-32 rounded-md object-cover"
                           />
                         </div>
 
@@ -1228,11 +1229,11 @@ export default function Rankings() {
 
                       {/* Player headshot */}
                       <PlayerImage
-                        src={player.image}
+                        src={getPlayerHeadshot(player)}
                         alt={player.name}
-                        width={40}
-                        height={40}
-                        className="h-10 w-10 rounded-md object-cover"
+                        width={120}
+                        height={120}
+                        className="h-16 w-16 rounded-md object-cover"
                       />
 
                       {/* Player name */}
