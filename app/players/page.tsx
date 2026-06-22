@@ -17,6 +17,7 @@ import { getPlayerRating } from "../components/player-ratings";
 import {
   PlayerCardBackHeader,
   PlayerCardFront,
+  PlayerCardBack,
   PlayerCardInsights,
   PlayerCardRadar,
   PlayerCardSimilarPanel,
@@ -1053,28 +1054,10 @@ function Players() {
                       isCardFlipped={isCardFlipped}
                     />
 
-                    <div
-                      className={`absolute inset-0 min-h-134 rounded-3xl border bg-black/30 ${
-                        isCardFlipped
-                          ? "pointer-events-auto"
-                          : "pointer-events-none"
-                      }`}
-                      style={{
-                        backfaceVisibility: "hidden",
-                        transform: "rotateY(180deg)",
-                        borderColor: teamColors[selectedPlayer.team],
-                      }}
+                    <PlayerCardBack
+                      player={selectedPlayer}
+                      isCardFlipped={isCardFlipped}
                     >
-                      {/* Card background (court) */}
-                      <div className="absolute -inset-1 z-0 opacity-50">
-                        <Image
-                          src={"/court-pattern.svg"}
-                          alt={"Court background"}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-
                       {/* Back face */}
                       <PlayerCardBackHeader
                         player={selectedPlayer}
@@ -1117,7 +1100,7 @@ function Players() {
                         compareSlots={compareSlots}
                         onAddPlayerToCompare={addPlayerToCompare}
                       />
-                    </div>
+                    </PlayerCardBack>
                   </div>
                 </div>
               </div>
