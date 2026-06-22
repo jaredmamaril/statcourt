@@ -4,8 +4,6 @@ import {
   players,
   positions,
   sortOptions,
-  normalizeStat,
-  statMaxValues,
   getPlayerInsights,
   getSimilarPlayers,
 } from "../components/court-data";
@@ -19,6 +17,11 @@ import {
   RecentlyScouted,
 } from "../components/player-side-panels";
 import { PlayerPageHeader } from "../components/player-page-header";
+import {
+  getPlayerDatabaseLeaders,
+  getPositionBreakdown,
+  getTopArchetypeDistribution,
+} from "../components/player-page-stats";
 import type {
   SortValue,
   Team,
@@ -51,45 +54,9 @@ function Players() {
     setFeaturedPlayer(randomPlayer);
   }, []);
 
-  const positionBreakdown = positions.reduce(
-    (counts, position) => {
-      counts[position] = players.filter(
-        (player) => player.position === position,
-      ).length;
-      return counts;
-    },
-    {} as Record<Position, number>,
-  );
-  const archetypeDistribution = players.reduce(
-    (counts, player) => {
-      const archetype = getPlayerInsights(player).archetype;
+  const positionBreakdown = getPositionBreakdown();
 
-      const label = archetype?.label ?? "Unclassified";
-      const rarity = archetype?.rarity ?? "gray";
-
-      if (!counts[label]) {
-        counts[label] = {
-          count: 0,
-          rarity,
-        };
-      }
-
-      counts[label].count += 1;
-
-      return counts;
-    },
-    {} as Record<
-      string,
-      {
-        count: number;
-        rarity: PlayerInsightDisplay["rarity"];
-      }
-    >,
-  );
-
-  const topArchetypeDistribution = Object.entries(archetypeDistribution)
-    .sort((a, b) => b[1].count - a[1].count)
-    .slice(0, 4);
+  const topArchetypeDistribution = getTopArchetypeDistribution();
 
   const [recentlyViewedPlayers, setRecentlyViewedPlayers] = useState<string[]>(
     [],
@@ -472,39 +439,12 @@ function Players() {
     }, 450);
   }
 
-  const highestOverallPlayer = [...players].sort(
-    (a, b) => getPlayerRating(b) - getPlayerRating(a),
-  )[0];
-
-  const mostVersatilePlayer = [...players].sort((a, b) => {
-    function getVersatilityScore(player: (typeof players)[number]) {
-      const ppgScore = normalizeStat(player.stats.ppg, statMaxValues.ppg);
-      const rpgScore = normalizeStat(player.stats.rpg, statMaxValues.rpg);
-      const apgScore = normalizeStat(player.stats.apg, statMaxValues.apg);
-      const threeScore = normalizeStat(
-        player.stats.threePercent,
-        statMaxValues.threePercent,
-      );
-
-      return (
-        ppgScore * 0.28 +
-        rpgScore * 0.2 +
-        apgScore * 0.25 +
-        threeScore * 0.12 +
-        player.defenseRating * 0.15
-      );
-    }
-
-    return getVersatilityScore(b) - getVersatilityScore(a);
-  })[0];
-
-  const bestShooter = [...players].sort(
-    (a, b) => b.stats.threePercent - a.stats.threePercent,
-  )[0];
-
-  const bestPlaymaker = [...players].sort(
-    (a, b) => b.stats.apg - a.stats.apg,
-  )[0];
+  const {
+    highestOverallPlayer,
+    mostVersatilePlayer,
+    bestShooter,
+    bestPlaymaker,
+  } = getPlayerDatabaseLeaders();
 
   // Best lineup fit for player
   function getBestLineupFits(player: (typeof players)[number]) {
@@ -657,7 +597,7 @@ function Players() {
           <div className="flex items-start justify-center">
             {/* Player card section */}
             {selectedPlayer && (
-              <div ref={playerCardRef}>
+              <div ref={playerCardRef} className="w-full max-w-md">
                 <SelectedPlayerCard
                   player={selectedPlayer}
                   isCardFlipped={isCardFlipped}

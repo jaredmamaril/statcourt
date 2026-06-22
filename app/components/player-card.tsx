@@ -162,9 +162,9 @@ export function PlayerCardBackHeader({
       <PlayerImage
         src={getPlayerHeadshot(player)}
         alt={player.name}
-        width={88}
-        height={88}
-        className="h-22 w-22 rounded-md object-contain"
+        width={240}
+        height={240}
+        className="h-24 w-24 rounded-md object-cover"
       />
 
       <div className="flex min-w-0 justify-center text-center">
@@ -179,7 +179,12 @@ export function PlayerCardBackHeader({
 
       <div className="flex flex-col items-center gap-1">
         <p className="shrink-0 text-xs text-white/55">{player.position}</p>
-        <p className="shrink-0 text-xs text-white/55">{player.team}</p>
+        <p
+          className="shrink-0 text-xs text-white/55"
+          style={{ color: teamColors[player.team] }}
+        >
+          {player.team}
+        </p>
         <p className="shrink-0 text-xs text-white/55">#{player.jerseyNumber}</p>
       </div>
     </div>
