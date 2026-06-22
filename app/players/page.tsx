@@ -12,6 +12,7 @@ import {
   getPlayerInsights,
   getSimilarPlayers,
 } from "../components/court-data";
+import { getPlayerHeadshot } from "../components/player-images";
 import type {
   SortValue,
   Team,
@@ -1212,7 +1213,7 @@ function Players() {
                           className="flex min-w-0 flex-1 cursor-pointer items-center justify-between gap-3 px-2 py-2 text-left font-michroma text-xs"
                         >
                           <PlayerImage
-                            src={player.image}
+                            src={getPlayerHeadshot(player)}
                             alt={player.name}
                             width={44}
                             height={44}
@@ -1429,10 +1430,10 @@ function Players() {
                       {/* Player image */}
                       <div className="absolute inset-0 z-20 flex items-center justify-center -top-18">
                         <PlayerImage
-                          src={selectedPlayer.image}
+                          src={getPlayerHeadshot(selectedPlayer)}
                           alt={selectedPlayer.name}
-                          width={144}
-                          height={144}
+                          width={520}
+                          height={380}
                           className="h-84 w-84 rounded-md object-cover"
                         />
                       </div>
@@ -1470,7 +1471,7 @@ function Players() {
 
                       <div className="relative z-10 grid grid-cols-[88px_1fr_52px] items-center gap-4 px-3 pt-1 font-michroma uppercase">
                         <PlayerImage
-                          src={selectedPlayer.image}
+                          src={getPlayerHeadshot(selectedPlayer)}
                           alt={selectedPlayer.name}
                           width={88}
                           height={88}
