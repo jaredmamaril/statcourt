@@ -12,8 +12,6 @@ import {
   positions,
   teams,
   getPlayerInsights,
-  normalizeStat,
-  statMaxValues,
   teamColors,
   teamLogos,
 } from "../components/court-data";

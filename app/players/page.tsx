@@ -41,53 +41,28 @@ export default function PlayersPage() {
     </Suspense>
   );
 }
+
+// Reads saved court compare slots for the initial state
+function getSavedCompareSlots(): CompareSlots {
+  if (typeof window === "undefined") return { left: "", right: "" };
+
+  const savedSlots = localStorage.getItem("statcourt-compare-slots");
+
+  if (!savedSlots) return { left: "", right: "" };
+
+  return JSON.parse(savedSlots) as CompareSlots;
+}
+
 function Players() {
-  const [featuredPlayer, setFeaturedPlayer] = useState<
-    (typeof players)[number] | null
-  >(null);
+  // URL/navigation
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
-  const featuredPlayerInsights = featuredPlayer
-    ? getPlayerInsights(featuredPlayer)
-    : null;
+  // Refs
+  const filtersRef = useRef<HTMLDivElement>(null);
+  const playerCardRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const randomPlayer = players[Math.floor(Math.random() * players.length)];
-    setFeaturedPlayer(randomPlayer);
-  }, []);
-
-  const positionBreakdown = getPositionBreakdown();
-
-  const topArchetypeDistribution = getTopArchetypeDistribution();
-
-  const [recentlyViewedPlayers, setRecentlyViewedPlayers] = useState<string[]>(
-    [],
-  );
-
-  useEffect(() => {
-    const savedRecentPlayers = localStorage.getItem("statcourt-recent-players");
-
-    if (!savedRecentPlayers) return;
-
-    setRecentlyViewedPlayers(JSON.parse(savedRecentPlayers) as string[]);
-  }, []);
-
-  function addRecentlyViewedPlayer(playerName: string) {
-    setRecentlyViewedPlayers((currentRecentPlayers) => {
-      const nextRecentPlayers = [
-        playerName,
-        ...currentRecentPlayers.filter((name) => name !== playerName),
-      ].slice(0, 6);
-
-      localStorage.setItem(
-        "statcourt-recent-players",
-        JSON.stringify(nextRecentPlayers),
-      );
-
-      return nextRecentPlayers;
-    });
-  }
-
-  // State for filters and dropdowns
+  // Page state
   const [currentPlayer, setCurrentPlayer] = useState("");
   const [playerSearch, setPlayerSearch] = useState("");
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -99,36 +74,39 @@ function Players() {
   const [openDropdown, setOpenDropdown] = useState<
     "team" | "position" | "sort" | null
   >(null);
-
-  // State for front face and back face of card
   const [isCardFlipped, setIsCardFlipped] = useState(false);
-  const searchParams = useSearchParams();
-  const router = useRouter();
+  const [isGoingToCourt, setIsGoingToCourt] = useState(false);
+  const [compareSlots, setCompareSlots] =
+    useState<CompareSlots>(getSavedCompareSlots);
+  const [recentlyViewedPlayers, setRecentlyViewedPlayers] = useState<string[]>(
+    [],
+  );
+  const [featuredPlayer, setFeaturedPlayer] = useState<
+    (typeof players)[number] | null
+  >(null);
 
-  // Open a player card when coming from rankings with /players?player=name
-  useEffect(() => {
-    const playerFromUrl = searchParams.get("player");
+  // Derived player data
+  const selectedPlayer = players.find(
+    (player) => player.name === currentPlayer,
+  );
 
-    if (!playerFromUrl) return;
+  const playerInsights = selectedPlayer
+    ? getPlayerInsights(selectedPlayer)
+    : null;
 
-    const matchingPlayer = players.find(
-      (player) => player.name === playerFromUrl,
-    );
+  const similarPlayers = selectedPlayer
+    ? getSimilarPlayers(selectedPlayer)
+    : [];
 
-    if (!matchingPlayer) return;
+  const bestLineupFits = selectedPlayer
+    ? getBestLineupFits(selectedPlayer)
+    : [];
 
-    const timer = window.setTimeout(() => {
-      setCurrentPlayer(matchingPlayer.name);
-      addRecentlyViewedPlayer(matchingPlayer.name);
-      setIsCardFlipped(false);
+  const featuredPlayerInsights = featuredPlayer
+    ? getPlayerInsights(featuredPlayer)
+    : null;
 
-      router.replace("/players", { scroll: false });
-    }, 0);
-
-    return () => window.clearTimeout(timer);
-  }, [searchParams, router]);
-
-  // Filter and sort players based on search input, favorites toggle, team and position filters, and sorting options
+  // Filtered list data
   const filteredPlayers = players
     .filter((player) => {
       const matchesSearch = player.name
@@ -146,7 +124,6 @@ function Players() {
         matchesSearch && matchesFavorites && matchesTeam && matchesPosition
       );
     })
-    // Sort players based on selected sorting option and direction
     .sort((a, b) => {
       if (!sortBy) return 0;
 
@@ -171,15 +148,68 @@ function Players() {
       if (sortBy === "ftPercent")
         result = b.stats.ftPercent - a.stats.ftPercent;
 
-      // If sort direction is reverse, invert the result
       return sortDirection === "primary" ? result : -result;
     });
 
-  // Get selected player for player card display
-  const selectedPlayer = players.find(
-    (player) => player.name === currentPlayer,
+  const selectedSortOption = sortOptions.find(
+    (option) => option.value === sortBy,
   );
 
+  const hasActiveFilters = Boolean(
+    showFavorites || filteredTeam || filteredPosition || sortBy || playerSearch,
+  );
+
+  // Database snapshot data
+  const positionBreakdown = getPositionBreakdown();
+
+  const topArchetypeDistribution = getTopArchetypeDistribution();
+
+  const {
+    highestOverallPlayer,
+    mostVersatilePlayer,
+    bestShooter,
+    bestPlaymaker,
+  } = getPlayerDatabaseLeaders();
+
+  // Effects
+
+  useEffect(() => {
+    const randomPlayer = players[Math.floor(Math.random() * players.length)];
+    setFeaturedPlayer(randomPlayer);
+  }, []);
+
+  useEffect(() => {
+    const savedRecentPlayers = localStorage.getItem("statcourt-recent-players");
+
+    if (!savedRecentPlayers) return;
+
+    setRecentlyViewedPlayers(JSON.parse(savedRecentPlayers) as string[]);
+  }, []);
+
+  // Open a player card when coming from rankings with /players?player=name
+  useEffect(() => {
+    const playerFromUrl = searchParams.get("player");
+
+    if (!playerFromUrl) return;
+
+    const matchingPlayer = players.find(
+      (player) => player.name === playerFromUrl,
+    );
+
+    if (!matchingPlayer) return;
+
+    const timer = window.setTimeout(() => {
+      setCurrentPlayer(matchingPlayer.name);
+      addRecentlyViewedPlayer(matchingPlayer.name);
+      setIsCardFlipped(false);
+
+      router.replace("/players", { scroll: false });
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [searchParams, router]);
+
+  // Close the selected card when clicking outside it
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (!selectedPlayer) return;
@@ -202,6 +232,93 @@ function Players() {
     };
   }, [selectedPlayer]);
 
+  // Close open filter dropdowns when clicking outside the filter row
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (!(event.target instanceof Node)) {
+        return;
+      }
+      const target = event.target;
+      if (filtersRef.current && !filtersRef.current.contains(target)) {
+        setOpenDropdown(null);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Event handlers
+  function addRecentlyViewedPlayer(playerName: string) {
+    setRecentlyViewedPlayers((currentRecentPlayers) => {
+      const nextRecentPlayers = [
+        playerName,
+        ...currentRecentPlayers.filter((name) => name !== playerName),
+      ].slice(0, 6);
+
+      localStorage.setItem(
+        "statcourt-recent-players",
+        JSON.stringify(nextRecentPlayers),
+      );
+
+      return nextRecentPlayers;
+    });
+  }
+
+  const toggleFavorite = (playerName: string) => {
+    setFavorites((prev) =>
+      prev.includes(playerName)
+        ? prev.filter((name) => name !== playerName)
+        : [...prev, playerName],
+    );
+  };
+
+  function handleSortClick(sortValue: SortValue) {
+    if (sortValue === "") {
+      setSortBy("");
+      setSortDirection("primary");
+      return;
+    }
+
+    if (sortBy === sortValue) {
+      setSortDirection(sortDirection === "primary" ? "reverse" : "primary");
+    } else {
+      setSortBy(sortValue);
+      setSortDirection("primary");
+    }
+  }
+
+  function resetAllFilters() {
+    setPlayerSearch("");
+    setShowFavorites(false);
+    setFilteredTeam("");
+    setFilteredPosition("");
+    setSortBy("");
+    setSortDirection("primary");
+    setOpenDropdown(null);
+  }
+
+  function addPlayerToCompare(slot: "left" | "right") {
+    if (!selectedPlayer) return;
+
+    const nextSlots = {
+      ...compareSlots,
+      [slot]: selectedPlayer.name,
+    };
+
+    setCompareSlots(nextSlots);
+    localStorage.setItem("statcourt-compare-slots", JSON.stringify(nextSlots));
+
+    setIsGoingToCourt(true);
+
+    setTimeout(() => {
+      router.push("/court");
+    }, 450);
+  }
+
+  // Styling helpers
   function getPlayerNameTextClass(name: string) {
     if (name.length >= 20) {
       return "max-w-72 text-[18px] leading-tight whitespace-normal";
@@ -222,12 +339,6 @@ function Players() {
     return "max-w-88 text-2xl leading-none whitespace-nowrap";
   }
 
-  // Get player insights of selected player
-  const playerInsights = selectedPlayer
-    ? getPlayerInsights(selectedPlayer)
-    : null;
-
-  // Get trait rarity
   function getInsightRarityStyles(
     insight: PlayerInsightDisplay,
     isArchetype = false,
@@ -320,7 +431,6 @@ function Players() {
     };
   }
 
-  // Use rarities as labels
   function getInsightRarityLabel(rarity: PlayerInsightDisplay["rarity"]) {
     if (rarity === "gold") return "Generational";
     if (rarity === "purple") return "Historic";
@@ -328,124 +438,6 @@ function Players() {
     if (rarity === "red") return "Weakness";
     return "Basic";
   }
-
-  // Players similar to current player
-  const similarPlayers = selectedPlayer
-    ? getSimilarPlayers(selectedPlayer)
-    : [];
-
-  // Lineups the player fits with
-  const bestLineupFits = selectedPlayer
-    ? getBestLineupFits(selectedPlayer)
-    : [];
-
-  // Function to toggle a player as a favorite, adding them to the favorites list if they're not already in it or removing them if they are
-  const toggleFavorite = (playerName: string) => {
-    setFavorites((prev) =>
-      prev.includes(playerName)
-        ? prev.filter((name) => name !== playerName)
-        : [...prev, playerName],
-    );
-  };
-
-  // Function to close dropdown when clicking outside
-  function handleSortClick(sortValue: SortValue) {
-    if (sortValue === "") {
-      setSortBy("");
-      setSortDirection("primary");
-      return;
-    }
-
-    if (sortBy === sortValue) {
-      setSortDirection(sortDirection === "primary" ? "reverse" : "primary");
-    } else {
-      setSortBy(sortValue);
-      setSortDirection("primary");
-    }
-  }
-
-  // Get label for currently selected sort option
-  const selectedSortOption = sortOptions.find(
-    (option) => option.value === sortBy,
-  );
-
-  // Determine if any filters are active to show reset button
-  const hasActiveFilters = Boolean(
-    showFavorites || filteredTeam || filteredPosition || sortBy || playerSearch,
-  );
-
-  // Function to reset all filters and put sorting options to default setting when button is clicked
-  function resetAllFilters() {
-    setPlayerSearch("");
-    setShowFavorites(false);
-    setFilteredTeam("");
-    setFilteredPosition("");
-    setSortBy("");
-    setSortDirection("primary");
-    setOpenDropdown(null);
-  }
-
-  // Close dropdown when clicking outside
-  const filtersRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (!(event.target instanceof Node)) {
-        return;
-      }
-      const target = event.target;
-      if (filtersRef.current && !filtersRef.current.contains(target)) {
-        setOpenDropdown(null);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  // Current players being compared on court
-  function getSavedCompareSlots(): CompareSlots {
-    if (typeof window === "undefined") return { left: "", right: "" };
-
-    const savedSlots = localStorage.getItem("statcourt-compare-slots");
-
-    if (!savedSlots) return { left: "", right: "" };
-
-    return JSON.parse(savedSlots) as CompareSlots;
-  }
-
-  const playerCardRef = useRef<HTMLDivElement>(null);
-
-  // State for player being sent to court page
-  const [isGoingToCourt, setIsGoingToCourt] = useState(false);
-  // State of who is currently being compared
-  const [compareSlots, setCompareSlots] =
-    useState<CompareSlots>(getSavedCompareSlots);
-  function addPlayerToCompare(slot: "left" | "right") {
-    if (!selectedPlayer) return;
-
-    const nextSlots = {
-      ...compareSlots,
-      [slot]: selectedPlayer.name,
-    };
-
-    setCompareSlots(nextSlots);
-    localStorage.setItem("statcourt-compare-slots", JSON.stringify(nextSlots));
-
-    setIsGoingToCourt(true);
-
-    setTimeout(() => {
-      router.push("/court");
-    }, 450);
-  }
-
-  const {
-    highestOverallPlayer,
-    mostVersatilePlayer,
-    bestShooter,
-    bestPlaymaker,
-  } = getPlayerDatabaseLeaders();
 
   return (
     <main className="min-h-screen overflow-x-hidden text-white">
@@ -457,7 +449,6 @@ function Players() {
               : "relative mx-auto h-full min-h-0 w-full max-w-3xl"
           }
         >
-          {/* Wrapper that contains the left controls */}
           <div
             className={
               selectedPlayer
@@ -502,13 +493,11 @@ function Players() {
               />
             )}
 
-            {/* Search and filters heading */}
             <PlayerPageHeader
               playerSearch={playerSearch}
               onPlayerSearchChange={setPlayerSearch}
             />
 
-            {/* Filter buttons row */}
             <PlayerFilters
               filtersRef={filtersRef}
               showFavorites={showFavorites}
@@ -539,7 +528,6 @@ function Players() {
               onResetFilters={resetAllFilters}
             />
 
-            {/* Player list */}
             <PlayerList
               players={filteredPlayers}
               currentPlayer={currentPlayer}
@@ -561,7 +549,6 @@ function Players() {
           </div>
 
           <div className="flex items-start justify-center">
-            {/* Player card section */}
             {selectedPlayer && (
               <div ref={playerCardRef} className="w-full max-w-md">
                 <SelectedPlayerCard
