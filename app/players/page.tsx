@@ -17,6 +17,8 @@ import { getPlayerRating } from "../components/player-ratings";
 import {
   PlayerCardBackHeader,
   PlayerCardFront,
+  PlayerCardInsights,
+  PlayerCardRadar,
 } from "../components/player-card";
 import {
   DatabaseSnapshot,
@@ -31,16 +33,7 @@ import type {
   PlayerInsightDisplay,
   CompareSlots,
 } from "../components/court-data";
-import {
-  PolarAngleAxis,
-  PolarGrid,
-  PolarRadiusAxis,
-  Radar,
-  RadarChart,
-  ResponsiveContainer,
-} from "recharts";
 import Image from "next/image";
-import { Info } from "lucide-react";
 import PlayerImage from "../components/player-image";
 import { Suspense, useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -1088,249 +1081,20 @@ function Players() {
 
                       {/* Player stats radar chart */}
                       {isCardFlipped && (
-                        <div className="relative z-10 w-full h-48 mt-2">
-                          {/* Left side stats — FG%, 3PT%, FT% */}
-                          <div className="absolute left-0 top-0 h-full flex flex-col justify-around py-2 z-10 ml-6">
-                            <div className="flex flex-col items-start">
-                              <span className="font-michroma text-[10px] text-white">
-                                FG%
-                              </span>
-                              <span
-                                className="font-michroma text-xs font-bold"
-                                style={{
-                                  color: teamColors[selectedPlayer.team],
-                                }}
-                              >
-                                {selectedPlayer.stats.fgPercent}
-                              </span>
-                            </div>
-                            <div className="flex flex-col items-start">
-                              <span className="font-michroma text-[10px] text-white">
-                                3PT%
-                              </span>
-                              <span
-                                className="font-michroma text-xs font-bold"
-                                style={{
-                                  color: teamColors[selectedPlayer.team],
-                                }}
-                              >
-                                {selectedPlayer.stats.threePercent}
-                              </span>
-                            </div>
-                            <div className="flex flex-col items-start">
-                              <span className="font-michroma text-[10px] text-white">
-                                FT%
-                              </span>
-                              <span
-                                className="font-michroma text-xs font-bold"
-                                style={{
-                                  color: teamColors[selectedPlayer.team],
-                                }}
-                              >
-                                {selectedPlayer.stats.ftPercent}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Right side stats — PPG, RPG, APG */}
-                          <div className="absolute right-0 top-0 h-full flex flex-col justify-around py-2 z-10 mr-6">
-                            <div className="flex flex-col items-end">
-                              <span className="font-michroma text-[10px] text-white">
-                                PPG
-                              </span>
-                              <span
-                                className="font-michroma text-xs font-bold"
-                                style={{
-                                  color: teamColors[selectedPlayer.team],
-                                }}
-                              >
-                                {selectedPlayer.stats.ppg}
-                              </span>
-                            </div>
-                            <div className="flex flex-col items-end">
-                              <span className="font-michroma text-[10px] text-white">
-                                RPG
-                              </span>
-                              <span
-                                className="font-michroma text-xs font-bold"
-                                style={{
-                                  color: teamColors[selectedPlayer.team],
-                                }}
-                              >
-                                {selectedPlayer.stats.rpg}
-                              </span>
-                            </div>
-                            <div className="flex flex-col items-end">
-                              <span className="font-michroma text-[10px] text-white">
-                                APG
-                              </span>
-                              <span
-                                className="font-michroma text-xs font-bold"
-                                style={{
-                                  color: teamColors[selectedPlayer.team],
-                                }}
-                              >
-                                {selectedPlayer.stats.apg}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Radar chart */}
-                          <ResponsiveContainer width="100%" height="100%">
-                            <RadarChart
-                              data={[
-                                {
-                                  stat: "PPG",
-                                  value: normalizeStat(
-                                    selectedPlayer.stats.ppg,
-                                    statMaxValues.ppg,
-                                  ),
-                                },
-                                {
-                                  stat: "RPG",
-                                  value: normalizeStat(
-                                    selectedPlayer.stats.rpg,
-                                    statMaxValues.rpg,
-                                  ),
-                                },
-                                {
-                                  stat: "APG",
-                                  value: normalizeStat(
-                                    selectedPlayer.stats.apg,
-                                    statMaxValues.apg,
-                                  ),
-                                },
-                                {
-                                  stat: "FG%",
-                                  value: normalizeStat(
-                                    selectedPlayer.stats.fgPercent,
-                                    statMaxValues.fgPercent,
-                                  ),
-                                },
-                                {
-                                  stat: "3PT%",
-                                  value: normalizeStat(
-                                    selectedPlayer.stats.threePercent,
-                                    statMaxValues.threePercent,
-                                  ),
-                                },
-                                {
-                                  stat: "FT%",
-                                  value: normalizeStat(
-                                    selectedPlayer.stats.ftPercent,
-                                    statMaxValues.ftPercent,
-                                  ),
-                                },
-                              ]}
-                            >
-                              <PolarGrid stroke="rgba(255,255,255,0.2)" />
-                              <PolarAngleAxis
-                                dataKey="stat"
-                                tick={{
-                                  fill: "white",
-                                  fontSize: 10,
-                                  fontFamily: "Michroma",
-                                }}
-                              />
-                              <PolarRadiusAxis
-                                domain={[0, 100]}
-                                tick={false}
-                                axisLine={false}
-                              />
-                              <Radar
-                                dataKey="value"
-                                stroke={teamColors[selectedPlayer.team]}
-                                strokeWidth={2}
-                                fill={teamColors[selectedPlayer.team]}
-                                fillOpacity={0.2}
-                                isAnimationActive={true}
-                                animationBegin={500}
-                                animationDuration={900}
-                                animationEasing="ease-out"
-                              />
-                            </RadarChart>
-                          </ResponsiveContainer>
-                        </div>
+                        <PlayerCardRadar
+                          player={selectedPlayer}
+                          isCardFlipped={isCardFlipped}
+                        />
                       )}
 
                       <div className="flex items-start justify-center gap-10">
                         {/* Insights */}
                         {playerInsights && (
-                          <div className="flex w-fit flex-col items-center gap-1">
-                            <span className="font-michroma text-[14px] uppercase tracking-wide text-white">
-                              Insights
-                            </span>
-
-                            <span className="font-michroma text-[6px] uppercase tracking-wide text-white">
-                              Archetype
-                            </span>
-                            {/* Player archetype */}
-                            {playerInsights.archetype && (
-                              <div className="group relative z-100 w-fit">
-                                <div
-                                  className="w-fit rounded border px-2 py-1 font-michroma text-[10px] font-bold uppercase tracking-wide ml-2 text-center"
-                                  style={{
-                                    ...getInsightRarityStyles(
-                                      playerInsights.archetype,
-                                      true,
-                                    ),
-                                  }}
-                                >
-                                  {playerInsights.archetype.label}
-                                </div>
-
-                                <div className="pointer-events-none absolute left-1/2 top-full z-999 mt-2 w-56 -translate-x-1/2 rounded-md border border-[#1bc2ec]/50 bg-black/90 p-2 text-center opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                                  <p className="font-michroma text-[10px] font-bold text-white/80">
-                                    {playerInsights.archetype.label}
-                                  </p>
-                                  <p className="mt-1 font-michroma text-[9px] text-white/60">
-                                    Tier:{" "}
-                                    {getInsightRarityLabel(
-                                      playerInsights.archetype.rarity,
-                                    )}
-                                  </p>
-                                  <p className="mt-1 font-michroma text-[9px] text-white/80">
-                                    {playerInsights.archetype.description}
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-
-                            <span className="font-michroma text-[6px] uppercase tracking-wide text-white">
-                              Traits
-                            </span>
-                            {/* Player traits */}
-                            <div className="flex flex-col items-center gap-1">
-                              {playerInsights.traits.map((trait) => (
-                                <span
-                                  key={trait.label}
-                                  className="group relative z-90 w-fit hover:z-300"
-                                >
-                                  <span
-                                    className="block w-fit rounded border px-1.5 py-0.5 font-michroma text-[10px]"
-                                    style={{
-                                      ...getInsightRarityStyles(trait),
-                                    }}
-                                  >
-                                    {trait.label}
-                                  </span>
-
-                                  <span className="pointer-events-none absolute top-full left-1/2 z-999 mt-2 w-56 -translate-x-1/2 rounded-md border border-[#1bc2ec]/50 bg-black/90 p-2 text-center opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                                    <span className="block font-michroma text-[10px] font-bold text-white/80">
-                                      {trait.label}
-                                    </span>
-                                    <span className="mt-1 block font-michroma text-[9px] text-white/60">
-                                      Tier:{" "}
-                                      {getInsightRarityLabel(trait.rarity)}
-                                    </span>
-                                    <span className="mt-1 block font-michroma text-[9px] text-white/80">
-                                      {trait.description}
-                                    </span>
-                                  </span>
-                                </span>
-                              ))}
-                            </div>
-                          </div>
+                          <PlayerCardInsights
+                            playerInsights={playerInsights}
+                            getInsightRarityStyles={getInsightRarityStyles}
+                            getInsightRarityLabel={getInsightRarityLabel}
+                          />
                         )}
 
                         {/* Similar To */}

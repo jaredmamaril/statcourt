@@ -1,7 +1,18 @@
 import Image from "next/image";
+import type { CSSProperties } from "react";
+import type { PlayerInsightDisplay } from "./court-data";
+import { normalizeStat, statMaxValues } from "./court-data";
 import { teamColors, teamLogos, type Player } from "./court-data";
 import { getPlayerHeadshot } from "./player-images";
 import PlayerImage from "./player-image";
+import {
+  PolarAngleAxis,
+  PolarGrid,
+  PolarRadiusAxis,
+  Radar,
+  RadarChart,
+  ResponsiveContainer,
+} from "recharts";
 
 type PlayerCardFrontProps = {
   player: Player;
@@ -134,6 +145,224 @@ export function PlayerCardBackHeader({
         <p className="shrink-0 text-xs text-white/55">{player.position}</p>
         <p className="shrink-0 text-xs text-white/55">{player.team}</p>
         <p className="shrink-0 text-xs text-white/55">#{player.jerseyNumber}</p>
+      </div>
+    </div>
+  );
+}
+
+type StatLabelProps = {
+  label: string;
+  value: number;
+  color: string;
+  align?: "left" | "right";
+};
+
+type PlayerCardRadarProps = {
+  player: Player;
+  isCardFlipped: boolean;
+};
+
+function StatLabel({ label, value, color, align = "left" }: StatLabelProps) {
+  return (
+    <div
+      className={`flex flex-col ${
+        align === "right" ? "items-end" : "items-start"
+      }`}
+    >
+      <span className="font-michroma text-[10px] text-white">{label}</span>
+      <span className="font-michroma text-xs font-bold" style={{ color }}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
+export function PlayerCardRadar({
+  player,
+  isCardFlipped,
+}: PlayerCardRadarProps) {
+  if (!isCardFlipped) return null;
+
+  const radarData = [
+    {
+      stat: "PPG",
+      value: normalizeStat(player.stats.ppg, statMaxValues.ppg),
+    },
+    {
+      stat: "RPG",
+      value: normalizeStat(player.stats.rpg, statMaxValues.rpg),
+    },
+    {
+      stat: "APG",
+      value: normalizeStat(player.stats.apg, statMaxValues.apg),
+    },
+    {
+      stat: "FG%",
+      value: normalizeStat(player.stats.fgPercent, statMaxValues.fgPercent),
+    },
+    {
+      stat: "3PT%",
+      value: normalizeStat(
+        player.stats.threePercent,
+        statMaxValues.threePercent,
+      ),
+    },
+    {
+      stat: "FT%",
+      value: normalizeStat(player.stats.ftPercent, statMaxValues.ftPercent),
+    },
+  ];
+
+  return (
+    <div className="relative z-10 mt-2 h-48 w-full">
+      <div className="absolute left-0 top-0 z-10 ml-6 flex h-full flex-col justify-around py-2">
+        <StatLabel
+          label="FG%"
+          value={player.stats.fgPercent}
+          color={teamColors[player.team]}
+        />
+        <StatLabel
+          label="3PT%"
+          value={player.stats.threePercent}
+          color={teamColors[player.team]}
+        />
+        <StatLabel
+          label="FT%"
+          value={player.stats.ftPercent}
+          color={teamColors[player.team]}
+        />
+      </div>
+
+      <div className="absolute right-0 top-0 z-10 mr-6 flex h-full flex-col justify-around py-2">
+        <StatLabel
+          label="PPG"
+          value={player.stats.ppg}
+          color={teamColors[player.team]}
+          align="right"
+        />
+        <StatLabel
+          label="RPG"
+          value={player.stats.rpg}
+          color={teamColors[player.team]}
+          align="right"
+        />
+        <StatLabel
+          label="APG"
+          value={player.stats.apg}
+          color={teamColors[player.team]}
+          align="right"
+        />
+      </div>
+
+      <ResponsiveContainer width="100%" height="100%">
+        <RadarChart data={radarData}>
+          <PolarGrid stroke="rgba(255,255,255,0.2)" />
+          <PolarAngleAxis
+            dataKey="stat"
+            tick={{
+              fill: "white",
+              fontSize: 10,
+              fontFamily: "Michroma",
+            }}
+          />
+          <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
+          <Radar
+            dataKey="value"
+            stroke={teamColors[player.team]}
+            strokeWidth={2}
+            fill={teamColors[player.team]}
+            fillOpacity={0.2}
+            isAnimationActive={true}
+            animationBegin={500}
+            animationDuration={900}
+            animationEasing="ease-out"
+          />
+        </RadarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+type PlayerCardInsightsProps = {
+  playerInsights: {
+    archetype: PlayerInsightDisplay | null;
+    traits: PlayerInsightDisplay[];
+  };
+  getInsightRarityStyles: (
+    insight: PlayerInsightDisplay,
+    isArchetype?: boolean,
+  ) => React.CSSProperties;
+  getInsightRarityLabel: (rarity: PlayerInsightDisplay["rarity"]) => string;
+};
+
+export function PlayerCardInsights({
+  playerInsights,
+  getInsightRarityStyles,
+  getInsightRarityLabel,
+}: PlayerCardInsightsProps) {
+  return (
+    <div className="flex w-fit flex-col items-center gap-1">
+      <span className="font-michroma text-[14px] uppercase tracking-wide text-white">
+        Insights
+      </span>
+
+      <span className="font-michroma text-[6px] uppercase tracking-wide text-white">
+        Archetype
+      </span>
+
+      {playerInsights.archetype && (
+        <div className="group relative z-100 w-fit">
+          <div
+            className="ml-2 w-fit rounded border px-2 py-1 text-center font-michroma text-[10px] font-bold uppercase tracking-wide"
+            style={getInsightRarityStyles(playerInsights.archetype, true)}
+          >
+            {playerInsights.archetype.label}
+          </div>
+
+          <div className="pointer-events-none absolute left-1/2 top-full z-999 mt-2 w-56 -translate-x-1/2 rounded-md border border-[#1bc2ec]/50 bg-black/90 p-2 text-center opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+            <p className="font-michroma text-[10px] font-bold text-white/80">
+              {playerInsights.archetype.label}
+            </p>
+            <p className="mt-1 font-michroma text-[9px] text-white/60">
+              Tier: {getInsightRarityLabel(playerInsights.archetype.rarity)}
+            </p>
+            <p className="mt-1 font-michroma text-[9px] text-white/80">
+              {playerInsights.archetype.description}
+            </p>
+          </div>
+        </div>
+      )}
+
+      <span className="font-michroma text-[6px] uppercase tracking-wide text-white">
+        Traits
+      </span>
+
+      <div className="flex flex-col items-center gap-1">
+        {playerInsights.traits.map((trait) => (
+          <span
+            key={trait.label}
+            className="group relative z-90 w-fit hover:z-300"
+          >
+            <span
+              className="block w-fit rounded border px-1.5 py-0.5 font-michroma text-[10px]"
+              style={getInsightRarityStyles(trait)}
+            >
+              {trait.label}
+            </span>
+
+            <span className="pointer-events-none absolute left-1/2 top-full z-999 mt-2 w-56 -translate-x-1/2 rounded-md border border-[#1bc2ec]/50 bg-black/90 p-2 text-center opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+              <span className="block font-michroma text-[10px] font-bold text-white/80">
+                {trait.label}
+              </span>
+              <span className="mt-1 block font-michroma text-[9px] text-white/60">
+                Tier: {getInsightRarityLabel(trait.rarity)}
+              </span>
+              <span className="mt-1 block font-michroma text-[9px] text-white/80">
+                {trait.description}
+              </span>
+            </span>
+          </span>
+        ))}
       </div>
     </div>
   );
