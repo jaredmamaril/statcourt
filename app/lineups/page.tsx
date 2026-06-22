@@ -4,7 +4,6 @@ import type {
   LineupDetail,
   SavedLineup,
 } from "../components/lineups/lineup-types";
-
 import {
   lineupPositions,
   lineupTabs,
@@ -22,6 +21,12 @@ import {
   getPositionFit,
   getPositionPenalty,
 } from "../components/lineups/builder-position-helpers";
+import {
+  LineupBadgeIcon,
+  archetypeColorLegend,
+  getSavedLineupArchetypeColor,
+  getSavedLineupTopScore,
+} from "../components/lineups/lineup-style-helpers";
 import { players, normalizeStat } from "../components/court-data";
 import type { Position } from "../components/court-data";
 import PlayerImage from "../components/player-image";
@@ -35,20 +40,7 @@ import {
 } from "../components/lineup-scouting";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Trophy,
-  Shield,
-  Target,
-  Crown,
-  Save,
-  Zap,
-  Gem,
-  Swords,
-  Layers,
-  BrickWall,
-  Sparkles,
-  CircleDot,
-} from "lucide-react";
+import { Save } from "lucide-react";
 
 // Types
 type LineupMarkerProps = {
@@ -61,88 +53,6 @@ type LineupMarkerProps = {
   tooltipPosition?: "top" | "bottom";
   animationDelay?: string;
 };
-
-// Color helpers
-function getSavedLineupArchetypeColor(archetype: string) {
-  // Speed, pace, movement
-  if (archetype === "Transition Attack") return "#1bc2ec";
-  if (archetype === "Showtime Offense") return "#1bc2ec";
-
-  // Defense, stops, physicality
-  if (archetype === "Defensive Powerhouse") return "#22C55E";
-  if (archetype === "Defensive Juggernaut") return "#22C55E";
-  if (archetype === "Lockdown Unit") return "#22C55E";
-
-  // Shooting and floor spacing
-  if (archetype === "Spacing Superteam") return "#A855F7";
-  if (archetype === "Floor Spacing Machine") return "#A855F7";
-  if (archetype === "Spacing Engine") return "#A855F7";
-
-  // Firepower and scoring
-  if (archetype === "Offensive Superteam") return "#F97316";
-  if (archetype === "Iso Superteam") return "#F97316";
-
-  // Elite on both ends
-  if (archetype === "Two-Way Dynasty") return "#EFBF04";
-  if (archetype === "Championship Dynasty") return "#EFBF04";
-
-  // No dominant strength
-  if (archetype === "Balanced Core") return "#CBD5E1";
-
-  // Talent-driven lineup
-  if (archetype === "Star-Powered Contender") return "#38BDF8";
-
-  // Interior dominance
-  if (archetype === "Paint Control Unit") return "#EF4444";
-  if (archetype === "Rim Pressure Unit") return "#EF4444";
-  if (archetype === "Point-Center Offense") return "#EF4444";
-
-  return "#CBD5E1";
-}
-
-const archetypeColorLegend = [
-  {
-    label: "Transition Attack",
-    color: "#1bc2ec",
-    description:
-      "Fast-paced offense built around transition scoring and playmaking.",
-  },
-  {
-    label: "Defensive Powerhouse",
-    color: "#22C55E",
-    description: "Elite defense, rebounding, and physical control.",
-  },
-  {
-    label: "Spacing Engine",
-    color: "#A855F7",
-    description: "High-level shooting and floor spacing.",
-  },
-  {
-    label: "Offensive Superteam",
-    color: "#F97316",
-    description: "Explosive scoring from multiple creators.",
-  },
-  {
-    label: "Two-Way Dynasty",
-    color: "#EFBF04",
-    description: "Dominance on both offense and defense.",
-  },
-  {
-    label: "Balanced Core",
-    color: "#CBD5E1",
-    description: "Well-rounded lineup with no major specialization.",
-  },
-  {
-    label: "Star-Powered Contender",
-    color: "#38BDF8",
-    description: "Driven by elite individual talent and star power.",
-  },
-  {
-    label: "Paint Control Unit",
-    color: "#EF4444",
-    description: "Interior scoring, rim protection, and rebounding.",
-  },
-];
 
 // Small components
 function LineupMarker({
@@ -670,34 +580,6 @@ export default function Lineups() {
     setScoutedSavedLineup(lineup);
     setCustomLineup(lineup.players);
     setIsScoutOpen(true);
-  }
-
-  // Saved lineups helpers
-  function LineupBadgeIcon({ badge }: { badge: string }) {
-    const iconClass = "h-3 w-3";
-
-    if (badge === "GOAT Collection") return <Trophy className={iconClass} />;
-    if (badge === "Showtime Offense") return <Zap className={iconClass} />;
-    if (badge === "Dynasty Core") return <Crown className={iconClass} />;
-    if (badge === "Five-Out Attack") return <CircleDot className={iconClass} />;
-    if (badge === "Historic Frontcourt")
-      return <BrickWall className={iconClass} />;
-    if (badge === "Elite Shot Creation")
-      return <Swords className={iconClass} />;
-    if (badge === "Big Three") return <Gem className={iconClass} />;
-    if (badge === "Positionless Core") return <Layers className={iconClass} />;
-    if (badge === "Defensive Wall") return <Shield className={iconClass} />;
-    if (badge === "Floor Spacing") return <Target className={iconClass} />;
-
-    return <Sparkles className={iconClass} />;
-  }
-
-  function getSavedLineupTopScore(lineup: SavedLineup) {
-    const rankedScores = getRankedScoutScores(lineup.scores).filter(
-      (score) => score.key !== "starPower",
-    );
-
-    return rankedScores[0];
   }
 
   // Navigation
