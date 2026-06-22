@@ -1,8 +1,8 @@
 import type { CSSProperties, ReactNode } from "react";
 import { Info } from "lucide-react";
-import type { Position, Player, PlayerInsightDisplay } from "./court-data";
-import { players, teamColors } from "./court-data";
-import { getPlayerRating } from "./player-ratings";
+import type { Position, Player, PlayerInsightDisplay } from "../court-data";
+import { players, teamColors } from "../court-data";
+import { getPlayerRating } from "../player-ratings";
 
 type ArchetypeDistributionItem = [
   string,

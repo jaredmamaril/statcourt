@@ -6,8 +6,8 @@ import {
   statMaxValues,
   type PlayerInsightDisplay,
   type Position,
-} from "./court-data";
-import { getPlayerRating } from "./player-ratings";
+} from "../court-data";
+import { getPlayerRating } from "../player-ratings";
 
 export function getPositionBreakdown() {
   return positions.reduce(

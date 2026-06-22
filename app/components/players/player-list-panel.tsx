@@ -1,7 +1,7 @@
-import { teamColors, type Player, type SortValue } from "./court-data";
-import { getPlayerHeadshot } from "./player-images";
-import { getPlayerRating } from "./player-ratings";
-import PlayerImage from "./player-image";
+import { teamColors, type Player, type SortValue } from "../court-data";
+import { getPlayerHeadshot } from "../player-images";
+import { getPlayerRating } from "../player-ratings";
+import PlayerImage from "../player-image";
 
 type PlayerListProps = {
   players: Player[];

@@ -9,7 +9,7 @@ import {
   type SortValue,
   type Team,
   type SortDirection,
-} from "./court-data";
+} from "../court-data";
 
 type OpenDropdown = "team" | "position" | "sort" | null;
 

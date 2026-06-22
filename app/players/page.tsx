@@ -8,20 +8,21 @@ import {
   getSimilarPlayers,
 } from "../components/court-data";
 import { getPlayerRating } from "../components/player-ratings";
-import { SelectedPlayerCard } from "../components/player-card";
-import { PlayerList } from "../components/player-list-panel";
-import { PlayerFilters } from "../components/player-filters";
+import { SelectedPlayerCard } from "../components/players/player-card";
+import { PlayerList } from "../components/players/player-list-panel";
+import { PlayerFilters } from "../components/players/player-filters";
 import {
   DatabaseSnapshot,
   FeaturedPlayerPanel,
   RecentlyScouted,
-} from "../components/player-side-panels";
-import { PlayerPageHeader } from "../components/player-page-header";
+} from "../components/players/player-side-panels";
+import { PlayerPageHeader } from "../components/players/player-page-header";
 import {
   getPlayerDatabaseLeaders,
   getPositionBreakdown,
   getTopArchetypeDistribution,
-} from "../components/player-page-stats";
+} from "../components/players/player-page-stats";
+import { getBestLineupFits } from "../components/players/player-lineup-fits";
 import type {
   SortValue,
   Team,
@@ -445,41 +446,6 @@ function Players() {
     bestShooter,
     bestPlaymaker,
   } = getPlayerDatabaseLeaders();
-
-  // Best lineup fit for player
-  function getBestLineupFits(player: (typeof players)[number]) {
-    const fits = [];
-
-    if (player.stats.ppg >= 25 && player.stats.apg >= 5) {
-      fits.push("Transition Attack");
-    }
-
-    if (player.stats.apg >= 7) {
-      fits.push("Showtime Offense");
-    }
-
-    if (player.starPower >= 95) {
-      fits.push("Star-Powered Contender");
-    }
-
-    if (player.stats.threePercent >= 38) {
-      fits.push("Spacing Superteam");
-    }
-
-    if (player.defenseRating >= 90) {
-      fits.push("Defensive Powerhouse");
-    }
-
-    if (player.stats.rpg >= 10 || player.position === "C") {
-      fits.push("Paint Control Unit");
-    }
-
-    if (player.stats.ppg >= 22 && player.defenseRating >= 88) {
-      fits.push("Two-Way Dynasty");
-    }
-
-    return fits.slice(0, 3);
-  }
 
   return (
     <main className="min-h-screen overflow-x-hidden text-white">

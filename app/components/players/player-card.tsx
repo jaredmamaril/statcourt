@@ -1,10 +1,10 @@
 import Image from "next/image";
 import type { CSSProperties } from "react";
-import type { PlayerInsightDisplay } from "./court-data";
-import { normalizeStat, statMaxValues } from "./court-data";
-import { teamColors, teamLogos, type Player } from "./court-data";
-import { getPlayerHeadshot } from "./player-images";
-import PlayerImage from "./player-image";
+import type { PlayerInsightDisplay } from "../court-data";
+import { normalizeStat, statMaxValues } from "../court-data";
+import { teamColors, teamLogos, type Player } from "../court-data";
+import { getPlayerHeadshot } from "../player-images";
+import PlayerImage from "../player-image";
 import {
   PolarAngleAxis,
   PolarGrid,
