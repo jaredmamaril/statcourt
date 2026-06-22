@@ -57,7 +57,6 @@ export function PlayerFilters({
       ref={filtersRef}
       className="mb-4 flex flex-wrap items-center justify-center gap-2"
     >
-      {/* Favorites filter */}
       <button
         type="button"
         onClick={onToggleFavorites}
@@ -76,7 +75,6 @@ export function PlayerFilters({
         )}
       </button>
 
-      {/* Team filter */}
       <div className="relative">
         <button
           type="button"
@@ -144,7 +142,6 @@ export function PlayerFilters({
         )}
       </div>
 
-      {/* Position filter */}
       <div className="relative">
         <button
           type="button"
@@ -189,7 +186,6 @@ export function PlayerFilters({
         )}
       </div>
 
-      {/* Sort filter */}
       <div className="relative">
         <button
           type="button"
@@ -236,7 +232,6 @@ export function PlayerFilters({
         )}
       </div>
 
-      {/* Reset filters button */}
       {hasActiveFilters && (
         <button
           type="button"
