@@ -565,8 +565,8 @@ function Players() {
           <div
             className={
               selectedPlayer
-                ? "relative flex h-full w-full flex-col transition-all duration-500 ease-out opacity-10 lg:-translate-x-5"
-                : "relative flex h-full w-full flex-col transition-all duration-500 ease-out opacity-100 translate-x-0"
+                ? "relative flex h-full w-full flex-col opacity-10 transition-all duration-500 ease-out lg:-translate-x-5 [&_button]:pointer-events-none"
+                : "pointer-events-auto relative flex h-full w-full flex-col translate-x-0 opacity-100 transition-all duration-500 ease-out"
             }
           >
             {!selectedPlayer && featuredPlayer && (
