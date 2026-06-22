@@ -25,6 +25,12 @@ import {
 import { getBestLineupFits } from "../components/players/player-lineup-fits";
 import { getFilteredPlayers } from "../components/players/player-filtering";
 import {
+  getSavedCompareSlots,
+  getSavedRecentPlayers,
+  saveCompareSlots,
+  saveRecentPlayers,
+} from "../components/players/player-storage";
+import {
   getInsightRarityLabel,
   getInsightRarityStyles,
   getLineupFitStyles,
@@ -47,17 +53,6 @@ export default function PlayersPage() {
       <Players />
     </Suspense>
   );
-}
-
-// Reads saved court compare slots for the initial state
-function getSavedCompareSlots(): CompareSlots {
-  if (typeof window === "undefined") return { left: "", right: "" };
-
-  const savedSlots = localStorage.getItem("statcourt-compare-slots");
-
-  if (!savedSlots) return { left: "", right: "" };
-
-  return JSON.parse(savedSlots) as CompareSlots;
 }
 
 function Players() {
@@ -153,11 +148,7 @@ function Players() {
   }, []);
 
   useEffect(() => {
-    const savedRecentPlayers = localStorage.getItem("statcourt-recent-players");
-
-    if (!savedRecentPlayers) return;
-
-    setRecentlyViewedPlayers(JSON.parse(savedRecentPlayers) as string[]);
+    setRecentlyViewedPlayers(getSavedRecentPlayers());
   }, []);
 
   // Open a player card when coming from rankings with /players?player=name
@@ -232,10 +223,7 @@ function Players() {
         ...currentRecentPlayers.filter((name) => name !== playerName),
       ].slice(0, 6);
 
-      localStorage.setItem(
-        "statcourt-recent-players",
-        JSON.stringify(nextRecentPlayers),
-      );
+      saveRecentPlayers(nextRecentPlayers);
 
       return nextRecentPlayers;
     });
@@ -283,7 +271,7 @@ function Players() {
     };
 
     setCompareSlots(nextSlots);
-    localStorage.setItem("statcourt-compare-slots", JSON.stringify(nextSlots));
+    saveCompareSlots(nextSlots);
 
     setIsGoingToCourt(true);
 
