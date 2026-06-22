@@ -4,6 +4,10 @@ import Image from "next/image";
 import PlayerImage from "../components/player-image";
 import { getPlayerHeadshot } from "../components/player-images";
 import {
+  getPlayerRating,
+  type PlayerRatingCategory,
+} from "../components/player-ratings";
+import {
   players,
   positions,
   teams,
@@ -32,14 +36,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 
 // Safety for tabs
-type RankingTab =
-  | "overall"
-  | "scoring"
-  | "shooting"
-  | "playmaking"
-  | "rebounding"
-  | "efficiency"
-  | "archetypes";
+type RankingTab = PlayerRatingCategory | "archetypes";
 
 // Different ranking tabs to compare with
 const rankingTabs: {
@@ -66,83 +63,6 @@ const rankingTabs: {
   },
   { label: "Efficiency", value: "efficiency", Icon: Gauge, color: "#22C55E" },
 ];
-
-// Rating shown on display for more appleasing results
-function toDisplayRating(rawScore: number) {
-  return 70 + rawScore * 0.3;
-}
-
-// Get score of player's stats
-function getRankingScore(player: (typeof players)[number], tab: RankingTab) {
-  const ppgScore = normalizeStat(player.stats.ppg, statMaxValues.ppg);
-  const rpgScore = normalizeStat(player.stats.rpg, statMaxValues.rpg);
-  const apgScore = normalizeStat(player.stats.apg, statMaxValues.apg);
-  const fgScore = normalizeStat(
-    player.stats.fgPercent,
-    statMaxValues.fgPercent,
-  );
-  const threeScore = normalizeStat(
-    player.stats.threePercent,
-    statMaxValues.threePercent,
-  );
-  const ftScore = normalizeStat(
-    player.stats.ftPercent,
-    statMaxValues.ftPercent,
-  );
-
-  // Weighing score based on importance in category
-  const scoringScore = ppgScore * 0.75 + fgScore * 0.15 + ftScore * 0.1;
-  const shootingScore = threeScore * 0.65 + ftScore * 0.25 + fgScore * 0.1;
-  const playmakingScore =
-    apgScore * 0.75 + scoringScore * 0.15 + threeScore * 0.1;
-  const reboundingScore = rpgScore * 0.9 + fgScore * 0.1;
-  const efficiencyScore = fgScore * 0.45 + threeScore * 0.3 + ftScore * 0.25;
-
-  // Specific ranking types
-  if (tab === "scoring") {
-    return toDisplayRating(scoringScore);
-  }
-
-  if (tab === "shooting") {
-    return toDisplayRating(shootingScore);
-  }
-
-  if (tab === "playmaking") {
-    return toDisplayRating(playmakingScore);
-  }
-
-  if (tab === "rebounding") {
-    return toDisplayRating(reboundingScore);
-  }
-
-  if (tab === "efficiency") {
-    return toDisplayRating(efficiencyScore);
-  }
-
-  // Bonus categories for exceptional stats
-  const starCategories = [
-    ppgScore >= 70,
-    rpgScore >= 55,
-    apgScore >= 55,
-    fgScore >= 70,
-    threeScore >= 70,
-    ftScore >= 75,
-  ].filter(Boolean).length;
-
-  // Bonus weighing
-  const versatilityBonus = starCategories * 2;
-
-  // Overall score
-  const overallScore =
-    scoringScore * 0.3 +
-    efficiencyScore * 0.23 +
-    playmakingScore * 0.19 +
-    reboundingScore * 0.15 +
-    shootingScore * 0.13 +
-    versatilityBonus;
-
-  return toDisplayRating(overallScore);
-}
 
 // Archetype pill ranking and design
 function getArchetypePillStyle(
@@ -383,6 +303,9 @@ export default function Rankings() {
   // Current tab, default is overall tab
   const [activeTab, setActiveTab] = useState<RankingTab>("overall");
 
+  const ratingCategory: PlayerRatingCategory =
+    activeTab === "archetypes" ? "overall" : activeTab;
+
   // Filter out players based on search
   const filteredPlayers = players.filter((player) => {
     const archetype = getPlayerInsights(player).archetype;
@@ -406,7 +329,8 @@ export default function Rankings() {
 
   // Get ranked players from highest rated to lowest based on category and filter
   const rankedPlayers = [...filteredPlayers].sort(
-    (a, b) => getRankingScore(b, activeTab) - getRankingScore(a, activeTab),
+    (a, b) =>
+      getPlayerRating(b, ratingCategory) - getPlayerRating(a, ratingCategory),
   );
 
   const topThreePlayers = rankedPlayers.slice(0, 3);
@@ -420,7 +344,7 @@ export default function Rankings() {
         )
         .sort(
           (a, b) =>
-            getRankingScore(b, "overall") - getRankingScore(a, "overall"),
+            getPlayerRating(b, "overall") - getPlayerRating(a, "overall"),
         )
     : [];
 
@@ -550,7 +474,7 @@ export default function Rankings() {
                       archetypePlayers.length > 0
                         ? archetypePlayers.reduce(
                             (total, player) =>
-                              total + getRankingScore(player, "overall"),
+                              total + getPlayerRating(player, "overall"),
                             0,
                           ) / archetypePlayers.length
                         : null;
@@ -563,8 +487,8 @@ export default function Rankings() {
                       )
                       .sort(
                         (a, b) =>
-                          getRankingScore(b, "overall") -
-                          getRankingScore(a, "overall"),
+                          getPlayerRating(b, "overall") -
+                          getPlayerRating(a, "overall"),
                       )[0];
 
                     return (
@@ -723,7 +647,7 @@ export default function Rankings() {
                     </p>
                   ) : (
                     selectedArchetypePlayers.map((player, index) => {
-                      const rating = getRankingScore(player, "overall").toFixed(
+                      const rating = getPlayerRating(player, "overall").toFixed(
                         1,
                       );
 
@@ -1080,9 +1004,10 @@ export default function Rankings() {
                     const rankLabel =
                       index === 0 ? "1ST" : index === 1 ? "2ND" : "3RD";
                     const archetype = getPlayerInsights(player).archetype;
-                    const rating = getRankingScore(player, activeTab).toFixed(
-                      1,
-                    );
+                    const rating = getPlayerRating(
+                      player,
+                      ratingCategory,
+                    ).toFixed(1);
                     const rankColor =
                       index === 0
                         ? "#EFBF04"
@@ -1215,7 +1140,10 @@ export default function Rankings() {
               <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
                 {rankedPlayers.slice(3).map((player, index) => {
                   const archetype = getPlayerInsights(player).archetype;
-                  const rating = getRankingScore(player, activeTab).toFixed(1);
+                  const rating = getPlayerRating(
+                    player,
+                    ratingCategory,
+                  ).toFixed(1);
 
                   return (
                     <div
