@@ -22,6 +22,7 @@ import {
   PlayerCardRadar,
   PlayerCardSimilarPanel,
   PlayerCardAddToCompare,
+  PlayerCardShell,
 } from "../components/player-card";
 import {
   DatabaseSnapshot,
@@ -1002,107 +1003,60 @@ function Players() {
                   ← Back
                 </button>
 
-                <div
-                  key={selectedPlayer.id}
-                  className={`relative w-full max-w-md min-h-134 overflow-hidden rounded-3xl animate-[cardIn_500ms_ease-out] transition-all duration-500 ${
-                    isGoingToCourt
-                      ? "scale-90 translate-y-20 opacity-0"
-                      : "scale-100 translate-y-0 opacity-100"
-                  }`}
-                  style={{ perspective: "1000px" }}
-                  onClick={(e) => {
-                    if (
-                      e.target instanceof HTMLElement &&
-                      e.target.closest("button")
-                    ) {
-                      return;
-                    }
-
-                    setIsCardFlipped((prev) => !prev);
-                  }}
-                  onKeyDown={(e) => {
-                    if (
-                      e.target instanceof HTMLElement &&
-                      e.target.closest("button")
-                    ) {
-                      return;
-                    }
-
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setIsCardFlipped((prev) => !prev);
-                    }
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`${selectedPlayer.name} player card — click to flip`}
+                <PlayerCardShell
+                  player={selectedPlayer}
+                  isCardFlipped={isCardFlipped}
+                  isGoingToCourt={isGoingToCourt}
+                  onToggleFlip={() => setIsCardFlipped((prev) => !prev)}
                 >
-                  {/* Rotating container */}
-                  <div
-                    className="relative w-full min-h-134"
-                    style={{
-                      transformStyle: "preserve-3d",
-                      transition: "transform 0.5s ease-out",
-                      transform: isCardFlipped
-                        ? "rotateY(180deg)"
-                        : "rotateY(0deg)",
-                    }}
+                  <PlayerCardFront
+                    player={selectedPlayer}
+                    isCardFlipped={isCardFlipped}
+                  />
+
+                  <PlayerCardBack
+                    player={selectedPlayer}
+                    isCardFlipped={isCardFlipped}
                   >
-                    {/* Front face */}
-                    <PlayerCardFront
+                    <PlayerCardBackHeader
                       player={selectedPlayer}
-                      isCardFlipped={isCardFlipped}
+                      getPlayerNameTextClass={getPlayerNameTextClass}
                     />
 
-                    <PlayerCardBack
-                      player={selectedPlayer}
-                      isCardFlipped={isCardFlipped}
-                    >
-                      {/* Back face */}
-                      <PlayerCardBackHeader
+                    {isCardFlipped && (
+                      <PlayerCardRadar
                         player={selectedPlayer}
-                        getPlayerNameTextClass={getPlayerNameTextClass}
+                        isCardFlipped={isCardFlipped}
                       />
+                    )}
 
-                      {/* Player stats radar chart */}
-                      {isCardFlipped && (
-                        <PlayerCardRadar
-                          player={selectedPlayer}
-                          isCardFlipped={isCardFlipped}
+                    <div className="flex items-start justify-center gap-10">
+                      {playerInsights && (
+                        <PlayerCardInsights
+                          playerInsights={playerInsights}
+                          getInsightRarityStyles={getInsightRarityStyles}
+                          getInsightRarityLabel={getInsightRarityLabel}
                         />
                       )}
 
-                      <div className="flex items-start justify-center gap-10">
-                        {/* Insights */}
-                        {playerInsights && (
-                          <PlayerCardInsights
-                            playerInsights={playerInsights}
-                            getInsightRarityStyles={getInsightRarityStyles}
-                            getInsightRarityLabel={getInsightRarityLabel}
-                          />
-                        )}
-
-                        {/* Similar To */}
-                        <PlayerCardSimilarPanel
-                          similarPlayers={similarPlayers}
-                          bestLineupFits={bestLineupFits}
-                          getLineupFitStyles={getLineupFitStyles}
-                          onSelectSimilarPlayer={(playerName) => {
-                            setCurrentPlayer(playerName);
-                            setIsCardFlipped(false);
-                          }}
-                        />
-                      </div>
-
-                      {/* Send to court page to compare with other player(s) button */}
-                      <PlayerCardAddToCompare
-                        player={selectedPlayer}
-                        compareSlots={compareSlots}
-                        onAddPlayerToCompare={addPlayerToCompare}
+                      <PlayerCardSimilarPanel
+                        similarPlayers={similarPlayers}
+                        bestLineupFits={bestLineupFits}
+                        getLineupFitStyles={getLineupFitStyles}
+                        onSelectSimilarPlayer={(playerName) => {
+                          setCurrentPlayer(playerName);
+                          setIsCardFlipped(false);
+                        }}
                       />
-                    </PlayerCardBack>
-                  </div>
-                </div>
+                    </div>
+
+                    <PlayerCardAddToCompare
+                      player={selectedPlayer}
+                      compareSlots={compareSlots}
+                      onAddPlayerToCompare={addPlayerToCompare}
+                    />
+                  </PlayerCardBack>
+                </PlayerCardShell>
               </div>
             )}
           </div>
