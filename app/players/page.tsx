@@ -18,6 +18,7 @@ import {
   FeaturedPlayerPanel,
   RecentlyScouted,
 } from "../components/player-side-panels";
+import { PlayerPageHeader } from "../components/player-page-header";
 import type {
   SortValue,
   Team,
@@ -595,31 +596,11 @@ function Players() {
               />
             )}
 
-            {/* Header section */}
-            <div className="flex flex-col items-center justify-between gap-1 mb-2">
-              <h1 className="font-michroma text-2xl font-bold tracking-wide text-[#1bc2ec]">
-                PICK A PLAYER
-              </h1>
-
-              <p className="max-w-xl text-center font-michroma text-xs leading-relaxed text-white/40">
-                Browse player cards, filter by team or position, view
-                archetypes, and send players to the comparison court.
-              </p>
-
-              {/* Search bar */}
-              <input
-                value={playerSearch}
-                onChange={(e) => setPlayerSearch(e.target.value)}
-                placeholder="Search For a Player..."
-                className="w-full sm:w-64 rounded-md border border-white/30 bg-black/40 px-4 py-2 text-white/80 placeholder:text-white/35 font-michroma text-sm outline-none focus:border-white text-center"
-              />
-            </div>
-            <div className="flex items-center justify-center">
-              <p className="font-michroma text-sm font-medium tracking-wider text-white/80 mb-2">
-                {" "}
-                Filters
-              </p>
-            </div>
+            {/* Search and filters heading */}
+            <PlayerPageHeader
+              playerSearch={playerSearch}
+              onPlayerSearchChange={setPlayerSearch}
+            />
 
             {/* Filter buttons row */}
             <PlayerFilters
