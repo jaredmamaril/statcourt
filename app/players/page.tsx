@@ -3,7 +3,6 @@
 import {
   players,
   positions,
-  sortOptions,
   getPlayerInsights,
   getSimilarPlayers,
 } from "../components/court-data";
@@ -119,10 +118,6 @@ function Players() {
     sortBy,
     sortDirection,
   });
-
-  const selectedSortOption = sortOptions.find(
-    (option) => option.value === sortBy,
-  );
 
   const hasActiveFilters = Boolean(
     showFavorites || filteredTeam || filteredPosition || sortBy || playerSearch,
@@ -347,9 +342,6 @@ function Players() {
               filteredPosition={filteredPosition}
               sortBy={sortBy}
               sortDirection={sortDirection}
-              selectedSortLabel={
-                selectedSortOption ? selectedSortOption.label : "None"
-              }
               openDropdown={openDropdown}
               hasActiveFilters={hasActiveFilters}
               onToggleFavorites={() => setShowFavorites(!showFavorites)}

@@ -21,7 +21,6 @@ type PlayerFiltersProps = {
   filteredPosition: Position | "";
   sortBy: SortValue;
   sortDirection: SortDirection;
-  selectedSortLabel: string;
   openDropdown: OpenDropdown;
   hasActiveFilters: boolean;
   onToggleFavorites: () => void;
@@ -40,7 +39,6 @@ export function PlayerFilters({
   filteredPosition,
   sortBy,
   sortDirection,
-  selectedSortLabel,
   openDropdown,
   hasActiveFilters,
   onToggleFavorites,
@@ -50,6 +48,10 @@ export function PlayerFilters({
   onSelectSort,
   onResetFilters,
 }: PlayerFiltersProps) {
+  const selectedSortOption = sortOptions.find(
+    (option) => option.value === sortBy,
+  );
+
   return (
     <div
       ref={filtersRef}
@@ -201,7 +203,7 @@ export function PlayerFilters({
           }`}
         >
           <span>
-            Sort: {selectedSortLabel}{" "}
+            Sort: {selectedSortOption ? selectedSortOption.label : "None"}
             {sortBy &&
               (sortBy === "first-name" || sortBy === "last-name"
                 ? sortDirection === "primary"
