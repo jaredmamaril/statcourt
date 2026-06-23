@@ -13,7 +13,7 @@ export function getSavedCompareSlots(): CompareSlots {
   return JSON.parse(savedSlots) as CompareSlots;
 }
 
-export function getSavedRecentPlayers() {
+export function getSavedRecentPlayers(): string[] {
   if (typeof window === "undefined") return [];
 
   const savedRecentPlayers = localStorage.getItem(RECENT_PLAYERS_KEY);
@@ -22,11 +22,19 @@ export function getSavedRecentPlayers() {
 
   return JSON.parse(savedRecentPlayers) as string[];
 }
-
-export function saveRecentPlayers(playerNames: string[]) {
+export function saveRecentPlayers(playerNames: string[]): void {
   localStorage.setItem(RECENT_PLAYERS_KEY, JSON.stringify(playerNames));
 }
-
-export function saveCompareSlots(compareSlots: CompareSlots) {
+export function saveCompareSlots(compareSlots: CompareSlots): void {
   localStorage.setItem(COMPARE_SLOTS_KEY, JSON.stringify(compareSlots));
+}
+
+export function addRecentPlayer(
+  currentRecentPlayers: string[],
+  playerName: string,
+): string[] {
+  return [
+    playerName,
+    ...currentRecentPlayers.filter((name) => name !== playerName),
+  ].slice(0, 6);
 }

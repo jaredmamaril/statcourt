@@ -24,6 +24,7 @@ import {
 import { getBestLineupFits } from "../components/players/player-lineup-fits";
 import { getFilteredPlayers } from "../components/players/player-filtering";
 import {
+  addRecentPlayer,
   getSavedCompareSlots,
   getSavedRecentPlayers,
   saveCompareSlots,
@@ -136,7 +137,6 @@ function Players() {
   } = getPlayerDatabaseLeaders();
 
   // Effects
-
   useEffect(() => {
     const randomPlayer = players[Math.floor(Math.random() * players.length)];
     setFeaturedPlayer(randomPlayer);
@@ -159,9 +159,7 @@ function Players() {
     if (!matchingPlayer) return;
 
     const timer = window.setTimeout(() => {
-      setCurrentPlayer(matchingPlayer.name);
-      addRecentlyViewedPlayer(matchingPlayer.name);
-      setIsCardFlipped(false);
+      openPlayerCard(matchingPlayer.name);
 
       router.replace("/players", { scroll: false });
     }, 0);
@@ -180,8 +178,7 @@ function Players() {
         playerCardRef.current &&
         !playerCardRef.current.contains(event.target)
       ) {
-        setCurrentPlayer("");
-        setIsCardFlipped(false);
+        closePlayerCard();
       }
     }
 
@@ -213,10 +210,10 @@ function Players() {
   // Event handlers
   function addRecentlyViewedPlayer(playerName: string) {
     setRecentlyViewedPlayers((currentRecentPlayers) => {
-      const nextRecentPlayers = [
+      const nextRecentPlayers = addRecentPlayer(
+        currentRecentPlayers,
         playerName,
-        ...currentRecentPlayers.filter((name) => name !== playerName),
-      ].slice(0, 6);
+      );
 
       saveRecentPlayers(nextRecentPlayers);
 
@@ -275,6 +272,32 @@ function Players() {
     }, 450);
   }
 
+  function openPlayerCard(playerName: string) {
+    setCurrentPlayer(playerName);
+    addRecentlyViewedPlayer(playerName);
+    setIsCardFlipped(false);
+  }
+
+  function closePlayerCard() {
+    setCurrentPlayer("");
+    setIsCardFlipped(false);
+  }
+
+  function selectTeamFilter(team: Team | "") {
+    setFilteredTeam(team);
+    setOpenDropdown(null);
+  }
+
+  function selectPositionFilter(position: Position | "") {
+    setFilteredPosition(position);
+    setOpenDropdown(null);
+  }
+
+  function selectSortFilter(sort: SortValue) {
+    handleSortClick(sort);
+    setOpenDropdown(null);
+  }
+
   return (
     <main className="min-h-screen overflow-x-hidden text-white">
       <section className="relative mx-auto w-full max-w-6xl px-6 pt-4 pb-12">
@@ -297,19 +320,11 @@ function Players() {
                 featuredPlayer={featuredPlayer}
                 featuredPlayerInsights={featuredPlayerInsights}
                 getInsightRarityStyles={getInsightRarityStyles}
-                onViewPlayer={(playerName) => {
-                  setCurrentPlayer(playerName);
-                  addRecentlyViewedPlayer(playerName);
-                  setIsCardFlipped(false);
-                }}
+                onViewPlayer={openPlayerCard}
               >
                 <RecentlyScouted
                   recentlyViewedPlayers={recentlyViewedPlayers}
-                  onViewPlayer={(playerName) => {
-                    setCurrentPlayer(playerName);
-                    setIsCardFlipped(false);
-                    addRecentlyViewedPlayer(playerName);
-                  }}
+                  onViewPlayer={openPlayerCard}
                 />
               </FeaturedPlayerPanel>
             )}
@@ -346,18 +361,9 @@ function Players() {
               hasActiveFilters={hasActiveFilters}
               onToggleFavorites={() => setShowFavorites(!showFavorites)}
               onOpenDropdown={setOpenDropdown}
-              onSelectTeam={(team) => {
-                setFilteredTeam(team);
-                setOpenDropdown(null);
-              }}
-              onSelectPosition={(position) => {
-                setFilteredPosition(position);
-                setOpenDropdown(null);
-              }}
-              onSelectSort={(sort) => {
-                handleSortClick(sort);
-                setOpenDropdown(null);
-              }}
+              onSelectTeam={selectTeamFilter}
+              onSelectPosition={selectPositionFilter}
+              onSelectSort={selectSortFilter}
               onResetFilters={resetAllFilters}
             />
 
@@ -370,13 +376,10 @@ function Players() {
               onToggleFavorite={toggleFavorite}
               onSelectPlayer={(playerName) => {
                 if (currentPlayer === playerName) {
-                  setCurrentPlayer("");
+                  closePlayerCard();
                 } else {
-                  setCurrentPlayer(playerName);
-                  addRecentlyViewedPlayer(playerName);
+                  openPlayerCard(playerName);
                 }
-
-                setIsCardFlipped(false);
               }}
             />
           </div>
@@ -397,14 +400,10 @@ function Players() {
                   getInsightRarityLabel={getInsightRarityLabel}
                   getLineupFitStyles={getLineupFitStyles}
                   onBack={() => {
-                    setCurrentPlayer("");
-                    setIsCardFlipped(false);
+                    closePlayerCard();
                   }}
                   onToggleFlip={() => setIsCardFlipped((prev) => !prev)}
-                  onSelectSimilarPlayer={(playerName) => {
-                    setCurrentPlayer(playerName);
-                    setIsCardFlipped(false);
-                  }}
+                  onSelectSimilarPlayer={openPlayerCard}
                   onAddPlayerToCompare={addPlayerToCompare}
                 />
               </div>
