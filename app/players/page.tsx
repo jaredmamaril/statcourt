@@ -8,8 +8,8 @@ import {
 } from "../components/court-data";
 import { getPlayerRating } from "../components/player-ratings";
 import { SelectedPlayerCard } from "../components/players/player-card";
-import { PlayerList } from "../components/players/player-list-panel";
-import { PlayerFilters } from "../components/players/player-filters/";
+import { PlayerList } from "../components/players/player-list";
+import { PlayerFilters } from "../components/players/player-filters";
 import {
   DatabaseSnapshot,
   FeaturedPlayerPanel,
