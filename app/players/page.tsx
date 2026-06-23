@@ -14,7 +14,7 @@ import {
   DatabaseSnapshot,
   FeaturedPlayerPanel,
   RecentlyScouted,
-} from "../components/players/player-side-panels";
+} from "../components/players/side-panels";
 import { PlayerPageHeader } from "../components/players/player-page-header";
 import {
   getPlayerDatabaseLeaders,
