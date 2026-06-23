@@ -1,5 +1,5 @@
-import type { Position } from "../court-data";
-import type { LineupScoutScores, TeamGrades } from "../lineup-scouting";
+import type { Position } from "../../court-data";
+import type { LineupScoutScores, TeamGrades } from "../../lineup-scouting";
 
 export type LineupTab = "featured" | "builder" | "saved";
 
@@ -57,3 +57,5 @@ export type SavedLineup = {
   createdAt: string;
   badges: string[];
 };
+
+export type NewSavedLineupInput = Omit<SavedLineup, "id" | "createdAt">;

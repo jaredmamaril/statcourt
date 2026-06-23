@@ -1,6 +1,6 @@
-import { players } from "../court-data";
-import type { Position } from "../court-data";
-import { getPlayerRating } from "../player-ratings";
+import type { Position } from "../../court-data";
+import { players } from "../../court-data";
+import { getPlayerRating } from "../../player-ratings";
 
 type Player = (typeof players)[number];
 

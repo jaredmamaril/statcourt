@@ -1,4 +1,4 @@
-import type { SavedLineup } from "./lineup-types";
+import type { SavedLineup } from "../shared/lineup-types";
 
 const SAVED_LINEUPS_KEY = "statcourt-saved-lineups";
 
@@ -9,7 +9,11 @@ export function getSavedLineups() {
     return [];
   }
 
-  return JSON.parse(saved) as SavedLineup[];
+  try {
+    return JSON.parse(saved) as SavedLineup[];
+  } catch {
+    return [];
+  }
 }
 
 export function saveSavedLineups(lineups: SavedLineup[]) {

@@ -1,5 +1,5 @@
-import type { Position } from "../court-data";
-import type { LineupDetail, LineupTab } from "./lineup-types";
+import type { Position } from "../../court-data";
+import type { LineupDetail, LineupTab } from "../shared/lineup-types";
 import type { LucideIcon } from "lucide-react";
 import { Trophy, Flame, Brain, Shield, Target, Crown } from "lucide-react";
 

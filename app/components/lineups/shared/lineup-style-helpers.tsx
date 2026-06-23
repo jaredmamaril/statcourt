@@ -11,8 +11,8 @@ import {
   Sparkles,
   CircleDot,
 } from "lucide-react";
-import { getRankedScoutScores } from "../lineup-scouting";
-import type { SavedLineup } from "./lineup-types";
+import { getRankedScoutScores } from "../../lineup-scouting";
+import type { SavedLineup } from "../shared/lineup-types";
 
 export function getSavedLineupArchetypeColor(archetype: string) {
   if (archetype === "Transition Attack") return "#1bc2ec";

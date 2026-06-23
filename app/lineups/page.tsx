@@ -1,137 +1,72 @@
 "use client";
+
 import type {
   LineupTab,
   LineupDetail,
   SavedLineup,
-} from "../components/lineups/lineup-types";
+  NewSavedLineupInput,
+} from "../components/lineups/shared/lineup-types";
+
 import {
   lineupPositions,
-  lineupTabs,
-  lineupCards,
   lineupDetails,
-  lineupGroups,
-  featuredCourtMarkerPositions,
-  builderCourtMarkerPositions,
   type LineupCategory,
   type LineupName,
-} from "../components/lineups/featured-lineups";
+} from "../components/lineups/featured/featured-lineups";
+
 import {
-  getBuilderPlayerRating,
-  getBuilderPlayerRatingForPosition,
-  getPositionFit,
-  getPositionPenalty,
-} from "../components/lineups/builder-position-helpers";
+  getLineupAchievements,
+  getLineupCategoryColor,
+  getLineupNamesForCategory,
+} from "../components/lineups/featured/featured-lineup-helpers";
+
+import { FeaturedLineupCategoryGrid } from "../components/lineups/featured/featured-lineup-category-grid";
+import { FeaturedLineupDetail } from "../components/lineups/featured/featured-lineup-detail";
+
+import { BuilderIntro } from "../components/lineups/builder/builder-intro";
+
 import {
-  LineupBadgeIcon,
-  archetypeColorLegend,
-  getSavedLineupArchetypeColor,
-  getSavedLineupTopScore,
-} from "../components/lineups/lineup-style-helpers";
+  EMPTY_LINEUP,
+  getAvailableBuildPlayers,
+  getCustomLineupOverall,
+  getSelectedCustomPlayerSlots,
+  type PlayerRevealMode,
+} from "../components/lineups/builder/builder-lineup-helpers";
+
+import { BuilderWorkspace } from "../components/lineups/builder/builder-workspace";
+
 import {
-  getSavedLineups,
-  saveSavedLineups,
-} from "../components/lineups/lineup-storage";
-import { players, normalizeStat } from "../components/court-data";
+  getFilteredSavedLineups,
+  getSavedSortLabel,
+} from "../components/lineups/saved/saved-lineup-filters";
+
+import { LineupPageHeader } from "../components/lineups/shared/lineup-page-header";
+import { SavedLineupsSection } from "../components/lineups/saved/saved-lineups-section";
+
+import {
+  LOAD_LINEUP_EXIT_DURATION,
+  LOAD_LINEUP_PROGRESS_INTERVAL,
+  LOAD_LINEUP_TOTAL_DURATION,
+  loadLineupSteps,
+} from "../components/lineups/scout/lineup-loading-steps";
+
+import { NameLineupModal } from "../components/lineups/saved/name-lineup-modal";
+import { DeleteLineupModal } from "../components/lineups/saved/delete-lineup-modal";
+import { LineupDeletedModal } from "../components/lineups/saved/lineup-deleted-modal";
+import { LineupSavedModal } from "../components/lineups/saved/lineup-saved-modal";
+import { RenameLineupModal } from "../components/lineups/saved/rename-lineup-modal";
+import { LoadingLineupModal } from "../components/lineups/scout/loading-lineup-modal";
+
+import { getScoutReportDisplay } from "../components/lineups/scout/scout-report-display";
+import { ScoutReportModal } from "../components/lineups/scout/scout-report-modal";
+
+import { useAnimatedScoutOverall } from "../components/lineups/scout/use-animated-scout-overall";
+import { useSavedLineups } from "../components/lineups/saved/use-saved-lineups";
+
 import type { Position } from "../components/court-data";
-import PlayerImage from "../components/player-image";
-import { getPlayerHeadshot } from "../components/player-images";
-import {
-  getCourtBalanceColor,
-  getLineupScoutReport,
-  getLineupTierColor,
-  getRankedScoutScores,
-  getScoutReason,
-} from "../components/lineup-scouting";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+
 import { useRouter } from "next/navigation";
-import { Save } from "lucide-react";
-
-// Types
-type LineupMarkerProps = {
-  position: string;
-  name: string;
-  className: string;
-  color: string;
-  isHighlighted: boolean;
-  onViewCard: (playerName: string) => void;
-  tooltipPosition?: "top" | "bottom";
-  animationDelay?: string;
-};
-
-// Small components
-function LineupMarker({
-  position,
-  name,
-  className,
-  color,
-  isHighlighted,
-  onViewCard,
-  tooltipPosition = "top",
-  animationDelay = "0ms",
-}: LineupMarkerProps) {
-  const player = players.find((player) => player.name === name);
-  const imageSrc = player ? getPlayerHeadshot(player) : "/blank-player.svg";
-  const tooltipClass =
-    tooltipPosition === "bottom" ? "top-full" : "bottom-full";
-
-  return (
-    <div
-      className={`absolute -translate-x-1/2 text-center transition-all duration-200 hover:z-999 ${
-        isHighlighted ? "z-900 scale-125" : "z-10 scale-100"
-      } ${className}`}
-    >
-      <div
-        className={player ? "player-add-to-court" : ""}
-        style={{ animationDelay }}
-      >
-        <div className="group/headshot relative inline-block">
-          <PlayerImage
-            src={imageSrc}
-            alt={player?.name || name}
-            width={72}
-            height={72}
-            className="mx-auto h-20 w-20 rounded-full object-cover transition-all duration-200"
-            style={{
-              boxShadow: isHighlighted
-                ? `0 0 0 3px ${color}, 0 0 24px ${color}`
-                : "none",
-            }}
-          />
-
-          <div
-            className={`pointer-events-none absolute left-1/2 z-100 w-48 -translate-x-1/2 rounded-md border bg-black/95 p-3 opacity-0 transition-opacity duration-200 group-hover/headshot:pointer-events-auto group-hover/headshot:opacity-100 ${tooltipClass}`}
-            style={{
-              borderColor: `${color}99`,
-            }}
-          >
-            <p className="font-michroma text-[10px] uppercase text-white">
-              {name}
-            </p>
-
-            <button
-              type="button"
-              onClick={() => onViewCard(name)}
-              className="mt-2 w-full cursor-pointer rounded border px-3 py-2 font-michroma text-[9px] uppercase transition hover:brightness-150"
-              style={{
-                color,
-                borderColor: `${color}99`,
-                backgroundColor: `${color}18`,
-              }}
-            >
-              View Card
-            </button>
-          </div>
-        </div>
-
-        <p className="mt-0.5 font-michroma text-[7px] text-white">{name}</p>
-
-        <p className="font-michroma text-[6px]" style={{ color }}>
-          {position}
-        </p>
-      </div>
-    </div>
-  );
-}
 
 export default function Lineups() {
   const router = useRouter();
@@ -151,20 +86,15 @@ export default function Lineups() {
 
   // Builder
   const [hasStartedBuilder, setHasStartedBuilder] = useState(false);
-  const [customLineup, setCustomLineup] = useState<Record<Position, string>>({
-    PG: "",
-    SG: "",
-    SF: "",
-    PF: "",
-    C: "",
-  });
+  const [customLineup, setCustomLineup] =
+    useState<Record<Position, string>>(EMPTY_LINEUP);
   const [activeBuildPosition, setActiveBuildPosition] =
     useState<Position>("PG");
   const [hoveredBuildPlayer, setHoveredBuildPlayer] = useState("");
   const [buildPlayerSearch, setBuildPlayerSearch] = useState("");
 
   // Saved lineups
-  const [savedLineups, setSavedLineups] = useState<SavedLineup[]>([]);
+  const { savedLineups, updateSavedLineups } = useSavedLineups();
   const [savedLineupSearch, setSavedLineupSearch] = useState("");
   const [savedLineupSort, setSavedLineupSort] = useState("highestOvr");
   const [savedLineupTierFilter, setSavedLineupTierFilter] = useState("");
@@ -190,70 +120,32 @@ export default function Lineups() {
   const [isLoadingSavedLineup, setIsLoadingSavedLineup] = useState(false);
 
   // Animations
-  const [animatedScoutOverall, setAnimatedScoutOverall] = useState(0);
   const [loadLineupStep, setLoadLineupStep] = useState(0);
   const [loadLineupProgress, setLoadLineupProgress] = useState(0);
   const [isLoadLineupExiting, setIsLoadLineupExiting] = useState(false);
+  const [playerRevealMode, setPlayerRevealMode] =
+    useState<PlayerRevealMode>("instant");
 
   // Builder derived data
-  const selectedCustomPlayerSlots = lineupPositions
-    .map((position) => {
-      const player = players.find(
-        (player) => player.name === customLineup[position],
-      );
-
-      return player ? { position, player } : null;
-    })
-    .filter(
-      (
-        slot,
-      ): slot is { position: Position; player: (typeof players)[number] } =>
-        Boolean(slot),
-    );
+  const selectedCustomPlayerSlots = getSelectedCustomPlayerSlots(
+    customLineup,
+    lineupPositions,
+  );
 
   const selectedCustomPlayers = selectedCustomPlayerSlots.map(
     (slot) => slot.player,
   );
 
-  const customLineupOverall =
-    selectedCustomPlayerSlots.length === 0
-      ? null
-      : selectedCustomPlayerSlots.reduce(
-          (total, slot) =>
-            total +
-            getBuilderPlayerRatingForPosition(slot.player, slot.position),
-          0,
-        ) / selectedCustomPlayerSlots.length;
-
-  const selectedBuildPlayerNames = new Set(
-    selectedCustomPlayers.map((player) => player.name),
-  );
+  const customLineupOverall = getCustomLineupOverall(selectedCustomPlayerSlots);
 
   const activePositionPlayerName = customLineup[activeBuildPosition];
 
-  const availableBuildPlayers = players
-    .filter((player) => {
-      const matchesSearch = player.name
-        .toLowerCase()
-        .includes(buildPlayerSearch.toLowerCase());
-
-      const isAlreadySelectedSomewhere = selectedBuildPlayerNames.has(
-        player.name,
-      );
-
-      const isSelectedInThisPosition = player.name === activePositionPlayerName;
-
-      return (
-        matchesSearch &&
-        (!isAlreadySelectedSomewhere || isSelectedInThisPosition)
-      );
-    })
-    .sort((a, b) => {
-      return (
-        getBuilderPlayerRatingForPosition(b, activeBuildPosition) -
-        getBuilderPlayerRatingForPosition(a, activeBuildPosition)
-      );
-    });
+  const availableBuildPlayers = getAvailableBuildPlayers({
+    buildPlayerSearch,
+    activeBuildPosition,
+    activePositionPlayerName,
+    selectedCustomPlayers,
+  });
 
   const selectedLineupCount = selectedCustomPlayers.length;
 
@@ -264,196 +156,98 @@ export default function Lineups() {
   );
 
   // Scout report values
-  const scoutReport = getLineupScoutReport(selectedCustomPlayerSlots);
-
-  const lineupArchetype =
-    scoutedSavedLineup?.archetype ?? scoutReport.archetype;
-
-  const lineupTier = scoutedSavedLineup?.tier ?? scoutReport.tier;
-
-  const scoutArchetypeColor = getSavedLineupArchetypeColor(lineupArchetype);
-
-  const scoutTierColor = getLineupTierColor(lineupTier);
-
-  const scoutSummary = scoutedSavedLineup?.summary ?? scoutReport.summary;
-
-  const teamIdentity =
-    scoutedSavedLineup?.teamIdentity ?? scoutReport.teamIdentity;
-
-  const lineupStrengths =
-    scoutedSavedLineup?.strengths ?? scoutReport.strengths;
-
-  const lineupWeaknesses =
-    scoutedSavedLineup?.weaknesses ?? scoutReport.weaknesses;
-
-  const lineupTradeoff = scoutedSavedLineup?.tradeoff ?? scoutReport.tradeoff;
-
-  const xFactorName =
-    scoutedSavedLineup?.xFactorName ?? scoutReport.xFactor?.player.name ?? "--";
-
-  const xFactorDescription =
-    scoutedSavedLineup?.xFactorDescription ??
-    scoutReport.xFactor?.description ??
-    "--";
-
-  const similarLineup = scoutedSavedLineup?.similarTo ?? scoutReport.similarTo;
-
-  const similarToDescription =
-    scoutedSavedLineup?.similarToDescription ??
-    scoutReport.similarToDescription;
-
-  const similarLineupMatches =
-    scoutedSavedLineup?.similarLineupMatches ??
-    scoutReport.similarLineupMatches;
-
-  const courtBalance =
-    scoutedSavedLineup?.courtBalance ?? scoutReport.courtBalance;
-
-  const courtBalanceDescription =
-    scoutedSavedLineup?.courtBalanceDescription ??
-    scoutReport.courtBalanceDescription;
-
-  const courtBalanceColor = getCourtBalanceColor(courtBalance);
-
-  const teamGrades = scoutedSavedLineup?.grades ?? scoutReport.grades;
-
-  const scoutScores = scoutedSavedLineup?.scores ?? scoutReport.scores;
-
-  const scoutReason = getScoutReason(lineupArchetype);
-
-  const lineupBadges = scoutedSavedLineup?.badges ?? scoutReport.badges;
+  const {
+    scoutReport,
+    lineupArchetype,
+    lineupTier,
+    scoutArchetypeColor,
+    scoutTierColor,
+    scoutSummary,
+    teamIdentity,
+    lineupStrengths,
+    lineupWeaknesses,
+    lineupTradeoff,
+    xFactorName,
+    xFactorDescription,
+    similarLineup,
+    similarToDescription,
+    similarLineupMatches,
+    courtBalance,
+    courtBalanceDescription,
+    courtBalanceColor,
+    teamGrades,
+    scoutScores,
+    scoutReason,
+    lineupBadges,
+  } = getScoutReportDisplay({
+    selectedCustomPlayerSlots,
+    scoutedSavedLineup,
+  });
 
   // Featured lineup display values
-  const selectedCategoryColor =
-    lineupCards.find((card) => card.title === selectedLineupCategory)?.color ??
-    "#1bc2ec";
+  const selectedCategoryColor = getLineupCategoryColor(selectedLineupCategory);
 
   const selectedLineup: LineupDetail | null = selectedLineupName
     ? lineupDetails[selectedLineupName]
     : null;
 
-  const selectedLineupAchievements = selectedLineup
-    ? [
-        selectedLineup.achievements.record
-          ? `${selectedLineup.achievements.record} Record`
-          : null,
-        selectedLineup.achievements.result ?? null,
-        selectedLineup.achievements.playoffs
-          ? `${selectedLineup.achievements.playoffs} Playoffs`
-          : null,
-        selectedLineup.achievements.note ?? null,
-      ].filter((achievement): achievement is string => Boolean(achievement))
-    : [];
+  const selectedLineupAchievements = getLineupAchievements(selectedLineup);
 
-  const selectedLineupNames = selectedLineupCategory
-    ? lineupGroups[selectedLineupCategory]
-    : [];
+  const selectedLineupNames = getLineupNamesForCategory(selectedLineupCategory);
 
   // Saved lineup derived data
-  const filteredSavedLineups = savedLineups
-    .filter((lineup) => {
-      const search = savedLineupSearch.toLowerCase();
-
-      const playerNames = lineupPositions
-        .map((position) => lineup.players[position])
-        .join(" ")
-        .toLowerCase();
-
-      const matchesSearch =
-        lineup.name.toLowerCase().includes(search) ||
-        (lineup.archetype ?? "").toLowerCase().includes(search) ||
-        (lineup.teamIdentity ?? "").toLowerCase().includes(search) ||
-        playerNames.includes(search);
-
-      const matchesTier =
-        savedLineupTierFilter === "" || lineup.tier === savedLineupTierFilter;
-
-      const matchesArchetype =
-        savedLineupArchetypeFilter === "" ||
-        lineup.archetype === savedLineupArchetypeFilter;
-
-      return matchesSearch && matchesTier && matchesArchetype;
-    })
-    .toSorted((a, b) => {
-      if (savedLineupSort === "lowestOvr") {
-        return a.overall - b.overall;
-      }
-
-      if (savedLineupSort === "newest") {
-        return (
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-      }
-
-      if (savedLineupSort === "oldest") {
-        return (
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        );
-      }
-
-      return b.overall - a.overall;
-    });
+  const filteredSavedLineups = getFilteredSavedLineups({
+    savedLineups,
+    savedLineupSearch,
+    savedLineupSort,
+    savedLineupTierFilter,
+    savedLineupArchetypeFilter,
+    lineupPositions,
+  });
 
   // Page display values
   const shouldShowTopText =
     activeTab === "featured" || activeTab === "saved" || hasStartedBuilder;
 
-  const savedSortLabel =
-    savedLineupSort === "lowestOvr"
-      ? "Lowest OVR"
-      : savedLineupSort === "newest"
-        ? "Newest Saved"
-        : savedLineupSort === "oldest"
-          ? "Oldest Saved"
-          : "Highest OVR";
+  const savedSortLabel = getSavedSortLabel(savedLineupSort);
 
-  const loadLineupSteps = [
-    "Restoring saved players...",
-    "Calculating chemistry...",
-    "Evaluating archetype fit...",
-    "Rebuilding score profile...",
-    "Syncing court preview...",
-  ];
-
-  // Load saved lineups from localStorage
-  useEffect(() => {
-    const frameId = requestAnimationFrame(() => {
-      setSavedLineups(getSavedLineups());
-    });
-
-    return () => cancelAnimationFrame(frameId);
-  }, []);
-
-  // Animate scout report OVR
+  // Scout report animation
   const displayedScoutOverall =
     scoutedSavedLineup?.overall ?? customLineupOverall;
-  useEffect(() => {
-    if (!isScoutOpen || displayedScoutOverall === null) return;
 
-    const targetOverall = displayedScoutOverall;
+  const animatedScoutOverall = useAnimatedScoutOverall(
+    isScoutOpen,
+    displayedScoutOverall,
+  );
 
-    let frameId: number;
-    const duration = 600;
-    const startTime = performance.now();
+  // Actions
+  function changeTab(tab: LineupTab) {
+    setActiveTab(tab);
 
-    function animate(now: number) {
-      const progress = Math.min((now - startTime) / duration, 1);
-      const nextValue = targetOverall * progress;
-
-      setAnimatedScoutOverall(nextValue);
-
-      if (progress < 1) {
-        frameId = requestAnimationFrame(animate);
-      }
+    if (tab === "builder") {
+      setHasStartedBuilder(false);
     }
+  }
 
-    frameId = requestAnimationFrame(animate);
+  function selectFeaturedLineupCategory(
+    category: LineupCategory,
+    featuredLineup: LineupName | null,
+  ) {
+    setSelectedLineupCategory(category);
+    setSelectedLineupName(featuredLineup ?? "");
 
-    return () => cancelAnimationFrame(frameId);
-  }, [isScoutOpen, displayedScoutOverall]);
+    setTimeout(() => {
+      lineupSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 150);
+  }
 
   // Builder actions
   function pickBuildPlayer(playerName: string) {
+    setPlayerRevealMode("instant");
+
     setCustomLineup((prev) => ({
       ...prev,
       [activeBuildPosition]: playerName,
@@ -467,12 +261,27 @@ export default function Lineups() {
     }));
   }
 
+  function resetDraft() {
+    setCustomLineup(EMPTY_LINEUP);
+    setActiveBuildPosition("PG");
+    setBuildPlayerSearch("");
+  }
+
+  function startNewDraft() {
+    resetDraft();
+    setHasStartedBuilder(true);
+  }
+
+  function continueDraft() {
+    setBuildPlayerSearch("");
+    setHasStartedBuilder(true);
+  }
+
   // Saved lineup actions
   function saveLineup(lineupName: string) {
     if (!customLineupOverall) return;
 
-    const newLineup: SavedLineup = {
-      id: crypto.randomUUID(),
+    const newLineupInput: NewSavedLineupInput = {
       name: lineupName.trim() || `Lineup ${savedLineups.length + 1}`,
       players: customLineup,
       overall: customLineupOverall,
@@ -492,21 +301,24 @@ export default function Lineups() {
       similarLineupMatches,
       courtBalance,
       courtBalanceDescription,
-      createdAt: new Date().toISOString(),
       badges: scoutReport.badges,
+    };
+
+    const newLineup: SavedLineup = {
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+      ...newLineupInput,
     };
 
     const nextLineups = [newLineup, ...savedLineups];
 
-    setSavedLineups(nextLineups);
-    saveSavedLineups(nextLineups);
+    updateSavedLineups(nextLineups);
   }
 
   function deleteSavedLineup(lineupId: string) {
     const nextLineups = savedLineups.filter((lineup) => lineup.id !== lineupId);
 
-    setSavedLineups(nextLineups);
-    saveSavedLineups(nextLineups);
+    updateSavedLineups(nextLineups);
   }
 
   function renameSavedLineup(lineupId: string, newName: string) {
@@ -519,8 +331,24 @@ export default function Lineups() {
         : lineup,
     );
 
-    setSavedLineups(nextLineups);
-    saveSavedLineups(nextLineups);
+    updateSavedLineups(nextLineups);
+  }
+
+  function applySavedLineupPlayers(lineup: SavedLineup) {
+    setCustomLineup(lineup.players);
+  }
+
+  function applyLoadedLineup(lineup: SavedLineup) {
+    setPlayerRevealMode("savedLoad");
+    applySavedLineupPlayers(lineup);
+    setActiveTab("builder");
+    setHasStartedBuilder(true);
+    setActiveBuildPosition("PG");
+    setIsScoutOpen(false);
+    setIsNamingLineup(false);
+    setScoutedSavedLineup(null);
+    setIsLoadingSavedLineup(false);
+    setIsLoadLineupExiting(false);
   }
 
   function loadSavedLineup(lineup: SavedLineup) {
@@ -528,9 +356,7 @@ export default function Lineups() {
     setLoadLineupStep(0);
     setLoadLineupProgress(0);
 
-    const totalDuration = 3200;
-    const stepDuration = totalDuration / loadLineupSteps.length;
-    const progressInterval = 40;
+    const stepDuration = LOAD_LINEUP_TOTAL_DURATION / loadLineupSteps.length;
 
     loadLineupSteps.forEach((_, index) => {
       window.setTimeout(() => {
@@ -541,11 +367,12 @@ export default function Lineups() {
     const progressTimer = window.setInterval(() => {
       setLoadLineupProgress((currentProgress) => {
         const nextProgress =
-          currentProgress + 100 / (totalDuration / progressInterval);
+          currentProgress +
+          100 / (LOAD_LINEUP_TOTAL_DURATION / LOAD_LINEUP_PROGRESS_INTERVAL);
 
         return Math.min(nextProgress, 100);
       });
-    }, progressInterval);
+    }, LOAD_LINEUP_PROGRESS_INTERVAL);
 
     window.setTimeout(() => {
       window.clearInterval(progressTimer);
@@ -554,22 +381,14 @@ export default function Lineups() {
       setIsLoadLineupExiting(true);
 
       window.setTimeout(() => {
-        setCustomLineup(lineup.players);
-        setActiveTab("builder");
-        setHasStartedBuilder(true);
-        setActiveBuildPosition("PG");
-        setIsScoutOpen(false);
-        setIsNamingLineup(false);
-        setScoutedSavedLineup(null);
-        setIsLoadingSavedLineup(false);
-        setIsLoadLineupExiting(false);
-      }, 350);
-    }, totalDuration);
+        applyLoadedLineup(lineup);
+      }, LOAD_LINEUP_EXIT_DURATION);
+    }, LOAD_LINEUP_TOTAL_DURATION);
   }
 
   function scoutSavedLineup(lineup: SavedLineup) {
     setScoutedSavedLineup(lineup);
-    setCustomLineup(lineup.players);
+    applySavedLineupPlayers(lineup);
     setIsScoutOpen(true);
   }
 
@@ -581,1787 +400,205 @@ export default function Lineups() {
   return (
     <main className="min-h-screen overflow-x-hidden text-white">
       <section className="mx-auto w-full max-w-7xl px-6 pb-12">
-        {/* Page tabs and header text */}
-        <div className="mt-0 flex w-full items-start justify-start overflow-x-auto border-t border-white/10">
-          <div className="flex shrink-0 items-start">
-            {lineupTabs.map((tab) => {
-              const isActive = activeTab === tab.value;
+        <LineupPageHeader
+          activeTab={activeTab}
+          shouldShowTopText={shouldShowTopText}
+          onTabChange={changeTab}
+        />
 
-              return (
-                <button
-                  key={tab.value}
-                  type="button"
-                  onClick={() => {
-                    setActiveTab(tab.value);
-                    if (tab.value === "builder") {
-                      setHasStartedBuilder(false);
-                    }
-                  }}
-                  className={`min-w-48 cursor-pointer rounded-b-md border border-t-0 px-4 font-michroma text-xs uppercase tracking-wide transition-all duration-200 ${
-                    isActive
-                      ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/20 py-4 text-[#1bc2ec]"
-                      : "border-white/10 bg-black/30 py-2.5 text-white/50 hover:border-white/30 hover:text-white/80"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {shouldShowTopText && (
-            <div className="grid flex-1 grid-cols-[auto_1fr] items-start gap-6 pl-10 pt-5">
-              <p className="w-full overflow-hidden -mt-1 font-michroma text-xs text-white/40 text-center">
-                {activeTab === "featured"
-                  ? "Explore curated lineups and discover unique team archetypes, strengths, and playstyles."
-                  : activeTab === "builder"
-                    ? "Build your lineup, then scout the team to uncover its archetype, strengths, weaknesses, and overall potential."
-                    : "View and manage the lineups you have saved."}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Featured Lineups tab */}
         {activeTab === "featured" && (
           <section className="min-h-[calc(100vh-140px)]">
-            {/* Lineup category cards */}
-            <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
-              {lineupCards.map((card) => {
-                const Icon = card.Icon;
-                const categoryLineups = lineupGroups[card.title];
+            <FeaturedLineupCategoryGrid
+              onSelectCategory={selectFeaturedLineupCategory}
+            />
 
-                const featuredLineup =
-                  categoryLineups.reduce<LineupName | null>(
-                    (bestLineup, lineupName) => {
-                      if (!bestLineup) return lineupName;
-
-                      const currentOverall = lineupDetails[lineupName].overall;
-                      const bestOverall = lineupDetails[bestLineup].overall;
-
-                      return currentOverall > bestOverall
-                        ? lineupName
-                        : bestLineup;
-                    },
-                    null,
-                  );
-                const lineupCount = categoryLineups.length;
-
-                return (
-                  <button
-                    key={card.title}
-                    type="button"
-                    onClick={() => {
-                      setSelectedLineupCategory(card.title);
-                      setSelectedLineupName(featuredLineup ?? "");
-
-                      setTimeout(() => {
-                        lineupSectionRef.current?.scrollIntoView({
-                          behavior: "smooth",
-                          block: "start",
-                        });
-                      }, 150);
-                    }}
-                    className="grid min-h-36 grid-cols-[1fr_auto] items-center gap-6 rounded-md border bg-black/30 p-4 text-left"
-                    style={{
-                      borderColor: `${card.color}80`,
-                    }}
-                  >
-                    <div className="flex flex-col justify-center">
-                      <div className="flex items-center gap-2">
-                        <Icon
-                          size={20}
-                          strokeWidth={2}
-                          style={{ color: card.color }}
-                        />
-
-                        <h2 className="font-michroma text-sm">{card.title}</h2>
-                      </div>
-
-                      <p className="mt-3 font-michroma text-[10px] uppercase text-white/35">
-                        Featured
-                      </p>
-
-                      <p
-                        className="mt-1 font-michroma text-xs"
-                        style={{ color: card.color }}
-                      >
-                        {featuredLineup ?? "Coming Soon"}
-                      </p>
-
-                      <p className="mt-3 font-michroma text-[10px] uppercase text-white/35">
-                        Lineups
-                      </p>
-
-                      <p className="mt-1 font-michroma text-[11px] text-white/70">
-                        {lineupCount} {lineupCount === 1 ? "Lineup" : "Lineups"}
-                      </p>
-                    </div>
-
-                    <span
-                      className="cursor-pointer self-end rounded-md border px-4 py-3 font-michroma text-xs uppercase transition hover:brightness-150"
-                      style={{
-                        color: card.color,
-                        borderColor: `${card.color}80`,
-                        backgroundColor: `${card.color}18`,
-                      }}
-                    >
-                      Explore
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Selected lineup details */}
             {selectedLineupCategory && (
-              <div
-                ref={lineupSectionRef}
-                className="scroll-mt-24 mt-8 rounded-md border border-white/10 bg-black/25 p-4"
-              >
-                <h2
-                  className="border-b pb-3 text-center font-michroma text-sm uppercase tracking-wide text-white"
-                  style={{ borderColor: `${selectedCategoryColor}55` }}
-                >
-                  {selectedLineupCategory}
-                </h2>
-
-                <div className="mt-5 grid gap-6 lg:grid-cols-[220px_1fr]">
-                  {/* Lineup selector list */}
-                  <div className="flex flex-col gap-2">
-                    {selectedLineupNames.map((lineupName) => (
-                      <button
-                        key={lineupName}
-                        type="button"
-                        onClick={() => setSelectedLineupName(lineupName)}
-                        className={`rounded-md border px-4 py-3 text-left font-michroma text-xs transition ${
-                          selectedLineupName === lineupName
-                            ? "bg-black/30"
-                            : "border-white/10 bg-black/30 text-white/60 hover:text-white"
-                        }`}
-                        style={
-                          selectedLineupName === lineupName
-                            ? {
-                                color: selectedCategoryColor,
-                                borderColor: `${selectedCategoryColor}99`,
-                                backgroundColor: `${selectedCategoryColor}18`,
-                              }
-                            : undefined
-                        }
-                      >
-                        {lineupName}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Selected lineup breakdown */}
-                  <div
-                    className="relative min-h-96 rounded-md border bg-black/30 p-5"
-                    style={{ borderColor: `${selectedCategoryColor}55` }}
-                  >
-                    {selectedLineup ? (
-                      <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
-                        {/* Lineup stats and scouting text */}
-                        <div>
-                          <h3 className="font-michroma text-sm uppercase tracking-wide text-white">
-                            {selectedLineupName}
-                          </h3>
-
-                          <div className="mt-5 grid gap-2">
-                            {Object.entries(selectedLineup.players).map(
-                              ([position, playerName]) => (
-                                <div
-                                  key={`${position}-${playerName || "empty"}`}
-                                  onMouseEnter={() =>
-                                    setHoveredLineupPlayer(playerName)
-                                  }
-                                  onMouseLeave={() =>
-                                    setHoveredLineupPlayer("")
-                                  }
-                                  className="grid grid-cols-[40px_1fr] w-fit font-michroma text-xs transition cursor-pointer"
-                                >
-                                  <span
-                                    className="transition-all duration-200"
-                                    style={{
-                                      color:
-                                        hoveredLineupPlayer === playerName
-                                          ? selectedCategoryColor
-                                          : selectedCategoryColor,
-                                      textShadow:
-                                        hoveredLineupPlayer === playerName
-                                          ? `0 0 10px ${selectedCategoryColor}`
-                                          : "none",
-                                    }}
-                                  >
-                                    {position}
-                                  </span>
-
-                                  <span
-                                    className="text-white/80 transition-all duration-200"
-                                    style={{
-                                      color:
-                                        hoveredLineupPlayer === playerName
-                                          ? selectedCategoryColor
-                                          : "rgba(255,255,255,0.8)",
-                                      textShadow:
-                                        hoveredLineupPlayer === playerName
-                                          ? `0 0 10px ${selectedCategoryColor}`
-                                          : "none",
-                                    }}
-                                  >
-                                    {playerName}
-                                  </span>
-                                </div>
-                              ),
-                            )}
-                          </div>
-
-                          <p className="mt-5 font-michroma text-xs text-white">
-                            OVR:{" "}
-                            <span style={{ color: selectedCategoryColor }}>
-                              {selectedLineup.overall}
-                            </span>
-                          </p>
-
-                          <div className="mt-4 flex flex-wrap gap-2">
-                            {selectedLineupAchievements.map((achievement) => (
-                              <span
-                                key={achievement}
-                                className="rounded border px-2 py-1 font-michroma text-[9px]"
-                                style={{
-                                  color: selectedCategoryColor,
-                                  borderColor: `${selectedCategoryColor}66`,
-                                  backgroundColor: `${selectedCategoryColor}14`,
-                                }}
-                              >
-                                {achievement}
-                              </span>
-                            ))}
-                          </div>
-
-                          <div className="mt-5">
-                            <p className="font-michroma text-[10px] uppercase text-white/40">
-                              Archetype
-                            </p>
-                            <p
-                              className="mt-1 font-michroma text-sm"
-                              style={{
-                                color: selectedCategoryColor,
-                                textShadow: `0 0 10px ${selectedCategoryColor}`,
-                              }}
-                            >
-                              {selectedLineup.archetype}
-                            </p>
-                            <div className="mt-5">
-                              <p className="font-michroma text-[10px] uppercase text-white/40">
-                                Description
-                              </p>
-                              <p className="mt-1 font-michroma text-[10px] leading-relaxed text-white/70">
-                                {selectedLineup.description}
-                              </p>
-                            </div>
-
-                            <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                              <div>
-                                <p className="font-michroma text-[10px] uppercase text-emerald-400/40">
-                                  Strengths
-                                </p>
-
-                                <div className="mt-2 flex flex-wrap gap-2">
-                                  {selectedLineup.strengths.map((strength) => (
-                                    <span
-                                      key={strength}
-                                      className="rounded border border-emerald-600/40 bg-emerald-500/10 px-2 py-1 font-michroma text-[9px] text-emerald-400"
-                                    >
-                                      {strength}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-
-                              <div>
-                                <p className="font-michroma text-[10px] uppercase text-red-700/40">
-                                  Weaknesses
-                                </p>
-
-                                <div className="mt-2 flex flex-wrap gap-2">
-                                  {selectedLineup.weaknesses.map((weakness) => (
-                                    <span
-                                      key={weakness}
-                                      className="rounded border border-red-700/40 bg-red-700/10 px-2 py-1 font-michroma text-[9px] text-red-700"
-                                    >
-                                      {weakness}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Half-court lineup visualization */}
-                        <div className="relative min-h-96 overflow-visible rounded-md bg-transparent">
-                          {/* Half court boundary */}
-                          <div className="absolute inset-x-8 inset-y-6 " />
-
-                          <div
-                            className="absolute left-1/2 bottom-17 h-[60%] w-[70%] -translate-x-1/2 rounded-t-full border-t border-l border-r"
-                            style={{
-                              borderColor: `${selectedCategoryColor}40`,
-                            }}
-                          />
-
-                          <div
-                            className="absolute left-1/2 bottom-17 h-36 w-24 -translate-x-1/2 border"
-                            style={{
-                              borderColor: `${selectedCategoryColor}40`,
-                            }}
-                          />
-
-                          <div
-                            className="absolute left-1/2 bottom-53 h-12 w-24 -translate-x-1/2 rounded-t-full border-t border-l border-r"
-                            style={{
-                              borderColor: `${selectedCategoryColor}40`,
-                            }}
-                          />
-
-                          <div
-                            className="absolute left-1/2 bottom-24 h-3 w-3 -translate-x-1/2 rounded-full border"
-                            style={{
-                              borderColor: `${selectedCategoryColor}80`,
-                            }}
-                          />
-
-                          <div
-                            className="absolute left-1/2 bottom-24 h-px w-14 -translate-x-1/2"
-                            style={{
-                              backgroundColor: `${selectedCategoryColor}80`,
-                            }}
-                          />
-
-                          {Object.entries(selectedLineup.players).map(
-                            ([position, playerName]) => (
-                              <LineupMarker
-                                key={`${position}-${playerName || "empty"}`}
-                                position={position}
-                                name={playerName || "Select Player"}
-                                color={selectedCategoryColor}
-                                isHighlighted={
-                                  hoveredLineupPlayer === playerName
-                                }
-                                onViewCard={viewPlayerCard}
-                                tooltipPosition={
-                                  position === "PG" || position === "SG"
-                                    ? "bottom"
-                                    : "top"
-                                }
-                                className={
-                                  featuredCourtMarkerPositions[
-                                    position as Position
-                                  ]
-                                }
-                              />
-                            ),
-                          )}
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="font-michroma text-xs text-white/40">
-                        No current details.
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <FeaturedLineupDetail
+                lineupSectionRef={lineupSectionRef}
+                selectedLineupCategory={selectedLineupCategory}
+                selectedLineupName={selectedLineupName}
+                selectedLineup={selectedLineup}
+                selectedLineupNames={selectedLineupNames}
+                selectedLineupAchievements={selectedLineupAchievements}
+                selectedCategoryColor={selectedCategoryColor}
+                hoveredLineupPlayer={hoveredLineupPlayer}
+                onSelectLineup={setSelectedLineupName}
+                onHoverPlayer={setHoveredLineupPlayer}
+                onViewCard={viewPlayerCard}
+              />
             )}
           </section>
         )}
 
-        {/* Build Your Own tab */}
         {activeTab === "builder" && (
           <section className="min-h-[calc(100vh-140px)]">
-            {/* Draft intro screen */}
             {!hasStartedBuilder ? (
-              <section className="flex min-h-[calc(100vh-120px)] items-center justify-center">
-                <div className="max-w-lg rounded-md border border-[#1bc2ec]/50 bg-black/60 p-6 text-center">
-                  <p className="font-michroma text-[10px] uppercase text-white/40">
-                    Build Your Own
-                  </p>
-
-                  <h2 className="mt-2 font-michroma text-xl text-[#1bc2ec]">
-                    Draft Your Lineup
-                  </h2>
-
-                  <p className="mt-4 font-michroma text-xs leading-relaxed text-white/55">
-                    Choose one player for each position. Your current OVR
-                    updates as you draft, and selected positions turn green so
-                    you can track your lineup.
-                  </p>
-
-                  <div className="mt-6 flex justify-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCustomLineup({
-                          PG: "",
-                          SG: "",
-                          SF: "",
-                          PF: "",
-                          C: "",
-                        });
-
-                        setActiveBuildPosition("PG");
-                        setBuildPlayerSearch("");
-                        setHasStartedBuilder(true);
-                      }}
-                      className="rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-5 py-3 font-michroma text-xs uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20"
-                    >
-                      Start New Draft
-                    </button>
-
-                    {hasExistingDraft && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setBuildPlayerSearch("");
-                          setHasStartedBuilder(true);
-                        }}
-                        className="rounded-md border border-white/20 bg-white/5 px-5 py-3 font-michroma text-xs uppercase text-white/60 transition hover:border-[#1bc2ec]/60 hover:text-[#1bc2ec]"
-                      >
-                        Continue Draft
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </section>
+              <BuilderIntro
+                hasExistingDraft={hasExistingDraft}
+                onStartNewDraft={startNewDraft}
+                onContinueDraft={continueDraft}
+              />
             ) : (
-              <div className="mt-3">
-                {/* Draft builder workspace */}
-                <div className="grid items-start gap-5 lg:grid-cols-[400px_300px_1fr]">
-                  {/* Player picker */}
-                  <div className="flex w-full flex-col gap-2">
-                    <div className="flex justify-center gap-2">
-                      {lineupPositions.map((position) => {
-                        const isActive = activeBuildPosition === position;
-                        const hasPlayer = customLineup[position] !== "";
-
-                        return (
-                          <button
-                            key={position}
-                            type="button"
-                            onClick={() => {
-                              setActiveBuildPosition(position);
-                              setBuildPlayerSearch("");
-                            }}
-                            className={`rounded-md border px-3 py-2 font-michroma text-xs transition ${
-                              isActive
-                                ? "border-[#1bc2ec] bg-[#1bc2ec]/15 text-[#1bc2ec]"
-                                : hasPlayer
-                                  ? "border-emerald-400/70 bg-emerald-400/10 text-emerald-400"
-                                  : "border-white/15 bg-black/30 text-white/50 hover:text-white"
-                            }`}
-                          >
-                            <span>{position}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <div className="flex justify-center">
-                      <input
-                        type="text"
-                        value={buildPlayerSearch}
-                        onChange={(event) =>
-                          setBuildPlayerSearch(event.target.value)
-                        }
-                        placeholder="Search Player..."
-                        className="w-full max-w-md rounded-md border border-white/15 bg-black/30 px-4 py-3 font-michroma text-xs text-white outline-none transition placeholder:text-white/30 focus:border-white"
-                      />
-                    </div>
-
-                    <div
-                      className="overflow-y-auto pr-2"
-                      style={{ maxHeight: "392px" }}
-                    >
-                      <div className="grid grid-cols-3 gap-2">
-                        {availableBuildPlayers.map((player) => {
-                          const isSelected =
-                            customLineup[activeBuildPosition] === player.name;
-                          const positionFit = getPositionFit(
-                            player,
-                            activeBuildPosition,
-                          );
-                          const positionRating =
-                            getBuilderPlayerRatingForPosition(
-                              player,
-                              activeBuildPosition,
-                            );
-                          const baseRating = getBuilderPlayerRating(player);
-                          const positionPenalty =
-                            getPositionPenalty(positionFit);
-
-                          const scoutStats = [
-                            {
-                              label: "Scoring",
-                              value: Math.round(
-                                normalizeStat(player.stats.ppg, 25),
-                              ),
-                            },
-                            {
-                              label: "Shooting",
-                              value: Math.round(
-                                normalizeStat(player.stats.threePercent, 40),
-                              ),
-                            },
-                            {
-                              label: "Playmaking",
-                              value: Math.round(
-                                normalizeStat(player.stats.apg, 8),
-                              ),
-                            },
-                            {
-                              label: "Rebounding",
-                              value: Math.round(
-                                normalizeStat(player.stats.rpg, 11),
-                              ),
-                            },
-                            {
-                              label: "Defense",
-                              value: Math.round(player.defenseRating),
-                            },
-                            {
-                              label: "Star",
-                              value: Math.round(player.starPower),
-                            },
-                          ];
-
-                          return (
-                            <button
-                              key={player.id}
-                              type="button"
-                              onClick={() => pickBuildPlayer(player.name)}
-                              className={`group relative h-52 overflow-hidden rounded-md border bg-black/30 p-3 text-center transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/10 ${
-                                isSelected
-                                  ? "border-[#1bc2ec] bg-[#1bc2ec]/15 shadow-[0_0_18px_rgba(27,194,236,0.35)]"
-                                  : "border-white/15"
-                              }`}
-                            >
-                              <PlayerImage
-                                src={getPlayerHeadshot(player)}
-                                alt={player.name}
-                                width={120}
-                                height={120}
-                                className="mx-auto h-20 w-20 rounded-full object-cover"
-                              />
-
-                              <p className="mt-1 flex h-10 items-center justify-center text-center font-michroma text-[11px] leading-4 text-white">
-                                {player.name}
-                              </p>
-
-                              <p className="font-michroma text-[9px] text-white/40">
-                                {player.team} • {player.position}
-                              </p>
-
-                              <p className="mt-1 font-michroma text-[10px] text-[#1bc2ec]">
-                                {positionRating.toFixed(1)} OVR
-                              </p>
-
-                              <p
-                                className={`mt-1 font-michroma text-[8px] uppercase ${
-                                  positionFit === "natural"
-                                    ? "text-emerald-400"
-                                    : positionFit === "secondary"
-                                      ? "text-[#1bc2ec]"
-                                      : positionFit === "emergency"
-                                        ? "text-[#EFBF04]"
-                                        : "text-red-400"
-                                }`}
-                              >
-                                {positionFit === "natural"
-                                  ? "Natural Fit"
-                                  : positionFit === "secondary"
-                                    ? "Secondary Fit"
-                                    : positionFit === "emergency"
-                                      ? "Emergency Fit"
-                                      : "Mismatch -7"}
-                              </p>
-
-                              <div className="pointer-events-none absolute inset-0 flex flex-col justify-between bg-black/95 p-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                                <div>
-                                  <p className="font-michroma text-[8px] uppercase text-[#1bc2ec]">
-                                    Scout Impact
-                                  </p>
-
-                                  <div className="mt-2 grid gap-1">
-                                    {scoutStats.map((stat) => (
-                                      <div
-                                        key={stat.label}
-                                        className="grid grid-cols-[45px_1fr_15px] items-center gap-2"
-                                      >
-                                        <p className="font-michroma text-[7px] text-white/45">
-                                          {stat.label}
-                                        </p>
-
-                                        <div className="h-1 overflow-hidden rounded-full bg-white/10 ml-1">
-                                          <div
-                                            className="h-full rounded-full bg-[#1bc2ec]"
-                                            style={{
-                                              width: `${Math.min(stat.value, 100)}%`,
-                                            }}
-                                          />
-                                        </div>
-
-                                        <p className="text-right font-michroma text-[7px] text-white/55">
-                                          {stat.value}
-                                        </p>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-2 border-t border-white/10">
-                                  <div>
-                                    <p className="font-michroma text-[7px] uppercase text-white/35">
-                                      Base
-                                    </p>
-                                    <p className="font-michroma text-[10px] text-white">
-                                      {baseRating.toFixed(1)}
-                                    </p>
-                                  </div>
-
-                                  <div>
-                                    <p className="font-michroma text-[7px] uppercase text-white/35">
-                                      Slot
-                                    </p>
-                                    <p className="font-michroma text-[10px] text-[#1bc2ec]">
-                                      {positionRating.toFixed(1)}
-                                    </p>
-                                  </div>
-
-                                  <div className="col-span-2">
-                                    <p className="font-michroma text-[7px] uppercase text-white/35">
-                                      Position Impact
-                                    </p>
-                                    <p className="font-michroma text-[9px] text-white/60">
-                                      {positionPenalty === 0
-                                        ? "No OVR rating penalty"
-                                        : `-${positionPenalty} OVR position penalty`}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Draft board */}
-                  <div
-                    className="rounded-md border border-white/10 bg-black/20 p-4"
-                    style={{ height: "480px" }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-michroma text-[10px] uppercase text-white/40">
-                          Your Lineup
-                        </p>
-
-                        <h2 className="mt-1 font-michroma text-lg text-white">
-                          Draft Board
-                        </h2>
-                      </div>
-
-                      <div className="text-center">
-                        <p className="font-michroma text-[10px] uppercase text-white/40">
-                          OVR
-                        </p>
-
-                        <p
-                          key={customLineupOverall?.toFixed(1) ?? "--"}
-                          className="animate-[ovrRise_250ms_ease-out] font-michroma text-2xl text-[#1bc2ec]"
-                        >
-                          {customLineupOverall
-                            ? customLineupOverall?.toFixed(1)
-                            : "--"}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 grid gap-2">
-                      {lineupPositions.map((position) => {
-                        const playerName = customLineup[position];
-                        const player = players.find(
-                          (player) => player.name === playerName,
-                        );
-                        const positionIndex = lineupPositions.indexOf(position);
-
-                        return (
-                          <div
-                            key={`${position}-${playerName || "empty"}`}
-                            style={{
-                              animationDelay: `${positionIndex * 180}ms`,
-                            }}
-                            onMouseEnter={() => {
-                              if (player) {
-                                setHoveredBuildPlayer(player.name);
-                              }
-                            }}
-                            onMouseLeave={() => setHoveredBuildPlayer("")}
-                            className={`animate-[loadedPlayerReveal_360ms_ease-out_both] h-fit grid grid-cols-[44px_1fr_auto] items-center gap-2 rounded-md border px-3 py-2 transition ${
-                              player
-                                ? "border-emerald-400/50 bg-emerald-400/10 hover:border-[#1bc2ec]/70 hover:bg-[#1bc2ec]/10"
-                                : "border-white/10 bg-black/20"
-                            }`}
-                          >
-                            <span
-                              className={`font-michroma text-sm ${
-                                player ? "text-emerald-400" : "text-white/40"
-                              }`}
-                            >
-                              {position}
-                            </span>
-
-                            <div>
-                              <p className="max-w-44 truncate font-michroma text-sm text-white">
-                                {player ? player.name : "Select Player"}
-                              </p>
-
-                              <p className="mt-1 font-michroma text-[10px] text-white/35">
-                                {player
-                                  ? `${player.team} • #${player.jerseyNumber}`
-                                  : "Empty"}
-                              </p>
-                            </div>
-
-                            {player && (
-                              <button
-                                type="button"
-                                onClick={() => removeBuildPlayer(position)}
-                                className="font-michroma text-xs text-white/40 transition hover:text-red-400"
-                              >
-                                x
-                              </button>
-                            )}
-                          </div>
-                        );
-                      })}
-                      <button
-                        type="button"
-                        disabled={!isLineupComplete}
-                        onClick={() => {
-                          setScoutedSavedLineup(null);
-                          setIsScoutOpen(true);
-                        }}
-                        className={`mx-auto rounded-md border px-8 py-5 font-michroma text-[16px] uppercase transition ${
-                          isLineupComplete
-                            ? "cursor-pointer font-bold border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.35)] hover:bg-[#1bc2ec]/20"
-                            : "cursor-not-allowed border-white/10 bg-white/5 text-white/30"
-                        }`}
-                      >
-                        {isLineupComplete
-                          ? "Scout Lineup"
-                          : `${selectedLineupCount}/${lineupPositions.length} Selected`}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Builder court preview */}
-                  <div className="flex flex-col gap-4">
-                    <div className="relative h-120 overflow-visible bg-transparent">
-                      <div className="absolute left-1/2 bottom-10 h-[63%] w-[88%] -translate-x-1/2 rounded-t-full border-t border-l border-r border-[#1bc2ec]/25" />
-
-                      <div className="absolute left-1/2 bottom-10 h-40 w-28 -translate-x-1/2 border border-[#1bc2ec]/25" />
-
-                      <div className="absolute left-1/2 bottom-50 h-14 w-28 -translate-x-1/2 rounded-t-full border-t border-l border-r border-[#1bc2ec]/25" />
-
-                      <div className="absolute left-1/2 bottom-20 h-3 w-3 -translate-x-1/2 rounded-full border border-[#1bc2ec]/60" />
-
-                      <div className="absolute left-1/2 bottom-20 h-px w-16 -translate-x-1/2 bg-[#1bc2ec]/60" />
-
-                      {lineupPositions.map((position) => {
-                        const playerName = customLineup[position];
-                        const positionIndex = lineupPositions.indexOf(position);
-
-                        return (
-                          <LineupMarker
-                            key={`${position}-${playerName || "empty"}`}
-                            position={position}
-                            name={playerName || "Select Player"}
-                            color="#1bc2ec"
-                            isHighlighted={
-                              Boolean(playerName) &&
-                              hoveredBuildPlayer === playerName
-                            }
-                            onViewCard={viewPlayerCard}
-                            tooltipPosition={
-                              position === "PG" || position === "SG"
-                                ? "bottom"
-                                : "top"
-                            }
-                            animationDelay={`${positionIndex * 180}ms`}
-                            className={builderCourtMarkerPositions[position]}
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <BuilderWorkspace
+                lineupPositions={lineupPositions}
+                activeBuildPosition={activeBuildPosition}
+                customLineup={customLineup}
+                buildPlayerSearch={buildPlayerSearch}
+                availableBuildPlayers={availableBuildPlayers}
+                customLineupOverall={customLineupOverall}
+                isLineupComplete={isLineupComplete}
+                selectedLineupCount={selectedLineupCount}
+                hoveredBuildPlayer={hoveredBuildPlayer}
+                playerRevealMode={playerRevealMode}
+                onSelectPosition={setActiveBuildPosition}
+                onSearchChange={setBuildPlayerSearch}
+                onPickPlayer={pickBuildPlayer}
+                onHoverPlayer={setHoveredBuildPlayer}
+                onRemovePlayer={removeBuildPlayer}
+                onScoutLineup={() => {
+                  setScoutedSavedLineup(null);
+                  setIsScoutOpen(true);
+                }}
+                onViewCard={viewPlayerCard}
+              />
             )}
           </section>
         )}
 
-        {/* Saved Lineups tab */}
         {activeTab === "saved" && (
-          <section className="min-h-[calc(100vh-140px)]">
-            {/* Empty saved lineups state */}
-            {savedLineups.length === 0 ? (
-              <div className="flex min-h-105 flex-col items-center justify-center text-center">
-                <Save
-                  size={56}
-                  strokeWidth={1.5}
-                  className="mb-1 text-[#1bc2ec]"
-                />
-                <p className="font-michroma text-lg text-white">
-                  No saved lineups yet.
-                </p>
-
-                <p className="mt-3 max-w-md font-michroma text-xs leading-relaxed text-white/40">
-                  Build your first team and save it after scouting.
-                </p>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveTab("builder");
-                    setHasStartedBuilder(false);
-                  }}
-                  className="mt-6 rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-6 py-3 font-michroma text-xs uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20"
-                >
-                  Build a Lineup
-                </button>
-              </div>
-            ) : (
-              <div className="mt-6">
-                {/* Saved lineup filters */}
-                <div className="flex items-center justify-center gap-4">
-                  <input
-                    type="text"
-                    value={savedLineupSearch}
-                    onChange={(event) =>
-                      setSavedLineupSearch(event.target.value)
-                    }
-                    placeholder="Search saved lineups..."
-                    className="w-full max-w-md rounded-md border border-white/15 bg-black/30 px-4 py-3 font-michroma text-xs text-white outline-none placeholder:text-white/30 focus:border-white"
-                  />
-
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setOpenSavedDropdown(
-                          openSavedDropdown === "sort" ? null : "sort",
-                        )
-                      }
-                      className={`flex min-w-48 cursor-pointer items-center justify-between gap-3 rounded-md border px-4 py-3 font-michroma text-xs transition ${
-                        savedLineupSort !== "highestOvr"
-                          ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]"
-                          : "border-white/15 bg-black/30 text-white/60 hover:border-white/40"
-                      }`}
-                    >
-                      <span>Sort: {savedSortLabel}</span>
-                      <span className="text-[#1bc2ec]">▾</span>
-                    </button>
-
-                    {openSavedDropdown === "sort" && (
-                      <div className="absolute right-0 top-full z-100 mt-2 w-full overflow-hidden rounded-md border border-white/15 bg-[#07111f] shadow-[0_0_20px_rgba(0,0,0,0.45)]">
-                        {[
-                          { label: "Highest OVR", value: "highestOvr" },
-                          { label: "Lowest OVR", value: "lowestOvr" },
-                          { label: "Newest Saved", value: "newest" },
-                          { label: "Oldest Saved", value: "oldest" },
-                        ].map((option) => (
-                          <button
-                            key={option.value}
-                            type="button"
-                            onClick={() => {
-                              setSavedLineupSort(option.value);
-                              setOpenSavedDropdown(null);
-                            }}
-                            className={`block w-full cursor-pointer px-4 py-3 text-left font-michroma text-xs transition ${
-                              savedLineupSort === option.value
-                                ? "bg-[#1bc2ec]/10 text-[#1bc2ec]"
-                                : "text-white/60 hover:bg-white/10 hover:text-white"
-                            }`}
-                          >
-                            {option.label}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="mt-2">
-                  <p className="mb-4 text-center font-michroma text-xs text-white/40">
-                    {savedLineups.length} Saved{" "}
-                    {savedLineups.length === 1 ? "Lineup" : "Lineups"}
-                  </p>
-                </div>
-
-                {filteredSavedLineups.length === 0 ? (
-                  <p className="mt-10 text-center font-michroma text-xs text-white/40">
-                    No saved lineups match your search.
-                  </p>
-                ) : (
-                  <div className="mt-2 grid gap-4 md:grid-cols-3">
-                    {/* Saved lineup cards */}
-                    {filteredSavedLineups.map((lineup) => {
-                      const archetypeColor = getSavedLineupArchetypeColor(
-                        lineup.archetype,
-                      );
-                      const tierColor = getLineupTierColor(lineup.tier);
-                      const topScore = getSavedLineupTopScore(lineup);
-                      return (
-                        <div
-                          key={lineup.id}
-                          className="group rounded-md border border-white/10 bg-black/25 p-4 transition-all duration-200 hover:-translate-y-1"
-                          style={{
-                            borderColor: `${archetypeColor}33`,
-                          }}
-                        >
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="min-w-0">
-                              <p className="truncate font-michroma text-[17px] text-white">
-                                {lineup.name}
-                              </p>
-
-                              <p className="mt-1 font-michroma text-[8px] text-white/30">
-                                Saved{" "}
-                                {new Date(lineup.createdAt).toLocaleDateString(
-                                  "en-US",
-                                  {
-                                    month: "short",
-                                    day: "numeric",
-                                    year: "numeric",
-                                  },
-                                )}
-                              </p>
-                            </div>
-
-                            <div
-                              className="rounded-md border px-3 py-2 text-center transition-all duration-200"
-                              style={{
-                                borderColor: `${archetypeColor}80`,
-                                backgroundColor: `${archetypeColor}18`,
-                                boxShadow: `0 0 14px ${archetypeColor}22`,
-                              }}
-                            >
-                              <p
-                                className="font-michroma text-lg"
-                                style={{
-                                  color: archetypeColor,
-                                  textShadow: `0 0 12px ${archetypeColor}99`,
-                                }}
-                              >
-                                {lineup.overall.toFixed(1)}
-                              </p>
-
-                              <p className="font-michroma text-[8px] uppercase text-white/40">
-                                OVR
-                              </p>
-
-                              {topScore && (
-                                <p
-                                  className="mt-1 font-michroma text-[7px] uppercase"
-                                  style={{
-                                    color: archetypeColor,
-                                    textShadow: `0 0 10px ${archetypeColor}88`,
-                                  }}
-                                >
-                                  {Math.round(topScore.value)} {topScore.label}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-
-                          <p
-                            className="-mt-3 truncate font-michroma text-[15px]"
-                            style={{ color: archetypeColor }}
-                          >
-                            {lineup.archetype}
-                          </p>
-
-                          <p
-                            className="mt-1 truncate font-michroma text-[12px]"
-                            style={{
-                              color: `${archetypeColor}bb`,
-                            }}
-                          >
-                            {lineup.teamIdentity}
-                          </p>
-
-                          <p
-                            className="mt-1 font-michroma text-[10px]"
-                            style={{
-                              color: tierColor,
-                            }}
-                          >
-                            {lineup.tier ?? "Saved Lineup"}
-                          </p>
-
-                          <div className="mt-2 flex flex-wrap gap-1.5">
-                            {(lineup.badges ?? []).slice(0, 3).map((badge) => (
-                              <span
-                                key={badge}
-                                className="flex items-center gap-1 rounded border px-1.5 py-0.5 font-michroma text-[8px]"
-                                style={{
-                                  color: archetypeColor,
-                                  borderColor: `${archetypeColor}55`,
-                                  backgroundColor: `${archetypeColor}18`,
-                                }}
-                              >
-                                <LineupBadgeIcon badge={badge} />
-                                {badge}
-                              </span>
-                            ))}
-                          </div>
-
-                          <p className="mt-2 line-clamp-2 font-michroma text-[8px] leading-relaxed text-white/35 text-center">
-                            {lineupPositions
-                              .map((position) => {
-                                const playerName = lineup.players[position];
-                                return playerName
-                                  ? `${playerName.split(" ").at(-1)}`
-                                  : null;
-                              })
-                              .filter(Boolean)
-                              .join("  •  ")}
-                          </p>
-
-                          <div className="mt-4 flex flex-wrap justify-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => loadSavedLineup(lineup)}
-                              className="rounded-md border px-3 py-2 font-michroma text-[8px] uppercase transition hover:brightness-125"
-                              style={{
-                                color: archetypeColor,
-                                borderColor: `${archetypeColor}cc`,
-                                backgroundColor: `${archetypeColor}22`,
-                                boxShadow: `0 0 14px ${archetypeColor}33`,
-                              }}
-                            >
-                              Load
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => scoutSavedLineup(lineup)}
-                              className="rounded-md border px-3 py-2 font-michroma text-[8px] uppercase transition hover:brightness-125"
-                              style={{
-                                color: `${archetypeColor}cc`,
-                                borderColor: `${archetypeColor}55`,
-                                backgroundColor: `${archetypeColor}10`,
-                              }}
-                            >
-                              Scout
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setLineupPendingRename(lineup);
-                                setRenameLineupInput(lineup.name);
-                              }}
-                              className="rounded-md border border-white/15 bg-white/5 px-3 py-2 font-michroma text-[8px] uppercase text-white/55 transition hover:border-white/40 hover:text-white"
-                            >
-                              Rename
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => setLineupPendingDelete(lineup)}
-                              className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 font-michroma text-[8px] uppercase text-red-400 transition hover:bg-red-500/20"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-          </section>
+          <SavedLineupsSection
+            savedLineups={savedLineups}
+            filteredSavedLineups={filteredSavedLineups}
+            savedLineupSearch={savedLineupSearch}
+            savedLineupSort={savedLineupSort}
+            savedSortLabel={savedSortLabel}
+            openSavedDropdown={openSavedDropdown}
+            onSearchChange={setSavedLineupSearch}
+            onToggleDropdown={() =>
+              setOpenSavedDropdown(openSavedDropdown === "sort" ? null : "sort")
+            }
+            onSelectSort={(value) => {
+              setSavedLineupSort(value);
+              setOpenSavedDropdown(null);
+            }}
+            onSetActiveTab={setActiveTab}
+            onSetHasStartedBuilder={setHasStartedBuilder}
+            onLoadLineup={loadSavedLineup}
+            onScoutLineup={scoutSavedLineup}
+            onRenameLineup={(lineup) => {
+              setLineupPendingRename(lineup);
+              setRenameLineupInput(lineup.name);
+            }}
+            onDeleteLineup={setLineupPendingDelete}
+          />
         )}
       </section>
 
-      {/* Scout report modal */}
       {isScoutOpen && (
-        <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 px-4">
-          <div
-            className="relative w-full max-w-xl animate-[modalIn_260ms_ease-out] rounded-md border bg-[#07111f]"
-            style={{
-              borderColor: `${scoutArchetypeColor}99`,
-              boxShadow: `0 0 35px ${scoutArchetypeColor}40`,
-            }}
-          >
-            <div className="relative max-h-[78vh] overflow-y-auto p-5 scrollbar-none [&::-webkit-scrollbar]:hidden">
-              <div className="pr-58">
-                <div className="-mt-2">
-                  <h2 className="font-michroma text-lg text-white">
-                    Scouting Report
-                  </h2>
-
-                  <div
-                    className="scout-section-reveal"
-                    style={{ animationDelay: "80ms" }}
-                  >
-                    <p className="mt-1 max-w-60 font-michroma text-[10px] leading-relaxed text-white/35">
-                      {scoutSummary}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="absolute right-5 top-5 w-56">
-                <p className="font-michroma text-[10px] uppercase text-white/40">
-                  Lineup
-                </p>
-
-                <div className="mt-0.5 grid gap-1">
-                  {lineupPositions.map((position) => {
-                    const playerName = customLineup[position];
-                    const player = players.find(
-                      (player) => player.name === playerName,
-                    );
-
-                    return (
-                      <div
-                        key={position}
-                        className="grid grid-cols-[34px_1fr] items-center gap-3"
-                      >
-                        <span
-                          className="font-michroma text-[10px] text-[#1bc2ec]"
-                          style={{ color: scoutArchetypeColor }}
-                        >
-                          {position}
-                        </span>
-
-                        <div>
-                          <p className="truncate font-michroma text-[10px] text-white">
-                            {player?.name ?? "Empty"}
-                          </p>
-
-                          <p
-                            className="mt-1 font-michroma text-[8px]"
-                            style={{ color: `${scoutArchetypeColor}99` }}
-                          >
-                            {player
-                              ? `${player.team} • #${player.jerseyNumber}`
-                              : "--"}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="mt-1">
-                  <div
-                    className="scout-section-reveal"
-                    style={{ animationDelay: "140ms" }}
-                  >
-                    <p className="font-michroma text-[10px] uppercase text-white/40 text-center">
-                      Score Profile
-                    </p>
-
-                    <div className="mt-1 grid gap-1">
-                      {getRankedScoutScores(scoutScores).map((score) => (
-                        <div
-                          key={score.key}
-                          className="grid grid-cols-[68px_120px_24px] items-center gap-1"
-                        >
-                          <p className="font-michroma text-[8px] text-white/40">
-                            {score.label}
-                          </p>
-
-                          <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
-                            <div
-                              className="h-full rounded-full"
-                              style={{
-                                width: `${Math.min(score.value, 100)}%`,
-                                backgroundColor: scoutArchetypeColor,
-                                boxShadow: `0 0 8px ${scoutArchetypeColor}88`,
-                              }}
-                            />
-                          </div>
-
-                          <p className="text-right font-michroma text-[8px] text-white/45">
-                            {Math.round(score.value)}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setIsScoutOpen(false);
-                  setScoutedSavedLineup(null);
-                }}
-                className="absolute right-5 top-4 font-michroma text-lg text-white/40 transition hover:text-red-400"
-              >
-                x
-              </button>
-
-              <div className="mt-1 grid max-w-xl gap-2">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p
-                      className="font-michroma text-3xl -tracking-widest"
-                      style={{
-                        color: scoutArchetypeColor,
-                        textShadow: `0 0 12px ${scoutArchetypeColor}99`,
-                      }}
-                    >
-                      {animatedScoutOverall.toFixed(1)}
-                    </p>
-
-                    <p className="font-michroma text-[10px] uppercase text-white/40">
-                      Overall
-                    </p>
-                  </div>
-
-                  <p
-                    className="font-michroma text-xs"
-                    style={{ color: scoutTierColor }}
-                  >
-                    {lineupTier}
-                  </p>
-
-                  <div className="max-w-80 mt-2 flex flex-wrap gap-1">
-                    {lineupBadges.map((badge) => (
-                      <span
-                        key={badge}
-                        className="flex items-center gap-1 rounded-md border px-1 py-1 font-michroma text-[6.5px]"
-                        style={{
-                          color: scoutArchetypeColor,
-                          borderColor: `${scoutArchetypeColor}55`,
-                          backgroundColor: `${scoutArchetypeColor}18`,
-                        }}
-                      >
-                        <LineupBadgeIcon badge={badge} />
-                        {badge}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div
-                  className="scout-section-reveal relative z-500"
-                  style={{ animationDelay: "200ms" }}
-                >
-                  <div>
-                    <div className="group/archetype relative z-900 flex w-fit items-center gap-2">
-                      <p className="font-michroma text-[10px] uppercase text-white/40">
-                        Archetype
-                      </p>
-                      <div className="flex items-center gap-1">
-                        <span
-                          className="flex h-2 w-2 rounded-full"
-                          style={{ backgroundColor: scoutArchetypeColor }}
-                        />
-                        <span className="mt-0.5 text-[8px] text-white/40">
-                          Hover over me!
-                        </span>
-                      </div>
-
-                      <div className="pointer-events-none absolute left-full -top-20 z-999 ml-3 w-80 rounded-md border border-white/15 bg-black/95 p-3 opacity-0 shadow-[0_0_24px_rgba(0,0,0,0.55)] transition-opacity duration-200 group-hover/archetype:pointer-events-auto group-hover/archetype:opacity-100">
-                        <p className="font-michroma text-[10px] uppercase text-white/60">
-                          Archetype Colors
-                        </p>
-
-                        <div className="mt-3 grid gap-2">
-                          {archetypeColorLegend.map((item) => (
-                            <div
-                              key={item.label}
-                              className="grid grid-cols-[10px_1fr] gap-2"
-                            >
-                              <span
-                                className="mt-1 h-2 w-2 rounded-full"
-                                style={{ backgroundColor: item.color }}
-                              />
-
-                              <div>
-                                <p className="font-michroma text-[9px] text-white">
-                                  {item.label}
-                                </p>
-                                <p className="mt-0.5 font-michroma text-[8px] leading-relaxed text-white/40">
-                                  {item.description}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    <p
-                      className="font-michroma text-sm"
-                      style={{
-                        color: scoutArchetypeColor,
-                        textShadow: `0 0 10px ${scoutArchetypeColor}88`,
-                      }}
-                    >
-                      {lineupArchetype}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="mt-1 font-michroma text-[10px] uppercase text-white/40">
-                      Why This Archetype
-                    </p>
-
-                    <p className="mt-1 max-w-75 font-michroma text-[9px] leading-relaxed text-white/45">
-                      {scoutReason}
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="font-michroma text-[10px] uppercase text-white/40">
-                    Team Identity
-                  </p>
-
-                  <p
-                    className="font-michroma text-sm"
-                    style={{ color: `${scoutArchetypeColor}bb` }}
-                  >
-                    {teamIdentity}
-                  </p>
-                </div>
-
-                <div
-                  className="scout-section-reveal relative z-10"
-                  style={{ animationDelay: "260ms" }}
-                >
-                  <div className="grid grid-cols-[130px_130px_130px_130px] items-start gap-3 mt-2">
-                    <div>
-                      <p className="font-michroma text-[10px] uppercase text-emerald-400/60">
-                        Strengths
-                      </p>
-
-                      <div className="mt-2 grid gap-2">
-                        {lineupStrengths.map((strength) => (
-                          <p
-                            key={strength}
-                            className="font-michroma text-[10px] text-white"
-                          >
-                            <span className="text-emerald-400">✓</span>{" "}
-                            {strength}
-                          </p>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="font-michroma text-[10px] uppercase text-red-400/60">
-                        Weaknesses
-                      </p>
-
-                      <div className="mt-2 grid gap-2">
-                        {lineupWeaknesses.map((weakness) => (
-                          <p
-                            key={weakness}
-                            className="font-michroma text-[10px] text-white"
-                          >
-                            <span className="text-red-400">!</span> {weakness}
-                          </p>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="font-michroma text-[10px] uppercase text-[#EFBF04]">
-                        Tradeoff
-                      </p>
-                      <p className="mt-2 max-w-25 font-michroma text-[10px] text-white">
-                        {lineupTradeoff}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="font-michroma text-[10px] uppercase text-white/30">
-                        Team Grades
-                      </p>
-
-                      <div className="mt-2 grid gap-1">
-                        <p className="font-michroma text-[9px] text-white/35">
-                          Offense:{" "}
-                          <span className="text-white/55">
-                            {teamGrades.offense}
-                          </span>
-                        </p>
-
-                        <p className="font-michroma text-[9px] text-white/35">
-                          Defense:{" "}
-                          <span className="text-white/55">
-                            {teamGrades.defense}
-                          </span>
-                        </p>
-
-                        <p className="font-michroma text-[9px] text-white/35">
-                          Shooting:{" "}
-                          <span className="text-white/55">
-                            {teamGrades.shooting}
-                          </span>
-                        </p>
-
-                        <p className="font-michroma text-[9px] text-white/35">
-                          Playmaking:{" "}
-                          <span className="text-white/55">
-                            {teamGrades.playmaking}
-                          </span>
-                        </p>
-
-                        <p className="font-michroma text-[9px] text-white/35">
-                          Rebounding:{" "}
-                          <span className="text-white/55">
-                            {teamGrades.rebounding}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  className="scout-section-reveal relative z-10"
-                  style={{ animationDelay: "320ms" }}
-                >
-                  <div className="grid gap-3 border-t border-white/10 pt-4 sm:grid-cols-3">
-                    <div>
-                      <p className="font-michroma text-[10px] uppercase text-white/40">
-                        X-Factor
-                      </p>
-                      <p className="font-michroma text-xs text-white">
-                        {xFactorName}
-                      </p>
-                      <p className="mt-1 font-michroma text-[8px] leading-relaxed text-white/35">
-                        {xFactorDescription}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="font-michroma text-[10px] uppercase text-white/40">
-                        Similar To
-                      </p>
-
-                      <p className="font-michroma text-[11px] text-[#1bc2ec]">
-                        {similarLineup}
-                      </p>
-
-                      <p className="font-michroma text-[8px] leading-relaxed text-white/35">
-                        {similarToDescription}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="font-michroma text-[10px] uppercase text-white/40">
-                        Court Balance
-                      </p>
-
-                      <p
-                        className="font-michroma text-[14px]"
-                        style={{ color: courtBalanceColor }}
-                      >
-                        {courtBalance}
-                      </p>
-
-                      <p className="mt-1 max-w-41.25 font-michroma text-[8px] leading-relaxed text-white/35">
-                        {courtBalanceDescription}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setLineupNameInput("");
-                setIsNamingLineup(true);
-              }}
-              className="absolute -bottom-10.5 right-0 rounded-md border border-[#1bc2ec]/70 bg-[#07111f] px-5 py-3 font-michroma text-xs uppercase text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.25)] transition hover:bg-[#1bc2ec]/10"
-              style={{
-                color: scoutArchetypeColor,
-                borderColor: scoutArchetypeColor,
-              }}
-            >
-              Save Lineup
-            </button>
-          </div>
-        </div>
+        <ScoutReportModal
+          lineupPositions={lineupPositions}
+          customLineup={customLineup}
+          scoutScores={scoutScores}
+          scoutArchetypeColor={scoutArchetypeColor}
+          scoutSummary={scoutSummary}
+          animatedScoutOverall={animatedScoutOverall}
+          lineupTier={lineupTier}
+          scoutTierColor={scoutTierColor}
+          lineupBadges={lineupBadges}
+          lineupArchetype={lineupArchetype}
+          scoutReason={scoutReason}
+          teamIdentity={teamIdentity}
+          lineupStrengths={lineupStrengths}
+          lineupWeaknesses={lineupWeaknesses}
+          lineupTradeoff={lineupTradeoff}
+          teamGrades={teamGrades}
+          xFactorName={xFactorName}
+          xFactorDescription={xFactorDescription}
+          similarLineup={similarLineup}
+          similarToDescription={similarToDescription}
+          courtBalance={courtBalance}
+          courtBalanceDescription={courtBalanceDescription}
+          courtBalanceColor={courtBalanceColor}
+          onClose={() => {
+            setIsScoutOpen(false);
+            setScoutedSavedLineup(null);
+          }}
+          onSaveLineup={() => {
+            setLineupNameInput("");
+            setIsNamingLineup(true);
+          }}
+        />
       )}
 
-      {/* Name lineup modal */}
       {isNamingLineup && (
-        <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/70 px-4">
-          <div className="w-full max-w-md rounded-md border border-[#1bc2ec]/60 bg-[#07111f] p-6 shadow-[0_0_35px_rgba(27,194,236,0.25)]">
-            <p className="font-michroma text-[10px] uppercase text-white/40">
-              Save Lineup
-            </p>
-
-            <h2 className="mt-1 font-michroma text-lg text-white">
-              Name Your Lineup
-            </h2>
-
-            <input
-              value={lineupNameInput}
-              onChange={(event) => setLineupNameInput(event.target.value)}
-              className="mt-5 w-full rounded-md border border-white/15 bg-black/30 px-4 py-3 font-michroma text-xs text-white outline-none placeholder:text-white/30 focus:border-[#1bc2ec]"
-              placeholder="Lineup name..."
-            />
-
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setIsNamingLineup(false)}
-                className="rounded-md border border-white/15 bg-black/20 px-4 py-3 font-michroma text-xs uppercase text-white/50 transition hover:text-white"
-              >
-                Cancel
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  saveLineup(lineupNameInput);
-                  setIsNamingLineup(false);
-                  setIsScoutOpen(false);
-                  setIsLineupSavedOpen(true);
-                }}
-                className="rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-4 py-3 font-michroma text-xs uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
+        <NameLineupModal
+          lineupNameInput={lineupNameInput}
+          onChangeName={setLineupNameInput}
+          onCancel={() => setIsNamingLineup(false)}
+          onSave={() => {
+            saveLineup(lineupNameInput);
+            setIsNamingLineup(false);
+            setIsScoutOpen(false);
+            setIsLineupSavedOpen(true);
+          }}
+        />
       )}
 
-      {/* Delete confirmation modal */}
       {lineupPendingDelete && (
-        <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/70 px-4">
-          <div className="w-full max-w-md rounded-md border border-red-500/50 bg-[#07111f] p-6 shadow-[0_0_30px_rgba(239,68,68,0.2)]">
-            <p className="font-michroma text-[10px] uppercase text-red-400/70">
-              Delete Lineup
-            </p>
-
-            <h2 className="mt-2 font-michroma text-lg text-white">
-              Delete {lineupPendingDelete.name}?
-            </h2>
-
-            <p className="mt-3 font-michroma text-xs leading-relaxed text-white/45">
-              This saved lineup will be removed permanently.
-            </p>
-
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setLineupPendingDelete(null)}
-                className="rounded-md border border-white/15 bg-white/5 px-4 py-3 font-michroma text-xs uppercase text-white/50 transition hover:text-white"
-              >
-                Cancel
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  deleteSavedLineup(lineupPendingDelete.id);
-                  setLineupPendingDelete(null);
-                  setIsLineupDeletedOpen(true);
-                }}
-                className="rounded-md border border-red-500/60 bg-red-500/10 px-4 py-3 font-michroma text-xs uppercase text-red-400 transition hover:bg-red-500/20"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
+        <DeleteLineupModal
+          lineup={lineupPendingDelete}
+          onCancel={() => setLineupPendingDelete(null)}
+          onConfirm={() => {
+            deleteSavedLineup(lineupPendingDelete.id);
+            setLineupPendingDelete(null);
+            setIsLineupDeletedOpen(true);
+          }}
+        />
       )}
 
-      {/* Renaming modal */}
       {lineupPendingRename && (
-        <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/70 px-4">
-          <div className="w-full max-w-md rounded-md border border-[#1bc2ec]/60 bg-[#07111f] p-6 shadow-[0_0_35px_rgba(27,194,236,0.25)]">
-            <p className="font-michroma text-lg text-white">Rename Lineup</p>
-
-            <input
-              type="text"
-              value={renameLineupInput}
-              onChange={(event) => setRenameLineupInput(event.target.value)}
-              placeholder="Lineup name"
-              className="mt-5 w-full rounded-md border border-white/15 bg-black/30 px-4 py-3 font-michroma text-xs text-white outline-none placeholder:text-white/30 focus:border-[#1bc2ec]"
-            />
-
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setLineupPendingRename(null);
-                  setRenameLineupInput("");
-                }}
-                className="rounded-md border border-white/15 bg-black/20 px-4 py-3 font-michroma text-xs uppercase text-white/50 transition hover:text-white"
-              >
-                Cancel
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  renameSavedLineup(lineupPendingRename.id, renameLineupInput);
-                  setLineupPendingRename(null);
-                  setRenameLineupInput("");
-                }}
-                className="rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-4 py-3 font-michroma text-xs uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20"
-              >
-                Save Name
-              </button>
-            </div>
-          </div>
-        </div>
+        <RenameLineupModal
+          lineup={lineupPendingRename}
+          renameLineupInput={renameLineupInput}
+          onChangeName={setRenameLineupInput}
+          onCancel={() => {
+            setLineupPendingRename(null);
+            setRenameLineupInput("");
+          }}
+          onSave={() => {
+            renameSavedLineup(lineupPendingRename.id, renameLineupInput);
+            setLineupPendingRename(null);
+            setRenameLineupInput("");
+          }}
+        />
       )}
 
-      {/* Lineup deleted modal */}
       {isLineupDeletedOpen && (
-        <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/70 px-4">
-          <div className="w-full max-w-sm rounded-md border border-red-500/60 bg-[#07111f] p-6 text-center shadow-[0_0_35px_rgba(239,68,68,0.25)]">
-            <p className="font-michroma text-lg text-red-400">Lineup Deleted</p>
-
-            <p className="mt-3 font-michroma text-xs leading-relaxed text-white/40">
-              This lineup was removed from your saved lineups.
-            </p>
-
-            <button
-              type="button"
-              onClick={() => setIsLineupDeletedOpen(false)}
-              className="mt-6 rounded-md border border-red-500/60 bg-red-500/10 px-4 py-3 font-michroma text-xs uppercase text-red-400 transition hover:bg-red-500/20"
-            >
-              Done
-            </button>
-          </div>
-        </div>
+        <LineupDeletedModal onClose={() => setIsLineupDeletedOpen(false)} />
       )}
 
-      {/* Lineup saved success modal */}
       {isLineupSavedOpen && (
-        <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/70 px-4">
-          <div className="w-full max-w-md rounded-md border border-emerald-400/60 bg-[#07111f] p-6 text-center shadow-[0_0_30px_rgba(34,197,94,0.22)]">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-emerald-400/60 bg-emerald-400/10 font-michroma text-2xl text-emerald-400">
-              ✓
-            </div>
-
-            <h2 className="mt-4 font-michroma text-xl text-white">
-              Lineup Saved
-            </h2>
-
-            <p className="mt-3 font-michroma text-xs text-white/50">
-              What would you like to do next?
-            </p>
-
-            <div className="mt-6 flex justify-center gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsLineupSavedOpen(false);
-                  setActiveTab("saved");
-                }}
-                className="rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-4 py-3 font-michroma text-xs uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20"
-              >
-                View Saved
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setIsLineupSavedOpen(false);
-                  setActiveTab("builder");
-                  setHasStartedBuilder(true);
-                  setActiveBuildPosition("PG");
-                  setCustomLineup({
-                    PG: "",
-                    SG: "",
-                    SF: "",
-                    PF: "",
-                    C: "",
-                  });
-                }}
-                className="rounded-md border border-white/20 px-4 py-3 font-michroma text-xs uppercase text-white/60 transition hover:border-white/50 hover:text-white"
-              >
-                Build Another
-              </button>
-            </div>
-          </div>
-        </div>
+        <LineupSavedModal
+          onViewSaved={() => {
+            setIsLineupSavedOpen(false);
+            setActiveTab("saved");
+          }}
+          onBuildAnother={() => {
+            setIsLineupSavedOpen(false);
+            setActiveTab("builder");
+            resetDraft();
+            setHasStartedBuilder(true);
+          }}
+        />
       )}
 
-      {/* Content before lineup modal */}
       {isLoadingSavedLineup && (
-        <div
-          className={`fixed inset-0 z-1000 flex items-center justify-center bg-black/75 px-4 transition-opacity duration-300 ${
-            isLoadLineupExiting ? "opacity-0" : "opacity-100"
-          }`}
-        >
-          <div
-            className={`w-full max-w-md rounded-md border border-[#1bc2ec]/60 bg-[#07111f] p-6 shadow-[0_0_35px_rgba(27,194,236,0.25)] transition-all duration-300 ${
-              isLoadLineupExiting
-                ? "translate-y-2 scale-95 opacity-0"
-                : "translate-y-0 scale-100 opacity-100"
-            }`}
-          >
-            <p className="font-michroma text-lg text-white">Loading Lineup</p>
-
-            <p className="mt-3 min-h-5 font-michroma text-sm text-[#1bc2ec]">
-              {loadLineupSteps[loadLineupStep]}
-            </p>
-
-            <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/10">
-              <div
-                className="h-full rounded-full bg-[#1bc2ec] transition-all duration-100"
-                style={{
-                  width: `${loadLineupProgress}%`,
-                }}
-              />
-            </div>
-
-            <div className="mt-5 grid gap-2">
-              {loadLineupSteps.map((step, index) => (
-                <p
-                  key={step}
-                  className={`font-michroma text-xs transition ${
-                    index <= loadLineupStep ? "text-white/70" : "text-white/25"
-                  }`}
-                >
-                  <span className="text-[#1bc2ec]">
-                    {index < loadLineupStep
-                      ? "✓"
-                      : index === loadLineupStep
-                        ? "•"
-                        : "·"}
-                  </span>{" "}
-                  {step}
-                </p>
-              ))}
-            </div>
-          </div>
-        </div>
+        <LoadingLineupModal
+          isExiting={isLoadLineupExiting}
+          steps={loadLineupSteps}
+          currentStep={loadLineupStep}
+          progress={loadLineupProgress}
+        />
       )}
     </main>
   );
