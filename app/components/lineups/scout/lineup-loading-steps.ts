@@ -9,3 +9,10 @@ export const loadLineupSteps = [
   "Rebuilding score profile...",
   "Syncing court preview...",
 ];
+
+export const scoutLineupSteps = [
+  "Reading lineup profile...",
+  "Calculating team chemistry...",
+  "Finding strengths and tradeoffs...",
+  "Building scout report...",
+];

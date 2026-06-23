@@ -48,6 +48,7 @@ import {
   LOAD_LINEUP_PROGRESS_INTERVAL,
   LOAD_LINEUP_TOTAL_DURATION,
   loadLineupSteps,
+  scoutLineupSteps,
 } from "../components/lineups/scout/lineup-loading-steps";
 
 import { NameLineupModal } from "../components/lineups/saved/name-lineup-modal";
@@ -118,11 +119,15 @@ export default function Lineups() {
   const [scoutedSavedLineup, setScoutedSavedLineup] =
     useState<SavedLineup | null>(null);
   const [isLoadingSavedLineup, setIsLoadingSavedLineup] = useState(false);
+  const [isScoutingLineup, setIsScoutingLineup] = useState(false);
 
   // Animations
   const [loadLineupStep, setLoadLineupStep] = useState(0);
   const [loadLineupProgress, setLoadLineupProgress] = useState(0);
   const [isLoadLineupExiting, setIsLoadLineupExiting] = useState(false);
+  const [scoutLineupStep, setScoutLineupStep] = useState(0);
+  const [scoutLineupProgress, setScoutLineupProgress] = useState(0);
+  const [isScoutLineupExiting, setIsScoutLineupExiting] = useState(false);
   const [playerRevealMode, setPlayerRevealMode] =
     useState<PlayerRevealMode>("instant");
 
@@ -242,6 +247,47 @@ export default function Lineups() {
         block: "start",
       });
     }, 150);
+  }
+
+  function scoutDraftLineup() {
+    setScoutedSavedLineup(null);
+    setIsScoutingLineup(true);
+    setScoutLineupStep(0);
+    setScoutLineupProgress(0);
+    setIsScoutLineupExiting(false);
+
+    const totalDuration = 2400;
+    const progressInterval = 40;
+    const exitDuration = 300;
+    const stepDuration = totalDuration / scoutLineupSteps.length;
+
+    scoutLineupSteps.forEach((_, index) => {
+      window.setTimeout(() => {
+        setScoutLineupStep(index);
+      }, index * stepDuration);
+    });
+
+    const progressTimer = window.setInterval(() => {
+      setScoutLineupProgress((currentProgress) => {
+        const nextProgress =
+          currentProgress + 100 / (totalDuration / progressInterval);
+
+        return Math.min(nextProgress, 100);
+      });
+    }, progressInterval);
+
+    window.setTimeout(() => {
+      window.clearInterval(progressTimer);
+
+      setScoutLineupProgress(100);
+      setIsScoutLineupExiting(true);
+
+      window.setTimeout(() => {
+        setIsScoutingLineup(false);
+        setIsScoutLineupExiting(false);
+        setIsScoutOpen(true);
+      }, exitDuration);
+    }, totalDuration);
   }
 
   // Builder actions
@@ -455,10 +501,7 @@ export default function Lineups() {
                 onPickPlayer={pickBuildPlayer}
                 onHoverPlayer={setHoveredBuildPlayer}
                 onRemovePlayer={removeBuildPlayer}
-                onScoutLineup={() => {
-                  setScoutedSavedLineup(null);
-                  setIsScoutOpen(true);
-                }}
+                onScoutLineup={scoutDraftLineup}
                 onViewCard={viewPlayerCard}
               />
             )}
@@ -598,6 +641,15 @@ export default function Lineups() {
           steps={loadLineupSteps}
           currentStep={loadLineupStep}
           progress={loadLineupProgress}
+        />
+      )}
+
+      {isScoutingLineup && (
+        <LoadingLineupModal
+          isExiting={isScoutLineupExiting}
+          steps={scoutLineupSteps}
+          currentStep={scoutLineupStep}
+          progress={scoutLineupProgress}
         />
       )}
     </main>
