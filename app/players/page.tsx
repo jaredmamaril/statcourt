@@ -9,7 +9,7 @@ import {
 import { getPlayerRating } from "../components/player-ratings";
 import { SelectedPlayerCard } from "../components/players/player-card";
 import { PlayerList } from "../components/players/player-list-panel";
-import { PlayerFilters } from "../components/players/player-filters";
+import { PlayerFilters } from "../components/players/player-filters/";
 import {
   DatabaseSnapshot,
   FeaturedPlayerPanel,
@@ -283,6 +283,10 @@ function Players() {
     setIsCardFlipped(false);
   }
 
+  function toggleCardFlip() {
+    setIsCardFlipped((currentIsCardFlipped) => !currentIsCardFlipped);
+  }
+
   function selectTeamFilter(team: Team | "") {
     setFilteredTeam(team);
     setOpenDropdown(null);
@@ -296,6 +300,19 @@ function Players() {
   function selectSortFilter(sort: SortValue) {
     handleSortClick(sort);
     setOpenDropdown(null);
+  }
+
+  function toggleFavoritesFilter() {
+    setShowFavorites((currentShowFavorites) => !currentShowFavorites);
+  }
+
+  function selectPlayerFromList(playerName: string) {
+    if (currentPlayer === playerName) {
+      closePlayerCard();
+      return;
+    }
+
+    openPlayerCard(playerName);
   }
 
   return (
@@ -359,7 +376,7 @@ function Players() {
               sortDirection={sortDirection}
               openDropdown={openDropdown}
               hasActiveFilters={hasActiveFilters}
-              onToggleFavorites={() => setShowFavorites(!showFavorites)}
+              onToggleFavorites={toggleFavoritesFilter}
               onOpenDropdown={setOpenDropdown}
               onSelectTeam={selectTeamFilter}
               onSelectPosition={selectPositionFilter}
@@ -374,13 +391,7 @@ function Players() {
               showFavorites={showFavorites}
               sortBy={sortBy}
               onToggleFavorite={toggleFavorite}
-              onSelectPlayer={(playerName) => {
-                if (currentPlayer === playerName) {
-                  closePlayerCard();
-                } else {
-                  openPlayerCard(playerName);
-                }
-              }}
+              onSelectPlayer={selectPlayerFromList}
             />
           </div>
 
@@ -399,10 +410,8 @@ function Players() {
                   getInsightRarityStyles={getInsightRarityStyles}
                   getInsightRarityLabel={getInsightRarityLabel}
                   getLineupFitStyles={getLineupFitStyles}
-                  onBack={() => {
-                    closePlayerCard();
-                  }}
-                  onToggleFlip={() => setIsCardFlipped((prev) => !prev)}
+                  onBack={closePlayerCard}
+                  onToggleFlip={toggleCardFlip}
                   onSelectSimilarPlayer={openPlayerCard}
                   onAddPlayerToCompare={addPlayerToCompare}
                 />
