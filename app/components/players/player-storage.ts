@@ -25,6 +25,7 @@ export function getSavedRecentPlayers(): string[] {
 export function saveRecentPlayers(playerNames: string[]): void {
   localStorage.setItem(RECENT_PLAYERS_KEY, JSON.stringify(playerNames));
 }
+
 export function saveCompareSlots(compareSlots: CompareSlots): void {
   localStorage.setItem(COMPARE_SLOTS_KEY, JSON.stringify(compareSlots));
 }
