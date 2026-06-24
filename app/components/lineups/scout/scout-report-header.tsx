@@ -8,8 +8,8 @@ export function ScoutReportHeader({
   onClose,
 }: ScoutReportHeaderProps) {
   return (
-    <>
-      <div className="pr-58">
+    <div className="relative">
+      <div className="pr-12">
         <div className="-mt-2">
           <h2 className="font-michroma text-lg text-white">Scouting Report</h2>
 
@@ -27,10 +27,10 @@ export function ScoutReportHeader({
       <button
         type="button"
         onClick={onClose}
-        className="absolute right-5 top-4 font-michroma text-lg text-white/40 transition hover:text-red-400"
+        className="absolute right-0 top-0 z-100 flex h-8 w-8 items-center justify-center font-michroma text-sm text-white/50 transition hover:text-red-400"
       >
         x
       </button>
-    </>
+    </div>
   );
 }

@@ -16,7 +16,7 @@ export function ScoutLineupSummary({
   scoutArchetypeColor,
 }: ScoutLineupSummaryProps) {
   return (
-    <div className="absolute right-5 top-5 w-56">
+    <div className="absolute top-5 w-56" style={{ left: "340px" }}>
       <p className="font-michroma text-[10px] uppercase text-white/40">
         Lineup
       </p>

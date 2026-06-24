@@ -1,10 +1,12 @@
 "use client";
 
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+
 import type {
   LineupTab,
   LineupDetail,
   SavedLineup,
-  NewSavedLineupInput,
 } from "../components/lineups/shared/lineup-types";
 import { LineupPageHeader } from "../components/lineups/shared/lineup-page-header";
 
@@ -24,14 +26,8 @@ import { FeaturedLineupCategoryGrid } from "../components/lineups/featured/featu
 import { FeaturedLineupDetail } from "../components/lineups/featured/featured-lineup-detail";
 
 import { BuilderIntro } from "../components/lineups/builder/builder-intro";
-import {
-  EMPTY_LINEUP,
-  getAvailableBuildPlayers,
-  getCustomLineupOverall,
-  getSelectedCustomPlayerSlots,
-  type PlayerRevealMode,
-} from "../components/lineups/builder/builder-lineup-helpers";
 import { BuilderWorkspace } from "../components/lineups/builder/builder-workspace";
+import { useLineupBuilder } from "../components/lineups/builder/use-lineup-builder";
 
 import {
   getFilteredSavedLineups,
@@ -44,6 +40,14 @@ import { DeleteLineupModal } from "../components/lineups/saved/delete-lineup-mod
 import { LineupDeletedModal } from "../components/lineups/saved/lineup-deleted-modal";
 import { LineupSavedModal } from "../components/lineups/saved/lineup-saved-modal";
 import { RenameLineupModal } from "../components/lineups/saved/rename-lineup-modal";
+import {
+  createSavedLineup,
+  createSavedLineupInput,
+} from "../components/lineups/saved/create-saved-lineup";
+import {
+  getLineupsAfterDelete,
+  getLineupsAfterRename,
+} from "../components/lineups/saved/saved-lineup-list-helpers";
 
 import { LoadingLineupModal } from "../components/lineups/scout/loading-lineup-modal";
 import { getScoutReportDisplay } from "../components/lineups/scout/scout-report-display";
@@ -57,11 +61,6 @@ import {
   loadLineupSteps,
   scoutLineupSteps,
 } from "../components/lineups/scout/lineup-loading-steps";
-
-import type { Position } from "../components/court-data";
-import { useRef, useState } from "react";
-
-import { useRouter } from "next/navigation";
 
 export default function Lineups() {
   // Refs and routing
@@ -79,26 +78,6 @@ export default function Lineups() {
     "",
   );
   const [hoveredLineupPlayer, setHoveredLineupPlayer] = useState("");
-
-  // Builder state
-  const [hasStartedBuilder, setHasStartedBuilder] = useState(false);
-  const [customLineup, setCustomLineup] =
-    useState<Record<Position, string>>(EMPTY_LINEUP);
-  const [activeBuildPosition, setActiveBuildPosition] =
-    useState<Position>("PG");
-  const [hoveredBuildPlayer, setHoveredBuildPlayer] = useState("");
-  const [buildPlayerSearch, setBuildPlayerSearch] = useState("");
-
-  // Saved lineup state
-  const { savedLineups, updateSavedLineups } = useSavedLineups();
-  const [savedLineupSearch, setSavedLineupSearch] = useState("");
-  const [savedLineupSort, setSavedLineupSort] = useState("highestOvr");
-  const [savedLineupTierFilter, setSavedLineupTierFilter] = useState("");
-  const [savedLineupArchetypeFilter, setSavedLineupArchetypeFilter] =
-    useState("");
-  const [openSavedDropdown, setOpenSavedDropdown] = useState<string | null>(
-    null,
-  );
 
   // Modal state
   const [isScoutOpen, setIsScoutOpen] = useState(false);
@@ -123,37 +102,44 @@ export default function Lineups() {
   const [scoutLineupStep, setScoutLineupStep] = useState(0);
   const [scoutLineupProgress, setScoutLineupProgress] = useState(0);
   const [isScoutLineupExiting, setIsScoutLineupExiting] = useState(false);
-  const [playerRevealMode, setPlayerRevealMode] =
-    useState<PlayerRevealMode>("instant");
 
-  // Builder derived data
-  const selectedCustomPlayerSlots = getSelectedCustomPlayerSlots(
+  // Saved lineup state
+  const { savedLineups, updateSavedLineups } = useSavedLineups();
+  const [savedLineupSearch, setSavedLineupSearch] = useState("");
+  const [savedLineupSort, setSavedLineupSort] = useState("highestOvr");
+  const [savedLineupTierFilter, setSavedLineupTierFilter] = useState("");
+  const [savedLineupArchetypeFilter, setSavedLineupArchetypeFilter] =
+    useState("");
+  const [openSavedDropdown, setOpenSavedDropdown] = useState<string | null>(
+    null,
+  );
+
+  // Builder state and derived data
+  const {
+    hasStartedBuilder,
+    setHasStartedBuilder,
     customLineup,
-    lineupPositions,
-  );
-
-  const selectedCustomPlayers = selectedCustomPlayerSlots.map(
-    (slot) => slot.player,
-  );
-
-  const customLineupOverall = getCustomLineupOverall(selectedCustomPlayerSlots);
-
-  const activePositionPlayerName = customLineup[activeBuildPosition];
-
-  const availableBuildPlayers = getAvailableBuildPlayers({
-    buildPlayerSearch,
+    setCustomLineup,
     activeBuildPosition,
-    activePositionPlayerName,
-    selectedCustomPlayers,
-  });
-
-  const selectedLineupCount = selectedCustomPlayers.length;
-
-  const isLineupComplete = selectedLineupCount === lineupPositions.length;
-
-  const hasExistingDraft = lineupPositions.some(
-    (position) => customLineup[position] !== "",
-  );
+    setActiveBuildPosition,
+    hoveredBuildPlayer,
+    setHoveredBuildPlayer,
+    buildPlayerSearch,
+    setBuildPlayerSearch,
+    playerRevealMode,
+    setPlayerRevealMode,
+    selectedCustomPlayerSlots,
+    customLineupOverall,
+    availableBuildPlayers,
+    selectedLineupCount,
+    isLineupComplete,
+    hasExistingDraft,
+    pickBuildPlayer,
+    removeBuildPlayer,
+    resetDraft,
+    startNewDraft,
+    continueDraft,
+  } = useLineupBuilder({ lineupPositions });
 
   // Scout report data
   const {
@@ -279,43 +265,11 @@ export default function Lineups() {
     });
   }
 
-  function pickBuildPlayer(playerName: string) {
-    setPlayerRevealMode("instant");
-
-    setCustomLineup((prev) => ({
-      ...prev,
-      [activeBuildPosition]: playerName,
-    }));
-  }
-
-  function removeBuildPlayer(position: Position) {
-    setCustomLineup((prev) => ({
-      ...prev,
-      [position]: "",
-    }));
-  }
-
-  function resetDraft() {
-    setCustomLineup(EMPTY_LINEUP);
-    setActiveBuildPosition("PG");
-    setBuildPlayerSearch("");
-  }
-
-  function startNewDraft() {
-    resetDraft();
-    setHasStartedBuilder(true);
-  }
-
-  function continueDraft() {
-    setBuildPlayerSearch("");
-    setHasStartedBuilder(true);
-  }
-
   // Saved lineup actions
   function saveLineup(lineupName: string) {
     if (!customLineupOverall) return;
 
-    const newLineupInput: NewSavedLineupInput = {
+    const newLineupInput = createSavedLineupInput({
       name: lineupName.trim() || `Lineup ${savedLineups.length + 1}`,
       players: customLineup,
       overall: customLineupOverall,
@@ -336,13 +290,9 @@ export default function Lineups() {
       courtBalance,
       courtBalanceDescription,
       badges: scoutReport.badges,
-    };
+    });
 
-    const newLineup: SavedLineup = {
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-      ...newLineupInput,
-    };
+    const newLineup = createSavedLineup(newLineupInput);
 
     const nextLineups = [newLineup, ...savedLineups];
 
@@ -350,22 +300,11 @@ export default function Lineups() {
   }
 
   function deleteSavedLineup(lineupId: string) {
-    const nextLineups = savedLineups.filter((lineup) => lineup.id !== lineupId);
-
-    updateSavedLineups(nextLineups);
+    updateSavedLineups(getLineupsAfterDelete(savedLineups, lineupId));
   }
 
   function renameSavedLineup(lineupId: string, newName: string) {
-    const nextLineups = savedLineups.map((lineup) =>
-      lineup.id === lineupId
-        ? {
-            ...lineup,
-            name: newName.trim() || lineup.name,
-          }
-        : lineup,
-    );
-
-    updateSavedLineups(nextLineups);
+    updateSavedLineups(getLineupsAfterRename(savedLineups, lineupId, newName));
   }
 
   function applySavedLineupPlayers(lineup: SavedLineup) {

@@ -30,16 +30,7 @@ export function getFilteredSavedLineups({
     .filter((lineup) => {
       const search = savedLineupSearch.toLowerCase();
 
-      const playerNames = lineupPositions
-        .map((position) => lineup.players[position])
-        .join(" ")
-        .toLowerCase();
-
-      const matchesSearch =
-        lineup.name.toLowerCase().includes(search) ||
-        lineup.archetype.toLowerCase().includes(search) ||
-        lineup.teamIdentity.toLowerCase().includes(search) ||
-        playerNames.includes(search);
+      const matchesSearch = lineup.name.toLowerCase().includes(search);
 
       const matchesTier =
         savedLineupTierFilter === "" || lineup.tier === savedLineupTierFilter;
