@@ -6,6 +6,7 @@ import type {
   SavedLineup,
   NewSavedLineupInput,
 } from "../components/lineups/shared/lineup-types";
+import { LineupPageHeader } from "../components/lineups/shared/lineup-page-header";
 
 import {
   lineupPositions,
@@ -19,12 +20,10 @@ import {
   getLineupCategoryColor,
   getLineupNamesForCategory,
 } from "../components/lineups/featured/featured-lineup-helpers";
-
 import { FeaturedLineupCategoryGrid } from "../components/lineups/featured/featured-lineup-category-grid";
 import { FeaturedLineupDetail } from "../components/lineups/featured/featured-lineup-detail";
 
 import { BuilderIntro } from "../components/lineups/builder/builder-intro";
-
 import {
   EMPTY_LINEUP,
   getAvailableBuildPlayers,
@@ -32,17 +31,25 @@ import {
   getSelectedCustomPlayerSlots,
   type PlayerRevealMode,
 } from "../components/lineups/builder/builder-lineup-helpers";
-
 import { BuilderWorkspace } from "../components/lineups/builder/builder-workspace";
 
 import {
   getFilteredSavedLineups,
   getSavedSortLabel,
 } from "../components/lineups/saved/saved-lineup-filters";
-
-import { LineupPageHeader } from "../components/lineups/shared/lineup-page-header";
 import { SavedLineupsSection } from "../components/lineups/saved/saved-lineups-section";
+import { useSavedLineups } from "../components/lineups/saved/use-saved-lineups";
+import { NameLineupModal } from "../components/lineups/saved/name-lineup-modal";
+import { DeleteLineupModal } from "../components/lineups/saved/delete-lineup-modal";
+import { LineupDeletedModal } from "../components/lineups/saved/lineup-deleted-modal";
+import { LineupSavedModal } from "../components/lineups/saved/lineup-saved-modal";
+import { RenameLineupModal } from "../components/lineups/saved/rename-lineup-modal";
 
+import { LoadingLineupModal } from "../components/lineups/scout/loading-lineup-modal";
+import { getScoutReportDisplay } from "../components/lineups/scout/scout-report-display";
+import { ScoutReportModal } from "../components/lineups/scout/scout-report-modal";
+import { runLineupLoadingSequence } from "../components/lineups/scout/run-lineup-loading-sequence";
+import { useAnimatedScoutOverall } from "../components/lineups/scout/use-animated-scout-overall";
 import {
   LOAD_LINEUP_EXIT_DURATION,
   LOAD_LINEUP_PROGRESS_INTERVAL,
@@ -51,32 +58,20 @@ import {
   scoutLineupSteps,
 } from "../components/lineups/scout/lineup-loading-steps";
 
-import { NameLineupModal } from "../components/lineups/saved/name-lineup-modal";
-import { DeleteLineupModal } from "../components/lineups/saved/delete-lineup-modal";
-import { LineupDeletedModal } from "../components/lineups/saved/lineup-deleted-modal";
-import { LineupSavedModal } from "../components/lineups/saved/lineup-saved-modal";
-import { RenameLineupModal } from "../components/lineups/saved/rename-lineup-modal";
-import { LoadingLineupModal } from "../components/lineups/scout/loading-lineup-modal";
-
-import { getScoutReportDisplay } from "../components/lineups/scout/scout-report-display";
-import { ScoutReportModal } from "../components/lineups/scout/scout-report-modal";
-
-import { useAnimatedScoutOverall } from "../components/lineups/scout/use-animated-scout-overall";
-import { useSavedLineups } from "../components/lineups/saved/use-saved-lineups";
-
 import type { Position } from "../components/court-data";
 import { useRef, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
 export default function Lineups() {
+  // Refs and routing
   const router = useRouter();
   const lineupSectionRef = useRef<HTMLDivElement>(null);
 
-  // Tabs
+  // Page state
   const [activeTab, setActiveTab] = useState<LineupTab>("featured");
 
-  // Featured lineups
+  // Featured lineup state
   const [selectedLineupCategory, setSelectedLineupCategory] = useState<
     LineupCategory | ""
   >("");
@@ -85,7 +80,7 @@ export default function Lineups() {
   );
   const [hoveredLineupPlayer, setHoveredLineupPlayer] = useState("");
 
-  // Builder
+  // Builder state
   const [hasStartedBuilder, setHasStartedBuilder] = useState(false);
   const [customLineup, setCustomLineup] =
     useState<Record<Position, string>>(EMPTY_LINEUP);
@@ -94,7 +89,7 @@ export default function Lineups() {
   const [hoveredBuildPlayer, setHoveredBuildPlayer] = useState("");
   const [buildPlayerSearch, setBuildPlayerSearch] = useState("");
 
-  // Saved lineups
+  // Saved lineup state
   const { savedLineups, updateSavedLineups } = useSavedLineups();
   const [savedLineupSearch, setSavedLineupSearch] = useState("");
   const [savedLineupSort, setSavedLineupSort] = useState("highestOvr");
@@ -105,7 +100,7 @@ export default function Lineups() {
     null,
   );
 
-  // Modals
+  // Modal state
   const [isScoutOpen, setIsScoutOpen] = useState(false);
   const [isNamingLineup, setIsNamingLineup] = useState(false);
   const [lineupNameInput, setLineupNameInput] = useState("");
@@ -160,7 +155,7 @@ export default function Lineups() {
     (position) => customLineup[position] !== "",
   );
 
-  // Scout report values
+  // Scout report data
   const {
     scoutReport,
     lineupArchetype,
@@ -189,7 +184,7 @@ export default function Lineups() {
     scoutedSavedLineup,
   });
 
-  // Featured lineup display values
+  // Featured lineup data
   const selectedCategoryColor = getLineupCategoryColor(selectedLineupCategory);
 
   const selectedLineup: LineupDetail | null = selectedLineupName
@@ -225,7 +220,7 @@ export default function Lineups() {
     displayedScoutOverall,
   );
 
-  // Actions
+  // Page actions
   function changeTab(tab: LineupTab) {
     setActiveTab(tab);
 
@@ -249,6 +244,11 @@ export default function Lineups() {
     }, 150);
   }
 
+  function viewPlayerCard(playerName: string) {
+    router.push(`/players?player=${encodeURIComponent(playerName)}`);
+  }
+
+  // Builder actions
   function scoutDraftLineup() {
     setScoutedSavedLineup(null);
     setIsScoutingLineup(true);
@@ -256,41 +256,29 @@ export default function Lineups() {
     setScoutLineupProgress(0);
     setIsScoutLineupExiting(false);
 
-    const totalDuration = 2400;
-    const progressInterval = 40;
-    const exitDuration = 300;
-    const stepDuration = totalDuration / scoutLineupSteps.length;
-
-    scoutLineupSteps.forEach((_, index) => {
-      window.setTimeout(() => {
-        setScoutLineupStep(index);
-      }, index * stepDuration);
-    });
-
-    const progressTimer = window.setInterval(() => {
-      setScoutLineupProgress((currentProgress) => {
-        const nextProgress =
-          currentProgress + 100 / (totalDuration / progressInterval);
-
-        return Math.min(nextProgress, 100);
-      });
-    }, progressInterval);
-
-    window.setTimeout(() => {
-      window.clearInterval(progressTimer);
-
-      setScoutLineupProgress(100);
-      setIsScoutLineupExiting(true);
-
-      window.setTimeout(() => {
+    runLineupLoadingSequence({
+      totalDuration: 2400,
+      progressInterval: 40,
+      exitDuration: 300,
+      steps: scoutLineupSteps,
+      onStepChange: setScoutLineupStep,
+      onProgressChange: (progressAmount) => {
+        setScoutLineupProgress((currentProgress) =>
+          Math.min(currentProgress + progressAmount, 100),
+        );
+      },
+      onStartExit: () => {
+        setScoutLineupProgress(100);
+        setIsScoutLineupExiting(true);
+      },
+      onComplete: () => {
         setIsScoutingLineup(false);
         setIsScoutLineupExiting(false);
         setIsScoutOpen(true);
-      }, exitDuration);
-    }, totalDuration);
+      },
+    });
   }
 
-  // Builder actions
   function pickBuildPlayer(playerName: string) {
     setPlayerRevealMode("instant");
 
@@ -401,46 +389,33 @@ export default function Lineups() {
     setIsLoadingSavedLineup(true);
     setLoadLineupStep(0);
     setLoadLineupProgress(0);
+    setIsLoadLineupExiting(false);
 
-    const stepDuration = LOAD_LINEUP_TOTAL_DURATION / loadLineupSteps.length;
-
-    loadLineupSteps.forEach((_, index) => {
-      window.setTimeout(() => {
-        setLoadLineupStep(index);
-      }, index * stepDuration);
-    });
-
-    const progressTimer = window.setInterval(() => {
-      setLoadLineupProgress((currentProgress) => {
-        const nextProgress =
-          currentProgress +
-          100 / (LOAD_LINEUP_TOTAL_DURATION / LOAD_LINEUP_PROGRESS_INTERVAL);
-
-        return Math.min(nextProgress, 100);
-      });
-    }, LOAD_LINEUP_PROGRESS_INTERVAL);
-
-    window.setTimeout(() => {
-      window.clearInterval(progressTimer);
-
-      setLoadLineupProgress(100);
-      setIsLoadLineupExiting(true);
-
-      window.setTimeout(() => {
+    runLineupLoadingSequence({
+      totalDuration: LOAD_LINEUP_TOTAL_DURATION,
+      progressInterval: LOAD_LINEUP_PROGRESS_INTERVAL,
+      exitDuration: LOAD_LINEUP_EXIT_DURATION,
+      steps: loadLineupSteps,
+      onStepChange: setLoadLineupStep,
+      onProgressChange: (progressAmount) => {
+        setLoadLineupProgress((currentProgress) =>
+          Math.min(currentProgress + progressAmount, 100),
+        );
+      },
+      onStartExit: () => {
+        setLoadLineupProgress(100);
+        setIsLoadLineupExiting(true);
+      },
+      onComplete: () => {
         applyLoadedLineup(lineup);
-      }, LOAD_LINEUP_EXIT_DURATION);
-    }, LOAD_LINEUP_TOTAL_DURATION);
+      },
+    });
   }
 
   function scoutSavedLineup(lineup: SavedLineup) {
     setScoutedSavedLineup(lineup);
     applySavedLineupPlayers(lineup);
     setIsScoutOpen(true);
-  }
-
-  // Navigation
-  function viewPlayerCard(playerName: string) {
-    router.push(`/players?player=${encodeURIComponent(playerName)}`);
   }
 
   return (

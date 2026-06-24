@@ -5,6 +5,8 @@ import { ScoutOverallSummary } from "./scout-overall-summary";
 import { ScoutArchetypeSection } from "./scout-archetype-section";
 import { ScoutTraitsGrid } from "./scout-traits-grid";
 import { ScoutBottomSummary } from "./scout-bottom-summary";
+import { ScoutReportHeader } from "./scout-report-header";
+import { ScoutReportSaveButton } from "./scout-report-save-button";
 
 type ScoutReportModalProps = {
   lineupPositions: Position[];
@@ -71,22 +73,7 @@ export function ScoutReportModal({
         }}
       >
         <div className="relative max-h-[78vh] overflow-y-auto p-5 scrollbar-none [&::-webkit-scrollbar]:hidden">
-          <div className="pr-58">
-            <div className="-mt-2">
-              <h2 className="font-michroma text-lg text-white">
-                Scouting Report
-              </h2>
-
-              <div
-                className="scout-section-reveal"
-                style={{ animationDelay: "80ms" }}
-              >
-                <p className="mt-1 max-w-60 font-michroma text-[10px] leading-relaxed text-white/35">
-                  {scoutSummary}
-                </p>
-              </div>
-            </div>
-          </div>
+          <ScoutReportHeader scoutSummary={scoutSummary} onClose={onClose} />
 
           <ScoutLineupSummary
             lineupPositions={lineupPositions}
@@ -94,14 +81,6 @@ export function ScoutReportModal({
             scoutScores={scoutScores}
             scoutArchetypeColor={scoutArchetypeColor}
           />
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute right-5 top-4 font-michroma text-lg text-white/40 transition hover:text-red-400"
-          >
-            x
-          </button>
 
           <div className="mt-1 grid max-w-xl gap-2">
             <ScoutOverallSummary
@@ -138,17 +117,10 @@ export function ScoutReportModal({
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={onSaveLineup}
-          className="absolute -bottom-10.5 right-0 rounded-md border border-[#1bc2ec]/70 bg-[#07111f] px-5 py-3 font-michroma text-xs uppercase text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.25)] transition hover:bg-[#1bc2ec]/10"
-          style={{
-            color: scoutArchetypeColor,
-            borderColor: scoutArchetypeColor,
-          }}
-        >
-          Save Lineup
-        </button>
+        <ScoutReportSaveButton
+          scoutArchetypeColor={scoutArchetypeColor}
+          onSaveLineup={onSaveLineup}
+        />
       </div>
     </div>
   );

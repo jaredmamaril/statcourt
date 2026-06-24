@@ -1,10 +1,12 @@
 import { getLineupTierColor } from "../../lineup-scouting";
 import type { SavedLineup } from "../shared/lineup-types";
 import {
-  LineupBadgeIcon,
   getSavedLineupArchetypeColor,
   getSavedLineupTopScore,
 } from "../shared/lineup-style-helpers";
+import { SavedLineupOverallBox } from "./saved-lineup-overall-box";
+import { SavedLineupCardActions } from "./saved-lineup-card-actions";
+import { SavedLineupBadges } from "./saved-lineup-badges";
 
 type SavedLineupCardProps = {
   lineup: SavedLineup;
@@ -48,37 +50,11 @@ export function SavedLineupCard({
           </p>
         </div>
 
-        <div
-          className="rounded-md border px-3 py-2 text-center transition-all duration-200"
-          style={{
-            borderColor: `${archetypeColor}80`,
-            backgroundColor: `${archetypeColor}18`,
-            boxShadow: `0 0 14px ${archetypeColor}22`,
-          }}
-        >
-          <p
-            className="font-michroma text-lg"
-            style={{
-              color: archetypeColor,
-              textShadow: `0 0 12px ${archetypeColor}99`,
-            }}
-          >
-            {lineup.overall.toFixed(1)}
-          </p>
-
-          <p className="font-michroma text-[8px] uppercase text-white/40">
-            OVR
-          </p>
-
-          {topScore && (
-            <p
-              className="mt-1 font-michroma text-[7px] uppercase"
-              style={{ color: archetypeColor }}
-            >
-              {Math.round(topScore.value)} {topScore.label}
-            </p>
-          )}
-        </div>
+        <SavedLineupOverallBox
+          overall={lineup.overall}
+          topScore={topScore}
+          archetypeColor={archetypeColor}
+        />
       </div>
 
       <div>
@@ -113,69 +89,19 @@ export function SavedLineupCard({
           .join(" - ")}
       </p>
 
-      <div className="mt-4 flex flex-wrap gap-1">
-        {lineup.badges.slice(0, 3).map((badge) => (
-          <span
-            key={badge}
-            className="flex items-center gap-1 rounded border px-2 py-1 font-michroma text-[7.5px]"
-            style={{
-              color: archetypeColor,
-              borderColor: `${archetypeColor}50`,
-              backgroundColor: `${archetypeColor}12`,
-            }}
-          >
-            <LineupBadgeIcon badge={badge} />
-            {badge}
-          </span>
-        ))}
-      </div>
+      <SavedLineupBadges
+        badges={lineup.badges}
+        archetypeColor={archetypeColor}
+      />
 
-      <div className="mt-5 flex gap-2">
-        <button
-          type="button"
-          onClick={() => onLoad(lineup)}
-          className="rounded-md border px-3 py-2 font-michroma text-[8px] uppercase transition hover:brightness-150"
-          style={{
-            color: archetypeColor,
-            borderColor: `${archetypeColor}80`,
-            backgroundColor: `${archetypeColor}28`,
-          }}
-        >
-          Load
-        </button>
-
-        <button
-          type="button"
-          onClick={() => onScout(lineup)}
-          className="rounded-md border px-3 py-2 font-michroma text-[8px] uppercase transition hover:brightness-150"
-          style={{
-            color: archetypeColor,
-            borderColor: `${archetypeColor}50`,
-            backgroundColor: `${archetypeColor}10`,
-          }}
-        >
-          Scout
-        </button>
-
-        <button
-          type="button"
-          onClick={() => onRename(lineup)}
-          className="rounded-md border bg-white/5 px-3 py-2 font-michroma text-[8px] uppercase text-white/45 transition hover:brightness-150"
-          style={{
-            borderColor: `${archetypeColor}33`,
-          }}
-        >
-          Rename
-        </button>
-
-        <button
-          type="button"
-          onClick={() => onDelete(lineup)}
-          className="ml-auto rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 font-michroma text-[8px] uppercase text-red-400 transition hover:bg-red-500/20"
-        >
-          Delete
-        </button>
-      </div>
+      <SavedLineupCardActions
+        lineup={lineup}
+        archetypeColor={archetypeColor}
+        onLoad={onLoad}
+        onScout={onScout}
+        onRename={onRename}
+        onDelete={onDelete}
+      />
     </div>
   );
 }
