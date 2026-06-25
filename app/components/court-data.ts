@@ -123,7 +123,7 @@ export type PlayerRatings = {
 export type Player = {
   id: number;
   nbaId?: number; // for NBA CDN headshots
-  apiSportsId?: number; // for API-SPORTS stats
+  apiSportsId?: number; // Current/recent players only. Historic players can stay manual.
   name: string;
   fallbackImage?: string; // Local fallback if CDN headshot is unavailable
   team: Team;
@@ -141,6 +141,7 @@ export const players: Player[] = [
   {
     id: 1,
     nbaId: 2544,
+    apiSportsId: 265,
     name: "LeBron James",
     fallbackImage: "/players/headshots/lebron-james.png",
     team: "LAL",
@@ -188,6 +189,7 @@ export const players: Player[] = [
   {
     id: 3,
     nbaId: 977,
+    apiSportsId: 79,
     name: "Kobe Bryant",
     fallbackImage: "/players/headshots/kobe-bryant.png",
     team: "LAL",
@@ -211,6 +213,7 @@ export const players: Player[] = [
   {
     id: 4,
     nbaId: 201939,
+    apiSportsId: 124,
     name: "Stephen Curry",
     fallbackImage: "/players/headshots/stephen-curry.png",
     team: "GSW",
@@ -234,6 +237,7 @@ export const players: Player[] = [
   {
     id: 5,
     nbaId: 201142,
+    apiSportsId: 153,
     name: "Kevin Durant",
     team: "PHX",
     position: "SF",
@@ -323,6 +327,7 @@ export const players: Player[] = [
   {
     id: 9,
     nbaId: 1495,
+    apiSportsId: 150,
     name: "Tim Duncan",
     team: "SAS",
     position: "PF",
@@ -389,6 +394,7 @@ export const players: Player[] = [
   {
     id: 12,
     nbaId: 203507,
+    apiSportsId: 20,
     name: "Giannis Antetokounmpo",
     team: "MIL",
     position: "PF",
@@ -411,6 +417,7 @@ export const players: Player[] = [
   {
     id: 13,
     nbaId: 203999,
+    apiSportsId: 279,
     name: "Nikola Jokic",
     team: "DEN",
     position: "C",

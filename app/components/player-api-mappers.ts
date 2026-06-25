@@ -1,4 +1,4 @@
-import type { ApiPosition, Player } from "./court-data";
+import type { ApiPosition, Player, PlayerStats } from "./court-data";
 
 type ApiSportsPlayer = {
   id: number;
@@ -120,39 +120,84 @@ function divideOrZero(numerator: number, denominator: number) {
   return numerator / denominator;
 }
 
+function roundOne(value: number) {
+  return Math.round(value * 10) / 10;
+}
+
 export function calculateCareerAverages(careerStats: ApiCareerStats) {
   return {
-    ppg: divideOrZero(careerStats.points, careerStats.games),
-    rpg: divideOrZero(careerStats.rebounds, careerStats.games),
-    apg: divideOrZero(careerStats.assists, careerStats.games),
-    fgPercent:
+    ppg: roundOne(divideOrZero(careerStats.points, careerStats.games)),
+    rpg: roundOne(divideOrZero(careerStats.rebounds, careerStats.games)),
+    apg: roundOne(divideOrZero(careerStats.assists, careerStats.games)),
+    fgPercent: roundOne(
       divideOrZero(
         careerStats.fieldGoalsMade,
         careerStats.fieldGoalsAttempted,
       ) * 100,
-    threePercent:
+    ),
+    threePercent: roundOne(
       divideOrZero(
         careerStats.threePointersMade,
         careerStats.threePointersAttempted,
       ) * 100,
-    ftPercent:
+    ),
+    ftPercent: roundOne(
       divideOrZero(
         careerStats.freeThrowsMade,
         careerStats.freeThrowsAttempted,
       ) * 100,
+    ),
   };
 }
 
-function mapApiSportsStatPosition(pos?: string): Player["position"] {
-  if (
-    pos === "PG" ||
-    pos === "SG" ||
-    pos === "SF" ||
-    pos === "PF" ||
-    pos === "C"
-  ) {
-    return pos;
+export function getApiSportsStatsRoute(player: Player, season: number) {
+  if (!player.apiSportsId) return null;
+
+  return `/api/api-sports/players/stats?id=${player.apiSportsId}&start=${season}&end=${season}`;
+}
+
+export type ApiSportsStatsResponse = {
+  apiSportsId: number;
+  source: "api-sports";
+  seasons: number[];
+  stats: PlayerStats & {
+    games: number;
+  };
+};
+
+export async function fetchApiSportsStats(
+  player: Player,
+  startSeason: number,
+  endSeason = startSeason,
+): Promise<ApiSportsStatsResponse | null> {
+  if (!player.apiSportsId) return null;
+
+  const route = getApiSportsStatsRoute(player, startSeason);
+
+  if (!route) return null;
+
+  const response = await fetch(route);
+
+  if (!response.ok) {
+    return null;
   }
 
-  return "SF";
+  return response.json();
+}
+
+export function applyApiSportsStatsToPlayer(
+  player: Player,
+  apiStats: ApiSportsStatsResponse,
+): Player {
+  return {
+    ...player,
+    stats: {
+      ppg: apiStats.stats.ppg,
+      rpg: apiStats.stats.rpg,
+      apg: apiStats.stats.apg,
+      fgPercent: apiStats.stats.fgPercent,
+      threePercent: apiStats.stats.threePercent,
+      ftPercent: apiStats.stats.ftPercent,
+    },
+  };
 }
