@@ -1,4 +1,6 @@
 "use client";
+import { getCachedOrFetchApiSportsStats } from "../components/player-api-cache";
+import type { ApiSportsStatsResponse } from "../components/player-api-mappers";
 
 import {
   players,
@@ -63,6 +65,13 @@ function Players() {
   // Refs
   const filtersRef = useRef<HTMLDivElement>(null);
   const playerCardRef = useRef<HTMLDivElement>(null);
+
+  // Api state
+  const [previewApiStats, setPreviewApiStats] =
+    useState<ApiSportsStatsResponse | null>(null);
+
+  const [isPreviewApiStatsLoading, setIsPreviewApiStatsLoading] =
+    useState(false);
 
   // Page state
   const [currentPlayer, setCurrentPlayer] = useState("");
@@ -276,11 +285,15 @@ function Players() {
     setCurrentPlayer(playerName);
     addRecentlyViewedPlayer(playerName);
     setIsCardFlipped(false);
+    setPreviewApiStats(null);
+    setIsPreviewApiStatsLoading(false);
   }
 
   function closePlayerCard() {
     setCurrentPlayer("");
     setIsCardFlipped(false);
+    setPreviewApiStats(null);
+    setIsPreviewApiStatsLoading(false);
   }
 
   function toggleCardFlip() {
@@ -313,6 +326,18 @@ function Players() {
     }
 
     openPlayerCard(playerName);
+  }
+
+  // Api Handlers
+  async function previewApiStatsForSelectedPlayer() {
+    if (!selectedPlayer) return;
+
+    setIsPreviewApiStatsLoading(true);
+
+    const result = await getCachedOrFetchApiSportsStats(selectedPlayer, 2023);
+
+    setPreviewApiStats(result);
+    setIsPreviewApiStatsLoading(false);
   }
 
   return (
@@ -414,6 +439,9 @@ function Players() {
                   onToggleFlip={toggleCardFlip}
                   onSelectSimilarPlayer={openPlayerCard}
                   onAddPlayerToCompare={addPlayerToCompare}
+                  previewApiStats={previewApiStats}
+                  isPreviewApiStatsLoading={isPreviewApiStatsLoading}
+                  onPreviewApiStats={previewApiStatsForSelectedPlayer}
                 />
               </div>
             )}

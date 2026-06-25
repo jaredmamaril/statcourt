@@ -59,8 +59,13 @@ export async function getCachedOrFetchApiSportsStats(
 
   if (!apiStats) return null;
 
+  const currentCache = getCachedApiSportsStats();
+
   const nextCache = [
-    ...getCachedApiSportsStats(),
+    ...currentCache.filter(
+      (item) =>
+        !(item.apiSportsId === player.apiSportsId && item.season === season),
+    ),
     {
       apiSportsId: player.apiSportsId,
       season,

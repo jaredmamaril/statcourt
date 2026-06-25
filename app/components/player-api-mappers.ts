@@ -201,3 +201,7 @@ export function applyApiSportsStatsToPlayer(
     },
   };
 }
+
+export function getPlayerDataSourceLabel(player: Player) {
+  return player.apiSportsId ? "API READY" : "MANUAL";
+}

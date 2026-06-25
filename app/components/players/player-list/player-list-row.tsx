@@ -2,6 +2,7 @@ import { teamColors, type Player, type SortValue } from "../../court-data";
 import { getPlayerHeadshot } from "../../player-images";
 import { getPlayerRating } from "../../player-ratings";
 import PlayerImage from "../../player-image";
+import { getPlayerDataSourceLabel } from "../../player-api-mappers";
 
 type PlayerListRowProps = {
   player: Player;
@@ -114,6 +115,10 @@ export function PlayerListRow({
 
           <span className="mt-1 block font-michroma text-[7px] uppercase leading-none text-white/35">
             OVR
+          </span>
+
+          <span className="mt-1 font-michroma text-[9px] text-white/40">
+            {getPlayerDataSourceLabel(player)}
           </span>
         </span>
       </button>
