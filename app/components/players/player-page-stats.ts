@@ -68,7 +68,7 @@ function getVersatilityScore(player: (typeof players)[number]) {
     rpgScore * 0.2 +
     apgScore * 0.25 +
     threeScore * 0.12 +
-    player.defenseRating * 0.15
+    player.ratings.defense * 0.15
   );
 }
 

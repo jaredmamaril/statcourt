@@ -51,11 +51,11 @@ export function BuilderPlayerCard({
     },
     {
       label: "Defense",
-      value: Math.round(player.defenseRating),
+      value: Math.round(player.ratings.defense),
     },
     {
       label: "Star",
-      value: Math.round(player.starPower),
+      value: Math.round(player.ratings.starPower),
     },
   ];
 

@@ -104,19 +104,26 @@ export const teamLogos: Record<Team, string> = {
   WAS: "/team-logos/was.svg",
 };
 
-// Future: fetching this data from an API or database for scalability and easier updates, especially if the player list grows significantly or if stats need to be updated frequently.
+// Career per-game averages and career shooting percentages
 export type PlayerStats = {
-  ppg: number; // Points Per Game
-  rpg: number; // Rebounds Per Game
-  apg: number; // Assists Per Game
-  fgPercent: number; // Field Goal Percentage
-  threePercent: number; // Three Point Percentage
-  ftPercent: number; // Free Throw Percentage
+  ppg: number;
+  rpg: number;
+  apg: number;
+  fgPercent: number;
+  threePercent: number;
+  ftPercent: number;
+};
+
+export type PlayerRatings = {
+  defense: number;
+  starPower: number;
 };
 
 // Future: adding more stats or player attributes as needed, such as player position, team, or career highlights, to enhance the user experience and provide more comprehensive information about each player.
 export type Player = {
   id: number;
+  nbaId?: number; // for NBA CDN headshots
+  apiSportsId?: number; // for API-SPORTS stats
   name: string;
   fallbackImage?: string; // Local fallback if CDN headshot is unavailable
   team: Team;
@@ -124,15 +131,15 @@ export type Player = {
   secondaryPositions?: Position[];
   emergencyPositions?: Position[];
   jerseyNumber: number;
-  defenseRating: number;
-  starPower: number;
+  ratings: PlayerRatings;
   stats: PlayerStats;
 };
 
-// Future: database for player data could be implemented with APIs
+// Fallback player dataset. Stats should use career averages, not peak season or current-season stats.
 export const players: Player[] = [
   {
     id: 1,
+    nbaId: 2544,
     name: "LeBron James",
     fallbackImage: "/players/headshots/lebron-james.png",
     team: "LAL",
@@ -140,8 +147,10 @@ export const players: Player[] = [
     secondaryPositions: ["PF"],
     emergencyPositions: ["PG"],
     jerseyNumber: 23,
-    defenseRating: 89,
-    starPower: 100,
+    ratings: {
+      defense: 89,
+      starPower: 100,
+    },
     stats: {
       ppg: 27.0,
       rpg: 7.4,
@@ -154,14 +163,17 @@ export const players: Player[] = [
 
   {
     id: 2,
+    nbaId: 893,
     name: "Michael Jordan",
     fallbackImage: "/players/headshots/michael-jordan.png",
     team: "CHI",
     position: "SG",
     secondaryPositions: ["SF", "PG"],
     jerseyNumber: 23,
-    defenseRating: 96,
-    starPower: 100,
+    ratings: {
+      defense: 96,
+      starPower: 100,
+    },
     stats: {
       ppg: 30.1,
       rpg: 6.2,
@@ -174,14 +186,17 @@ export const players: Player[] = [
 
   {
     id: 3,
+    nbaId: 977,
     name: "Kobe Bryant",
     fallbackImage: "/players/headshots/kobe-bryant.png",
     team: "LAL",
     position: "SG",
     secondaryPositions: ["SF", "PG"],
     jerseyNumber: 24,
-    defenseRating: 91,
-    starPower: 97,
+    ratings: {
+      defense: 91,
+      starPower: 97,
+    },
     stats: {
       ppg: 25.0,
       rpg: 5.2,
@@ -194,14 +209,17 @@ export const players: Player[] = [
 
   {
     id: 4,
+    nbaId: 201939,
     name: "Stephen Curry",
     fallbackImage: "/players/headshots/stephen-curry.png",
     team: "GSW",
     position: "PG",
     secondaryPositions: ["SG"],
     jerseyNumber: 30,
-    defenseRating: 72,
-    starPower: 98,
+    ratings: {
+      defense: 72,
+      starPower: 98,
+    },
     stats: {
       ppg: 24.2,
       rpg: 4.6,
@@ -214,13 +232,16 @@ export const players: Player[] = [
 
   {
     id: 5,
+    nbaId: 201142,
     name: "Kevin Durant",
     team: "PHX",
     position: "SF",
     secondaryPositions: ["PF"],
     jerseyNumber: 35,
-    defenseRating: 82,
-    starPower: 96,
+    ratings: {
+      defense: 82,
+      starPower: 96,
+    },
     stats: {
       ppg: 27.3,
       rpg: 7.0,
@@ -233,13 +254,16 @@ export const players: Player[] = [
 
   {
     id: 6,
+    nbaId: 406,
     name: "Shaquille O'Neal",
     team: "LAL",
     position: "C",
     secondaryPositions: ["PF"],
     jerseyNumber: 34,
-    defenseRating: 88,
-    starPower: 97,
+    ratings: {
+      defense: 88,
+      starPower: 97,
+    },
     stats: {
       ppg: 23.7,
       rpg: 10.9,
@@ -252,14 +276,17 @@ export const players: Player[] = [
 
   {
     id: 7,
+    nbaId: 77142,
     name: "Magic Johnson",
     team: "LAL",
     position: "PG",
     secondaryPositions: ["SG", "SF"],
     emergencyPositions: ["PF"],
     jerseyNumber: 32,
-    defenseRating: 78,
-    starPower: 98,
+    ratings: {
+      defense: 78,
+      starPower: 98,
+    },
     stats: {
       ppg: 19.5,
       rpg: 7.2,
@@ -272,13 +299,16 @@ export const players: Player[] = [
 
   {
     id: 8,
+    nbaId: 1449,
     name: "Larry Bird",
     team: "BOS",
     position: "SF",
     secondaryPositions: ["PF"],
     jerseyNumber: 33,
-    defenseRating: 82,
-    starPower: 97,
+    ratings: {
+      defense: 82,
+      starPower: 97,
+    },
     stats: {
       ppg: 24.3,
       rpg: 10.0,
@@ -291,13 +321,16 @@ export const players: Player[] = [
 
   {
     id: 9,
+    nbaId: 1495,
     name: "Tim Duncan",
     team: "SAS",
     position: "PF",
     secondaryPositions: ["C"],
     jerseyNumber: 21,
-    defenseRating: 97,
-    starPower: 94,
+    ratings: {
+      defense: 97,
+      starPower: 94,
+    },
     stats: {
       ppg: 19.0,
       rpg: 10.8,
@@ -310,13 +343,16 @@ export const players: Player[] = [
 
   {
     id: 10,
+    nbaId: 165,
     name: "Hakeem Olajuwon",
     team: "HOU",
     position: "C",
     secondaryPositions: ["PF"],
     jerseyNumber: 34,
-    defenseRating: 98,
-    starPower: 94,
+    ratings: {
+      defense: 98,
+      starPower: 94,
+    },
     stats: {
       ppg: 21.8,
       rpg: 11.1,
@@ -329,13 +365,16 @@ export const players: Player[] = [
 
   {
     id: 11,
+    nbaId: 76375,
     name: "Wilt Chamberlain",
     team: "LAL",
     position: "C",
     secondaryPositions: ["PF"],
     jerseyNumber: 13,
-    defenseRating: 93,
-    starPower: 98,
+    ratings: {
+      defense: 93,
+      starPower: 98,
+    },
     stats: {
       ppg: 30.1,
       rpg: 22.9,
@@ -348,13 +387,16 @@ export const players: Player[] = [
 
   {
     id: 12,
+    nbaId: 203507,
     name: "Giannis Antetokounmpo",
     team: "MIL",
     position: "PF",
     secondaryPositions: ["SF", "C"],
     jerseyNumber: 34,
-    defenseRating: 94,
-    starPower: 94,
+    ratings: {
+      defense: 94,
+      starPower: 94,
+    },
     stats: {
       ppg: 23.4,
       rpg: 9.8,
@@ -367,14 +409,17 @@ export const players: Player[] = [
 
   {
     id: 13,
+    nbaId: 203999,
     name: "Nikola Jokic",
     team: "DEN",
     position: "C",
     secondaryPositions: ["PF"],
     emergencyPositions: ["PG"],
     jerseyNumber: 15,
-    defenseRating: 75,
-    starPower: 95,
+    ratings: {
+      defense: 75,
+      starPower: 95,
+    },
     stats: {
       ppg: 21.1,
       rpg: 10.8,

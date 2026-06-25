@@ -311,7 +311,7 @@ export function getXFactorDescription(
   const isGuard = player.position === "PG" || player.position === "SG";
   const isPrimaryScorer = player.stats.ppg >= 25;
   const isElitePlaymaker = player.stats.apg >= 7;
-  const isEliteDefender = player.defenseRating >= 90;
+  const isEliteDefender = player.ratings.defense >= 90;
 
   if (
     archetype === "Spacing Superteam" ||
@@ -390,8 +390,8 @@ function getXFactorForArchetype(
 
       let fitScore =
         getBuilderPlayerRatingForPosition(player, slot.position) * 0.35 +
-        player.starPower * 0.25 +
-        player.defenseRating * 0.15 +
+        player.ratings.starPower * 0.25 +
+        player.ratings.defense * 0.15 +
         player.stats.ppg * 0.8;
 
       if (
@@ -421,7 +421,7 @@ function getXFactorForArchetype(
         archetype === "Defensive Juggernaut" ||
         archetype === "Two-Way Dynasty"
       ) {
-        fitScore += player.defenseRating * 0.6;
+        fitScore += player.ratings.defense * 0.6;
       }
 
       if (
@@ -459,21 +459,21 @@ function getPlayerTraits(
     eliteScorer: player.stats.ppg >= 25,
     elitePlaymaker: player.stats.apg >= 7,
     eliteRebounder: player.stats.rpg >= 10,
-    eliteDefender: player.defenseRating >= 90,
-    highStarPower: player.starPower >= 95,
+    eliteDefender: player.ratings.defense >= 90,
+    highStarPower: player.ratings.starPower >= 95,
 
     eliteCreator: player.stats.ppg >= 24 && player.stats.apg >= 5,
     elitePasser: player.stats.apg >= 7,
-    eliteTwoWay: player.stats.ppg >= 22 && player.defenseRating >= 88,
+    eliteTwoWay: player.stats.ppg >= 22 && player.ratings.defense >= 88,
 
     versatileForward: isForward && player.stats.apg >= 5,
     stretchBig: isBig && player.stats.threePercent >= 35,
     interiorBig:
-      isBig && (player.stats.rpg >= 10 || player.defenseRating >= 88),
+      isBig && (player.stats.rpg >= 10 || player.ratings.defense >= 88),
 
     eliteBig:
       (slotPosition === "PF" || slotPosition === "C") &&
-      player.starPower >= 90 &&
+      player.ratings.starPower >= 90 &&
       player.stats.rpg >= 9,
   };
 }
@@ -663,12 +663,16 @@ export function getLineupScoutReport(
   const offenseScore =
     scoringScore * 0.45 + efficiencyScore * 0.3 + playmakingScore * 0.25;
   const defense =
-    selectedPlayers.reduce((total, player) => total + player.defenseRating, 0) /
-    selectedPlayers.length;
+    selectedPlayers.reduce(
+      (total, player) => total + player.ratings.defense,
+      0,
+    ) / selectedPlayers.length;
   const defenseScore = defense * 0.75 + reboundingScore * 0.25;
   const starPower =
-    selectedPlayers.reduce((total, player) => total + player.starPower, 0) /
-    selectedPlayers.length;
+    selectedPlayers.reduce(
+      (total, player) => total + player.ratings.starPower,
+      0,
+    ) / selectedPlayers.length;
 
   let adjustedShootingScore = shootingScore;
   let adjustedPlaymakingScore = playmakingScore;

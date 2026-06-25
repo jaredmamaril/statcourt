@@ -11,7 +11,7 @@ export function getBestLineupFits(player: Player) {
     fits.push("Showtime Offense");
   }
 
-  if (player.starPower >= 95) {
+  if (player.ratings.starPower >= 95) {
     fits.push("Star-Powered Contender");
   }
 
@@ -19,7 +19,7 @@ export function getBestLineupFits(player: Player) {
     fits.push("Spacing Superteam");
   }
 
-  if (player.defenseRating >= 90) {
+  if (player.ratings.defense >= 90) {
     fits.push("Defensive Powerhouse");
   }
 
@@ -27,7 +27,7 @@ export function getBestLineupFits(player: Player) {
     fits.push("Paint Control Unit");
   }
 
-  if (player.stats.ppg >= 22 && player.defenseRating >= 88) {
+  if (player.stats.ppg >= 22 && player.ratings.defense >= 88) {
     fits.push("Two-Way Dynasty");
   }
 
