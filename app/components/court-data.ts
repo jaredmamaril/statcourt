@@ -3,7 +3,9 @@
 // Global components
 
 // Types for player positions and teams
+export type ApiPosition = "G" | "F" | "C";
 export type Position = "PG" | "SG" | "SF" | "PF" | "C";
+
 export type Team =
   | "ATL"
   | "BKN"
@@ -36,7 +38,6 @@ export type Team =
   | "UTA"
   | "WAS";
 
-// Team colors
 export const teamColors: Record<Team, string> = {
   ATL: "#e03a3e",
   BKN: "#000000",
@@ -70,7 +71,6 @@ export const teamColors: Record<Team, string> = {
   WAS: "#002b5c",
 };
 
-// Team logos
 export const teamLogos: Record<Team, string> = {
   ATL: "/team-logos/atl.svg",
   BKN: "/team-logos/bkn.svg",
@@ -127,6 +127,7 @@ export type Player = {
   name: string;
   fallbackImage?: string; // Local fallback if CDN headshot is unavailable
   team: Team;
+  apiPosition?: ApiPosition;
   position: Position;
   secondaryPositions?: Position[];
   emergencyPositions?: Position[];
