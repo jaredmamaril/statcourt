@@ -107,7 +107,7 @@ export function SelectedPlayerCard({
           </div>
 
           {process.env.NODE_ENV === "development" && player.apiSportsId && (
-            <div className="absolute bottom-[72px] left-1/2 z-190 w-[78%] -translate-x-1/2 rounded-md border border-[#1bc2ec]/30 bg-black/50 p-2 text-center font-michroma backdrop-blur-sm">
+            <div className="absolute bottom-18 left-1/2 z-190 w-[78%] -translate-x-1/2 rounded-md border border-[#1bc2ec]/30 bg-black/50 p-2 text-center font-michroma backdrop-blur-sm">
               <button
                 type="button"
                 onClick={onPreviewApiStats}
