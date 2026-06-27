@@ -1,15 +1,15 @@
 import {
   getPlayerInsights,
   normalizeStat,
-  players,
   positions,
   statMaxValues,
+  type Player,
   type PlayerInsightDisplay,
   type Position,
 } from "../court-data";
 import { getPlayerRating } from "../player-ratings";
 
-export function getPositionBreakdown() {
+export function getPositionBreakdown(players: Player[]) {
   return positions.reduce(
     (counts, position) => {
       counts[position] = players.filter(
@@ -22,7 +22,7 @@ export function getPositionBreakdown() {
   );
 }
 
-export function getTopArchetypeDistribution() {
+export function getTopArchetypeDistribution(players: Player[]) {
   const archetypeDistribution = players.reduce(
     (counts, player) => {
       const archetype = getPlayerInsights(player).archetype;
@@ -54,7 +54,7 @@ export function getTopArchetypeDistribution() {
     .slice(0, 4);
 }
 
-function getVersatilityScore(player: (typeof players)[number]) {
+function getVersatilityScore(player: Player) {
   const ppgScore = normalizeStat(player.stats.ppg, statMaxValues.ppg);
   const rpgScore = normalizeStat(player.stats.rpg, statMaxValues.rpg);
   const apgScore = normalizeStat(player.stats.apg, statMaxValues.apg);
@@ -72,7 +72,7 @@ function getVersatilityScore(player: (typeof players)[number]) {
   );
 }
 
-export function getPlayerDatabaseLeaders() {
+export function getPlayerDatabaseLeaders(players: Player[]) {
   const highestOverallPlayer = [...players].sort(
     (a, b) => getPlayerRating(b) - getPlayerRating(a),
   )[0];

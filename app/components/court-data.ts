@@ -104,11 +104,21 @@ export const teamLogos: Record<Team, string> = {
   WAS: "/team-logos/was.svg",
 };
 
+type CorePlayerStatKey =
+  | "ppg"
+  | "rpg"
+  | "apg"
+  | "fgPercent"
+  | "threePercent"
+  | "ftPercent";
+
 // Career per-game averages and career shooting percentages
 export type PlayerStats = {
   ppg: number;
   rpg: number;
   apg: number;
+  spg?: number;
+  bpg?: number;
   fgPercent: number;
   threePercent: number;
   ftPercent: number;
@@ -123,7 +133,6 @@ export type PlayerRatings = {
 export type Player = {
   id: number;
   nbaId?: number; // for NBA CDN headshots
-  apiSportsId?: number; // Current/recent players only. Historic players can stay manual.
   name: string;
   fallbackImage?: string; // Local fallback if CDN headshot is unavailable
   team: Team;
@@ -141,7 +150,6 @@ export const players: Player[] = [
   {
     id: 1,
     nbaId: 2544,
-    apiSportsId: 265,
     name: "LeBron James",
     fallbackImage: "/players/headshots/lebron-james.png",
     team: "LAL",
@@ -189,7 +197,6 @@ export const players: Player[] = [
   {
     id: 3,
     nbaId: 977,
-    apiSportsId: 79,
     name: "Kobe Bryant",
     fallbackImage: "/players/headshots/kobe-bryant.png",
     team: "LAL",
@@ -213,7 +220,6 @@ export const players: Player[] = [
   {
     id: 4,
     nbaId: 201939,
-    apiSportsId: 124,
     name: "Stephen Curry",
     fallbackImage: "/players/headshots/stephen-curry.png",
     team: "GSW",
@@ -237,7 +243,6 @@ export const players: Player[] = [
   {
     id: 5,
     nbaId: 201142,
-    apiSportsId: 153,
     name: "Kevin Durant",
     team: "PHX",
     position: "SF",
@@ -327,7 +332,6 @@ export const players: Player[] = [
   {
     id: 9,
     nbaId: 1495,
-    apiSportsId: 150,
     name: "Tim Duncan",
     team: "SAS",
     position: "PF",
@@ -394,7 +398,6 @@ export const players: Player[] = [
   {
     id: 12,
     nbaId: 203507,
-    apiSportsId: 20,
     name: "Giannis Antetokounmpo",
     team: "MIL",
     position: "PF",
@@ -417,7 +420,6 @@ export const players: Player[] = [
   {
     id: 13,
     nbaId: 203999,
-    apiSportsId: 279,
     name: "Nikola Jokic",
     team: "DEN",
     position: "C",
@@ -439,10 +441,8 @@ export const players: Player[] = [
   },
 ];
 
-// Type for keys of PlayerStats
-export type StatKey = keyof PlayerStats;
 // Future: these max values could be dynamically calculated based on the player data or fetched from an API to ensure they remain accurate and relevant as new players are added or stats are updated.
-export const statMaxValues: Record<StatKey, number> = {
+export const statMaxValues: Record<CorePlayerStatKey, number> = {
   ppg: 35,
   rpg: 15,
   apg: 12,
@@ -959,7 +959,9 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
 }
 
 // Function to weigh positions differently, so players in similar positions get matched evenly and display more accurate similarities on function getSimilarPlayers
-function getPositionWeights(position: Position): Record<StatKey, number> {
+function getPositionWeights(
+  position: Position,
+): Record<CorePlayerStatKey, number> {
   if (position === "PG") {
     return {
       ppg: 1.2,
@@ -1135,7 +1137,7 @@ export const positions = positionOrder.filter((position) =>
 );
 
 // Options to sort data from
-export type SortValue = "" | "first-name" | "last-name" | StatKey;
+export type SortValue = "" | "first-name" | "last-name" | CorePlayerStatKey;
 export type SortDirection = "primary" | "reverse";
 export const sortOptions: { label: string; value: SortValue }[] = [
   { label: "None", value: "" },

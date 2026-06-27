@@ -8,7 +8,6 @@ import { PlayerCardInsights } from "./player-card-insights";
 import { PlayerCardSimilarPanel } from "./player-card-similar-panel";
 import { PlayerCardAddToCompare } from "./player-card-add-to-compare";
 import { PlayerCardShell } from "./player-card-shell";
-import type { ApiSportsStatsResponse } from "../../player-api-mappers";
 
 type SelectedPlayerCardProps = {
   player: Player;
@@ -38,9 +37,6 @@ type SelectedPlayerCardProps = {
   onToggleFlip: () => void;
   onSelectSimilarPlayer: (playerName: string) => void;
   onAddPlayerToCompare: (slot: "left" | "right") => void;
-  previewApiStats: ApiSportsStatsResponse | null;
-  isPreviewApiStatsLoading: boolean;
-  onPreviewApiStats: () => void;
 };
 
 export function SelectedPlayerCard({
@@ -59,9 +55,6 @@ export function SelectedPlayerCard({
   onToggleFlip,
   onSelectSimilarPlayer,
   onAddPlayerToCompare,
-  previewApiStats,
-  isPreviewApiStatsLoading,
-  onPreviewApiStats,
 }: SelectedPlayerCardProps) {
   return (
     <div className="flex flex-col items-start gap-2 w-full max-w-md">
@@ -105,28 +98,6 @@ export function SelectedPlayerCard({
               onSelectSimilarPlayer={onSelectSimilarPlayer}
             />
           </div>
-
-          {process.env.NODE_ENV === "development" && player.apiSportsId && (
-            <div className="absolute bottom-18 left-1/2 z-190 w-[78%] -translate-x-1/2 rounded-md border border-[#1bc2ec]/30 bg-black/50 p-2 text-center font-michroma backdrop-blur-sm">
-              <button
-                type="button"
-                onClick={onPreviewApiStats}
-                className="text-[9px] uppercase text-[#1bc2ec] transition hover:text-white"
-              >
-                {isPreviewApiStatsLoading
-                  ? "Loading API Stats..."
-                  : "Preview API Stats"}
-              </button>
-
-              {previewApiStats && (
-                <p className="mt-1 text-[8px] text-white/55">
-                  2023 API: {previewApiStats.stats.ppg} PPG •{" "}
-                  {previewApiStats.stats.rpg} RPG • {previewApiStats.stats.apg}{" "}
-                  APG
-                </p>
-              )}
-            </div>
-          )}
 
           <PlayerCardAddToCompare
             player={player}

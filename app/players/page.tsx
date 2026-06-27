@@ -1,12 +1,11 @@
 "use client";
-import { getCachedOrFetchApiSportsStats } from "../components/player-api-cache";
-import type { ApiSportsStatsResponse } from "../components/player-api-mappers";
 
 import {
-  players,
+  players as fallbackPlayers,
   positions,
   getPlayerInsights,
   getSimilarPlayers,
+  type Player,
 } from "../components/court-data";
 import { getPlayerRating } from "../components/player-ratings";
 import { SelectedPlayerCard } from "../components/players/player-card";
@@ -66,14 +65,8 @@ function Players() {
   const filtersRef = useRef<HTMLDivElement>(null);
   const playerCardRef = useRef<HTMLDivElement>(null);
 
-  // Api state
-  const [previewApiStats, setPreviewApiStats] =
-    useState<ApiSportsStatsResponse | null>(null);
-
-  const [isPreviewApiStatsLoading, setIsPreviewApiStatsLoading] =
-    useState(false);
-
   // Page state
+  const [players, setPlayers] = useState<Player[]>(fallbackPlayers);
   const [currentPlayer, setCurrentPlayer] = useState("");
   const [playerSearch, setPlayerSearch] = useState("");
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -90,11 +83,9 @@ function Players() {
   const [compareSlots, setCompareSlots] =
     useState<CompareSlots>(getSavedCompareSlots);
   const [recentlyViewedPlayers, setRecentlyViewedPlayers] = useState<string[]>(
-    [],
+    getSavedRecentPlayers,
   );
-  const [featuredPlayer, setFeaturedPlayer] = useState<
-    (typeof players)[number] | null
-  >(null);
+  const [featuredPlayer, setFeaturedPlayer] = useState<Player | null>(null);
 
   // Derived player data
   const selectedPlayer = players.find(
@@ -134,26 +125,56 @@ function Players() {
   );
 
   // Database snapshot data
-  const positionBreakdown = getPositionBreakdown();
+  const positionBreakdown = getPositionBreakdown(players);
 
-  const topArchetypeDistribution = getTopArchetypeDistribution();
+  const topArchetypeDistribution = getTopArchetypeDistribution(players);
 
   const {
     highestOverallPlayer,
     mostVersatilePlayer,
     bestShooter,
     bestPlaymaker,
-  } = getPlayerDatabaseLeaders();
+  } = getPlayerDatabaseLeaders(players);
 
   // Effects
   useEffect(() => {
-    const randomPlayer = players[Math.floor(Math.random() * players.length)];
-    setFeaturedPlayer(randomPlayer);
+    let isActive = true;
+
+    async function loadPlayers() {
+      try {
+        const response = await fetch("/api/players");
+
+        if (!response.ok) {
+          throw new Error("Failed to load players");
+        }
+
+        const data = (await response.json()) as {
+          players?: Player[];
+        };
+
+        if (isActive && data.players && data.players.length > 0) {
+          setPlayers(data.players);
+        }
+      } catch {
+        if (isActive) {
+          setPlayers(fallbackPlayers);
+        }
+      }
+    }
+
+    loadPlayers();
+
+    return () => {
+      isActive = false;
+    };
   }, []);
 
+  // Get random featured player
   useEffect(() => {
-    setRecentlyViewedPlayers(getSavedRecentPlayers());
-  }, []);
+    if (players.length === 0) return;
+
+    setFeaturedPlayer(players[Math.floor(Math.random() * players.length)]);
+  }, [players]);
 
   // Open a player card when coming from rankings with /players?player=name
   useEffect(() => {
@@ -285,15 +306,11 @@ function Players() {
     setCurrentPlayer(playerName);
     addRecentlyViewedPlayer(playerName);
     setIsCardFlipped(false);
-    setPreviewApiStats(null);
-    setIsPreviewApiStatsLoading(false);
   }
 
   function closePlayerCard() {
     setCurrentPlayer("");
     setIsCardFlipped(false);
-    setPreviewApiStats(null);
-    setIsPreviewApiStatsLoading(false);
   }
 
   function toggleCardFlip() {
@@ -328,18 +345,6 @@ function Players() {
     openPlayerCard(playerName);
   }
 
-  // Api Handlers
-  async function previewApiStatsForSelectedPlayer() {
-    if (!selectedPlayer) return;
-
-    setIsPreviewApiStatsLoading(true);
-
-    const result = await getCachedOrFetchApiSportsStats(selectedPlayer, 2023);
-
-    setPreviewApiStats(result);
-    setIsPreviewApiStatsLoading(false);
-  }
-
   return (
     <main className="min-h-screen overflow-x-hidden text-white">
       <section className="relative mx-auto w-full max-w-6xl px-6 pt-4 pb-12">
@@ -365,6 +370,7 @@ function Players() {
                 onViewPlayer={openPlayerCard}
               >
                 <RecentlyScouted
+                  players={players}
                   recentlyViewedPlayers={recentlyViewedPlayers}
                   onViewPlayer={openPlayerCard}
                 />
@@ -439,9 +445,6 @@ function Players() {
                   onToggleFlip={toggleCardFlip}
                   onSelectSimilarPlayer={openPlayerCard}
                   onAddPlayerToCompare={addPlayerToCompare}
-                  previewApiStats={previewApiStats}
-                  isPreviewApiStatsLoading={isPreviewApiStatsLoading}
-                  onPreviewApiStats={previewApiStatsForSelectedPlayer}
                 />
               </div>
             )}

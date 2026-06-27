@@ -1,7 +1,6 @@
 import { teamColors, type Player } from "../../court-data";
 import { getPlayerHeadshot } from "../../player-images";
 import PlayerImage from "../../player-image";
-import { getPlayerDataSourceLabel } from "../../player-api-mappers";
 
 type PlayerCardBackHeaderProps = {
   player: Player;
@@ -41,10 +40,6 @@ export function PlayerCardBackHeader({
           {player.team}
         </p>
         <p className="shrink-0 text-xs text-white/55">#{player.jerseyNumber}</p>
-
-        <p className="text-center font-michroma text-[8px] uppercase text-white/35">
-          {getPlayerDataSourceLabel(player)}
-        </p>
       </div>
     </div>
   );

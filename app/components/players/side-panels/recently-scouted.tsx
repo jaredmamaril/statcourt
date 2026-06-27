@@ -1,11 +1,13 @@
-import { players, teamColors } from "../../court-data";
+import { teamColors, type Player } from "../../court-data";
 
 type RecentlyScoutedProps = {
+  players: Player[];
   recentlyViewedPlayers: string[];
   onViewPlayer: (playerName: string) => void;
 };
 
 export function RecentlyScouted({
+  players,
   recentlyViewedPlayers,
   onViewPlayer,
 }: RecentlyScoutedProps) {
