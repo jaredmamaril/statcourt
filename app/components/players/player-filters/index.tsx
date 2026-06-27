@@ -25,6 +25,7 @@ type PlayerFiltersProps = {
   teamOptions: Team[];
   filteredPosition: Position | "";
   filteredArchetype: string;
+  hasUnclassifiedPlayers: boolean;
   archetypeOptions: ArchetypeOption[];
   onSelectArchetype: (archetype: string) => void;
   sortBy: SortValue;
@@ -47,6 +48,7 @@ export function PlayerFilters({
   teamOptions,
   filteredPosition,
   filteredArchetype,
+  hasUnclassifiedPlayers,
   archetypeOptions,
   onSelectArchetype,
   sortBy,
@@ -105,6 +107,7 @@ export function PlayerFilters({
       <ArchetypeFilterDropdown
         filteredArchetype={filteredArchetype}
         archetypeOptions={archetypeOptions}
+        hasUnclassifiedPlayers={hasUnclassifiedPlayers}
         isOpen={openDropdown === "archetype"}
         onOpenDropdown={() =>
           onOpenDropdown(openDropdown === "archetype" ? null : "archetype")

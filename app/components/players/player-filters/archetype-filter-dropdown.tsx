@@ -7,6 +7,7 @@ type ArchetypeOption = NonNullable<
 
 type ArchetypeFilterDropdownProps = {
   filteredArchetype: string;
+  hasUnclassifiedPlayers: boolean;
   archetypeOptions: ArchetypeOption[];
   isOpen: boolean;
   onOpenDropdown: () => void;
@@ -15,6 +16,7 @@ type ArchetypeFilterDropdownProps = {
 
 export function ArchetypeFilterDropdown({
   filteredArchetype,
+  hasUnclassifiedPlayers,
   archetypeOptions,
   isOpen,
   onOpenDropdown,
@@ -46,6 +48,20 @@ export function ArchetypeFilterDropdown({
           >
             All Archetypes
           </button>
+
+          {hasUnclassifiedPlayers && (
+            <button
+              type="button"
+              onClick={() => onSelectArchetype("Unclassified")}
+              className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs ${
+                filteredArchetype === "Unclassified"
+                  ? "bg-red-500/10 text-red-400"
+                  : "text-red-300/80 hover:bg-white/10"
+              }`}
+            >
+              Unclassified
+            </button>
+          )}
 
           {archetypeOptions.map((archetype) => {
             const archetypeStyle = getArchetypePillStyle(archetype);

@@ -46,9 +46,15 @@ export function getFilteredPlayers({
         ? player.position === filteredPosition
         : true;
 
-      const matchesArchetype = filteredArchetype
-        ? getPlayerInsights(player).archetype?.label === filteredArchetype
-        : true;
+      const playerArchetype =
+        getPlayerInsights(player).archetype?.label ?? null;
+
+      const matchesArchetype =
+        filteredArchetype === "Unclassified"
+          ? playerArchetype === null
+          : filteredArchetype
+            ? playerArchetype === filteredArchetype
+            : true;
 
       return (
         matchesSearch &&

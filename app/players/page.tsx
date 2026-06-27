@@ -118,6 +118,10 @@ function Players() {
     ).values(),
   );
 
+  const hasUnclassifiedPlayers = players.some(
+    (player) => getPlayerInsights(player).archetype === null,
+  );
+
   const teamOptions = Array.from(
     new Set(players.map((player) => player.team)),
   ).sort();
@@ -431,6 +435,7 @@ function Players() {
               teamOptions={teamOptions}
               filteredPosition={filteredPosition}
               filteredArchetype={filteredArchetype}
+              hasUnclassifiedPlayers={hasUnclassifiedPlayers}
               archetypeOptions={archetypeOptions}
               onSelectArchetype={selectArchetypeFilter}
               sortBy={sortBy}
