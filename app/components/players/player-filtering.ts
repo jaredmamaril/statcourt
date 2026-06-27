@@ -1,9 +1,10 @@
-import type {
-  Player,
-  Position,
-  SortDirection,
-  SortValue,
-  Team,
+import {
+  getPlayerInsights,
+  type Player,
+  type Position,
+  type SortDirection,
+  type SortValue,
+  type Team,
 } from "../court-data";
 
 type GetFilteredPlayersOptions = {
@@ -13,6 +14,7 @@ type GetFilteredPlayersOptions = {
   showFavorites: boolean;
   filteredTeam: Team | "";
   filteredPosition: Position | "";
+  filteredArchetype: string;
   sortBy: SortValue;
   sortDirection: SortDirection;
 };
@@ -24,6 +26,7 @@ export function getFilteredPlayers({
   showFavorites,
   filteredTeam,
   filteredPosition,
+  filteredArchetype,
   sortBy,
   sortDirection,
 }: GetFilteredPlayersOptions) {
@@ -43,8 +46,16 @@ export function getFilteredPlayers({
         ? player.position === filteredPosition
         : true;
 
+      const matchesArchetype = filteredArchetype
+        ? getPlayerInsights(player).archetype?.label === filteredArchetype
+        : true;
+
       return (
-        matchesSearch && matchesFavorites && matchesTeam && matchesPosition
+        matchesSearch &&
+        matchesFavorites &&
+        matchesTeam &&
+        matchesPosition &&
+        matchesArchetype
       );
     })
     .sort((a, b) => {

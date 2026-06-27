@@ -539,6 +539,18 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
     player.stats.threePercent < 25;
   const isGenerationalShooter =
     player.stats.threePercent >= 42 && player.stats.ppg >= 20;
+  const isLeadGuard =
+    player.position === "PG" && player.stats.ppg >= 20 && player.stats.apg >= 5;
+  const isRimPressureGuard =
+    player.position === "PG" &&
+    player.stats.ppg >= 20 &&
+    player.stats.fgPercent >= 45 &&
+    player.stats.threePercent < 37;
+  const isScoringLeadGuard =
+    player.position === "PG" &&
+    player.stats.ppg >= 22 &&
+    player.stats.apg >= 4 &&
+    player.stats.apg < 8;
 
   if (isTripleDoubleMachine)
     addInsight(
@@ -635,6 +647,32 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
       "core",
       "gold",
       "Top 1% shooting profile with elite scoring volume and perimeter accuracy.",
+    );
+  if (isRimPressureGuard)
+    addInsight(
+      "Rim Pressure Guard",
+      0.9,
+      "core",
+      "blue",
+      "Lead guard who bends defenses with downhill scoring and paint pressure.",
+    );
+
+  if (isScoringLeadGuard)
+    addInsight(
+      "Scoring Lead Guard",
+      0.89,
+      "core",
+      "blue",
+      "Primary ball handler who creates offense through scoring pressure.",
+    );
+
+  if (isLeadGuard)
+    addInsight(
+      "Lead Creator",
+      0.88,
+      "core",
+      "blue",
+      "Runs offense as a primary guard through scoring and playmaking.",
     );
 
   if (scoringLoad > 3.5)

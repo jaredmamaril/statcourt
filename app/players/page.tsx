@@ -73,10 +73,11 @@ function Players() {
   const [showFavorites, setShowFavorites] = useState(false);
   const [filteredTeam, setFilteredTeam] = useState<Team | "">("");
   const [filteredPosition, setFilteredPosition] = useState<Position | "">("");
+  const [filteredArchetype, setFilteredArchetype] = useState("");
   const [sortBy, setSortBy] = useState<SortValue>("");
   const [sortDirection, setSortDirection] = useState<SortDirection>("primary");
   const [openDropdown, setOpenDropdown] = useState<
-    "team" | "position" | "sort" | null
+    "team" | "position" | "sort" | "archetype" | null
   >(null);
   const [isCardFlipped, setIsCardFlipped] = useState(false);
   const [isGoingToCourt, setIsGoingToCourt] = useState(false);
@@ -108,6 +109,15 @@ function Players() {
     ? getPlayerInsights(featuredPlayer)
     : null;
 
+  const archetypeOptions = Array.from(
+    new Map(
+      players
+        .map((player) => getPlayerInsights(player).archetype)
+        .filter((archetype) => archetype !== null)
+        .map((archetype) => [archetype.label, archetype]),
+    ).values(),
+  );
+
   // Filtered list data
   const filteredPlayers = getFilteredPlayers({
     players,
@@ -116,12 +126,18 @@ function Players() {
     showFavorites,
     filteredTeam,
     filteredPosition,
+    filteredArchetype,
     sortBy,
     sortDirection,
   });
 
   const hasActiveFilters = Boolean(
-    showFavorites || filteredTeam || filteredPosition || sortBy || playerSearch,
+    showFavorites ||
+    filteredTeam ||
+    filteredPosition ||
+    filteredArchetype ||
+    sortBy ||
+    playerSearch,
   );
 
   // Database snapshot data
@@ -279,6 +295,7 @@ function Players() {
     setShowFavorites(false);
     setFilteredTeam("");
     setFilteredPosition("");
+    setFilteredArchetype("");
     setSortBy("");
     setSortDirection("primary");
     setOpenDropdown(null);
@@ -324,6 +341,11 @@ function Players() {
 
   function selectPositionFilter(position: Position | "") {
     setFilteredPosition(position);
+    setOpenDropdown(null);
+  }
+
+  function selectArchetypeFilter(archetype: string) {
+    setFilteredArchetype(archetype);
     setOpenDropdown(null);
   }
 
@@ -403,6 +425,9 @@ function Players() {
               favoritesCount={favorites.length}
               filteredTeam={filteredTeam}
               filteredPosition={filteredPosition}
+              filteredArchetype={filteredArchetype}
+              archetypeOptions={archetypeOptions}
+              onSelectArchetype={selectArchetypeFilter}
               sortBy={sortBy}
               sortDirection={sortDirection}
               openDropdown={openDropdown}

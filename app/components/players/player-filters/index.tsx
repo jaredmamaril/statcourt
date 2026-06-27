@@ -4,12 +4,18 @@ import {
   type Team,
   type SortDirection,
 } from "../../court-data";
+import { getPlayerInsights } from "../../court-data";
 
 import { TeamFilterDropdown } from "./team-filter-dropdown";
 import { PositionFilterDropdown } from "./position-filter-dropdown";
 import { SortFilterDropdown } from "./sort-filter-dropdown";
+import { ArchetypeFilterDropdown } from "./archetype-filter-dropdown";
 
-type OpenDropdown = "team" | "position" | "sort" | null;
+type ArchetypeOption = NonNullable<
+  ReturnType<typeof getPlayerInsights>["archetype"]
+>;
+
+type OpenDropdown = "team" | "position" | "sort" | "archetype" | null;
 
 type PlayerFiltersProps = {
   filtersRef: React.RefObject<HTMLDivElement | null>;
@@ -17,6 +23,9 @@ type PlayerFiltersProps = {
   favoritesCount: number;
   filteredTeam: Team | "";
   filteredPosition: Position | "";
+  filteredArchetype: string;
+  archetypeOptions: ArchetypeOption[];
+  onSelectArchetype: (archetype: string) => void;
   sortBy: SortValue;
   sortDirection: SortDirection;
   openDropdown: OpenDropdown;
@@ -35,6 +44,9 @@ export function PlayerFilters({
   favoritesCount,
   filteredTeam,
   filteredPosition,
+  filteredArchetype,
+  archetypeOptions,
+  onSelectArchetype,
   sortBy,
   sortDirection,
   openDropdown,
@@ -87,6 +99,16 @@ export function PlayerFilters({
         onSelectPosition={onSelectPosition}
       />
 
+      <ArchetypeFilterDropdown
+        filteredArchetype={filteredArchetype}
+        archetypeOptions={archetypeOptions}
+        isOpen={openDropdown === "archetype"}
+        onOpenDropdown={() =>
+          onOpenDropdown(openDropdown === "archetype" ? null : "archetype")
+        }
+        onSelectArchetype={onSelectArchetype}
+      />
+
       <SortFilterDropdown
         sortBy={sortBy}
         sortDirection={sortDirection}
@@ -98,13 +120,15 @@ export function PlayerFilters({
       />
 
       {hasActiveFilters && (
-        <button
-          type="button"
-          onClick={onResetFilters}
-          className="cursor-pointer rounded-md border border-white/20 bg-black/10 px-2 py-1 font-michroma text-xs text-white/60 transition-all duration-200 hover:border-red-700/60 hover:text-red-700"
-        >
-          Reset Filters
-        </button>
+        <div className="flex basis-full justify-center">
+          <button
+            type="button"
+            onClick={onResetFilters}
+            className="cursor-pointer rounded-md border border-white/20 bg-black/10 px-2 py-1 font-michroma text-xs text-white/60 transition-all duration-200 hover:border-red-700/60 hover:text-red-700"
+          >
+            Reset Filters
+          </button>
+        </div>
       )}
     </div>
   );

@@ -61,8 +61,8 @@ export function PlayerListRow({
         <PlayerImage
           src={getPlayerHeadshot(player)}
           alt={player.name}
-          width={44}
-          height={44}
+          width={240}
+          height={240}
           className="h-11 w-11 shrink-0 rounded-full object-cover"
         />
 

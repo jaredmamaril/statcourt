@@ -23,6 +23,15 @@ export function SortFilterDropdown({
     (option) => option.value === sortBy,
   );
 
+  const selectedSortButtonLabel =
+    sortBy === "fgPercent"
+      ? "FG"
+      : sortBy === "threePercent"
+        ? "3PT"
+        : sortBy === "ftPercent"
+          ? "FT"
+          : selectedSortOption?.label;
+
   return (
     <div className="relative">
       <button
@@ -35,7 +44,8 @@ export function SortFilterDropdown({
         }`}
       >
         <span>
-          Sort: {selectedSortOption ? selectedSortOption.label : "None"}
+          {selectedSortButtonLabel || "None"}
+          {"% "}
           {sortBy &&
             (sortBy === "first-name" || sortBy === "last-name"
               ? sortDirection === "primary"
