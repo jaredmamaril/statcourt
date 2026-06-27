@@ -16,6 +16,7 @@ export function TeamFilterDropdown({
   onOpenDropdown,
   onSelectTeam,
 }: TeamFilterDropdownProps) {
+  const filteredTeamLogo = filteredTeam ? teamLogos[filteredTeam] : null;
   return (
     <div className="relative">
       <button
@@ -31,9 +32,9 @@ export function TeamFilterDropdown({
           borderColor: filteredTeam ? teamColors[filteredTeam] : undefined,
         }}
       >
-        {filteredTeam && (
+        {filteredTeamLogo && (
           <Image
-            src={teamLogos[filteredTeam]}
+            src={filteredTeamLogo}
             alt={`${filteredTeam} logo`}
             width={16}
             height={16}
@@ -54,30 +55,34 @@ export function TeamFilterDropdown({
             All Teams
           </button>
 
-          {teamOptions.map((team) => (
-            <button
-              key={team}
-              type="button"
-              onClick={() => onSelectTeam(team)}
-              className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs ${
-                filteredTeam === team
-                  ? "bg-[#1bc2ec]/10 text-[#1bc2ec]"
-                  : "text-white/70 hover:bg-white/10"
-              }`}
-              style={{ color: teamColors[team] }}
-            >
-              <span className="flex items-center gap-2">
-                <Image
-                  src={teamLogos[team]}
-                  alt={`${team} logo`}
-                  width={16}
-                  height={16}
-                  className="h-4 w-4 object-contain"
-                />
-                <span>{team}</span>
-              </span>
-            </button>
-          ))}
+          {teamOptions.map((team) => {
+            const teamLogo = teamLogos[team] ?? teamLogos.FA;
+
+            return (
+              <button
+                key={team}
+                type="button"
+                onClick={() => onSelectTeam(team)}
+                className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs ${
+                  filteredTeam === team
+                    ? "bg-[#1bc2ec]/10 text-[#1bc2ec]"
+                    : "text-white/70 hover:bg-white/10"
+                }`}
+                style={{ color: teamColors[team] }}
+              >
+                <span className="flex items-center gap-2">
+                  <Image
+                    src={teamLogo}
+                    alt={`${team} logo`}
+                    width={16}
+                    height={16}
+                    className="h-4 w-4 object-contain"
+                  />
+                  <span>{team}</span>
+                </span>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

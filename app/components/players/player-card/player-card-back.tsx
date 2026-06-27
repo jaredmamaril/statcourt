@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { teamColors, type Player } from "../../court-data";
+import { normalizeTeamCode, teamColors, type Player } from "../../court-data";
 
 type PlayerCardBackProps = {
   player: Player;
@@ -12,6 +12,7 @@ export function PlayerCardBack({
   isCardFlipped,
   children,
 }: PlayerCardBackProps) {
+  const teamColor = teamColors[normalizeTeamCode(player.team)];
   return (
     <div
       className={`absolute inset-0 min-h-134 rounded-3xl border bg-black/30 ${
@@ -20,7 +21,7 @@ export function PlayerCardBack({
       style={{
         backfaceVisibility: "hidden",
         transform: "rotateY(180deg)",
-        borderColor: teamColors[player.team],
+        borderColor: teamColor,
       }}
     >
       <div className="absolute -inset-1 z-0 opacity-50">

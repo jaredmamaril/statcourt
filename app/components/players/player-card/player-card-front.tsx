@@ -1,5 +1,10 @@
 import Image from "next/image";
-import { teamColors, teamLogos, type Player } from "../../court-data";
+import {
+  normalizeTeamCode,
+  teamColors,
+  teamLogos,
+  type Player,
+} from "../../court-data";
 import { getPlayerHeadshot } from "../../player-images";
 import PlayerImage from "../../player-image";
 
@@ -12,6 +17,9 @@ export function PlayerCardFront({
   player,
   isCardFlipped,
 }: PlayerCardFrontProps) {
+  const normalizedTeam = normalizeTeamCode(player.team);
+  const teamLogo = teamLogos[normalizedTeam];
+  const teamColor = teamColors[normalizedTeam];
   return (
     <div
       className={`absolute inset-0 min-h-134 rounded-3xl border border-[#1bc2ec]/10 bg-black/30 p-6 ${
@@ -36,7 +44,7 @@ export function PlayerCardFront({
           y="0"
           width="100"
           height="100"
-          fill={teamColors[player.team]}
+          fill={teamColor}
           mask={`url(#team-frame-mask-${player.id})`}
         />
 
@@ -60,7 +68,7 @@ export function PlayerCardFront({
 
       <div
         className="absolute top-18 right-14 z-30"
-        style={{ color: teamColors[player.team] }}
+        style={{ color: teamColor }}
       >
         <div className="flex flex-col items-center">
           <span className="font-michroma text-3xl font-bold opacity-70">
@@ -74,7 +82,7 @@ export function PlayerCardFront({
 
       <div className="absolute top-15 left-12 z-30 opacity-70">
         <Image
-          src={teamLogos[player.team]}
+          src={teamLogo}
           alt={`${player.team} logo`}
           width={32}
           height={32}

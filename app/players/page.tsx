@@ -5,6 +5,7 @@ import {
   positions,
   getPlayerInsights,
   getSimilarPlayers,
+  normalizeTeamCode,
   type Player,
 } from "../components/court-data";
 import { getPlayerRating } from "../components/player-ratings";
@@ -123,7 +124,7 @@ function Players() {
   );
 
   const teamOptions = Array.from(
-    new Set(players.map((player) => player.team)),
+    new Set(players.map((player) => normalizeTeamCode(player.team))),
   ).sort();
 
   // Filtered list data

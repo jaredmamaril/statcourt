@@ -1,4 +1,4 @@
-import { teamColors, type Player } from "../../court-data";
+import { normalizeTeamCode, teamColors, type Player } from "../../court-data";
 import { getPlayerHeadshot } from "../../player-images";
 import PlayerImage from "../../player-image";
 
@@ -11,6 +11,7 @@ export function PlayerCardBackHeader({
   player,
   getPlayerNameTextClass,
 }: PlayerCardBackHeaderProps) {
+  const teamColor = teamColors[normalizeTeamCode(player.team)];
   return (
     <div className="relative z-10 grid grid-cols-[88px_1fr_52px] items-center gap-4 px-3 pt-1 font-michroma uppercase">
       <PlayerImage
@@ -35,7 +36,7 @@ export function PlayerCardBackHeader({
         <p className="shrink-0 text-xs text-white/55">{player.position}</p>
         <p
           className="shrink-0 text-xs text-white/55"
-          style={{ color: teamColors[player.team] }}
+          style={{ color: teamColor }}
         >
           {player.team}
         </p>

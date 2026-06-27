@@ -7,6 +7,7 @@ export type ApiPosition = "G" | "F" | "C";
 export type Position = "PG" | "SG" | "SF" | "PF" | "C";
 
 export type Team =
+  | "FA"
   | "ATL"
   | "BKN"
   | "BOS"
@@ -38,7 +39,60 @@ export type Team =
   | "UTA"
   | "WAS";
 
+export const teamCodeAliases: Record<string, Team> = {
+  // Lakers
+  MNL: "LAL",
+  // Warriors
+  PHW: "GSW",
+  SFW: "GSW",
+  // Hawks
+  STL: "ATL",
+  MLH: "ATL",
+  TRI: "ATL",
+  // Kings
+  ROC: "SAC",
+  CIN: "SAC",
+  KCO: "SAC",
+  KCK: "SAC",
+  // Thunder
+  SEA: "OKC",
+  // Nets
+  NJN: "BKN",
+  NYN: "BKN",
+  // Pelicans
+  NOH: "NOP",
+  NOK: "NOP",
+  // Hornets
+  CHH: "CHA",
+  // Grizzlies
+  VAN: "MEM",
+  // Wizards
+  BAL: "WAS",
+  CAP: "WAS",
+  WSB: "WAS",
+  // Clippers
+  BUF: "LAC",
+  SDC: "LAC",
+  // Pistons
+  FTW: "DET",
+  // 76ers
+  SYR: "PHI",
+  // Jazz
+  NOJ: "UTA",
+  // Defunct/no current franchise
+  INO: "FA",
+  AND: "FA",
+  SHE: "FA",
+  WAT: "FA",
+  CLR: "FA",
+  PIT: "FA",
+  PRO: "FA",
+  CHS: "FA",
+  STB: "FA",
+};
+
 export const teamColors: Record<Team, string> = {
+  FA: "#94A3B8",
   ATL: "#e03a3e",
   BKN: "#000000",
   BOS: "#007a33",
@@ -71,7 +125,18 @@ export const teamColors: Record<Team, string> = {
   WAS: "#002b5c",
 };
 
+export function normalizeTeamCode(team: string): Team {
+  if (!team) return "FA";
+
+  if (team in teamColors) {
+    return team as Team;
+  }
+
+  return teamCodeAliases[team] ?? "FA";
+}
+
 export const teamLogos: Record<Team, string> = {
+  FA: "/blank-player.svg",
   ATL: "/team-logos/atl.svg",
   BKN: "/team-logos/bkn.svg",
   BOS: "/team-logos/bos.svg",

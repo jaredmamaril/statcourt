@@ -1,4 +1,4 @@
-import { teamColors, type Player } from "../../court-data";
+import { normalizeTeamCode, teamColors, type Player } from "../../court-data";
 
 type PlayerCardAddToCompareProps = {
   player: Player;
@@ -14,6 +14,7 @@ export function PlayerCardAddToCompare({
   compareSlots,
   onAddPlayerToCompare,
 }: PlayerCardAddToCompareProps) {
+  const teamColor = teamColors[normalizeTeamCode(player.team)];
   return (
     <div
       className="group absolute bottom-2 left-1/2 z-200 w-88 -translate-x-1/2"
@@ -24,7 +25,7 @@ export function PlayerCardAddToCompare({
         type="button"
         className="w-full cursor-pointer rounded-md border bg-black/60 px-4 py-2 font-michroma text-lg uppercase tracking-wide text-white backdrop-blur-sm transition-all duration-200 hover:brightness-250"
         style={{
-          borderColor: teamColors[player.team],
+          borderColor: teamColor,
         }}
       >
         Add to Compare

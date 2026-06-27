@@ -1,5 +1,6 @@
 import {
   getPlayerInsights,
+  normalizeTeamCode,
   type Player,
   type Position,
   type SortDirection,
@@ -50,7 +51,9 @@ export function getFilteredPlayers({
         ? favorites.includes(player.name)
         : true;
 
-      const matchesTeam = filteredTeam ? player.team === filteredTeam : true;
+      const matchesTeam = filteredTeam
+        ? normalizeTeamCode(player.team) === filteredTeam
+        : true;
 
       const matchesPosition = filteredPosition
         ? player.position === filteredPosition

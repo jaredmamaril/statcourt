@@ -1,6 +1,7 @@
 import { supabase } from "./supabase-client";
 import { players as fallbackPlayers } from "./court-data";
 import type { Player, Position, Team } from "./court-data";
+import { normalizeTeamCode } from "./court-data";
 
 export type SupabasePlayerRow = {
   id: number;
