@@ -551,6 +551,31 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
     player.stats.ppg >= 22 &&
     player.stats.apg >= 4 &&
     player.stats.apg < 8;
+  const isTwoWayWing =
+    (player.position === "SG" || player.position === "SF") &&
+    player.stats.ppg >= 18 &&
+    player.ratings.defense >= 82;
+  const isWingShotCreator =
+    (player.position === "SG" || player.position === "SF") &&
+    player.stats.ppg >= 20 &&
+    player.stats.apg >= 3 &&
+    player.stats.fgPercent >= 45;
+  const isClutchCreator =
+    player.position === "PG" &&
+    player.stats.ppg >= 22 &&
+    player.stats.apg >= 5 &&
+    player.stats.fgPercent >= 46;
+  const isTwoWayConnector =
+    (player.position === "SF" || player.position === "PF") &&
+    player.stats.ppg >= 16 &&
+    player.stats.rpg >= 5 &&
+    player.stats.apg >= 4 &&
+    player.ratings.defense >= 82;
+  const isCraftScoringGuard =
+    player.position === "PG" &&
+    player.stats.ppg >= 16 &&
+    player.stats.apg >= 4 &&
+    player.stats.fgPercent >= 46;
 
   if (isTripleDoubleMachine)
     addInsight(
@@ -698,6 +723,49 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
       "supporting",
       "purple",
       "Dominant scoring profile from an era or role with little three-point volume.",
+    );
+  if (isTwoWayWing)
+    addInsight(
+      "Two-Way Wing",
+      0.91,
+      "core",
+      "blue",
+      "Wing profile built around scoring pressure and strong defensive value.",
+    );
+
+  if (isWingShotCreator)
+    addInsight(
+      "Wing Shot Creator",
+      0.9,
+      "core",
+      "blue",
+      "Creates offense from the wing with scoring volume and reliable efficiency.",
+    );
+
+  if (isClutchCreator)
+    addInsight(
+      "Clutch Creator",
+      0.89,
+      "core",
+      "blue",
+      "Lead guard who creates efficient offense as a primary scoring option.",
+    );
+
+  if (isTwoWayConnector)
+    addInsight(
+      "Two-Way Connector",
+      0.88,
+      "core",
+      "blue",
+      "Versatile forward who links scoring, passing, rebounding, and defense.",
+    );
+  if (isCraftScoringGuard)
+    addInsight(
+      "Craft Scoring Guard",
+      0.87,
+      "core",
+      "blue",
+      "Lead guard who creates efficient offense through scoring craft and ball control.",
     );
 
   // Position-aware rules
