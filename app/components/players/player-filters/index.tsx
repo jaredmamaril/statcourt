@@ -1,10 +1,10 @@
 import {
+  getPlayerInsights,
   type Position,
   type SortValue,
   type Team,
   type SortDirection,
 } from "../../court-data";
-import { getPlayerInsights } from "../../court-data";
 
 import { TeamFilterDropdown } from "./team-filter-dropdown";
 import { PositionFilterDropdown } from "./position-filter-dropdown";
@@ -22,6 +22,7 @@ type PlayerFiltersProps = {
   showFavorites: boolean;
   favoritesCount: number;
   filteredTeam: Team | "";
+  teamOptions: Team[];
   filteredPosition: Position | "";
   filteredArchetype: string;
   archetypeOptions: ArchetypeOption[];
@@ -43,6 +44,7 @@ export function PlayerFilters({
   showFavorites,
   favoritesCount,
   filteredTeam,
+  teamOptions,
   filteredPosition,
   filteredArchetype,
   archetypeOptions,
@@ -82,6 +84,7 @@ export function PlayerFilters({
       </button>
 
       <TeamFilterDropdown
+        teamOptions={teamOptions}
         filteredTeam={filteredTeam}
         isOpen={openDropdown === "team"}
         onOpenDropdown={() =>

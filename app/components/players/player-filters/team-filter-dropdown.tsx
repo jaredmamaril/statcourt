@@ -1,7 +1,8 @@
 import Image from "next/image";
-import { teams, teamColors, teamLogos, type Team } from "../../court-data";
+import { teamColors, teamLogos, type Team } from "../../court-data";
 
 type TeamFilterDropdownProps = {
+  teamOptions: Team[];
   filteredTeam: Team | "";
   isOpen: boolean;
   onOpenDropdown: () => void;
@@ -9,6 +10,7 @@ type TeamFilterDropdownProps = {
 };
 
 export function TeamFilterDropdown({
+  teamOptions,
   filteredTeam,
   isOpen,
   onOpenDropdown,
@@ -52,7 +54,7 @@ export function TeamFilterDropdown({
             All Teams
           </button>
 
-          {teams.map((team) => (
+          {teamOptions.map((team) => (
             <button
               key={team}
               type="button"

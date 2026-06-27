@@ -118,6 +118,10 @@ function Players() {
     ).values(),
   );
 
+  const teamOptions = Array.from(
+    new Set(players.map((player) => player.team)),
+  ).sort();
+
   // Filtered list data
   const filteredPlayers = getFilteredPlayers({
     players,
@@ -424,6 +428,7 @@ function Players() {
               showFavorites={showFavorites}
               favoritesCount={favorites.length}
               filteredTeam={filteredTeam}
+              teamOptions={teamOptions}
               filteredPosition={filteredPosition}
               filteredArchetype={filteredArchetype}
               archetypeOptions={archetypeOptions}

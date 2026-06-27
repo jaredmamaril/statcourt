@@ -33,6 +33,7 @@ all_players = commonallplayers.CommonAllPlayers(
 
 df = all_players.common_all_players.get_data_frame()
 
+
 for _, row in df.iterrows():
     print(f"""
 insert into public.player_directory (

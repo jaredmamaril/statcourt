@@ -49,8 +49,11 @@ NBA_HEADERS = {
     "x-nba-stats-token": "true",
 }
 
-SKIP_COMMON_PLAYER_INFO = False
+SKIP_COMMON_PLAYER_INFO = True
 PLAYER_IMPORT_CONTEXT = {}
+
+IMPORT_MODE = "pending"  # "pending", "all", or "selected"
+SELECTED_PLAYERS = []
 
 
 def pause_between_nba_calls():
@@ -72,34 +75,26 @@ def run_nba_request(label, request_fn, max_retries=5):
             time.sleep(delay + random.uniform(2, 5))
             delay *= 2
 
-
 def get_players_to_import():
+    global PLAYER_IMPORT_CONTEXT
+
+    if IMPORT_MODE == "selected":
+        return SELECTED_PLAYERS
+
     supabase = get_supabase_client()
 
-    response = (
-        supabase
-        .table("players")
-        .select("name, team, ppg, fallback_image, stats_source")
-        .order("name")
-        .execute()
-    )
+    query = supabase.table("players").select(
+        "name, team, position, jersey_number, fallback_image, stats_source"
+    ).order("name")
 
-    names = []
+    if IMPORT_MODE == "pending":
+        query = query.eq("stats_source", "pending_import")
 
-    for row in response.data:
-        is_placeholder = (
-            row.get("ppg") in (None, 0)
-            or row.get("fallback_image") is None
-            or row.get("stats_source") is None
-        )
+    response = query.execute()
 
-        if is_placeholder:
-            names.append(row["name"])
-
-    global PLAYER_IMPORT_CONTEXT
     PLAYER_IMPORT_CONTEXT = {row["name"]: row for row in response.data}
 
-    return names
+    return [row["name"] for row in response.data]
 
 
 MANUAL_PLAYER_STATS = {
@@ -501,7 +496,16 @@ do update set
 
 DEFENSE_SEASONS = ["2022-23", "2023-24", "2024-25"]
 
+ONLY_IMPORT = {
+    "Aaron Gordon",
+    "Al Horford",
+    "Bam Adebayo",
+}
+
 for player_name in get_players_to_import():
+    if ONLY_IMPORT and player_name not in ONLY_IMPORT:
+        continue
+
     try:
         stats = get_career_averages(player_name)
 
