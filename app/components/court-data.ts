@@ -1243,12 +1243,17 @@ export const positions = positionOrder.filter((position) =>
 );
 
 // Options to sort data from
-export type SortValue = "" | "first-name" | "last-name" | CorePlayerStatKey;
+export type SortValue =
+  | ""
+  | "first-name"
+  | "last-name"
+  | "overall"
+  | CorePlayerStatKey;
 export type SortDirection = "primary" | "reverse";
 export const sortOptions: { label: string; value: SortValue }[] = [
-  { label: "None", value: "" },
   { label: "First Name", value: "first-name" },
   { label: "Last Name", value: "last-name" },
+  { label: "Overall", value: "overall" },
   { label: "PPG", value: "ppg" },
   { label: "RPG", value: "rpg" },
   { label: "APG", value: "apg" },

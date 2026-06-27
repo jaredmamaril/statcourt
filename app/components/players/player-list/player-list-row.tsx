@@ -23,7 +23,10 @@ export function PlayerListRow({
   const teamColor = teamColors[player.team];
   const playerOverall = getPlayerRating(player);
   const selectedStatValue =
-    sortBy && sortBy !== "first-name" && sortBy !== "last-name"
+    sortBy &&
+    sortBy !== "first-name" &&
+    sortBy !== "last-name" &&
+    sortBy !== "overall"
       ? player.stats[sortBy]
       : null;
   const isPercentSort =

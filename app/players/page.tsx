@@ -74,7 +74,7 @@ function Players() {
   const [filteredTeam, setFilteredTeam] = useState<Team | "">("");
   const [filteredPosition, setFilteredPosition] = useState<Position | "">("");
   const [filteredArchetype, setFilteredArchetype] = useState("");
-  const [sortBy, setSortBy] = useState<SortValue>("");
+  const [sortBy, setSortBy] = useState<SortValue>("overall");
   const [sortDirection, setSortDirection] = useState<SortDirection>("primary");
   const [openDropdown, setOpenDropdown] = useState<
     "team" | "position" | "sort" | "archetype" | null
@@ -304,7 +304,7 @@ function Players() {
     setFilteredTeam("");
     setFilteredPosition("");
     setFilteredArchetype("");
-    setSortBy("");
+    setSortBy("overall");
     setSortDirection("primary");
     setOpenDropdown(null);
   }

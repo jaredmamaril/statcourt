@@ -44,7 +44,7 @@ export function SortFilterDropdown({
         }`}
       >
         <span>
-          {selectedSortButtonLabel || "None"}{" "}
+          {selectedSortButtonLabel || "Sort"}{" "}
           {sortBy &&
             (sortBy === "first-name" || sortBy === "last-name"
               ? sortDirection === "primary"

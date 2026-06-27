@@ -6,6 +6,7 @@ import {
   type SortValue,
   type Team,
 } from "../court-data";
+import { getPlayerRating } from "../player-ratings";
 
 type GetFilteredPlayersOptions = {
   players: Player[];
@@ -18,6 +19,15 @@ type GetFilteredPlayersOptions = {
   sortBy: SortValue;
   sortDirection: SortDirection;
 };
+
+function getNameParts(name: string) {
+  const parts = name.trim().split(/\s+/);
+
+  return {
+    firstName: parts[0] ?? "",
+    lastName: parts.at(-1) ?? "",
+  };
+}
 
 export function getFilteredPlayers({
   players,
@@ -65,24 +75,28 @@ export function getFilteredPlayers({
       );
     })
     .sort((a, b) => {
-      if (!sortBy) return 0;
+      if (!sortBy) {
+        return (
+          getPlayerRating(b) - getPlayerRating(a) ||
+          a.name.localeCompare(b.name)
+        );
+      }
 
       let result = 0;
 
-      const aSpaceIndex = a.name.indexOf(" ");
-      const aFirstName = a.name.slice(0, aSpaceIndex);
-      const aLastName = a.name.slice(aSpaceIndex + 1);
-
-      const bSpaceIndex = b.name.indexOf(" ");
-      const bFirstName = b.name.slice(0, bSpaceIndex);
-      const bLastName = b.name.slice(bSpaceIndex + 1);
+      const { lastName: aLastName } = getNameParts(a.name);
+      const { lastName: bLastName } = getNameParts(b.name);
 
       if (sortBy === "first-name") {
-        result = aFirstName.localeCompare(bFirstName);
+        result = a.name.localeCompare(b.name);
       }
 
       if (sortBy === "last-name") {
         result = aLastName.localeCompare(bLastName);
+      }
+
+      if (sortBy === "overall") {
+        result = getPlayerRating(b) - getPlayerRating(a);
       }
 
       if (sortBy === "ppg") result = b.stats.ppg - a.stats.ppg;
