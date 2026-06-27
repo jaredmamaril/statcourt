@@ -139,6 +139,8 @@ function Players() {
     sortDirection,
   });
 
+  const visiblePlayers = filteredPlayers.slice(0, 100);
+
   const hasActiveFilters = Boolean(
     showFavorites ||
     filteredTeam ||
@@ -451,7 +453,8 @@ function Players() {
             />
 
             <PlayerList
-              players={filteredPlayers}
+              players={visiblePlayers}
+              totalPlayersCount={filteredPlayers.length}
               currentPlayer={currentPlayer}
               favorites={favorites}
               showFavorites={showFavorites}

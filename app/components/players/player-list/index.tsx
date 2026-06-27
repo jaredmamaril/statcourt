@@ -3,6 +3,7 @@ import { PlayerListRow } from "./player-list-row";
 
 type PlayerListProps = {
   players: Player[];
+  totalPlayersCount: number;
   currentPlayer: string;
   favorites: string[];
   showFavorites: boolean;
@@ -13,6 +14,7 @@ type PlayerListProps = {
 
 export function PlayerList({
   players,
+  totalPlayersCount,
   currentPlayer,
   favorites,
   showFavorites,
@@ -30,17 +32,26 @@ export function PlayerList({
               : "No players found."}
           </p>
         ) : (
-          players.map((player) => (
-            <PlayerListRow
-              key={player.id}
-              player={player}
-              isSelected={player.name === currentPlayer}
-              isFavorite={favorites.includes(player.name)}
-              sortBy={sortBy}
-              onToggleFavorite={onToggleFavorite}
-              onSelectPlayer={onSelectPlayer}
-            />
-          ))
+          <>
+            {players.map((player) => (
+              <PlayerListRow
+                key={player.id}
+                player={player}
+                isSelected={player.name === currentPlayer}
+                isFavorite={favorites.includes(player.name)}
+                sortBy={sortBy}
+                onToggleFavorite={onToggleFavorite}
+                onSelectPlayer={onSelectPlayer}
+              />
+            ))}
+
+            {players.length < totalPlayersCount && (
+              <p className="py-3 text-center font-michroma text-[10px] text-white/35">
+                Showing {players.length} of {totalPlayersCount}. Use search or
+                filters to narrow results.
+              </p>
+            )}
+          </>
         )}
       </div>
     </div>
