@@ -26,6 +26,10 @@ export function PlayerListRow({
     sortBy && sortBy !== "first-name" && sortBy !== "last-name"
       ? player.stats[sortBy]
       : null;
+  const isPercentSort =
+    sortBy === "fgPercent" ||
+    sortBy === "threePercent" ||
+    sortBy === "ftPercent";
 
   return (
     <div
@@ -91,11 +95,7 @@ export function PlayerListRow({
             {selectedStatValue !== null && (
               <span className="shrink-0 rounded border border-[#1bc2ec]/30 bg-[#1bc2ec]/10 px-1.5 py-0.5 text-[10px] text-[#1bc2ec]">
                 {selectedStatValue}
-                {sortBy === "fgPercent" ||
-                sortBy === "threePercent" ||
-                sortBy === "ftPercent"
-                  ? "%"
-                  : ""}
+                {isPercentSort ? "%" : ""}
               </span>
             )}
           </span>

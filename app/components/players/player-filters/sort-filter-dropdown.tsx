@@ -25,11 +25,11 @@ export function SortFilterDropdown({
 
   const selectedSortButtonLabel =
     sortBy === "fgPercent"
-      ? "FG"
+      ? "FG%"
       : sortBy === "threePercent"
-        ? "3PT"
+        ? "3PT%"
         : sortBy === "ftPercent"
-          ? "FT"
+          ? "FT%"
           : selectedSortOption?.label;
 
   return (
@@ -44,8 +44,7 @@ export function SortFilterDropdown({
         }`}
       >
         <span>
-          {selectedSortButtonLabel || "None"}
-          {"% "}
+          {selectedSortButtonLabel || "None"}{" "}
           {sortBy &&
             (sortBy === "first-name" || sortBy === "last-name"
               ? sortDirection === "primary"
