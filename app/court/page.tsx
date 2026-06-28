@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 
-import { players, teamColors } from "../components/court-data";
+import { players, getTeamColor } from "../components/court-data";
 
 import {
   getSavedCompareSlots,
@@ -126,11 +126,13 @@ export default function Court() {
           selectedLeftPlayerName={selectedLeftPlayer?.name ?? ""}
           selectedRightPlayerName={selectedRightPlayer?.name ?? ""}
           leftColor={
-            selectedLeftPlayer ? teamColors[selectedLeftPlayer.team] : "#F4BB44"
+            selectedLeftPlayer
+              ? getTeamColor(selectedLeftPlayer.team)
+              : "#F4BB44"
           }
           rightColor={
             selectedRightPlayer
-              ? teamColors[selectedRightPlayer.team]
+              ? getTeamColor(selectedRightPlayer.team)
               : "#347A99"
           }
         />

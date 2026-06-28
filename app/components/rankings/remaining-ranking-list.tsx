@@ -1,7 +1,7 @@
 import PlayerImage from "../player-image";
 import { getPlayerHeadshot } from "../player-images";
 import { getPlayerRating, type PlayerRatingCategory } from "../player-ratings";
-import { getPlayerInsights, teamColors, type Player } from "../court-data";
+import { getTeamColor, getPlayerInsights, type Player } from "../court-data";
 
 import { getArchetypePillStyle } from "./ranking-style-helpers";
 import { RankingPlayerTooltip } from "./ranking-player-tooltip";
@@ -30,6 +30,7 @@ export function RemainingRankingList({
         {players.slice(3).map((player, index) => {
           const archetype = getPlayerInsights(player).archetype;
           const rating = getPlayerRating(player, ratingCategory).toFixed(1);
+          const teamColor = getTeamColor(player.team);
 
           return (
             <div
@@ -72,7 +73,7 @@ export function RemainingRankingList({
               <span
                 className="text-right font-michroma font-semibold text-[11px]"
                 style={{
-                  color: teamColors[player.team],
+                  color: teamColor,
                 }}
               >
                 {player.team}

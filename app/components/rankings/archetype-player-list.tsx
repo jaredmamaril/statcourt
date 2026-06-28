@@ -1,7 +1,7 @@
 import PlayerImage from "../player-image";
 import { getPlayerHeadshot } from "../player-images";
 import { getPlayerRating } from "../player-ratings";
-import { teamColors, type Player } from "../court-data";
+import { getTeamColor, type Player } from "../court-data";
 import { RankingPlayerTooltip } from "./ranking-player-tooltip";
 
 type ArchetypePlayerListProps = {
@@ -29,6 +29,7 @@ export function ArchetypePlayerList({
         ) : (
           players.map((player, index) => {
             const rating = getPlayerRating(player, "overall").toFixed(1);
+            const teamColor = getTeamColor(player.team);
 
             return (
               <div
@@ -53,7 +54,7 @@ export function ArchetypePlayerList({
                   </p>
                   <p
                     className="mt-0.5 font-michroma text-[9px]"
-                    style={{ color: teamColors[player.team] }}
+                    style={{ color: teamColor }}
                   >
                     {player.team}
                   </p>

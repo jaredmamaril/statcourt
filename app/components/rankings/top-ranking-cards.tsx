@@ -1,7 +1,7 @@
 import PlayerImage from "../player-image";
 import { getPlayerHeadshot } from "../player-images";
 import { getPlayerRating, type PlayerRatingCategory } from "../player-ratings";
-import { getPlayerInsights, teamColors, type Player } from "../court-data";
+import { getTeamColor, getPlayerInsights, type Player } from "../court-data";
 
 import { getArchetypePillStyle } from "./ranking-style-helpers";
 import { RankingPlayerTooltip } from "./ranking-player-tooltip";
@@ -27,6 +27,7 @@ export function TopRankingCards({
         const rating = getPlayerRating(player, ratingCategory).toFixed(1);
         const rankColor =
           index === 0 ? "#EFBF04" : index === 1 ? "#C0C0C0" : "#CD7F32";
+        const teamColor = getTeamColor(player.team);
 
         return (
           <div
@@ -62,7 +63,7 @@ export function TopRankingCards({
                 <p
                   className="mt-1 font-michroma font-semibold text-[10px] text-white/50"
                   style={{
-                    color: teamColors[player.team],
+                    color: teamColor,
                   }}
                 >
                   {player.team}
