@@ -1,4 +1,4 @@
-import { teamColors, type Player } from "../../court-data";
+import { getTeamColor, type Player } from "../../court-data";
 
 type PlayerCardSimilarPanelProps = {
   similarPlayers: {
@@ -26,29 +26,33 @@ export function PlayerCardSimilarPanel({
       </span>
 
       <div className="mt-1 flex flex-col items-center gap-0.5 brightness-125">
-        {similarPlayers.map(({ player, matchScore }) => (
-          <button
-            key={player.id}
-            type="button"
-            onPointerDown={(e) => {
-              e.stopPropagation();
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelectSimilarPlayer(player.name);
-            }}
-            className="mr-2 flex w-44 cursor-pointer items-center justify-between gap-2 rounded border px-1.5 py-0.5 font-michroma text-[9px] text-white/70 transition-all duration-150 hover:brightness-150"
-            style={{
-              borderColor: teamColors[player.team],
-              backgroundColor: `${teamColors[player.team]}50`,
-            }}
-          >
-            <span className="min-w-0 flex-1 truncate text-left text-white">
-              {player.name}
-            </span>
-            <span className="shrink-0 text-white/60">{matchScore}%</span>
-          </button>
-        ))}
+        {similarPlayers.map(({ player, matchScore }) => {
+          const teamColor = getTeamColor(player.team);
+
+          return (
+            <button
+              key={player.id}
+              type="button"
+              onPointerDown={(e) => {
+                e.stopPropagation();
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelectSimilarPlayer(player.name);
+              }}
+              className="mr-2 flex w-44 cursor-pointer items-center justify-between gap-2 rounded border px-1.5 py-0.5 font-michroma text-[9px] text-white/70 transition-all duration-150 hover:brightness-150"
+              style={{
+                borderColor: teamColor,
+                backgroundColor: `${teamColor}50`,
+              }}
+            >
+              <span className="min-w-0 flex-1 truncate text-left text-white">
+                {player.name}
+              </span>
+              <span className="shrink-0 text-white/60">{matchScore}%</span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="mt-1 flex flex-col items-center gap-0.5">

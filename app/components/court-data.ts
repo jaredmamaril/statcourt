@@ -79,7 +79,12 @@ export const teamCodeAliases: Record<string, Team> = {
   SYR: "PHI",
   // Jazz
   NOJ: "UTA",
+  BLT: "WAS", // Baltimore Bullets
+  GOS: "GSW", // Golden State Warriors old code
+  MIH: "ATL", // Milwaukee Hawks
+  SDR: "HOU", // San Diego Rockets
   // Defunct/no current franchise
+  BOM: "FA", // St. Louis Bombers, defunct
   INO: "FA",
   AND: "FA",
   SHE: "FA",
@@ -125,6 +130,33 @@ export const teamColors: Record<Team, string> = {
   WAS: "#002b5c",
 };
 
+export const historicTeamColors: Record<string, string> = {
+  BAL: "#002b5c",
+  BLT: "#002b5c",
+  BOM: "#c8102e",
+  BUF: "#e85d04",
+  CHH: "#1d1160",
+  CHS: "#ce1141",
+  CIN: "#c8102e",
+  FTW: "#c8102e",
+  GOS: "#1d428a",
+  INO: "#94A3B8",
+  KCK: "#5a2d82",
+  MIH: "#e03a3e",
+  MNL: "#552583",
+  NJN: "#002a60",
+  NOH: "#00778b",
+  NOK: "#00778b",
+  PHW: "#1d428a",
+  ROC: "#5a2d82",
+  SDC: "#c8102e",
+  SDR: "#ce1141",
+  SEA: "#00653a",
+  SFW: "#1d428a",
+  STL: "#c8102e",
+  VAN: "#00a3ad",
+};
+
 export function normalizeTeamCode(team: string): Team {
   if (!team) return "FA";
 
@@ -136,38 +168,73 @@ export function normalizeTeamCode(team: string): Team {
 }
 
 export const teamLogos: Record<Team, string> = {
-  FA: "/blank-player.svg",
-  ATL: "/team-logos/atl.svg",
-  BKN: "/team-logos/bkn.svg",
-  BOS: "/team-logos/bos.svg",
-  CHA: "/team-logos/cha.svg",
-  CHI: "/team-logos/chi.svg",
-  CLE: "/team-logos/cle.svg",
-  DAL: "/team-logos/dal.svg",
-  DEN: "/team-logos/den.svg",
-  DET: "/team-logos/det.svg",
-  GSW: "/team-logos/gsw.svg",
-  HOU: "/team-logos/hou.svg",
-  IND: "/team-logos/ind.svg",
-  LAC: "/team-logos/lac.svg",
-  LAL: "/team-logos/lal.svg",
-  MEM: "/team-logos/mem.svg",
-  MIA: "/team-logos/mia.svg",
-  MIL: "/team-logos/mil.svg",
-  MIN: "/team-logos/min.svg",
-  NOP: "/team-logos/nop.svg",
-  NYK: "/team-logos/nyk.svg",
-  OKC: "/team-logos/okc.svg",
-  ORL: "/team-logos/orl.svg",
-  PHI: "/team-logos/phi.svg",
-  PHX: "/team-logos/phx.svg",
-  POR: "/team-logos/por.svg",
-  SAC: "/team-logos/sac.svg",
-  SAS: "/team-logos/sas.svg",
-  TOR: "/team-logos/tor.svg",
-  UTA: "/team-logos/uta.svg",
-  WAS: "/team-logos/was.svg",
+  FA: "/team-logos/blank-logo.png",
+  ATL: "/team-logos/current/atl.svg",
+  BKN: "/team-logos/current/bkn.svg",
+  BOS: "/team-logos/current/bos.svg",
+  CHA: "/team-logos/current/cha.svg",
+  CHI: "/team-logos/current/chi.svg",
+  CLE: "/team-logos/current/cle.svg",
+  DAL: "/team-logos/current/dal.svg",
+  DEN: "/team-logos/current/den.svg",
+  DET: "/team-logos/current/det.svg",
+  GSW: "/team-logos/current/gsw.svg",
+  HOU: "/team-logos/current/hou.svg",
+  IND: "/team-logos/current/ind.svg",
+  LAC: "/team-logos/current/lac.svg",
+  LAL: "/team-logos/current/lal.svg",
+  MEM: "/team-logos/current/mem.svg",
+  MIA: "/team-logos/current/mia.svg",
+  MIL: "/team-logos/current/mil.svg",
+  MIN: "/team-logos/current/min.svg",
+  NOP: "/team-logos/current/nop.svg",
+  NYK: "/team-logos/current/nyk.svg",
+  OKC: "/team-logos/current/okc.svg",
+  ORL: "/team-logos/current/orl.svg",
+  PHI: "/team-logos/current/phi.svg",
+  PHX: "/team-logos/current/phx.svg",
+  POR: "/team-logos/current/por.svg",
+  SAC: "/team-logos/current/sac.svg",
+  SAS: "/team-logos/current/sas.svg",
+  TOR: "/team-logos/current/tor.svg",
+  UTA: "/team-logos/current/uta.svg",
+  WAS: "/team-logos/current/was.svg",
 };
+
+export const historicTeamLogos: Record<string, string> = {
+  BAL: "/team-logos/historic/bal.png",
+  BLT: "/team-logos/historic/bal.png",
+  BOM: "/team-logos/historic/bom.webp",
+  BUF: "/team-logos/historic/buf.png",
+  CHH: "/team-logos/historic/chh.png",
+  CHS: "/team-logos/historic/chs.png",
+  CIN: "/team-logos/historic/cin.png",
+  FTW: "/team-logos/historic/ftw.png",
+  GOS: "/team-logos/historic/gos.png",
+  INO: "/team-logos/historic/ino.png",
+  KCK: "/team-logos/historic/kck.png",
+  MIH: "/team-logos/historic/mih.png",
+  MNL: "/team-logos/historic/mnl.png",
+  NJN: "/team-logos/historic/njn.png",
+  NOH: "/team-logos/historic/noh.png",
+  NOK: "/team-logos/historic/noh.png",
+  PHW: "/team-logos/historic/phw.png",
+  ROC: "/team-logos/historic/roc.png",
+  SDC: "/team-logos/historic/sdc.png",
+  SDR: "/team-logos/historic/sdr.png",
+  SEA: "/team-logos/historic/sea.png",
+  SFW: "/team-logos/historic/sfw.png",
+  STL: "/team-logos/historic/stl.png",
+  VAN: "/team-logos/historic/van.png",
+};
+
+export function getTeamColor(team: string) {
+  return historicTeamColors[team] ?? teamColors[normalizeTeamCode(team)];
+}
+
+export function getTeamLogo(team: string) {
+  return historicTeamLogos[team] ?? teamLogos[normalizeTeamCode(team)];
+}
 
 type CorePlayerStatKey =
   | "ppg"

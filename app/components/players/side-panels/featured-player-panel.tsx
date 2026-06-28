@@ -1,6 +1,9 @@
 import type { CSSProperties, ReactNode } from "react";
-import type { Player, PlayerInsightDisplay } from "../../court-data";
-import { teamColors } from "../../court-data";
+import {
+  getTeamColor,
+  type Player,
+  type PlayerInsightDisplay,
+} from "../../court-data";
 import { getPlayerRating } from "../../player-ratings";
 
 type FeaturedPlayerPanelProps = {
@@ -24,6 +27,8 @@ export function FeaturedPlayerPanel({
   onViewPlayer,
   children,
 }: FeaturedPlayerPanelProps) {
+  const teamColor = getTeamColor(featuredPlayer.team);
+
   return (
     <div className="absolute -right-55 top-4 hidden w-64 text-center font-michroma uppercase xl:block">
       <div className="mt-2 rounded-md border border-white/10 bg-black/10 p-3">
@@ -34,8 +39,8 @@ export function FeaturedPlayerPanel({
         <p
           className="text-sm brightness-125"
           style={{
-            color: teamColors[featuredPlayer.team],
-            textShadow: `0 0 6px ${teamColors[featuredPlayer.team]}, 0 0 14px ${teamColors[featuredPlayer.team]}, 0 0 26px ${teamColors[featuredPlayer.team]}66`,
+            color: teamColor,
+            textShadow: `0 0 6px ${teamColor}, 0 0 14px ${teamColor}, 0 0 26px ${teamColor}66`,
           }}
         >
           {featuredPlayer.name}
@@ -82,10 +87,10 @@ export function FeaturedPlayerPanel({
           onClick={() => onViewPlayer(featuredPlayer.name)}
           className="pointer-events-auto mt-3 rounded-md border px-5 py-1 text-xs brightness-125 transition hover:brightness-175"
           style={{
-            color: teamColors[featuredPlayer.team],
-            borderColor: teamColors[featuredPlayer.team],
-            backgroundColor: `${teamColors[featuredPlayer.team]}14`,
-            boxShadow: `0 0 10px ${teamColors[featuredPlayer.team]}22`,
+            color: teamColor,
+            borderColor: teamColor,
+            backgroundColor: `${teamColor}14`,
+            boxShadow: `0 0 10px ${teamColor}22`,
           }}
         >
           View Player

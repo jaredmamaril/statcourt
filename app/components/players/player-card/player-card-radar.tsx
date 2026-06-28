@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import type { Player } from "../../court-data";
-import { normalizeStat, statMaxValues, teamColors } from "../../court-data";
+import { getTeamColor, normalizeStat, statMaxValues } from "../../court-data";
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -73,23 +73,25 @@ export function PlayerCardRadar({
     },
   ];
 
+  const teamColor = getTeamColor(player.team);
+
   return (
     <div className="relative z-10 mt-2 h-48 w-full">
       <div className="absolute left-0 top-0 z-10 ml-6 flex h-full flex-col justify-around py-2">
         <StatLabel
           label="FG%"
           value={player.stats.fgPercent}
-          color={teamColors[player.team]}
+          color={teamColor}
         />
         <StatLabel
           label="3PT%"
           value={player.stats.threePercent}
-          color={teamColors[player.team]}
+          color={teamColor}
         />
         <StatLabel
           label="FT%"
           value={player.stats.ftPercent}
-          color={teamColors[player.team]}
+          color={teamColor}
         />
       </div>
 
@@ -97,19 +99,19 @@ export function PlayerCardRadar({
         <StatLabel
           label="PPG"
           value={player.stats.ppg}
-          color={teamColors[player.team]}
+          color={teamColor}
           align="right"
         />
         <StatLabel
           label="RPG"
           value={player.stats.rpg}
-          color={teamColors[player.team]}
+          color={teamColor}
           align="right"
         />
         <StatLabel
           label="APG"
           value={player.stats.apg}
-          color={teamColors[player.team]}
+          color={teamColor}
           align="right"
         />
       </div>
@@ -128,9 +130,9 @@ export function PlayerCardRadar({
           <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
           <Radar
             dataKey="value"
-            stroke={teamColors[player.team]}
+            stroke={teamColor}
             strokeWidth={2}
-            fill={teamColors[player.team]}
+            fill={teamColor}
             fillOpacity={0.2}
             isAnimationActive={true}
             animationBegin={500}

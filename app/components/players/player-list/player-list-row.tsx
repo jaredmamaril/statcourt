@@ -1,9 +1,4 @@
-import {
-  teamColors,
-  normalizeTeamCode,
-  type Player,
-  type SortValue,
-} from "../../court-data";
+import { getTeamColor, type Player, type SortValue } from "../../court-data";
 import { getPlayerHeadshot } from "../../player-images";
 import { getPlayerRating } from "../../player-ratings";
 import PlayerImage from "../../player-image";
@@ -25,7 +20,7 @@ export function PlayerListRow({
   onToggleFavorite,
   onSelectPlayer,
 }: PlayerListRowProps) {
-  const teamColor = teamColors[normalizeTeamCode(player.team)];
+  const teamColor = getTeamColor(player.team);
   const playerOverall = getPlayerRating(player);
   const selectedStatValue =
     sortBy &&

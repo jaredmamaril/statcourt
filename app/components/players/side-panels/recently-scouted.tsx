@@ -1,4 +1,4 @@
-import { teamColors, type Player } from "../../court-data";
+import { getTeamColor, type Player } from "../../court-data";
 
 type RecentlyScoutedProps = {
   players: Player[];
@@ -27,6 +27,8 @@ export function RecentlyScouted({
 
           if (!recentPlayer) return null;
 
+          const teamColor = getTeamColor(recentPlayer.team);
+
           return (
             <button
               key={playerName}
@@ -34,16 +36,16 @@ export function RecentlyScouted({
               onClick={() => onViewPlayer(playerName)}
               className="pointer-events-auto flex items-center justify-between gap-2 rounded border px-2 py-1 text-left font-michroma text-[8px] brightness-125 transition hover:scale-[1.02]"
               style={{
-                borderColor: `${teamColors[recentPlayer.team]}50`,
-                backgroundColor: `${teamColors[recentPlayer.team]}10`,
-                boxShadow: `0 0 8px ${teamColors[recentPlayer.team]}22`,
+                borderColor: `${teamColor}50`,
+                backgroundColor: `${teamColor}10`,
+                boxShadow: `0 0 8px ${teamColor}22`,
               }}
             >
               <span
                 className="text-[9px]"
                 style={{
-                  color: teamColors[recentPlayer.team],
-                  textShadow: `0 0 8px ${teamColors[recentPlayer.team]}66`,
+                  color: teamColor,
+                  textShadow: `0 0 8px ${teamColor}66`,
                 }}
               >
                 {playerName}
@@ -51,8 +53,8 @@ export function RecentlyScouted({
 
               <span
                 style={{
-                  color: teamColors[recentPlayer.team],
-                  textShadow: `0 0 8px ${teamColors[recentPlayer.team]}66`,
+                  color: teamColor,
+                  textShadow: `0 0 8px ${teamColor}66`,
                 }}
               >
                 View Card
