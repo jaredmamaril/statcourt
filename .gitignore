@@ -44,3 +44,7 @@ next-env.d.ts
 # python
 __pycache__/
 *.pyc
+scripts/import-output.sql
+scripts/player-directory.sql
+scripts/__pycache__/
+*.pyc
