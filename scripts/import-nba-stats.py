@@ -1,15 +1,26 @@
 import os
+import sys
 import unicodedata
 import time
 import random
 from pathlib import Path
 from supabase import create_client
+from curl_cffi import requests as cr
+from nba_api.stats.library.http import NBAStatsHTTP
 from nba_api.stats.static import players
 from nba_api.stats.endpoints import (
     playercareerstats,
     commonplayerinfo,
     leaguedashplayerstats,
 )
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
+session = cr.Session(impersonate="chrome120")
+session.get("https://www.nba.com/stats/", timeout=20)
+
+NBAStatsHTTP.get_session = lambda self: session
 
 
 def load_env_file():
@@ -39,21 +50,44 @@ def get_supabase_client():
 
 
 NBA_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Host": "stats.nba.com",
+    "Connection": "keep-alive",
     "Accept": "application/json, text/plain, */*",
-    "Accept-Language": "en-US,en;q=0.9",
+    "x-nba-stats-token": "true",
+    "x-nba-stats-origin": "stats",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
     "Origin": "https://www.nba.com",
     "Referer": "https://www.nba.com/",
-    "Connection": "keep-alive",
-    "x-nba-stats-origin": "stats",
-    "x-nba-stats-token": "true",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Language": "en-US,en;q=0.9",
 }
 
-SKIP_COMMON_PLAYER_INFO = True
+SKIP_COMMON_PLAYER_INFO = False
 PLAYER_IMPORT_CONTEXT = {}
 
-IMPORT_MODE = "pending"  # "pending", "all", or "selected"
+IMPORT_MODE = "directory"  # "pending", "all", "directory", or "selected"
 SELECTED_PLAYERS = []
+DIRECTORY_LIMIT = 100
+DIRECTORY_START_AFTER = "Charles Vaughn"
+DEFENSE_SEASONS = ["2022-23", "2023-24", "2024-25"]
+ONLY_IMPORT = set()
+
+MANUAL_PLAYER_STATS = {
+    "LeBron James": {
+        "games": 1622,
+        "ppg": 26.8,
+        "rpg": 7.5,
+        "apg": 7.4,
+        "spg": 1.5,
+        "bpg": 0.7,
+        "fgPercent": 50.7,
+        "threePercent": 34.8,
+        "ftPercent": 73.7,
+    },
+}
+PLAYER_NAME_OVERRIDES = {
+    "Luka Don─ìi─ç": "Luka Doncic",
+}
 
 
 def pause_between_nba_calls():
@@ -78,38 +112,56 @@ def run_nba_request(label, request_fn, max_retries=5):
 def get_players_to_import():
     global PLAYER_IMPORT_CONTEXT
 
-    if IMPORT_MODE == "selected":
-        return SELECTED_PLAYERS
-
     supabase = get_supabase_client()
+
+    if IMPORT_MODE == "directory":
+        existing_response = supabase.table("players").select("nba_id").execute()
+        existing_nba_ids = {
+            row["nba_id"] for row in existing_response.data if row["nba_id"] is not None
+        }
+
+        directory_response = (
+            supabase.table("player_directory")
+            .select("nba_id, name, team, from_year, to_year")
+            .gt("name", DIRECTORY_START_AFTER)
+            .order("name")
+            .limit(DIRECTORY_LIMIT * 2)
+            .execute()
+        )
+
+        rows = [
+            row
+            for row in directory_response.data
+            if row["nba_id"] not in existing_nba_ids
+        ][:DIRECTORY_LIMIT]
+
+        PLAYER_IMPORT_CONTEXT = {
+            row["name"]: {
+                "team": row["team"],
+                "stats_source": "directory_import",
+            }
+            for row in rows
+        }
+
+        return [row["name"] for row in rows]
 
     query = supabase.table("players").select(
         "name, team, position, jersey_number, fallback_image, stats_source"
     ).order("name")
 
-    if IMPORT_MODE == "pending":
+    if IMPORT_MODE == "selected":
+        query = query.in_("name", SELECTED_PLAYERS)
+    elif IMPORT_MODE == "pending":
         query = query.eq("stats_source", "pending_import")
 
     response = query.execute()
 
     PLAYER_IMPORT_CONTEXT = {row["name"]: row for row in response.data}
 
+    if IMPORT_MODE == "selected":
+        return SELECTED_PLAYERS
+
     return [row["name"] for row in response.data]
-
-
-MANUAL_PLAYER_STATS = {
-    "LeBron James": {
-        "games": 1622,
-        "ppg": 26.8,
-        "rpg": 7.5,
-        "apg": 7.4,
-        "spg": 1.5,
-        "bpg": 0.7,
-        "fgPercent": 50.7,
-        "threePercent": 34.8,
-        "ftPercent": 73.7,
-    },
-}
 
 
 def get_manual_stats(player, player_info):
@@ -173,7 +225,7 @@ def get_defense_dataframe(season):
         measure_type_detailed_defense="Advanced",
         per_mode_detailed="PerGame",
         headers=NBA_HEADERS,
-        timeout=45,
+        timeout=60,
     ),
 )
 
@@ -288,7 +340,7 @@ def get_player_info(nba_id):
             lambda: commonplayerinfo.CommonPlayerInfo(
             player_id=nba_id,
            headers=NBA_HEADERS,
-            timeout=45,
+            timeout=60,
     ),
         )
         frame = info.get_data_frames()[0]
@@ -330,7 +382,8 @@ def get_player_info(nba_id):
 
 
 def get_career_averages(player_name):
-    matches = players.find_players_by_full_name(player_name)
+    lookup_name = PLAYER_NAME_OVERRIDES.get(player_name, player_name)
+    matches = players.find_players_by_full_name(lookup_name)
 
     if not matches:
         raise ValueError(f"No NBA player found for {player_name}")
@@ -338,8 +391,11 @@ def get_career_averages(player_name):
     player = matches[0]
     player_info = get_player_info(player["id"])
     existing = PLAYER_IMPORT_CONTEXT.get(player_name, {})
-    if existing.get("team"):
+    if player_info["team"] == "FA" and existing.get("team"):
         player_info["team"] = existing["team"]
+
+    if player_info["jersey"] == 0 and existing.get("jersey_number"):
+        player_info["jersey"] = existing["jersey_number"]
 
     career = run_nba_request(
     f"career stats for {player_name}",
@@ -348,7 +404,7 @@ def get_career_averages(player_name):
         per_mode36="Totals",
         league_id_nullable="00",
         headers=NBA_HEADERS,
-        timeout=45,
+        timeout=60,
     ),
 )
 
@@ -375,11 +431,11 @@ def get_career_averages(player_name):
         "ppg": float(round(row["PTS"] / games, 1)),
         "rpg": float(round(row["REB"] / games, 1)),
         "apg": float(round(row["AST"] / games, 1)),
-        "spg": float(round(row["STL"] / games, 1)),
-        "bpg": float(round(row["BLK"] / games, 1)),
-        "fgPercent": float(round(row["FG_PCT"] * 100, 1)),
-        "threePercent": float(round(row["FG3_PCT"] * 100, 1)),
-        "ftPercent": float(round(row["FT_PCT"] * 100, 1)),
+        "spg": float(round(safe_float(row["STL"]) / games, 1)),
+        "bpg": float(round(safe_float(row["BLK"]) / games, 1)),
+        "fgPercent": float(round(safe_float(row["FG_PCT"]) * 100, 1)),
+        "threePercent": float(round(safe_float(row["FG3_PCT"]) * 100, 1)),
+        "ftPercent": float(round(safe_float(row["FT_PCT"]) * 100, 1)),
     }
 
 
@@ -388,6 +444,13 @@ def sql_string(value):
         return "null"
 
     return "'" + str(value).replace("'", "''") + "'"
+
+
+def safe_float(value, fallback=0):
+    if value is None:
+        return fallback
+
+    return float(value)
 
 
 def slugify_name(name):
@@ -494,33 +557,33 @@ do update set
 """)
 
 
-DEFENSE_SEASONS = ["2022-23", "2023-24", "2024-25"]
+def main():
+    for player_name in get_players_to_import():
+        if ONLY_IMPORT and player_name not in ONLY_IMPORT:
+            continue
 
-ONLY_IMPORT = {
-    "Aaron Gordon",
-    "Al Horford",
-    "Bam Adebayo",
-}
+        try:
+            stats = get_career_averages(player_name)
 
-for player_name in get_players_to_import():
-    if ONLY_IMPORT and player_name not in ONLY_IMPORT:
-        continue
+            positions = infer_positions(
+                stats["apiPosition"],
+                stats["heightInches"],
+                stats,
+            )
 
-    try:
-        stats = get_career_averages(player_name)
+            stats.update(positions)
+            stats["starPower"] = estimate_star_power(stats)
+            stats["defense"] = get_multi_season_defense_rating(
+                stats,
+                DEFENSE_SEASONS,
+            )
 
-        positions = infer_positions(
-            stats["apiPosition"],
-            stats["heightInches"],
-            stats,
-        )
+            print_upsert_sql(stats)
+        except Exception as error:
+            print(f"-- Skipped {player_name}: {error}")
 
-        stats.update(positions)
-        stats["starPower"] = estimate_star_power(stats)
-        stats["defense"] = estimate_defense_from_box_score(stats)
+        time.sleep(random.uniform(3, 6))
 
-        print_upsert_sql(stats)
-    except Exception as error:
-        print(f"-- Skipped {player_name}: {error}")
 
-    time.sleep(random.uniform(3, 6))
+if __name__ == "__main__":
+    main()
