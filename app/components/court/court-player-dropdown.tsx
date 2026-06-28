@@ -1,6 +1,5 @@
 import type { Dispatch, RefObject, SetStateAction } from "react";
-import { teamColors } from "../court-data";
-import type { Player } from "../court-data";
+import { getTeamColor, type Player } from "../court-data";
 
 type CourtPlayerDropdownProps = {
   dropdownRef: RefObject<HTMLDivElement | null>;
@@ -43,44 +42,48 @@ export function CourtPlayerDropdown({
             className="mx-2 mb-2 w-[calc(100%-1rem)] rounded-md border border-white/30 bg-black/40 px-3 py-1.5 font-michroma text-white/80 placeholder:text-white/35"
           />
 
-          {filteredPlayers.map((player) => (
-            <button
-              key={player.id}
-              type="button"
-              onClick={() => {
-                setPlayer(
-                  selectedPlayerName === player.name ? "" : player.name,
-                );
-                setIsOpen(false);
-                setSearch("");
-              }}
-              className={`flex w-full cursor-pointer items-center gap-1 border px-4 py-3 text-left font-michroma text-xs transition-all duration-200 ${
-                selectedPlayerName === player.name
-                  ? "border-[#178aa7] bg-[#1bc2ec]/30 text-[#1bc2ec]"
-                  : "border-white/10 bg-black/20 text-white/90 hover:border-white/30 hover:bg-white/5"
-              }`}
-            >
-              <span className="block flex-1">{player.name}</span>
+          {filteredPlayers.map((player) => {
+            const teamColor = getTeamColor(player.team);
 
-              <span
-                className="shrink-0 rounded border px-1 py-0.5 text-[10px] text-white/80"
-                style={{
-                  backgroundColor: teamColors[player.team],
-                  borderColor: teamColors[player.team],
+            return (
+              <button
+                key={player.id}
+                type="button"
+                onClick={() => {
+                  setPlayer(
+                    selectedPlayerName === player.name ? "" : player.name,
+                  );
+                  setIsOpen(false);
+                  setSearch("");
                 }}
+                className={`flex w-full cursor-pointer items-center gap-1 border px-4 py-3 text-left font-michroma text-xs transition-all duration-200 ${
+                  selectedPlayerName === player.name
+                    ? "border-[#178aa7] bg-[#1bc2ec]/30 text-[#1bc2ec]"
+                    : "border-white/10 bg-black/20 text-white/90 hover:border-white/30 hover:bg-white/5"
+                }`}
               >
-                {player.team}
-              </span>
+                <span className="block flex-1">{player.name}</span>
 
-              <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1 py-0.5 text-[10px] text-white/60">
-                {player.position}
-              </span>
+                <span
+                  className="shrink-0 rounded border px-1 py-0.5 text-[10px] text-white/80"
+                  style={{
+                    backgroundColor: teamColor,
+                    borderColor: teamColor,
+                  }}
+                >
+                  {player.team}
+                </span>
 
-              <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1 py-0.5 text-[10px] text-white/60">
-                #{player.jerseyNumber}
-              </span>
-            </button>
-          ))}
+                <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1 py-0.5 text-[10px] text-white/60">
+                  {player.position}
+                </span>
+
+                <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1 py-0.5 text-[10px] text-white/60">
+                  #{player.jerseyNumber}
+                </span>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

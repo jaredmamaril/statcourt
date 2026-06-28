@@ -1,7 +1,6 @@
 import PlayerImage from "../player-image";
 import { getPlayerHeadshot } from "../player-images";
-import { teamColors } from "../court-data";
-import type { Player } from "../court-data";
+import { getTeamColor, type Player } from "../court-data";
 
 type CourtPlayerPreviewProps = {
   selectedPlayer: Player | undefined;
@@ -13,7 +12,7 @@ export function CourtPlayerPreview({
   fallbackColor,
 }: CourtPlayerPreviewProps) {
   const playerColor = selectedPlayer
-    ? teamColors[selectedPlayer.team]
+    ? getTeamColor(selectedPlayer.team)
     : fallbackColor;
 
   return (
