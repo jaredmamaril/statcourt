@@ -16,6 +16,34 @@
 }
 
 /* For animations on court page */
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.page-enter {
+  animation: pageEnter 360ms ease-out both;
+}
+
+@keyframes dropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @keyframes cardIn {
   from {
     opacity: 0;
@@ -169,26 +197,27 @@ a {
   text-decoration: none;
 }
 
-/* For list of players on players page */
-.player-list-scroll {
+/* Dropdowns/Lists */
+.statcourt-scroll {
   scrollbar-width: thin;
   scrollbar-color: rgba(27, 194, 236, 0.45) rgba(255, 255, 255, 0.08);
 }
 
-.player-list-scroll::-webkit-scrollbar {
+.statcourt-scroll::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
-.player-list-scroll::-webkit-scrollbar-track {
+.statcourt-scroll::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 999px;
 }
 
-.player-list-scroll::-webkit-scrollbar-thumb {
+.statcourt-scroll::-webkit-scrollbar-thumb {
   background: rgba(27, 194, 236, 0.45);
   border-radius: 999px;
 }
 
-.player-list-scroll::-webkit-scrollbar-thumb:hover {
+.statcourt-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(27, 194, 236, 0.75);
 }

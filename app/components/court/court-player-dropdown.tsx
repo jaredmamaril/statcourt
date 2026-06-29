@@ -1,5 +1,5 @@
 import type { Dispatch, RefObject, SetStateAction } from "react";
-import { getTeamColor, type Player } from "../court-data";
+import { getReadableTeamColor, type Player } from "../court-data";
 
 type CourtPlayerDropdownProps = {
   dropdownRef: RefObject<HTMLDivElement | null>;
@@ -23,18 +23,18 @@ export function CourtPlayerDropdown({
   setPlayer,
 }: CourtPlayerDropdownProps) {
   return (
-    <div ref={dropdownRef} className="relative mt-2 w-56">
+    <div ref={dropdownRef} className="relative mt-2 w-64">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full cursor-pointer items-center justify-between rounded-md border border-white/30 bg-black/60 px-4 py-2 font-michroma text-white outline-none"
+        className="flex w-full cursor-pointer items-center justify-between rounded-md border border-white/30 bg-black/60 px-4 py-2 font-michroma text-white outline-none transition-all duration-200 hover:border-[#1bc2ec]/70 hover:bg-[#1bc2ec]/10 active:scale-[0.98]"
       >
         <span>{selectedPlayerName || "Choose Player"}</span>
         <span className="text-[#347A99]">▾</span>
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-full z-20 mt-2 max-h-51 w-full overflow-y-auto rounded-md border border-white/30 bg-black/30 py-2 text-xs text-white">
+        <div className="statcourt-scroll absolute left-0 top-full z-20 mt-2 max-h-51 w-full overflow-auto rounded-md border border-white/30 bg-black/70 py-2 text-xs text-white shadow-[0_0_18px_rgba(27,194,236,0.16)] animate-[dropdownIn_160ms_ease-out]">
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -43,7 +43,7 @@ export function CourtPlayerDropdown({
           />
 
           {filteredPlayers.map((player) => {
-            const teamColor = getTeamColor(player.team);
+            const teamColor = getReadableTeamColor(player.team);
 
             return (
               <button
@@ -56,7 +56,7 @@ export function CourtPlayerDropdown({
                   setIsOpen(false);
                   setSearch("");
                 }}
-                className={`flex w-full cursor-pointer items-center gap-1 border px-4 py-3 text-left font-michroma text-xs transition-all duration-200 ${
+                className={`flex w-full min-w-0 cursor-pointer items-center gap-1 border px-3 py-3 text-left font-michroma text-xs transition-all duration-150 active:scale-[0.98] ${
                   selectedPlayerName === player.name
                     ? "border-[#178aa7] bg-[#1bc2ec]/30 text-[#1bc2ec]"
                     : "border-white/10 bg-black/20 text-white/90 hover:border-white/30 hover:bg-white/5"

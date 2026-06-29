@@ -20,9 +20,7 @@ export default function Home() {
   return (
     <main
       className={`min-h-screen bg-background text-foreground transition-all duration-700 ease-out ${
-        isLeaving
-          ? "scale-105 opacity-0 blur-sm"
-          : "scale-100 opacity-100 blur-0"
+        isLeaving ? "scale-105 opacity-0" : "scale-100 opacity-100"
       }`}
     >
       {/*Background video with overlay */}
