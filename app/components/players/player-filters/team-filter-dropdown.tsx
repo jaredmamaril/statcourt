@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { teamColors, teamLogos, type Team } from "../../court-data";
+import { getReadableTeamColor, getTeamLogo, type Team } from "../../court-data";
 
 type TeamFilterDropdownProps = {
   teamOptions: Team[];
@@ -16,7 +16,10 @@ export function TeamFilterDropdown({
   onOpenDropdown,
   onSelectTeam,
 }: TeamFilterDropdownProps) {
-  const filteredTeamLogo = filteredTeam ? teamLogos[filteredTeam] : null;
+  const filteredTeamLogo = filteredTeam ? getTeamLogo(filteredTeam) : null;
+  const filteredTeamColor = filteredTeam
+    ? getReadableTeamColor(filteredTeam)
+    : undefined;
   return (
     <div className="relative">
       <button
@@ -28,8 +31,8 @@ export function TeamFilterDropdown({
             : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
         }`}
         style={{
-          color: filteredTeam ? teamColors[filteredTeam] : undefined,
-          borderColor: filteredTeam ? teamColors[filteredTeam] : undefined,
+          color: filteredTeamColor,
+          borderColor: filteredTeamColor,
         }}
       >
         {filteredTeamLogo && (
@@ -56,7 +59,8 @@ export function TeamFilterDropdown({
           </button>
 
           {teamOptions.map((team) => {
-            const teamLogo = teamLogos[team] ?? teamLogos.FA;
+            const teamLogo = getTeamLogo(team);
+            const teamColor = getReadableTeamColor(team);
 
             return (
               <button
@@ -68,7 +72,7 @@ export function TeamFilterDropdown({
                     ? "bg-[#1bc2ec]/10 text-[#1bc2ec]"
                     : "text-white/70 hover:bg-white/10"
                 }`}
-                style={{ color: teamColors[team] }}
+                style={{ color: teamColor }}
               >
                 <span className="flex items-center gap-2">
                   <Image

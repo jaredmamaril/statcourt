@@ -232,6 +232,30 @@ export function getTeamColor(team: string) {
   return historicTeamColors[team] ?? teamColors[normalizeTeamCode(team)];
 }
 
+const readableTeamColors: Partial<Record<Team, string>> = {
+  BKN: "#F8FAFC",
+  NOP: "#C6A15B",
+  WAS: "#E31837",
+  DAL: "#38BDF8",
+  ORL: "#38BDF8",
+  SAS: "#CBD5E1",
+  MEM: "#7DD3FC",
+  IND: "#FACC15",
+  MIN: "#78BE20",
+  UTA: "#A855F7",
+  CHA: "#00B2A9",
+};
+
+export function getReadableTeamColor(team: string) {
+  const normalizedTeam = normalizeTeamCode(team);
+
+  return (
+    readableTeamColors[normalizedTeam] ??
+    historicTeamColors[team] ??
+    teamColors[normalizedTeam]
+  );
+}
+
 export function getTeamLogo(team: string) {
   return historicTeamLogos[team] ?? teamLogos[normalizeTeamCode(team)];
 }

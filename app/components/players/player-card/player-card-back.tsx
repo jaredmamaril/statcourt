@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { getTeamColor, type Player } from "../../court-data";
+import { getReadableTeamColor, type Player } from "../../court-data";
 
 type PlayerCardBackProps = {
   player: Player;
@@ -12,7 +12,7 @@ export function PlayerCardBack({
   isCardFlipped,
   children,
 }: PlayerCardBackProps) {
-  const teamColor = getTeamColor(player.team);
+  const teamColor = getReadableTeamColor(player.team);
   return (
     <div
       className={`absolute inset-0 min-h-134 rounded-3xl border bg-black/30 ${

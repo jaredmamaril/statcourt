@@ -196,11 +196,26 @@ function Players() {
     };
   }, []);
 
-  // Get random featured player
+  // Get random featured player from notable players only
   useEffect(() => {
     if (players.length === 0) return;
 
-    setFeaturedPlayer(players[Math.floor(Math.random() * players.length)]);
+    const featuredPlayerPool = [...players]
+      .filter((player) => {
+        const overall = getPlayerRating(player);
+
+        return (
+          overall >= 84 &&
+          player.stats.ppg >= 10 &&
+          player.ratings.starPower >= 75
+        );
+      })
+      .sort((a, b) => getPlayerRating(b) - getPlayerRating(a))
+      .slice(0, 25);
+
+    const pool = featuredPlayerPool.length > 0 ? featuredPlayerPool : players;
+
+    setFeaturedPlayer(pool[Math.floor(Math.random() * pool.length)]);
   }, [players]);
 
   // Open a player card when coming from rankings with /players?player=name

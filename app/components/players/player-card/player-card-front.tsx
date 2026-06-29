@@ -1,5 +1,9 @@
 import Image from "next/image";
-import { getTeamColor, getTeamLogo, type Player } from "../../court-data";
+import {
+  getReadableTeamColor,
+  getTeamLogo,
+  type Player,
+} from "../../court-data";
 import { getPlayerHeadshot } from "../../player-images";
 import PlayerImage from "../../player-image";
 
@@ -13,7 +17,7 @@ export function PlayerCardFront({
   isCardFlipped,
 }: PlayerCardFrontProps) {
   const teamLogo = getTeamLogo(player.team);
-  const teamColor = getTeamColor(player.team);
+  const teamColor = getReadableTeamColor(player.team);
   return (
     <div
       className={`absolute inset-0 min-h-134 rounded-3xl border border-[#1bc2ec]/10 bg-black/30 p-6 ${

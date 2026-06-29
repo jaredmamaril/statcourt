@@ -1,6 +1,9 @@
-import type { CSSProperties } from "react";
 import type { Player } from "../../court-data";
-import { getTeamColor, normalizeStat, statMaxValues } from "../../court-data";
+import {
+  getReadableTeamColor,
+  normalizeStat,
+  statMaxValues,
+} from "../../court-data";
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -73,7 +76,7 @@ export function PlayerCardRadar({
     },
   ];
 
-  const teamColor = getTeamColor(player.team);
+  const teamColor = getReadableTeamColor(player.team);
 
   return (
     <div className="relative z-10 mt-2 h-48 w-full">

@@ -1,7 +1,13 @@
-import { getTeamColor, type Player, type SortValue } from "../../court-data";
+import {
+  getTeamColor,
+  getReadableTeamColor,
+  type Player,
+  type SortValue,
+} from "../../court-data";
 import { getPlayerHeadshot } from "../../player-images";
 import { getPlayerRating } from "../../player-ratings";
 import PlayerImage from "../../player-image";
+import { read } from "fs";
 
 type PlayerListRowProps = {
   player: Player;
@@ -21,6 +27,7 @@ export function PlayerListRow({
   onSelectPlayer,
 }: PlayerListRowProps) {
   const teamColor = getTeamColor(player.team);
+  const readableTeamColor = getReadableTeamColor(player.team);
   const playerOverall = getPlayerRating(player);
   const selectedStatValue =
     sortBy &&
@@ -108,7 +115,7 @@ export function PlayerListRow({
           <span
             className="block font-michroma text-[13px] leading-none"
             style={{
-              color: teamColor,
+              color: readableTeamColor,
               textShadow: `0 0 10px ${teamColor}88`,
             }}
           >

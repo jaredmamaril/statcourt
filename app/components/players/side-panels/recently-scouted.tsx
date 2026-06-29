@@ -1,4 +1,4 @@
-import { getTeamColor, type Player } from "../../court-data";
+import { getReadableTeamColor, type Player } from "../../court-data";
 
 type RecentlyScoutedProps = {
   players: Player[];
@@ -27,7 +27,7 @@ export function RecentlyScouted({
 
           if (!recentPlayer) return null;
 
-          const teamColor = getTeamColor(recentPlayer.team);
+          const teamColor = getReadableTeamColor(recentPlayer.team);
 
           return (
             <button

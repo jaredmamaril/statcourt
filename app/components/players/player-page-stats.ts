@@ -10,11 +10,11 @@ import {
 import { getPlayerRating } from "../player-ratings";
 
 function getBroadPosition(position: string): Position {
-  if (position === "PG" || position === "SG") {
+  if (position === "G" || position === "PG" || position === "SG") {
     return "G";
   }
 
-  if (position === "SF" || position === "PF") {
+  if (position === "F" || position === "SF" || position === "PF") {
     return "F";
   }
 
