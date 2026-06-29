@@ -23,8 +23,8 @@ export function PlayerList({
   onSelectPlayer,
 }: PlayerListProps) {
   return (
-    <div className="player-list-scroll max-h-112.5 overflow-y-auto pr-2">
-      <div className="mx-auto flex w-full max-w-100 flex-col gap-1">
+    <div className="player-list-scroll mx-auto max-h-112.5 w-full max-w-100 overflow-y-auto pr-2">
+      <div className="flex flex-col gap-1">
         {players.length === 0 ? (
           <p className="py-8 text-center font-michroma text-xs text-white/40">
             {showFavorites

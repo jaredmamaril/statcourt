@@ -171,9 +171,24 @@ a {
 
 /* For list of players on players page */
 .player-list-scroll {
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(27, 194, 236, 0.45) rgba(255, 255, 255, 0.08);
 }
 
 .player-list-scroll::-webkit-scrollbar {
-  display: none;
+  width: 8px;
+}
+
+.player-list-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+
+.player-list-scroll::-webkit-scrollbar-thumb {
+  background: rgba(27, 194, 236, 0.45);
+  border-radius: 999px;
+}
+
+.player-list-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(27, 194, 236, 0.75);
 }
