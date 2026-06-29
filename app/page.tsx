@@ -19,7 +19,11 @@ export default function Home() {
 
   return (
     <main
-      className={`min-h-screen bg-background text-foreground transition-opacity duration-700 ${isLeaving ? "opacity-0" : "opacity-100"}`}
+      className={`min-h-screen bg-background text-foreground transition-all duration-700 ease-out ${
+        isLeaving
+          ? "scale-105 opacity-0 blur-sm"
+          : "scale-100 opacity-100 blur-0"
+      }`}
     >
       {/*Background video with overlay */}
       <video
@@ -47,9 +51,13 @@ export default function Home() {
 
             setTimeout(() => {
               router.push("/court");
-            }, 500); // Match the duration of the fade-out transition
+            }, 650);
           }}
-          className={`mt-8 cursor-pointer rounded-md bg-[#347A99] px-6 py-3 text-base font-michroma text-white transition-all duration-700 ${showEnterButton ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0"}`}
+          className={`mt-8 cursor-pointer rounded-md border border-[#1bc2ec]/50 bg-[#347A99]/20 px-6 py-3 text-base font-michroma text-white shadow-[0_0_18px_rgba(27,194,236,0.18)] transition-all duration-500 hover:-translate-y-1 hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/20 hover:shadow-[0_0_28px_rgba(27,194,236,0.35)] active:scale-95 ${
+            showEnterButton
+              ? "translate-y-0 opacity-100"
+              : "pointer-events-none translate-y-3 opacity-0"
+          }`}
         >
           ENTER THE COURT
         </button>
