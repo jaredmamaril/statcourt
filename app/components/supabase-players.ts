@@ -1,7 +1,6 @@
 import { supabase } from "./supabase-client";
 import { players as fallbackPlayers } from "./court-data";
 import type { Player, Position, Team } from "./court-data";
-import { normalizeTeamCode } from "./court-data";
 
 export type SupabasePlayerRow = {
   id: number;
@@ -31,6 +30,7 @@ export type SupabasePlayerRow = {
   to_year: number | null;
   api_position: string | null;
   career_legacy: number | null;
+  games: number | null;
 };
 
 export async function getSupabasePlayers() {
@@ -85,6 +85,7 @@ export function mapSupabasePlayerToPlayer(row: SupabasePlayerRow): Player {
       careerLegacy: row.career_legacy ?? 70,
     },
     stats: {
+      games: row.games ?? undefined,
       ppg: row.ppg,
       rpg: row.rpg,
       apg: row.apg,

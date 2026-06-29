@@ -246,6 +246,7 @@ type CorePlayerStatKey =
 
 // Career per-game averages and career shooting percentages
 export type PlayerStats = {
+  games?: number;
   ppg: number;
   rpg: number;
   apg: number;
