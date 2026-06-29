@@ -1,9 +1,9 @@
-import type { Position } from "../../court-data";
+import type { LineupSlot } from "../../court-data";
 import type { LineupDetail, LineupTab } from "../shared/lineup-types";
 import type { LucideIcon } from "lucide-react";
 import { Trophy, Flame, Brain, Shield, Target, Crown } from "lucide-react";
 
-export const lineupPositions: Position[] = ["PG", "SG", "SF", "PF", "C"];
+export const lineupPositions: LineupSlot[] = ["PG", "SG", "SF", "PF", "C"];
 
 export const lineupTabs: { label: string; value: LineupTab }[] = [
   { label: "Featured Lineups", value: "featured" },
@@ -196,7 +196,7 @@ export const lineupGroups = {
 } satisfies Record<LineupCategory, LineupName[]>;
 
 // Court marker positions
-export const featuredCourtMarkerPositions: Record<Position, string> = {
+export const featuredCourtMarkerPositions: Record<LineupSlot, string> = {
   PG: "left-1/2 top-5",
   SG: "left-[20%] top-17",
   SF: "left-[75%] bottom-18",
@@ -204,7 +204,7 @@ export const featuredCourtMarkerPositions: Record<Position, string> = {
   C: "left-[65%] top-42",
 };
 
-export const builderCourtMarkerPositions: Record<Position, string> = {
+export const builderCourtMarkerPositions: Record<LineupSlot, string> = {
   PG: "left-1/2 top-6",
   SG: "left-[22%] top-16",
   SF: "left-[78%] bottom-10",

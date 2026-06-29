@@ -3,8 +3,8 @@
 // Global components
 
 // Types for player positions and teams
-export type ApiPosition = "G" | "F" | "C";
-export type Position = "PG" | "SG" | "SF" | "PF" | "C";
+export type Position = "G" | "F" | "C";
+export type LineupSlot = "PG" | "SG" | "SF" | "PF" | "C";
 
 export type Team =
   | "FA"
@@ -270,10 +270,7 @@ export type Player = {
   name: string;
   fallbackImage?: string; // Local fallback if CDN headshot is unavailable
   team: Team;
-  apiPosition?: ApiPosition;
   position: Position;
-  secondaryPositions?: Position[];
-  emergencyPositions?: Position[];
   jerseyNumber: number;
   ratings: PlayerRatings;
   stats: PlayerStats;
@@ -287,9 +284,7 @@ export const players: Player[] = [
     name: "LeBron James",
     fallbackImage: "/players/headshots/lebron-james.png",
     team: "LAL",
-    position: "SF",
-    secondaryPositions: ["PF"],
-    emergencyPositions: ["PG"],
+    position: "F",
     jerseyNumber: 23,
     ratings: {
       defense: 89,
@@ -311,8 +306,7 @@ export const players: Player[] = [
     name: "Michael Jordan",
     fallbackImage: "/players/headshots/michael-jordan.png",
     team: "CHI",
-    position: "SG",
-    secondaryPositions: ["SF", "PG"],
+    position: "G",
     jerseyNumber: 23,
     ratings: {
       defense: 96,
@@ -334,8 +328,7 @@ export const players: Player[] = [
     name: "Kobe Bryant",
     fallbackImage: "/players/headshots/kobe-bryant.png",
     team: "LAL",
-    position: "SG",
-    secondaryPositions: ["SF", "PG"],
+    position: "G",
     jerseyNumber: 24,
     ratings: {
       defense: 91,
@@ -357,8 +350,7 @@ export const players: Player[] = [
     name: "Stephen Curry",
     fallbackImage: "/players/headshots/stephen-curry.png",
     team: "GSW",
-    position: "PG",
-    secondaryPositions: ["SG"],
+    position: "G",
     jerseyNumber: 30,
     ratings: {
       defense: 72,
@@ -379,8 +371,7 @@ export const players: Player[] = [
     nbaId: 201142,
     name: "Kevin Durant",
     team: "PHX",
-    position: "SF",
-    secondaryPositions: ["PF"],
+    position: "F",
     jerseyNumber: 35,
     ratings: {
       defense: 82,
@@ -402,7 +393,6 @@ export const players: Player[] = [
     name: "Shaquille O'Neal",
     team: "LAL",
     position: "C",
-    secondaryPositions: ["PF"],
     jerseyNumber: 34,
     ratings: {
       defense: 88,
@@ -423,9 +413,7 @@ export const players: Player[] = [
     nbaId: 77142,
     name: "Magic Johnson",
     team: "LAL",
-    position: "PG",
-    secondaryPositions: ["SG", "SF"],
-    emergencyPositions: ["PF"],
+    position: "G",
     jerseyNumber: 32,
     ratings: {
       defense: 78,
@@ -446,8 +434,7 @@ export const players: Player[] = [
     nbaId: 1449,
     name: "Larry Bird",
     team: "BOS",
-    position: "SF",
-    secondaryPositions: ["PF"],
+    position: "F",
     jerseyNumber: 33,
     ratings: {
       defense: 82,
@@ -468,8 +455,7 @@ export const players: Player[] = [
     nbaId: 1495,
     name: "Tim Duncan",
     team: "SAS",
-    position: "PF",
-    secondaryPositions: ["C"],
+    position: "F",
     jerseyNumber: 21,
     ratings: {
       defense: 97,
@@ -491,7 +477,6 @@ export const players: Player[] = [
     name: "Hakeem Olajuwon",
     team: "HOU",
     position: "C",
-    secondaryPositions: ["PF"],
     jerseyNumber: 34,
     ratings: {
       defense: 98,
@@ -513,7 +498,6 @@ export const players: Player[] = [
     name: "Wilt Chamberlain",
     team: "LAL",
     position: "C",
-    secondaryPositions: ["PF"],
     jerseyNumber: 13,
     ratings: {
       defense: 93,
@@ -534,8 +518,7 @@ export const players: Player[] = [
     nbaId: 203507,
     name: "Giannis Antetokounmpo",
     team: "MIL",
-    position: "PF",
-    secondaryPositions: ["SF", "C"],
+    position: "F",
     jerseyNumber: 34,
     ratings: {
       defense: 94,
@@ -557,8 +540,6 @@ export const players: Player[] = [
     name: "Nikola Jokic",
     team: "DEN",
     position: "C",
-    secondaryPositions: ["PF"],
-    emergencyPositions: ["PG"],
     jerseyNumber: 15,
     ratings: {
       defense: 75,
@@ -673,40 +654,50 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
     player.stats.threePercent < 25;
   const isGenerationalShooter =
     player.stats.threePercent >= 42 && player.stats.ppg >= 20;
+
+  const isGuard = player.position === "G";
+  const isForward = player.position === "F";
+  const isCenter = player.position === "C";
+  const isBig = isForward || isCenter;
   const isLeadGuard =
-    player.position === "PG" && player.stats.ppg >= 20 && player.stats.apg >= 5;
+    isGuard && player.stats.ppg >= 20 && player.stats.apg >= 5;
+
   const isRimPressureGuard =
-    player.position === "PG" &&
+    isGuard &&
     player.stats.ppg >= 20 &&
     player.stats.fgPercent >= 45 &&
     player.stats.threePercent < 37;
+
   const isScoringLeadGuard =
-    player.position === "PG" &&
+    isGuard &&
     player.stats.ppg >= 22 &&
     player.stats.apg >= 4 &&
     player.stats.apg < 8;
+
   const isTwoWayWing =
-    (player.position === "SG" || player.position === "SF") &&
-    player.stats.ppg >= 18 &&
-    player.ratings.defense >= 82;
+    isForward && player.stats.ppg >= 18 && player.ratings.defense >= 82;
+
   const isWingShotCreator =
-    (player.position === "SG" || player.position === "SF") &&
+    isForward &&
     player.stats.ppg >= 20 &&
     player.stats.apg >= 3 &&
     player.stats.fgPercent >= 45;
+
   const isClutchCreator =
-    player.position === "PG" &&
+    isGuard &&
     player.stats.ppg >= 22 &&
     player.stats.apg >= 5 &&
     player.stats.fgPercent >= 46;
+
   const isTwoWayConnector =
-    (player.position === "SF" || player.position === "PF") &&
+    isForward &&
     player.stats.ppg >= 16 &&
     player.stats.rpg >= 5 &&
     player.stats.apg >= 4 &&
     player.ratings.defense >= 82;
+
   const isCraftScoringGuard =
-    player.position === "PG" &&
+    isGuard &&
     player.stats.ppg >= 16 &&
     player.stats.apg >= 4 &&
     player.stats.fgPercent >= 46;
@@ -903,7 +894,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
     );
 
   // Position-aware rules
-  if (player.position === "C" || player.position === "PF") {
+  if (isBig) {
     if (player.stats.apg >= 4)
       addInsight(
         "Passing Big",
@@ -922,7 +913,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
       );
   }
 
-  if (player.position === "PG") {
+  if (isGuard) {
     if (player.stats.rpg >= 6)
       addInsight(
         "Rebounding Guard",
@@ -941,7 +932,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
       );
   }
 
-  if (player.position === "SG" || player.position === "SF") {
+  if (isForward) {
     if (player.stats.apg >= 6 && player.stats.ppg >= 20)
       addInsight(
         "Wing Playmaker",
@@ -1202,36 +1193,35 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
 function getPositionWeights(
   position: Position,
 ): Record<CorePlayerStatKey, number> {
-  if (position === "PG") {
+  if (position === "G") {
     return {
-      ppg: 1.2,
+      ppg: 1.25,
       rpg: 0.7,
-      apg: 1.6,
+      apg: 1.55,
       fgPercent: 0.8,
-      threePercent: 1.3,
-      ftPercent: 0.6,
-    };
-  }
-
-  if (position === "SG" || position === "SF") {
-    return {
-      ppg: 1.5,
-      rpg: 1.0,
-      apg: 1.0,
-      fgPercent: 0.9,
-      threePercent: 1.2,
+      threePercent: 1.25,
       ftPercent: 0.7,
     };
   }
 
-  // PF, C
+  if (position === "F") {
+    return {
+      ppg: 1.35,
+      rpg: 1.15,
+      apg: 1.0,
+      fgPercent: 0.95,
+      threePercent: 1.05,
+      ftPercent: 0.7,
+    };
+  }
+
   return {
     ppg: 1.0,
-    rpg: 1.6,
-    apg: 0.8,
-    fgPercent: 1.4,
-    threePercent: 0.6,
-    ftPercent: 0.6,
+    rpg: 1.7,
+    apg: 0.75,
+    fgPercent: 1.45,
+    threePercent: 0.45,
+    ftPercent: 0.55,
   };
 }
 
@@ -1240,27 +1230,18 @@ function getPositionSimilarity(
   playerPosition: Position,
   otherPosition: Position,
 ) {
-  // Perfect match
   if (playerPosition === otherPosition) {
     return 100;
   }
 
-  // Some match
-  const isGuardMatch =
-    (playerPosition === "PG" || playerPosition === "SG") &&
-    (otherPosition === "PG" || otherPosition === "SG");
-  const isWingMatch =
-    (playerPosition === "SG" || playerPosition === "SF") &&
-    (otherPosition === "SG" || otherPosition === "SF");
-  const isBigMatch =
-    (playerPosition === "PF" || playerPosition === "C") &&
-    (otherPosition === "PF" || otherPosition === "C");
+  const isFrontcourtMatch =
+    (playerPosition === "F" || playerPosition === "C") &&
+    (otherPosition === "F" || otherPosition === "C");
 
-  if (isGuardMatch || isWingMatch || isBigMatch) {
-    return 75;
+  if (isFrontcourtMatch) {
+    return 70;
   }
 
-  // No match
   return 35;
 }
 
@@ -1371,7 +1352,7 @@ export const teams: Team[] = Array.from(
   new Set(players.map((player) => player.team)),
 ).sort();
 // All unique positions in data
-const positionOrder: Position[] = ["PG", "SG", "SF", "PF", "C"];
+const positionOrder: Position[] = ["G", "F", "C"];
 export const positions = positionOrder.filter((position) =>
   players.some((player) => player.position === position),
 );

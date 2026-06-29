@@ -1,4 +1,4 @@
-import type { Position } from "../../court-data";
+import type { LineupSlot } from "../../court-data";
 import type { LineupDetail } from "../shared/lineup-types";
 import { featuredCourtMarkerPositions } from "./featured-lineups";
 import { LineupMarker } from "../featured/lineup-marker";
@@ -57,25 +57,31 @@ export function FeaturedLineupCourt({
         }}
       />
 
-      {Object.entries(selectedLineup.players).map(([position, playerName]) => (
-        <div
-          key={`${position}-${playerName || "empty"}`}
-          onMouseEnter={() => onHoverPlayer(playerName)}
-          onMouseLeave={() => onHoverPlayer("")}
-        >
-          <LineupMarker
-            position={position}
-            name={playerName || "Select Player"}
-            color={selectedCategoryColor}
-            isHighlighted={hoveredLineupPlayer === playerName}
-            onViewCard={onViewCard}
-            tooltipPosition={
-              position === "PG" || position === "SG" ? "bottom" : "top"
-            }
-            className={featuredCourtMarkerPositions[position as Position]}
-          />
-        </div>
-      ))}
+      {Object.entries(selectedLineup.players).map(([position, playerName]) => {
+        const lineupPosition = position as LineupSlot;
+
+        return (
+          <div
+            key={`${lineupPosition}-${playerName || "empty"}`}
+            onMouseEnter={() => onHoverPlayer(playerName)}
+            onMouseLeave={() => onHoverPlayer("")}
+          >
+            <LineupMarker
+              position={lineupPosition}
+              name={playerName || "Select Player"}
+              color={selectedCategoryColor}
+              isHighlighted={hoveredLineupPlayer === playerName}
+              onViewCard={onViewCard}
+              tooltipPosition={
+                lineupPosition === "PG" || lineupPosition === "SG"
+                  ? "bottom"
+                  : "top"
+              }
+              className={featuredCourtMarkerPositions[lineupPosition]}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 }

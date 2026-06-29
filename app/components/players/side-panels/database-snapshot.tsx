@@ -88,7 +88,7 @@ export function DatabaseSnapshot({
             Position Breakdown
           </p>
 
-          <div className="grid grid-cols-5 gap-1 text-center">
+          <div className="mx-auto grid max-w-32 grid-cols-3 gap-3 text-center">
             {positions.map((position) => (
               <div key={position}>
                 <p className="text-[8px] text-[#1bc2ec]">{position}</p>

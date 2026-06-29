@@ -1,4 +1,4 @@
-import { Position } from "../../court-data";
+import type { LineupSlot } from "../../court-data";
 import { getBuilderPlayerRating } from "./builder-position-helpers";
 import { BuilderPlayerCard } from "./builder-player-card";
 import { BuilderPositionTabs } from "./builder-position-tabs";
@@ -6,12 +6,12 @@ import { BuilderPositionTabs } from "./builder-position-tabs";
 type Player = Parameters<typeof getBuilderPlayerRating>[0];
 
 type BuilderPlayerPickerProps = {
-  lineupPositions: Position[];
-  activeBuildPosition: Position;
-  customLineup: Record<Position, string>;
+  lineupPositions: LineupSlot[];
+  activeBuildPosition: LineupSlot;
+  customLineup: Record<LineupSlot, string>;
   buildPlayerSearch: string;
   availableBuildPlayers: Player[];
-  onSelectPosition: (position: Position) => void;
+  onSelectPosition: (position: LineupSlot) => void;
   onSearchChange: (value: string) => void;
   onPickPlayer: (playerName: string) => void;
 };

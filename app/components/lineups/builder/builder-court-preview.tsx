@@ -1,4 +1,4 @@
-import type { Position } from "../../court-data";
+import type { LineupSlot } from "../../court-data";
 import { builderCourtMarkerPositions } from "../featured/featured-lineups";
 import { LineupMarker } from "../featured/lineup-marker";
 import {
@@ -7,8 +7,8 @@ import {
 } from "./builder-lineup-helpers";
 
 type BuilderCourtPreviewProps = {
-  lineupPositions: Position[];
-  customLineup: Record<Position, string>;
+  lineupPositions: LineupSlot[];
+  customLineup: Record<LineupSlot, string>;
   hoveredBuildPlayer: string;
   playerRevealMode: PlayerRevealMode;
   onViewCard: (playerName: string) => void;

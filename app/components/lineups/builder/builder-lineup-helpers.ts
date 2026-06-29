@@ -1,7 +1,7 @@
-import { players, type Position } from "../../court-data";
+import { players, type LineupSlot } from "../../court-data";
 import { getBuilderPlayerRatingForPosition } from "./builder-position-helpers";
 
-export const EMPTY_LINEUP: Record<Position, string> = {
+export const EMPTY_LINEUP: Record<LineupSlot, string> = {
   PG: "",
   SG: "",
   SF: "",
@@ -12,13 +12,13 @@ export const EMPTY_LINEUP: Record<Position, string> = {
 type Player = (typeof players)[number];
 
 export type SelectedCustomPlayerSlot = {
-  position: Position;
+  position: LineupSlot;
   player: Player;
 };
 
 export function getSelectedCustomPlayerSlots(
-  customLineup: Record<Position, string>,
-  lineupPositions: Position[],
+  customLineup: Record<LineupSlot, string>,
+  lineupPositions: LineupSlot[],
 ): SelectedCustomPlayerSlot[] {
   return lineupPositions
     .map((position) => {
@@ -49,7 +49,7 @@ export function getCustomLineupOverall(
 
 type GetAvailableBuildPlayersParams = {
   buildPlayerSearch: string;
-  activeBuildPosition: Position;
+  activeBuildPosition: LineupSlot;
   activePositionPlayerName: string;
   selectedCustomPlayers: Player[];
 };

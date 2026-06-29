@@ -1,4 +1,4 @@
-import type { Position } from "../../court-data";
+import type { LineupSlot } from "../../court-data";
 import type { LineupScoutScores, TeamGrades } from "../../lineup-scouting";
 
 export type LineupTab = "featured" | "builder" | "saved";
@@ -19,7 +19,7 @@ export type LineupAchievements = {
 };
 
 export type LineupDetail = {
-  players: Record<Position, string>;
+  players: Record<LineupSlot, string>;
   overall: number;
   ratings: LineupRatings;
   achievements: LineupAchievements;
@@ -32,7 +32,7 @@ export type LineupDetail = {
 export type SavedLineup = {
   id: string;
   name: string;
-  players: Record<Position, string>;
+  players: Record<LineupSlot, string>;
   overall: number;
   summary: string;
   tier: string;

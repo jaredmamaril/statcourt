@@ -1,44 +1,38 @@
-import type { Position } from "../../court-data";
+import type { LineupSlot } from "../../court-data";
 import { players } from "../../court-data";
 import { getPlayerRating } from "../../player-ratings";
 
 type Player = (typeof players)[number];
 
-export type PositionFit = "natural" | "secondary" | "emergency" | "mismatch";
-
-const defaultSecondaryPositions: Record<Position, Position[]> = {
-  PG: ["SG"],
-  SG: ["PG", "SF"],
-  SF: ["SG", "PF"],
-  PF: ["SF", "C"],
-  C: ["PF"],
-};
+export type PositionFit = "natural" | "secondary" | "mismatch";
 
 export function getBuilderPlayerRating(player: Player) {
   return getPlayerRating(player, "overall");
 }
 
-export function getPlayerSecondaryPositions(player: Player): Position[] {
-  return (
-    player.secondaryPositions ?? defaultSecondaryPositions[player.position]
-  );
-}
-
-export function getPlayerEmergencyPositions(player: Player): Position[] {
-  return player.emergencyPositions ?? [];
-}
-
-export function getPositionFit(player: Player, slot: Position): PositionFit {
-  if (player.position === slot) {
+export function getPositionFit(player: Player, slot: LineupSlot): PositionFit {
+  if (player.position === "G" && (slot === "PG" || slot === "SG")) {
     return "natural";
   }
 
-  if (getPlayerSecondaryPositions(player).includes(slot)) {
+  if (player.position === "F" && (slot === "SF" || slot === "PF")) {
+    return "natural";
+  }
+
+  if (player.position === "C" && slot === "C") {
+    return "natural";
+  }
+
+  if (player.position === "G" && slot === "SF") {
     return "secondary";
   }
 
-  if (getPlayerEmergencyPositions(player).includes(slot)) {
-    return "emergency";
+  if (player.position === "F" && (slot === "SG" || slot === "C")) {
+    return "secondary";
+  }
+
+  if (player.position === "C" && slot === "PF") {
+    return "secondary";
   }
 
   return "mismatch";
@@ -46,14 +40,13 @@ export function getPositionFit(player: Player, slot: Position): PositionFit {
 
 export function getPositionPenalty(fit: PositionFit) {
   if (fit === "natural") return 0;
-  if (fit === "secondary") return 2;
-  if (fit === "emergency") return 5;
+  if (fit === "secondary") return 3;
   return 9;
 }
 
 export function getBuilderPlayerRatingForPosition(
   player: Player,
-  slot: Position,
+  slot: LineupSlot,
 ) {
   return (
     getBuilderPlayerRating(player) -

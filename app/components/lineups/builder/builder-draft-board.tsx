@@ -1,4 +1,4 @@
-import type { Position } from "../../court-data";
+import type { LineupSlot } from "../../court-data";
 import { players } from "../../court-data";
 import {
   getPlayerRevealDelay,
@@ -6,14 +6,14 @@ import {
 } from "./builder-lineup-helpers";
 
 type BuilderDraftBoardProps = {
-  lineupPositions: Position[];
-  customLineup: Record<Position, string>;
+  lineupPositions: LineupSlot[];
+  customLineup: Record<LineupSlot, string>;
   customLineupOverall: number | null;
   isLineupComplete: boolean;
   selectedLineupCount: number;
   playerRevealMode: PlayerRevealMode;
   onHoverPlayer: (playerName: string) => void;
-  onRemovePlayer: (position: Position) => void;
+  onRemovePlayer: (position: LineupSlot) => void;
   onScoutLineup: () => void;
 };
 

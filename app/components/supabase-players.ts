@@ -9,8 +9,6 @@ export type SupabasePlayerRow = {
   team: string;
   fallback_image: string | null;
   position: string;
-  secondary_positions: Position[];
-  emergency_positions: Position[];
   jersey_number: number;
   ppg: number;
   rpg: number;
@@ -76,8 +74,6 @@ export function mapSupabasePlayerToPlayer(row: SupabasePlayerRow): Player {
     fallbackImage: row.fallback_image ?? undefined,
     team: row.team as Team,
     position: row.position as Position,
-    secondaryPositions: row.secondary_positions ?? [],
-    emergencyPositions: row.emergency_positions ?? [],
     jerseyNumber: row.jersey_number,
     ratings: {
       defense: row.defense_rating,

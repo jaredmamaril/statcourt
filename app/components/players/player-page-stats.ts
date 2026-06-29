@@ -9,17 +9,31 @@ import {
 } from "../court-data";
 import { getPlayerRating } from "../player-ratings";
 
-export function getPositionBreakdown(players: Player[]) {
-  return positions.reduce(
-    (counts, position) => {
-      counts[position] = players.filter(
-        (player) => player.position === position,
-      ).length;
+function getBroadPosition(position: string): Position {
+  if (position === "PG" || position === "SG") {
+    return "G";
+  }
 
-      return counts;
-    },
-    {} as Record<Position, number>,
-  );
+  if (position === "SF" || position === "PF") {
+    return "F";
+  }
+
+  return "C";
+}
+
+export function getPositionBreakdown(players: Player[]) {
+  const breakdown: Record<Position, number> = {
+    G: 0,
+    F: 0,
+    C: 0,
+  };
+
+  players.forEach((player) => {
+    const position = getBroadPosition(player.position);
+    breakdown[position] += 1;
+  });
+
+  return breakdown;
 }
 
 export function getTopArchetypeDistribution(players: Player[]) {

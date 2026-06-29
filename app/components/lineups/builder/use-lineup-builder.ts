@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Position } from "../../court-data";
+import type { LineupSlot } from "../../court-data";
 import {
   EMPTY_LINEUP,
   getAvailableBuildPlayers,
@@ -9,15 +9,15 @@ import {
 } from "./builder-lineup-helpers";
 
 type UseLineupBuilderProps = {
-  lineupPositions: Position[];
+  lineupPositions: LineupSlot[];
 };
 
 export function useLineupBuilder({ lineupPositions }: UseLineupBuilderProps) {
   const [hasStartedBuilder, setHasStartedBuilder] = useState(false);
   const [customLineup, setCustomLineup] =
-    useState<Record<Position, string>>(EMPTY_LINEUP);
+    useState<Record<LineupSlot, string>>(EMPTY_LINEUP);
   const [activeBuildPosition, setActiveBuildPosition] =
-    useState<Position>("PG");
+    useState<LineupSlot>("PG");
   const [hoveredBuildPlayer, setHoveredBuildPlayer] = useState("");
   const [buildPlayerSearch, setBuildPlayerSearch] = useState("");
   const [playerRevealMode, setPlayerRevealMode] =
@@ -60,7 +60,7 @@ export function useLineupBuilder({ lineupPositions }: UseLineupBuilderProps) {
     }));
   }
 
-  function removeBuildPlayer(position: Position) {
+  function removeBuildPlayer(position: LineupSlot) {
     setCustomLineup((prev) => ({
       ...prev,
       [position]: "",

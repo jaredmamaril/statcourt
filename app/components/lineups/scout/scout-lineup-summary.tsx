@@ -1,10 +1,10 @@
-import { players, type Position } from "../../court-data";
+import { players, type LineupSlot } from "../../court-data";
 import type { LineupScoutScores } from "../../lineup-scouting";
 import { ScoutScoreProfile } from "./scout-score-profile";
 
 type ScoutLineupSummaryProps = {
-  lineupPositions: Position[];
-  customLineup: Record<Position, string>;
+  lineupPositions: LineupSlot[];
+  customLineup: Record<LineupSlot, string>;
   scoutScores: LineupScoutScores;
   scoutArchetypeColor: string;
 };

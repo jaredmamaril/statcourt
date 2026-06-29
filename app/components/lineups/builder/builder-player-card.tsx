@@ -1,4 +1,4 @@
-import { normalizeStat, type Position } from "../../court-data";
+import { normalizeStat, type LineupSlot } from "../../court-data";
 import PlayerImage from "../../player-image";
 import { getPlayerHeadshot } from "../../player-images";
 import {
@@ -13,7 +13,7 @@ type Player = Parameters<typeof getBuilderPlayerRating>[0];
 
 type BuilderPlayerCardProps = {
   player: Player;
-  activeBuildPosition: Position;
+  activeBuildPosition: LineupSlot;
   isSelected: boolean;
   onPickPlayer: (playerName: string) => void;
 };
@@ -95,18 +95,14 @@ export function BuilderPlayerCard({
             ? "text-emerald-400"
             : positionFit === "secondary"
               ? "text-[#1bc2ec]"
-              : positionFit === "emergency"
-                ? "text-[#EFBF04]"
-                : "text-red-400"
+              : "text-red-400"
         }`}
       >
         {positionFit === "natural"
           ? "Natural Fit"
           : positionFit === "secondary"
             ? "Secondary Fit"
-            : positionFit === "emergency"
-              ? "Emergency Fit"
-              : "Mismatch -7"}
+            : "Mismatch -9"}
       </p>
 
       <BuilderPlayerCardOverlay

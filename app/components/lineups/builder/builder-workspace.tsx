@@ -1,4 +1,4 @@
-import type { Position } from "../../court-data";
+import type { LineupSlot } from "../../court-data";
 import type { PlayerRevealMode } from "./builder-lineup-helpers";
 import { BuilderPlayerPicker } from "./builder-player-picker";
 import { BuilderDraftBoard } from "./builder-draft-board";
@@ -9,9 +9,9 @@ type Player = Parameters<
 >[0]["availableBuildPlayers"][number];
 
 type BuilderWorkspaceProps = {
-  lineupPositions: Position[];
-  activeBuildPosition: Position;
-  customLineup: Record<Position, string>;
+  lineupPositions: LineupSlot[];
+  activeBuildPosition: LineupSlot;
+  customLineup: Record<LineupSlot, string>;
   buildPlayerSearch: string;
   availableBuildPlayers: Player[];
   customLineupOverall: number | null;
@@ -19,11 +19,11 @@ type BuilderWorkspaceProps = {
   selectedLineupCount: number;
   hoveredBuildPlayer: string;
   playerRevealMode: PlayerRevealMode;
-  onSelectPosition: (position: Position) => void;
+  onSelectPosition: (position: LineupSlot) => void;
   onSearchChange: (value: string) => void;
   onPickPlayer: (playerName: string) => void;
   onHoverPlayer: (playerName: string) => void;
-  onRemovePlayer: (position: Position) => void;
+  onRemovePlayer: (position: LineupSlot) => void;
   onScoutLineup: () => void;
   onViewCard: (playerName: string) => void;
 };

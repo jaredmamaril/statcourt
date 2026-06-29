@@ -1,8 +1,8 @@
 import {
   normalizeStat,
   players,
+  type LineupSlot,
   type Player,
-  type Position,
 } from "./court-data";
 import { getPlayerRating } from "./player-ratings";
 
@@ -109,7 +109,7 @@ export type LineupScoutScores = {
   balance: number;
 };
 
-export type PositionFit = "natural" | "secondary" | "emergency" | "mismatch";
+export type PositionFit = "natural" | "secondary" | "mismatch";
 
 export type LineupScoutReport = {
   summary: string;
@@ -306,9 +306,9 @@ export function getXFactorDescription(
   archetype: string,
   player: (typeof players)[number],
 ): string {
-  const isBig = player.position === "PF" || player.position === "C";
-  const isWing = player.position === "SG" || player.position === "SF";
-  const isGuard = player.position === "PG" || player.position === "SG";
+  const isBig = player.position === "F" || player.position === "C";
+  const isWing = player.position === "F";
+  const isGuard = player.position === "G";
   const isPrimaryScorer = player.stats.ppg >= 25;
   const isElitePlaymaker = player.stats.apg >= 7;
   const isEliteDefender = player.ratings.defense >= 90;
@@ -380,7 +380,7 @@ export function getXFactorDescription(
 function getXFactorForArchetype(
   archetype: string,
   selectedSlots: {
-    position: Position;
+    position: LineupSlot;
     player: (typeof players)[number];
   }[],
 ): XFactorResult {
@@ -449,11 +449,10 @@ function getXFactorForArchetype(
 
 function getPlayerTraits(
   player: (typeof players)[number],
-  slotPosition?: Position,
+  slotPosition?: LineupSlot,
 ) {
-  const isBig = player.position === "PF" || player.position === "C";
-  const isForward = player.position === "SF" || player.position === "PF";
-
+  const isBig = player.position === "F" || player.position === "C";
+  const isForward = player.position === "F";
   return {
     eliteShooter: player.stats.threePercent >= 38,
     eliteScorer: player.stats.ppg >= 25,
@@ -478,23 +477,43 @@ function getPlayerTraits(
   };
 }
 
-export function getPositionFit(player: Player, slot: Position): PositionFit {
-  if (player.position === slot) return "natural";
-  if (player.secondaryPositions?.includes(slot)) return "secondary";
-  if (player.emergencyPositions?.includes(slot)) return "emergency";
+export function getPositionFit(player: Player, slot: LineupSlot): PositionFit {
+  if (player.position === "G" && (slot === "PG" || slot === "SG")) {
+    return "natural";
+  }
+
+  if (player.position === "F" && (slot === "SF" || slot === "PF")) {
+    return "natural";
+  }
+
+  if (player.position === "C" && slot === "C") {
+    return "natural";
+  }
+
+  if (player.position === "G" && slot === "SF") {
+    return "secondary";
+  }
+
+  if (player.position === "F" && (slot === "SG" || slot === "C")) {
+    return "secondary";
+  }
+
+  if (player.position === "C" && slot === "PF") {
+    return "secondary";
+  }
+
   return "mismatch";
 }
 
 export function getPositionPenalty(fit: PositionFit) {
   if (fit === "natural") return 0;
-  if (fit === "secondary") return 2;
-  if (fit === "emergency") return 5;
-  return 10;
+  if (fit === "secondary") return 3;
+  return 9;
 }
 
 export function getBuilderPlayerRatingForPosition(
   player: Player,
-  slot: Position,
+  slot: LineupSlot,
 ) {
   return (
     getPlayerRating(player, "overall") -
@@ -508,7 +527,7 @@ export function clampScore(score: number) {
 
 export function getLineupScoutReport(
   selectedSlots: {
-    position: Position;
+    position: LineupSlot;
     player: (typeof players)[number];
   }[],
 ): LineupScoutReport {

@@ -1,10 +1,10 @@
-import type { Position } from "../../court-data";
+import type { LineupSlot } from "../../court-data";
 
 type BuilderPositionTabsProps = {
-  lineupPositions: Position[];
-  activeBuildPosition: Position;
-  customLineup: Record<Position, string>;
-  onSelectPosition: (position: Position) => void;
+  lineupPositions: LineupSlot[];
+  activeBuildPosition: LineupSlot;
+  customLineup: Record<LineupSlot, string>;
+  onSelectPosition: (position: LineupSlot) => void;
 };
 
 export function BuilderPositionTabs({
