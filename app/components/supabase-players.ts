@@ -33,19 +33,38 @@ export type SupabasePlayerRow = {
 };
 
 export async function getSupabasePlayers() {
-  const { data, error } = await supabase
-    .from("players")
-    .select("*")
-    .neq("stats_source", "pending_import")
-    .gt("ppg", 0)
-    .not("fallback_image", "is", null)
-    .order("name", { ascending: true });
+  const pageSize = 1000;
+  let from = 0;
+  let allRows: SupabasePlayerRow[] = [];
 
-  if (error) {
-    throw new Error(error.message);
+  while (true) {
+    const { data, error } = await supabase
+      .from("players")
+      .select("*")
+      .neq("stats_source", "pending_import")
+      .gt("ppg", 0)
+      .not("fallback_image", "is", null)
+      .order("name", { ascending: true })
+      .range(from, from + pageSize - 1);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data || data.length === 0) {
+      break;
+    }
+
+    allRows = [...allRows, ...(data as SupabasePlayerRow[])];
+
+    if (data.length < pageSize) {
+      break;
+    }
+
+    from += pageSize;
   }
 
-  return data as SupabasePlayerRow[];
+  return allRows;
 }
 
 export function mapSupabasePlayerToPlayer(row: SupabasePlayerRow): Player {
