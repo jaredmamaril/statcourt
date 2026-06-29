@@ -259,6 +259,7 @@ export type PlayerStats = {
 export type PlayerRatings = {
   defense: number;
   starPower: number;
+  careerLegacy?: number;
 };
 
 // Future: adding more stats or player attributes as needed, such as player position, team, or career highlights, to enhance the user experience and provide more comprehensive information about each player.

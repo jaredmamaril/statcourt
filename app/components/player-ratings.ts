@@ -9,7 +9,11 @@ export type PlayerRatingCategory =
   | "efficiency";
 
 function toDisplayRating(rawScore: number) {
-  return 70 + rawScore * 0.3;
+  return 55 + rawScore * 0.42;
+}
+
+function safeNumber(value: number | null | undefined, fallback = 0) {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
 export function getPlayerRating(
@@ -32,12 +36,14 @@ export function getPlayerRating(
     statMaxValues.ftPercent,
   );
 
-  const scoringScore = ppgScore * 0.75 + fgScore * 0.15 + ftScore * 0.1;
-  const shootingScore = threeScore * 0.65 + ftScore * 0.25 + fgScore * 0.1;
-  const playmakingScore =
-    apgScore * 0.75 + scoringScore * 0.15 + threeScore * 0.1;
-  const reboundingScore = rpgScore * 0.9 + fgScore * 0.1;
-  const efficiencyScore = fgScore * 0.45 + threeScore * 0.3 + ftScore * 0.25;
+  const scoringScore = ppgScore;
+  const shootingScore = threeScore * 0.7 + ftScore * 0.3;
+  const playmakingScore = apgScore;
+  const reboundingScore = rpgScore;
+  const efficiencyScore = fgScore * 0.5 + threeScore * 0.25 + ftScore * 0.25;
+  const defenseScore = safeNumber(player.ratings.defense, 70);
+  const starPowerScore = safeNumber(player.ratings.starPower, 70);
+  const careerLegacyScore = safeNumber(player.ratings.careerLegacy, 70);
 
   if (category === "scoring") return toDisplayRating(scoringScore);
   if (category === "shooting") return toDisplayRating(shootingScore);
@@ -54,15 +60,19 @@ export function getPlayerRating(
     ftScore >= 75,
   ].filter(Boolean).length;
 
-  const versatilityBonus = starCategories * 2;
+  const versatilityBonus = Math.min(starCategories * 0.35, 2.1);
 
   const overallScore =
-    scoringScore * 0.3 +
-    efficiencyScore * 0.23 +
-    playmakingScore * 0.19 +
-    reboundingScore * 0.15 +
-    shootingScore * 0.13 +
+    scoringScore * 0.22 +
+    defenseScore * 0.2 +
+    playmakingScore * 0.15 +
+    efficiencyScore * 0.13 +
+    reboundingScore * 0.12 +
+    shootingScore * 0.11 +
+    starPowerScore * 0.07 +
     versatilityBonus;
 
-  return toDisplayRating(overallScore);
+  const overall = toDisplayRating(overallScore);
+
+  return Number.isFinite(overall) ? overall : 55;
 }

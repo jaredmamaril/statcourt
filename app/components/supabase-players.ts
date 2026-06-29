@@ -30,6 +30,7 @@ export type SupabasePlayerRow = {
   from_year: number | null;
   to_year: number | null;
   api_position: string | null;
+  career_legacy: number | null;
 };
 
 export async function getSupabasePlayers() {
@@ -81,6 +82,7 @@ export function mapSupabasePlayerToPlayer(row: SupabasePlayerRow): Player {
     ratings: {
       defense: row.defense_rating,
       starPower: row.star_power,
+      careerLegacy: row.career_legacy ?? 70,
     },
     stats: {
       ppg: row.ppg,
