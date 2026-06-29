@@ -1,5 +1,11 @@
 import type { LineupSlot } from "../../court-data";
 import type { LineupDetail, LineupTab } from "../shared/lineup-types";
+import { greatestTeamsLineups } from "./details/greatest-teams";
+import { bucketGettersLineups } from "./details/bucket-getters";
+import { floorGeneralsLineups } from "./details/floor-generals";
+import { lockdownSquadsLineups } from "./details/lockdown-squads";
+import { splashSquadsLineups } from "./details/splash-squads";
+import { allTimeTeamsLineups } from "./details/all-time-teams";
 import type { LucideIcon } from "lucide-react";
 import { Trophy, Flame, Brain, Shield, Target, Crown } from "lucide-react";
 
@@ -27,172 +33,35 @@ export const lineupCards = [
 export type LineupCategory = (typeof lineupCards)[number]["title"];
 
 export const lineupDetails = {
-  "1996 Bulls": {
-    players: {
-      PG: "Ron Harper",
-      SG: "Michael Jordan",
-      SF: "Scottie Pippen",
-      PF: "Dennis Rodman",
-      C: "Luc Longley",
-    },
-    overall: 98.2,
-    ratings: {
-      scoring: 94,
-      shooting: 78,
-      playmaking: 86,
-      rebounding: 96,
-      defense: 99,
-    },
-    achievements: {
-      record: "72-10",
-      result: "NBA Champions",
-      playoffs: "15-3",
-    },
-    archetype: "Championship Dynasty",
-    description:
-      "A defense-first championship lineup built around Jordan's scoring, Pippen's versatility, and Rodman's rebounding pressure.",
-    strengths: ["Defense", "Rebounding", "Transition scoring"],
-    weaknesses: ["Spacing", "Bench creation"],
-  },
-  "Isolation Killers": {
-    players: {
-      PG: "Kobe Bryant",
-      SG: "Michael Jordan",
-      SF: "Kevin Durant",
-      PF: "LeBron James",
-      C: "Hakeem Olajuwon",
-    },
-    overall: 95.4,
-    ratings: {
-      scoring: 99,
-      shooting: 88,
-      playmaking: 84,
-      rebounding: 82,
-      defense: 88,
-    },
-    achievements: {
-      note: "Built from elite isolation scorers",
-    },
-    archetype: "Shot Creation Core",
-    description:
-      "A lineup built around elite one-on-one scorers who can create difficult shots without needing much setup.",
-    strengths: ["Shot creation", "Clutch scoring", "Mismatch hunting"],
-    weaknesses: ["Ball movement", "Off-ball balance"],
-  },
-  "Pass First Legends": {
-    players: {
-      PG: "Magic Johnson",
-      SG: "Stephen Curry",
-      SF: "Larry Bird",
-      PF: "LeBron James",
-      C: "Nikola Jokic",
-    },
-    overall: 96.1,
-    ratings: {
-      scoring: 92,
-      shooting: 94,
-      playmaking: 99,
-      rebounding: 86,
-      defense: 82,
-    },
-    achievements: {
-      note: "Built from elite passers and offensive organizers",
-    },
-    archetype: "Playmaking Engine",
-    description:
-      "A creation-heavy lineup where every major player can pass, read the floor, and generate efficient looks.",
-    strengths: ["Playmaking", "Court vision", "Offensive flow"],
-    weaknesses: ["Point-of-attack defense", "Rim protection"],
-  },
-
-  "All-Defense Unit": {
-    players: {
-      PG: "Michael Jordan",
-      SG: "Kobe Bryant",
-      SF: "LeBron James",
-      PF: "Tim Duncan",
-      C: "Hakeem Olajuwon",
-    },
-    overall: 95.8,
-    ratings: {
-      scoring: 91,
-      shooting: 78,
-      playmaking: 82,
-      rebounding: 91,
-      defense: 99,
-    },
-    achievements: {
-      note: "Built from elite defenders across every level of the floor",
-    },
-    archetype: "Lockdown Unit",
-    description:
-      "A defense-first lineup with elite wing pressure, physicality, and dominant back-line rim protection.",
-    strengths: ["Defense", "Rim protection", "Physicality"],
-    weaknesses: ["Spacing consistency", "Traditional playmaking"],
-  },
-
-  "Spacing Nightmare": {
-    players: {
-      PG: "Stephen Curry",
-      SG: "Kobe Bryant",
-      SF: "Kevin Durant",
-      PF: "Larry Bird",
-      C: "Nikola Jokic",
-    },
-    overall: 95.6,
-    ratings: {
-      scoring: 96,
-      shooting: 99,
-      playmaking: 91,
-      rebounding: 82,
-      defense: 76,
-    },
-    achievements: {
-      note: "Built from elite shooters, passers, and floor spacers",
-    },
-    archetype: "Spacing Superteam",
-    description:
-      "A shooting-heavy lineup that stretches the floor with elite range, passing, and shot-making at nearly every spot.",
-    strengths: ["Shooting", "Spacing", "Offensive versatility"],
-    weaknesses: ["Interior defense", "Rebounding physicality"],
-  },
-
-  "All-Time Lakers": {
-    players: {
-      PG: "Magic Johnson",
-      SG: "Kobe Bryant",
-      SF: "LeBron James",
-      PF: "Tim Duncan",
-      C: "Shaquille O'Neal",
-    },
-    overall: 96.7,
-    ratings: {
-      scoring: 97,
-      shooting: 76,
-      playmaking: 93,
-      rebounding: 94,
-      defense: 91,
-    },
-    achievements: {
-      note: "Built as a current-pool version of an all-time Lakers-style powerhouse",
-    },
-    archetype: "Franchise Powerhouse",
-    description:
-      "A star-loaded lineup built around size, transition pressure, post dominance, and elite shot creation.",
-    strengths: ["Star power", "Interior scoring", "Transition offense"],
-    weaknesses: ["Three-point volume", "Role balance"],
-  },
+  ...greatestTeamsLineups,
+  ...bucketGettersLineups,
+  ...floorGeneralsLineups,
+  ...lockdownSquadsLineups,
+  ...splashSquadsLineups,
+  ...allTimeTeamsLineups,
 } satisfies Record<string, LineupDetail>;
 
 export type LineupName = keyof typeof lineupDetails;
 
 export const lineupGroups = {
-  "Greatest Teams": ["1996 Bulls"],
-  "Bucket Getters": ["Isolation Killers"],
-  "Floor Generals": ["Pass First Legends"],
-  "Lockdown Squads": ["All-Defense Unit"],
-  "Splash Squads": ["Spacing Nightmare"],
-  "All-Time Teams": ["All-Time Lakers"],
+  "Greatest Teams": ["1996 Bulls", "2017 Warriors", "1986 Celtics"],
+  "Bucket Getters": ["Isolation Killers", "Pure Scorers", "Wing Assassins"],
+  "Floor Generals": [
+    "Pass First Legends",
+    "Point God Lineup",
+    "Five-Man Creation",
+  ],
+  "Lockdown Squads": [
+    "All-Defense Unit",
+    "Rim Protection Wall",
+    "Switch Everything",
+  ],
+  "Splash Squads": [
+    "Spacing Nightmare",
+    "Splash Brothers Core",
+    "Five-Out Firepower",
+  ],
+  "All-Time Teams": ["All-Time Lakers", "All-Time Bulls", "All-Time Warriors"],
 } satisfies Record<LineupCategory, LineupName[]>;
 
 // Court marker positions
