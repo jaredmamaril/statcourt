@@ -62,13 +62,16 @@ NBA_HEADERS = {
     "Accept-Language": "en-US,en;q=0.9",
 }
 
+#$env:PYTHONIOENCODING="utf-8"
+#python scripts/import-nba-stats.py > scripts/import-output.sql
+
 SKIP_COMMON_PLAYER_INFO = False
 PLAYER_IMPORT_CONTEXT = {}
 
 IMPORT_MODE = "directory"  # "pending", "all", "directory", or "selected"
 SELECTED_PLAYERS = []
-DIRECTORY_LIMIT = 100
-DIRECTORY_START_AFTER = "Charles Vaughn"
+DIRECTORY_LIMIT = 1000
+DIRECTORY_START_AFTER = "Scottie Pippen"
 DEFENSE_SEASONS = ["2022-23", "2023-24", "2024-25"]
 ONLY_IMPORT = set()
 
@@ -239,10 +242,10 @@ def estimate_defense_from_box_score(stats):
     score += min(stats["bpg"] * 8, 14)
     score += min(stats["rpg"] * 0.9, 10)
 
-    if stats["position"] in ["PF", "C"]:
+    if stats["position"] in ["F", "C"]:
         score += 5
 
-    if stats["position"] in ["PG", "SG"] and stats["spg"] >= 1.5:
+    if stats["position"] == "G" and stats["spg"] >= 1.5:
         score += 4
 
     return max(50, min(99, round(score)))
@@ -281,45 +284,17 @@ def height_to_inches(height):
     return int(feet) * 12 + int(inches)    
 
 
-def infer_positions(api_position, height_inches, stats):
-    position = "SF"
-    secondary_positions = []
-    emergency_positions = []
+def infer_position(api_position):
+    if "Guard" in api_position:
+        return "G"
+
+    if "Forward" in api_position:
+        return "F"
 
     if "Center" in api_position:
-        position = "C"
+        return "C"
 
-        if stats["threePercent"] >= 34 or stats["apg"] >= 4:
-            secondary_positions.append("PF")
-
-    elif "Guard" in api_position:
-        if stats["apg"] >= 6:
-            position = "PG"
-            secondary_positions.append("SG")
-        else:
-            position = "SG"
-
-            if height_inches >= 78:
-                secondary_positions.append("SF")
-            else:
-                secondary_positions.append("PG")
-
-    elif "Forward" in api_position:
-        if stats["rpg"] >= 8 or stats["bpg"] >= 1:
-            position = "PF"
-            secondary_positions.append("C")
-        else:
-            position = "SF"
-            secondary_positions.append("PF")
-
-        if stats["apg"] >= 6:
-            emergency_positions.append("PG")
-
-    return {
-        "position": position,
-        "secondaryPositions": secondary_positions,
-        "emergencyPositions": emergency_positions,
-    }    
+    return "F"   
 
 
 def get_player_info(nba_id):
@@ -468,8 +443,6 @@ insert into public.players (
   team,
   fallback_image,
   position,
-  secondary_positions,
-  emergency_positions,
   jersey_number,
 
   ppg,
@@ -499,8 +472,6 @@ values (
   {sql_string(stats["team"])},
   {sql_string(f'/players/headshots/{slugify_name(stats["name"])}.png')},
   {sql_string(stats["position"])},
-  {format_text_array(stats["secondaryPositions"])},
-  {format_text_array(stats["emergencyPositions"])},
   {stats["jersey"]},
 
   {stats["ppg"]},
@@ -530,8 +501,6 @@ do update set
   team = excluded.team,
   fallback_image = excluded.fallback_image,
   position = excluded.position,
-  secondary_positions = excluded.secondary_positions,
-  emergency_positions = excluded.emergency_positions,
   jersey_number = excluded.jersey_number,
 
   ppg = excluded.ppg,
@@ -565,18 +534,10 @@ def main():
         try:
             stats = get_career_averages(player_name)
 
-            positions = infer_positions(
-                stats["apiPosition"],
-                stats["heightInches"],
-                stats,
-            )
-
-            stats.update(positions)
+            stats["position"] = infer_position(stats["apiPosition"])
             stats["starPower"] = estimate_star_power(stats)
-            stats["defense"] = get_multi_season_defense_rating(
-                stats,
-                DEFENSE_SEASONS,
-            )
+            # Defense API import will be handled separately so this main import stays stable.
+            stats["defense"] = estimate_defense_from_box_score(stats)
 
             print_upsert_sql(stats)
         except Exception as error:
