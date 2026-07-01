@@ -56,7 +56,7 @@ NBA_HEADERS = {
     "Accept-Language": "en-US,en;q=0.9",
 }
 
-LIMIT = 1000
+LIMIT = 500
 
 
 def get_players_missing_games():
@@ -111,7 +111,7 @@ def main():
         except Exception as error:
             print(f"-- Skipped {name}: {error}")
 
-        time.sleep(random.uniform(4, 8))
+        time.sleep(random.uniform(6, 10))
 
 
 if __name__ == "__main__":
