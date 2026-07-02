@@ -62,9 +62,6 @@ NBA_HEADERS = {
     "Accept-Language": "en-US,en;q=0.9",
 }
 
-#$env:PYTHONIOENCODING="utf-8"
-#python scripts/import-nba-stats.py > scripts/import-output.sql
-
 SKIP_COMMON_PLAYER_INFO = False
 PLAYER_IMPORT_CONTEXT = {}
 
