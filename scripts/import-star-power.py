@@ -7,6 +7,9 @@ from supabase import create_client
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
+#$env:PYTHONIOENCODING="utf-8"
+#python -u scripts/import-star-power.py > scripts/star-power-output.sql
+
 
 def load_env_file():
     env_path = Path(".env.local")
@@ -41,7 +44,10 @@ def get_players():
     while True:
         response = (
             supabase.table("players")
-            .select("nba_id, name, ppg, rpg, apg, games")
+            .select(
+                "nba_id, name, ppg, rpg, apg, games, "
+                "three_percent, ft_percent, career_legacy"
+            )
             .not_.is_("nba_id", "null")
             .range(start, start + page_size - 1)
             .execute()
@@ -63,9 +69,9 @@ def estimate_star_power(player):
     three_percent = float(player.get("three_percent") or 0)
     ft_percent = float(player.get("ft_percent") or 0)
     games = int(player.get("games") or 0)
-    career_legacy = float(player.get("career_legacy") or 70)
+    career_legacy = float(player.get("career_legacy") or 0)
 
-    score = 45
+    score = 35
 
     # Scoring presence
     score += min(ppg * 0.9, 27)
@@ -91,6 +97,11 @@ def estimate_star_power(player):
     elif ppg >= 20:
         score += 1
 
+    if ppg >= 25 and apg >= 5:
+        score += 5
+    elif ppg >= 23 and apg >= 4:
+        score += 3
+
     # Longevity
     if games >= 1000:
         score += 5
@@ -101,10 +112,16 @@ def estimate_star_power(player):
     elif games < 200:
         score -= 5
 
-    # Resume helps, but does not fully control star power
-    score += max(0, career_legacy - 70) * 0.18
+    # Icon boost for very high legacy + major scoring/playmaking profile
+    if career_legacy >= 95 and (ppg >= 23 or apg >= 7):
+        score += 3
+    elif career_legacy >= 90 and (ppg >= 22 or apg >= 7):
+        score += 2
 
-    return round(max(45, min(score, 100)))
+    # Resume helps, but does not fully control star power
+    score += max(0, career_legacy - 55) * 0.35
+
+    return round(max(25, min(score, 100)))
 
 
 def main():
