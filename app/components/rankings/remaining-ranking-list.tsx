@@ -19,6 +19,7 @@ export function RemainingRankingList({
   ratingLabel,
   onViewPlayer,
 }: RemainingRankingListProps) {
+  const DISPLAY_LIMIT = 100;
   return (
     <>
       <div className="mb-2 flex items-center justify-between px-3 font-michroma text-[9px] uppercase tracking-wide text-white/40">
@@ -27,7 +28,7 @@ export function RemainingRankingList({
       </div>
 
       <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
-        {players.slice(3).map((player, index) => {
+        {players.slice(3, DISPLAY_LIMIT).map((player, index) => {
           const archetype = getPlayerInsights(player).archetype;
           const rating = getPlayerRating(player, ratingCategory).toFixed(1);
           const teamColor = getTeamColor(player.team);
