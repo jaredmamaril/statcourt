@@ -7,7 +7,8 @@ export type PlayerRatingCategory =
   | "playmaking"
   | "rebounding"
   | "efficiency"
-  | "careerLegacy";
+  | "careerLegacy"
+  | "starPower";
 
 function toDisplayRating(rawScore: number) {
   return 55 + rawScore * 0.42;
@@ -52,6 +53,7 @@ export function getPlayerRating(
   if (category === "rebounding") return toDisplayRating(reboundingScore);
   if (category === "efficiency") return toDisplayRating(efficiencyScore);
   if (category === "careerLegacy") return careerLegacyScore;
+  if (category === "starPower") return starPowerScore;
 
   const starCategories = [
     ppgScore >= 70,

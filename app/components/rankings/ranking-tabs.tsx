@@ -7,6 +7,7 @@ import {
   MirrorRectangular,
   Gauge,
   ScrollText,
+  Star,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { PlayerRatingCategory } from "../player-ratings";
@@ -42,6 +43,12 @@ const rankingTabs: {
     Icon: ScrollText,
     color: "#EFBF04",
   },
+  {
+    label: "Star",
+    value: "starPower",
+    Icon: Star,
+    color: "#1bc2ec",
+  },
 ];
 
 type RankingTabsProps = {
@@ -61,7 +68,7 @@ export function RankingTabs({ activeTab, onSelectTab }: RankingTabsProps) {
             key={tab.value}
             type="button"
             onClick={() => onSelectTab(tab.value)}
-            className={`min-w-36 cursor-pointer rounded-b-md border border-t-0 px-4 font-michroma text-xs uppercase tracking-wide transition-all duration-200 ${
+            className={`min-w-2 cursor-pointer rounded-b-md border border-t-0 px-4 font-michroma text-xs uppercase tracking-wide transition-all duration-200 ${
               isActive
                 ? "py-4 border-[#1bc2ec]/70 bg-[#1bc2ec]/20 text-[#1bc2ec]"
                 : "py-2.5 border-white/10 bg-black/30 text-white/50 hover:border-white/30 hover:text-white/80"

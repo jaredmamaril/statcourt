@@ -5,11 +5,16 @@ import {
   type PlayerRatingCategory,
 } from "../components/player-ratings";
 
-import { players, getPlayerInsights } from "../components/court-data";
+import {
+  players as fallbackPlayers,
+  getPlayerInsights,
+} from "../components/court-data";
 import type { Team, Position } from "../components/court-data";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+
+import { getPlayersFromSupabaseWithFallback } from "../components/supabase-players";
 
 import {
   RankingTabs,
@@ -36,10 +41,29 @@ export default function Rankings() {
   const [teamFilter, setTeamFilter] = useState<Team | "">("");
   const [playerSearch, setPlayerSearch] = useState("");
   const [archetypeFilter, setArchetypeFilter] = useState("");
+  const [players, setPlayers] = useState(fallbackPlayers);
 
   // Refs and routing
   const archetypeDescriptionRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadPlayers() {
+      const loadedPlayers = await getPlayersFromSupabaseWithFallback();
+
+      if (isMounted) {
+        setPlayers(loadedPlayers);
+      }
+    }
+
+    loadPlayers();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Archetype data
   const archetypeOptions = Array.from(
@@ -148,7 +172,7 @@ export default function Rankings() {
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden text-white">
+    <main className="scrollbar-none min-h-screen overflow-x-hidden text-white">
       <section className="mx-auto w-full max-w-7xl px-6 pb-12">
         <RankingTabs
           activeTab={activeTab}
