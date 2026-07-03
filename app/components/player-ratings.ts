@@ -64,12 +64,13 @@ export function getPlayerRating(
 
   const overallScore =
     scoringScore * 0.22 +
-    defenseScore * 0.2 +
-    playmakingScore * 0.15 +
-    efficiencyScore * 0.13 +
-    reboundingScore * 0.12 +
-    shootingScore * 0.11 +
+    defenseScore * 0.18 +
+    playmakingScore * 0.14 +
+    efficiencyScore * 0.12 +
+    shootingScore * 0.1 +
+    reboundingScore * 0.1 +
     starPowerScore * 0.07 +
+    careerLegacyScore * 0.07 +
     versatilityBonus;
 
   const overall = toDisplayRating(overallScore);
