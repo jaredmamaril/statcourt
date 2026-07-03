@@ -6,7 +6,8 @@ export type PlayerRatingCategory =
   | "shooting"
   | "playmaking"
   | "rebounding"
-  | "efficiency";
+  | "efficiency"
+  | "careerLegacy";
 
 function toDisplayRating(rawScore: number) {
   return 55 + rawScore * 0.42;
@@ -50,6 +51,7 @@ export function getPlayerRating(
   if (category === "playmaking") return toDisplayRating(playmakingScore);
   if (category === "rebounding") return toDisplayRating(reboundingScore);
   if (category === "efficiency") return toDisplayRating(efficiencyScore);
+  if (category === "careerLegacy") return careerLegacyScore;
 
   const starCategories = [
     ppgScore >= 70,
@@ -76,4 +78,18 @@ export function getPlayerRating(
   const overall = toDisplayRating(overallScore);
 
   return Number.isFinite(overall) ? overall : 55;
+}
+
+export function getCareerLegacyTier(score: number | null | undefined) {
+  const safeScore = score ?? 0;
+
+  if (safeScore >= 95) return "Pantheon Legend";
+  if (safeScore >= 90) return "All-Time Great";
+  if (safeScore >= 80) return "Historic Superstar";
+  if (safeScore >= 70) return "Franchise Legend";
+  if (safeScore >= 60) return "Elite Career";
+  if (safeScore >= 50) return "Strong Legacy";
+  if (safeScore >= 40) return "Notable Career";
+  if (safeScore >= 30) return "Established Veteran";
+  return "Career Role Player";
 }

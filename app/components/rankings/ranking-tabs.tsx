@@ -6,6 +6,7 @@ import {
   Brain,
   MirrorRectangular,
   Gauge,
+  ScrollText,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { PlayerRatingCategory } from "../player-ratings";
@@ -35,6 +36,12 @@ const rankingTabs: {
     color: "#A855F7",
   },
   { label: "Efficiency", value: "efficiency", Icon: Gauge, color: "#22C55E" },
+  {
+    label: "Legacy",
+    value: "careerLegacy",
+    Icon: ScrollText,
+    color: "#EFBF04",
+  },
 ];
 
 type RankingTabsProps = {
