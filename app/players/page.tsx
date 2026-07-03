@@ -9,6 +9,7 @@ import {
   type Player,
 } from "../components/court-data";
 import { getPlayerRating } from "../components/player-ratings";
+import type { PlayerRatingCategory } from "../components/player-ratings";
 import { SelectedPlayerCard } from "../components/players/player-card";
 import { PlayerList } from "../components/players/player-list";
 import { PlayerFilters } from "../components/players/player-filters";
@@ -75,10 +76,12 @@ function Players() {
   const [filteredTeam, setFilteredTeam] = useState<Team | "">("");
   const [filteredPosition, setFilteredPosition] = useState<Position | "">("");
   const [filteredArchetype, setFilteredArchetype] = useState("");
-  const [sortBy, setSortBy] = useState<SortValue>("overall");
+  const [selectedSkill, setSelectedSkill] =
+    useState<PlayerRatingCategory>("careerOverall");
+  const [sortBy, setSortBy] = useState<SortValue>("careerOverall");
   const [sortDirection, setSortDirection] = useState<SortDirection>("primary");
   const [openDropdown, setOpenDropdown] = useState<
-    "team" | "position" | "sort" | "archetype" | null
+    "team" | "position" | "sort" | "archetype" | "skill" | null
   >(null);
   const [isCardFlipped, setIsCardFlipped] = useState(false);
   const [isGoingToCourt, setIsGoingToCourt] = useState(false);
@@ -316,13 +319,18 @@ function Players() {
     }
   }
 
+  function selectSkillFilter(skill: PlayerRatingCategory) {
+    setSelectedSkill(skill);
+    setOpenDropdown(null);
+  }
+
   function resetAllFilters() {
     setPlayerSearch("");
     setShowFavorites(false);
     setFilteredTeam("");
     setFilteredPosition("");
     setFilteredArchetype("");
-    setSortBy("overall");
+    setSortBy("careerOverall");
     setSortDirection("primary");
     setOpenDropdown(null);
   }
@@ -466,6 +474,8 @@ function Players() {
               onSelectPosition={selectPositionFilter}
               onSelectSort={selectSortFilter}
               onResetFilters={resetAllFilters}
+              selectedSkill={selectedSkill}
+              onSelectSkill={selectSkillFilter}
             />
 
             <PlayerList
@@ -474,6 +484,7 @@ function Players() {
               currentPlayer={currentPlayer}
               favorites={favorites}
               showFavorites={showFavorites}
+              selectedSkill={selectedSkill}
               sortBy={sortBy}
               onToggleFavorite={toggleFavorite}
               onSelectPlayer={selectPlayerFromList}

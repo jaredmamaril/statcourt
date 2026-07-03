@@ -98,8 +98,15 @@ export function getFilteredPlayers({
         result = aLastName.localeCompare(bLastName);
       }
 
-      if (sortBy === "overall") {
-        result = getPlayerRating(b) - getPlayerRating(a);
+      if (sortBy === "careerOverall") {
+        result =
+          getPlayerRating(b, "careerOverall") -
+          getPlayerRating(a, "careerOverall");
+      }
+
+      if (sortBy === "peakOverall") {
+        result =
+          getPlayerRating(b, "peakOverall") - getPlayerRating(a, "peakOverall");
       }
 
       if (sortBy === "ppg") result = b.stats.ppg - a.stats.ppg;

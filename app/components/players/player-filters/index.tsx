@@ -10,12 +10,14 @@ import { TeamFilterDropdown } from "./team-filter-dropdown";
 import { PositionFilterDropdown } from "./position-filter-dropdown";
 import { SortFilterDropdown } from "./sort-filter-dropdown";
 import { ArchetypeFilterDropdown } from "./archetype-filter-dropdown";
+import { SkillFilterDropdown } from "./skill-filter-dropdown";
+import type { PlayerRatingCategory } from "../../player-ratings";
 
 type ArchetypeOption = NonNullable<
   ReturnType<typeof getPlayerInsights>["archetype"]
 >;
 
-type OpenDropdown = "team" | "position" | "sort" | "archetype" | null;
+type OpenDropdown = "team" | "position" | "sort" | "archetype" | "skill" | null;
 
 type PlayerFiltersProps = {
   filtersRef: React.RefObject<HTMLDivElement | null>;
@@ -38,6 +40,8 @@ type PlayerFiltersProps = {
   onSelectPosition: (position: Position | "") => void;
   onSelectSort: (sort: SortValue) => void;
   onResetFilters: () => void;
+  selectedSkill: PlayerRatingCategory;
+  onSelectSkill: (skill: PlayerRatingCategory) => void;
 };
 
 export function PlayerFilters({
@@ -61,11 +65,13 @@ export function PlayerFilters({
   onSelectPosition,
   onSelectSort,
   onResetFilters,
+  selectedSkill,
+  onSelectSkill,
 }: PlayerFiltersProps) {
   return (
     <div
       ref={filtersRef}
-      className="mb-4 flex flex-wrap items-center justify-center gap-2"
+      className="statcourt-scroll mx-auto mb-4 flex max-w-175 flex-wrap items-center justify-center gap-2"
     >
       <button
         type="button"
@@ -123,6 +129,15 @@ export function PlayerFilters({
           onOpenDropdown(openDropdown === "sort" ? null : "sort")
         }
         onSelectSort={onSelectSort}
+      />
+
+      <SkillFilterDropdown
+        selectedSkill={selectedSkill}
+        isOpen={openDropdown === "skill"}
+        onOpenDropdown={() =>
+          onOpenDropdown(openDropdown === "skill" ? null : "skill")
+        }
+        onSelectSkill={onSelectSkill}
       />
 
       {hasActiveFilters && (

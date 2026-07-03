@@ -1386,13 +1386,15 @@ export type SortValue =
   | ""
   | "first-name"
   | "last-name"
-  | "overall"
+  | "careerOverall"
+  | "peakOverall"
   | CorePlayerStatKey;
 export type SortDirection = "primary" | "reverse";
 export const sortOptions: { label: string; value: SortValue }[] = [
   { label: "First Name", value: "first-name" },
   { label: "Last Name", value: "last-name" },
-  { label: "Overall", value: "overall" },
+  { label: "Career OVR", value: "careerOverall" },
+  { label: "Peak OVR", value: "peakOverall" },
   { label: "PPG", value: "ppg" },
   { label: "RPG", value: "rpg" },
   { label: "APG", value: "apg" },

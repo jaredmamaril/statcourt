@@ -37,7 +37,7 @@ export function SortFilterDropdown({
       <button
         type="button"
         onClick={onOpenDropdown}
-        className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
+        className={`flex cursor-pointer items-center gap-2 rounded-md border px-1 py-1 font-michroma text-xs transition-all duration-200 ${
           sortBy
             ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]"
             : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
@@ -58,7 +58,7 @@ export function SortFilterDropdown({
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-full z-30 mt-2 max-h-52 w-44 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
+        <div className="absolute left-0 top-full z-30 mt-2 max-h-52 w-40 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
           {sortOptions.map((option) => (
             <button
               key={option.value}

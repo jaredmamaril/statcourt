@@ -1,5 +1,6 @@
 import type { Player, SortValue } from "../../court-data";
 import { PlayerListRow } from "./player-list-row";
+import type { PlayerRatingCategory } from "../../player-ratings";
 
 type PlayerListProps = {
   players: Player[];
@@ -7,6 +8,7 @@ type PlayerListProps = {
   currentPlayer: string;
   favorites: string[];
   showFavorites: boolean;
+  selectedSkill: PlayerRatingCategory;
   sortBy: SortValue;
   onToggleFavorite: (playerName: string) => void;
   onSelectPlayer: (playerName: string) => void;
@@ -18,6 +20,7 @@ export function PlayerList({
   currentPlayer,
   favorites,
   showFavorites,
+  selectedSkill,
   sortBy,
   onToggleFavorite,
   onSelectPlayer,
@@ -40,6 +43,7 @@ export function PlayerList({
                 isSelected={player.name === currentPlayer}
                 isFavorite={favorites.includes(player.name)}
                 sortBy={sortBy}
+                selectedSkill={selectedSkill}
                 onToggleFavorite={onToggleFavorite}
                 onSelectPlayer={onSelectPlayer}
               />

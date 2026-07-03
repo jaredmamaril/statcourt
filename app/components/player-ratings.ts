@@ -1,26 +1,83 @@
 import { normalizeStat, statMaxValues, type Player } from "./court-data";
 
 export type PlayerRatingCategory =
-  | "overall"
+  | "careerOverall"
+  | "peakOverall"
   | "scoring"
   | "shooting"
   | "playmaking"
   | "rebounding"
+  | "defense"
   | "efficiency"
   | "careerLegacy"
   | "starPower";
 
-function toDisplayRating(rawScore: number) {
-  return 55 + rawScore * 0.42;
+function clamp(value: number, min = 0, max = 100) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function toCategoryRating(rawScore: number) {
+  return clamp(50 + rawScore * 0.5);
+}
+
+function toOverallRating(rawScore: number) {
+  if (rawScore >= 85) return clamp(96 + (rawScore - 85) * 0.25);
+  if (rawScore >= 78) return clamp(92 + (rawScore - 78) * 0.57);
+  if (rawScore >= 70) return clamp(86 + (rawScore - 70) * 0.75);
+  if (rawScore >= 60) return clamp(78 + (rawScore - 60) * 0.8);
+  if (rawScore >= 50) return clamp(68 + (rawScore - 50));
+  return clamp(45 + rawScore * 0.46);
 }
 
 function safeNumber(value: number | null | undefined, fallback = 0) {
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
+function getPeakOverallScore({
+  scoringScore,
+  playmakingScore,
+  reboundingScore,
+  efficiencyScore,
+  shootingScore,
+  defenseScore,
+  starPowerScore,
+  careerLegacyScore,
+}: {
+  scoringScore: number;
+  playmakingScore: number;
+  reboundingScore: number;
+  efficiencyScore: number;
+  shootingScore: number;
+  defenseScore: number;
+  starPowerScore: number;
+  careerLegacyScore: number;
+}) {
+  const bestSkillScore = Math.max(
+    scoringScore,
+    playmakingScore,
+    reboundingScore,
+    efficiencyScore,
+    shootingScore,
+    defenseScore,
+  );
+
+  const peakScore =
+    scoringScore * 0.24 +
+    defenseScore * 0.16 +
+    playmakingScore * 0.15 +
+    efficiencyScore * 0.13 +
+    shootingScore * 0.1 +
+    reboundingScore * 0.08 +
+    starPowerScore * 0.08 +
+    careerLegacyScore * 0.06 +
+    Math.min(bestSkillScore * 0.08, 8);
+
+  return toOverallRating(peakScore);
+}
+
 export function getPlayerRating(
   player: Player,
-  category: PlayerRatingCategory = "overall",
+  category: PlayerRatingCategory = "careerOverall",
 ) {
   const ppgScore = normalizeStat(player.stats.ppg, statMaxValues.ppg);
   const rpgScore = normalizeStat(player.stats.rpg, statMaxValues.rpg);
@@ -44,16 +101,31 @@ export function getPlayerRating(
   const reboundingScore = rpgScore;
   const efficiencyScore = fgScore * 0.5 + threeScore * 0.25 + ftScore * 0.25;
   const defenseScore = safeNumber(player.ratings.defense, 70);
-  const starPowerScore = safeNumber(player.ratings.starPower, 70);
-  const careerLegacyScore = safeNumber(player.ratings.careerLegacy, 70);
+  const starPowerScore = safeNumber(player.ratings.starPower, 40);
+  const careerLegacyScore = safeNumber(player.ratings.careerLegacy, 30);
 
-  if (category === "scoring") return toDisplayRating(scoringScore);
-  if (category === "shooting") return toDisplayRating(shootingScore);
-  if (category === "playmaking") return toDisplayRating(playmakingScore);
-  if (category === "rebounding") return toDisplayRating(reboundingScore);
-  if (category === "efficiency") return toDisplayRating(efficiencyScore);
+  if (category === "scoring") return toCategoryRating(scoringScore);
+  if (category === "shooting") return toCategoryRating(shootingScore);
+  if (category === "playmaking") return toCategoryRating(playmakingScore);
+  if (category === "rebounding") return toCategoryRating(reboundingScore);
+  if (category === "defense") return defenseScore;
+  if (category === "efficiency") return toCategoryRating(efficiencyScore);
   if (category === "careerLegacy") return careerLegacyScore;
   if (category === "starPower") return starPowerScore;
+  if (category === "peakOverall") {
+    const peakOverall = getPeakOverallScore({
+      scoringScore,
+      playmakingScore,
+      reboundingScore,
+      efficiencyScore,
+      shootingScore,
+      defenseScore,
+      starPowerScore,
+      careerLegacyScore,
+    });
+
+    return Number.isFinite(peakOverall) ? Number(peakOverall.toFixed(1)) : 55;
+  }
 
   const starCategories = [
     ppgScore >= 70,
@@ -66,20 +138,41 @@ export function getPlayerRating(
 
   const versatilityBonus = Math.min(starCategories * 0.35, 2.1);
 
+  const games = safeNumber(player.stats.games, 0);
+
+  const careerSamplePenalty =
+    games < 250 ? 3.5 : games < 500 ? 2.0 : games < 750 ? 0.8 : 0;
+
   const overallScore =
-    scoringScore * 0.22 +
-    defenseScore * 0.18 +
-    playmakingScore * 0.14 +
-    efficiencyScore * 0.12 +
-    shootingScore * 0.1 +
-    reboundingScore * 0.1 +
-    starPowerScore * 0.07 +
-    careerLegacyScore * 0.07 +
-    versatilityBonus;
+    scoringScore * 0.18 +
+    defenseScore * 0.16 +
+    playmakingScore * 0.13 +
+    efficiencyScore * 0.11 +
+    shootingScore * 0.09 +
+    reboundingScore * 0.08 +
+    starPowerScore * 0.08 +
+    careerLegacyScore * 0.16 +
+    versatilityBonus -
+    careerSamplePenalty;
 
-  const overall = toDisplayRating(overallScore);
+  const overall = toOverallRating(overallScore);
 
-  return Number.isFinite(overall) ? overall : 55;
+  const legacyFloor =
+    careerLegacyScore >= 98
+      ? 88
+      : careerLegacyScore >= 95
+        ? 86
+        : careerLegacyScore >= 90
+          ? 84
+          : careerLegacyScore >= 85
+            ? 82
+            : careerLegacyScore >= 80
+              ? 80
+              : 0;
+
+  const finalOverall = Math.max(overall, legacyFloor);
+
+  return Number.isFinite(finalOverall) ? Number(finalOverall.toFixed(1)) : 55;
 }
 
 export function getCareerLegacyTier(score: number | null | undefined) {

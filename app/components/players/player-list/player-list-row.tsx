@@ -6,13 +6,14 @@ import {
 } from "../../court-data";
 import { getPlayerHeadshot } from "../../player-images";
 import { getPlayerRating } from "../../player-ratings";
+import type { PlayerRatingCategory } from "../../player-ratings";
 import PlayerImage from "../../player-image";
-import { read } from "fs";
 
 type PlayerListRowProps = {
   player: Player;
   isSelected: boolean;
   isFavorite: boolean;
+  selectedSkill: PlayerRatingCategory;
   sortBy: SortValue;
   onToggleFavorite: (playerName: string) => void;
   onSelectPlayer: (playerName: string) => void;
@@ -22,18 +23,32 @@ export function PlayerListRow({
   player,
   isSelected,
   isFavorite,
+  selectedSkill,
   sortBy,
   onToggleFavorite,
   onSelectPlayer,
 }: PlayerListRowProps) {
   const teamColor = getTeamColor(player.team);
   const readableTeamColor = getReadableTeamColor(player.team);
-  const playerOverall = getPlayerRating(player);
+  const selectedRating = getPlayerRating(player, selectedSkill);
+  const selectedRatingLabel =
+    selectedSkill === "careerOverall"
+      ? "Career OVR"
+      : selectedSkill === "peakOverall"
+        ? "Peak OVR"
+        : selectedSkill === "starPower"
+          ? "Star"
+          : selectedSkill === "careerLegacy"
+            ? "Legacy"
+            : selectedSkill === "defense"
+              ? "Defense"
+              : "Rating";
   const selectedStatValue =
     sortBy &&
     sortBy !== "first-name" &&
     sortBy !== "last-name" &&
-    sortBy !== "overall"
+    sortBy !== "careerOverall" &&
+    sortBy !== "peakOverall"
       ? player.stats[sortBy]
       : null;
   const isPercentSort =
@@ -119,11 +134,11 @@ export function PlayerListRow({
               textShadow: `0 0 10px ${teamColor}88`,
             }}
           >
-            {playerOverall.toFixed(1)}
+            {selectedRating.toFixed(1)}
           </span>
 
           <span className="mt-1 block font-michroma text-[7px] uppercase leading-none text-white/35">
-            OVR
+            {selectedRatingLabel}
           </span>
         </span>
       </button>
