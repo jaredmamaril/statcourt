@@ -93,3 +93,16 @@ export function getCareerLegacyTier(score: number | null | undefined) {
   if (safeScore >= 30) return "Established Veteran";
   return "Career Role Player";
 }
+
+export function getStarPowerTier(score: number | null | undefined) {
+  const safeScore = score ?? 0;
+
+  if (safeScore >= 98) return "Global Icon";
+  if (safeScore >= 90) return "Legendary Superstar";
+  if (safeScore >= 80) return "Superstar";
+  if (safeScore >= 70) return "Star";
+  if (safeScore >= 60) return "Notable Name";
+  if (safeScore >= 50) return "Recognizable Player";
+  if (safeScore >= 40) return "Rotation Name";
+  return "Low Recognition";
+}

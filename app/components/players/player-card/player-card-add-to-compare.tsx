@@ -17,7 +17,7 @@ export function PlayerCardAddToCompare({
   const teamColor = getTeamColor(player.team);
   return (
     <div
-      className="group absolute bottom-2 left-1/2 z-200 w-88 -translate-x-1/2"
+      className="group relative z-200 mx-auto w-full max-w-80"
       onClick={(e) => e.stopPropagation()}
       onPointerDown={(e) => e.stopPropagation()}
     >
