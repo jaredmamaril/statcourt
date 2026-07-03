@@ -1393,8 +1393,8 @@ export type SortDirection = "primary" | "reverse";
 export const sortOptions: { label: string; value: SortValue }[] = [
   { label: "First Name", value: "first-name" },
   { label: "Last Name", value: "last-name" },
-  { label: "Career OVR", value: "careerOverall" },
-  { label: "Peak OVR", value: "peakOverall" },
+  { label: "Career Rating", value: "careerOverall" },
+  { label: "Peak Rating", value: "peakOverall" },
   { label: "PPG", value: "ppg" },
   { label: "RPG", value: "rpg" },
   { label: "APG", value: "apg" },
