@@ -47,7 +47,7 @@ import type {
   SortDirection,
   CompareSlots,
 } from "../components/court-data";
-import { Suspense, useState, useRef, useEffect } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function PlayersPage() {
@@ -90,7 +90,7 @@ function Players() {
   const [recentlyViewedPlayers, setRecentlyViewedPlayers] = useState<string[]>(
     getSavedRecentPlayers,
   );
-  const [featuredPlayer, setFeaturedPlayer] = useState<Player | null>(null);
+  const [featuredPlayerIndex, setFeaturedPlayerIndex] = useState(0);
 
   // Derived player data
   const selectedPlayer = players.find(
@@ -108,10 +108,6 @@ function Players() {
   const bestLineupFits = selectedPlayer
     ? getBestLineupFits(selectedPlayer)
     : [];
-
-  const featuredPlayerInsights = featuredPlayer
-    ? getPlayerInsights(featuredPlayer)
-    : null;
 
   const archetypeOptions = Array.from(
     new Map(
@@ -201,26 +197,34 @@ function Players() {
   }, []);
 
   // Get random featured player from notable players only
-  useEffect(() => {
-    if (players.length === 0) return;
+  const featuredPlayerPool = useMemo(() => {
+    const notablePlayers = players.filter(
+      (player) =>
+        getPlayerRating(player, "careerOverall") >= 75 ||
+        getPlayerRating(player, "starPower") >= 75,
+    );
 
-    const featuredPlayerPool = [...players]
-      .filter((player) => {
-        const overall = getPlayerRating(player);
-
-        return (
-          overall >= 84 &&
-          player.stats.ppg >= 10 &&
-          player.ratings.starPower >= 75
-        );
-      })
-      .sort((a, b) => getPlayerRating(b) - getPlayerRating(a))
-      .slice(0, 25);
-
-    const pool = featuredPlayerPool.length > 0 ? featuredPlayerPool : players;
-
-    setFeaturedPlayer(pool[Math.floor(Math.random() * pool.length)]);
+    return notablePlayers.length > 0 ? notablePlayers : players;
   }, [players]);
+
+  useEffect(() => {
+    if (featuredPlayerPool.length === 0) return;
+
+    const timer = window.setTimeout(() => {
+      setFeaturedPlayerIndex(
+        Math.floor(Math.random() * featuredPlayerPool.length),
+      );
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [featuredPlayerPool]);
+
+  const featuredPlayer =
+    featuredPlayerPool[featuredPlayerIndex % featuredPlayerPool.length];
+
+  const featuredPlayerInsights = featuredPlayer
+    ? getPlayerInsights(featuredPlayer)
+    : null;
 
   // Open a player card when coming from rankings with /players?player=name
   useEffect(() => {
@@ -241,7 +245,7 @@ function Players() {
     }, 0);
 
     return () => window.clearTimeout(timer);
-  }, [searchParams, router]);
+  }, [searchParams, router, players, openPlayerCard]);
 
   // Close the selected card when clicking outside it
   useEffect(() => {

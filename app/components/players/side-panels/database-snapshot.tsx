@@ -22,6 +22,27 @@ type DatabaseSnapshotProps = {
   getRarityColor: (rarity: PlayerInsightDisplay["rarity"]) => string;
 };
 
+type SnapshotMetricLabelProps = {
+  label: string;
+  tooltip: string;
+};
+
+function SnapshotMetricLabel({ label, tooltip }: SnapshotMetricLabelProps) {
+  return (
+    <div className="group/metric relative inline-flex items-center justify-center gap-1">
+      <p className="text-[8px] tracking-wide text-white/25 transition group-hover/metric:text-white/50">
+        {label}
+      </p>
+
+      <Info className="h-3 w-3 cursor-help text-[#1bc2ec]/45 transition group-hover/metric:text-[#1bc2ec]" />
+
+      <div className="pointer-events-none absolute left-1/2 top-full z-999 mt-1 w-52 -translate-x-1/2 rounded-md border border-white/15 bg-black/95 p-2 text-left text-[7px] leading-relaxed text-white/50 opacity-0 shadow-[0_0_18px_rgba(0,0,0,0.55)] transition-opacity duration-200 group-hover/metric:opacity-100">
+        {tooltip}
+      </div>
+    </div>
+  );
+}
+
 export function DatabaseSnapshot({
   playersCount,
   positions,
@@ -77,16 +98,20 @@ export function DatabaseSnapshot({
 
       <div className="mt-2 rounded-md border border-white/10 bg-black/10 p-3">
         <div className="mb-1">
-          <p className="text-[8px] tracking-wide text-white/25">
-            Players In Database
-          </p>
+          <SnapshotMetricLabel
+            label="Players In Database"
+            tooltip="Total players currently loaded from the active player database."
+          />
           <p className="text-lg text-[#1bc2ec]">{playersCount}</p>
         </div>
 
         <div className="mb-2 border-t border-white/10 pt-3">
-          <p className="mb-2 text-[8px] tracking-wide text-white/25">
-            Position Breakdown
-          </p>
+          <div className="mb-2">
+            <SnapshotMetricLabel
+              label="Position Breakdown"
+              tooltip="Counts players by broad position group: guard, forward, or center."
+            />
+          </div>
 
           <div className="mx-auto grid max-w-32 grid-cols-3 gap-3 text-center">
             {positions.map((position) => (
@@ -101,9 +126,12 @@ export function DatabaseSnapshot({
         </div>
 
         <div className="mb-4 border-t border-white/10 pt-3">
-          <p className="mb-2 text-[8px] tracking-wide text-white/25">
-            Common Archetypes
-          </p>
+          <div className="mb-2">
+            <SnapshotMetricLabel
+              label="Common Archetypes"
+              tooltip="Most frequent player archetype labels from the current database."
+            />
+          </div>
 
           <div className="space-y-1">
             {topArchetypeDistribution.map(([archetype, data]) => {
@@ -126,28 +154,36 @@ export function DatabaseSnapshot({
         </div>
 
         <div className="mb-4">
-          <p className="text-[8px] tracking-wide text-white/25">Highest OVR</p>
+          <SnapshotMetricLabel
+            label="Highest OVR (Career)"
+            tooltip="Highest career overall rating using the player rating formula."
+          />
           <p className="text-[10px] text-[#EFBF04]/80">
             {highestOverallName} ({highestOverallRating.toFixed(1)})
           </p>
         </div>
 
         <div className="mb-4">
-          <p className="text-[8px] tracking-wide text-white/25">
-            Most Versatile
-          </p>
+          <SnapshotMetricLabel
+            label="Most Versatile"
+            tooltip="Best all-around blend of scoring, rebounding, playmaking, shooting, and defense."
+          />
           <p className="text-[10px] text-[#A855F7]/80">{mostVersatileName}</p>
         </div>
 
         <div className="mb-4">
-          <p className="text-[8px] tracking-wide text-white/25">Best Shooter</p>
+          <SnapshotMetricLabel
+            label="Best Shooter"
+            tooltip="Top qualified shooting profile using three-point percentage, free-throw percentage, scoring volume, and games played."
+          />
           <p className="text-[10px] text-[#22C55E]/80">{bestShooterName}</p>
         </div>
 
         <div>
-          <p className="text-[8px] tracking-wide text-white/25">
-            Best Playmaker
-          </p>
+          <SnapshotMetricLabel
+            label="Best Playmaker"
+            tooltip="Highest career assist creation among players in the database."
+          />
           <p className="text-[10px] text-[#38BDF8]/80">{bestPlaymakerName}</p>
         </div>
       </div>
