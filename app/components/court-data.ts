@@ -287,17 +287,40 @@ export type PlayerRatings = {
   careerLegacy?: number;
 };
 
+export type StatProfileType = "career" | "peak" | "current";
+
+export type PlayerStatProfile = {
+  profileType: StatProfileType;
+  seasonLabel?: string | null;
+  games?: number | null;
+  minutesPerGame?: number | null;
+  ppg?: number | null;
+  rpg?: number | null;
+  apg?: number | null;
+  spg?: number | null;
+  bpg?: number | null;
+  fgPercent?: number | null;
+  threePercent?: number | null;
+  ftPercent?: number | null;
+};
+
+export type PlayerStatProfiles = Partial<
+  Record<StatProfileType, PlayerStatProfile>
+>;
+
 // Future: adding more stats or player attributes as needed, such as player position, team, or career highlights, to enhance the user experience and provide more comprehensive information about each player.
 export type Player = {
   id: number;
-  nbaId?: number; // for NBA CDN headshots
+  nbaId?: number;
   name: string;
-  fallbackImage?: string; // Local fallback if CDN headshot is unavailable
   team: Team;
   position: Position;
   jerseyNumber: number;
-  ratings: PlayerRatings;
+  image?: string;
+  fallbackImage?: string | null;
   stats: PlayerStats;
+  statProfiles?: PlayerStatProfiles;
+  ratings: PlayerRatings;
 };
 
 // Fallback player dataset. Stats should use career averages, not peak season or current-season stats.
@@ -1382,19 +1405,11 @@ export const positions = positionOrder.filter((position) =>
 );
 
 // Options to sort data from
-export type SortValue =
-  | ""
-  | "first-name"
-  | "last-name"
-  | "careerOverall"
-  | "peakOverall"
-  | CorePlayerStatKey;
+export type SortValue = "" | "first-name" | "last-name" | CorePlayerStatKey;
 export type SortDirection = "primary" | "reverse";
 export const sortOptions: { label: string; value: SortValue }[] = [
   { label: "First Name", value: "first-name" },
   { label: "Last Name", value: "last-name" },
-  { label: "Career Rating", value: "careerOverall" },
-  { label: "Peak Rating", value: "peakOverall" },
   { label: "PPG", value: "ppg" },
   { label: "RPG", value: "rpg" },
   { label: "APG", value: "apg" },

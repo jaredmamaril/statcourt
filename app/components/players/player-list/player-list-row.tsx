@@ -9,6 +9,27 @@ import { getPlayerRating } from "../../player-ratings";
 import type { PlayerRatingCategory } from "../../player-ratings";
 import PlayerImage from "../../player-image";
 
+function getActivePlayerStats(
+  player: Player,
+  selectedSkill: PlayerRatingCategory,
+) {
+  if (selectedSkill === "peakOverall") {
+    return (
+      player.statProfiles?.peak ?? player.statProfiles?.career ?? player.stats
+    );
+  }
+
+  if (selectedSkill === "currentOverall") {
+    return (
+      player.statProfiles?.current ??
+      player.statProfiles?.career ??
+      player.stats
+    );
+  }
+
+  return player.statProfiles?.career ?? player.stats;
+}
+
 type PlayerListRowProps = {
   player: Player;
   isSelected: boolean;
@@ -36,20 +57,19 @@ export function PlayerListRow({
       ? "Career OVR"
       : selectedSkill === "peakOverall"
         ? "Peak OVR"
-        : selectedSkill === "starPower"
-          ? "Star"
-          : selectedSkill === "careerLegacy"
-            ? "Legacy"
-            : selectedSkill === "defense"
-              ? "Defense"
-              : "Rating";
+        : selectedSkill === "currentOverall"
+          ? "Latest OVR"
+          : selectedSkill === "starPower"
+            ? "Star"
+            : selectedSkill === "careerLegacy"
+              ? "Legacy"
+              : selectedSkill === "defense"
+                ? "Defense"
+                : "Rating";
+  const activeStats = getActivePlayerStats(player, selectedSkill);
   const selectedStatValue =
-    sortBy &&
-    sortBy !== "first-name" &&
-    sortBy !== "last-name" &&
-    sortBy !== "careerOverall" &&
-    sortBy !== "peakOverall"
-      ? player.stats[sortBy]
+    sortBy && sortBy !== "first-name" && sortBy !== "last-name"
+      ? activeStats[sortBy]
       : null;
   const isPercentSort =
     sortBy === "fgPercent" ||

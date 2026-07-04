@@ -8,6 +8,28 @@ import {
   type Team,
 } from "../court-data";
 import { getPlayerRating } from "../player-ratings";
+import type { PlayerRatingCategory } from "../player-ratings";
+
+function getActivePlayerStats(
+  player: Player,
+  selectedRatingView: PlayerRatingCategory,
+) {
+  if (selectedRatingView === "peakOverall") {
+    return (
+      player.statProfiles?.peak ?? player.statProfiles?.career ?? player.stats
+    );
+  }
+
+  if (selectedRatingView === "currentOverall") {
+    return (
+      player.statProfiles?.current ??
+      player.statProfiles?.career ??
+      player.stats
+    );
+  }
+
+  return player.statProfiles?.career ?? player.stats;
+}
 
 type GetFilteredPlayersOptions = {
   players: Player[];
@@ -19,6 +41,7 @@ type GetFilteredPlayersOptions = {
   filteredArchetype: string;
   sortBy: SortValue;
   sortDirection: SortDirection;
+  selectedRatingView: PlayerRatingCategory;
 };
 
 function getNameParts(name: string) {
@@ -40,6 +63,7 @@ export function getFilteredPlayers({
   filteredArchetype,
   sortBy,
   sortDirection,
+  selectedRatingView,
 }: GetFilteredPlayersOptions) {
   return players
     .filter((player) => {
@@ -80,13 +104,16 @@ export function getFilteredPlayers({
     .sort((a, b) => {
       if (!sortBy) {
         return (
-          getPlayerRating(b) - getPlayerRating(a) ||
+          getPlayerRating(b, selectedRatingView) -
+            getPlayerRating(a, selectedRatingView) ||
           a.name.localeCompare(b.name)
         );
       }
 
       let result = 0;
 
+      const aStats = getActivePlayerStats(a, selectedRatingView);
+      const bStats = getActivePlayerStats(b, selectedRatingView);
       const { lastName: aLastName } = getNameParts(a.name);
       const { lastName: bLastName } = getNameParts(b.name);
 
@@ -98,29 +125,15 @@ export function getFilteredPlayers({
         result = aLastName.localeCompare(bLastName);
       }
 
-      if (sortBy === "careerOverall") {
-        result =
-          getPlayerRating(b, "careerOverall") -
-          getPlayerRating(a, "careerOverall");
-      }
-
-      if (sortBy === "peakOverall") {
-        result =
-          getPlayerRating(b, "peakOverall") - getPlayerRating(a, "peakOverall");
-      }
-
-      if (sortBy === "ppg") result = b.stats.ppg - a.stats.ppg;
-      if (sortBy === "rpg") result = b.stats.rpg - a.stats.rpg;
-      if (sortBy === "apg") result = b.stats.apg - a.stats.apg;
-      if (sortBy === "fgPercent") {
-        result = b.stats.fgPercent - a.stats.fgPercent;
-      }
-      if (sortBy === "threePercent") {
-        result = b.stats.threePercent - a.stats.threePercent;
-      }
-      if (sortBy === "ftPercent") {
-        result = b.stats.ftPercent - a.stats.ftPercent;
-      }
+      if (sortBy === "ppg") result = (bStats.ppg ?? 0) - (aStats.ppg ?? 0);
+      if (sortBy === "rpg") result = (bStats.rpg ?? 0) - (aStats.rpg ?? 0);
+      if (sortBy === "apg") result = (bStats.apg ?? 0) - (aStats.apg ?? 0);
+      if (sortBy === "fgPercent")
+        result = (bStats.fgPercent ?? 0) - (aStats.fgPercent ?? 0);
+      if (sortBy === "threePercent")
+        result = (bStats.threePercent ?? 0) - (aStats.threePercent ?? 0);
+      if (sortBy === "ftPercent")
+        result = (bStats.ftPercent ?? 0) - (aStats.ftPercent ?? 0);
 
       return sortDirection === "primary" ? result : -result;
     });

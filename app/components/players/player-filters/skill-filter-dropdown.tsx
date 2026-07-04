@@ -1,13 +1,19 @@
 import type { PlayerRatingCategory } from "../../player-ratings";
 
+const statModeLabels = {
+  career: "Career",
+  peak: "3-Year Peak",
+  current: "Latest Season",
+};
+
 type SkillFilterOption = {
   label: string;
   value: PlayerRatingCategory;
 };
-
 const skillFilterOptions: SkillFilterOption[] = [
-  { label: "Career", value: "careerOverall" },
-  { label: "Peak", value: "peakOverall" },
+  { label: statModeLabels.career, value: "careerOverall" },
+  { label: statModeLabels.peak, value: "peakOverall" },
+  { label: statModeLabels.current, value: "currentOverall" },
   { label: "Star Power", value: "starPower" },
   { label: "Career Legacy", value: "careerLegacy" },
   { label: "Defense", value: "defense" },

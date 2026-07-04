@@ -76,9 +76,9 @@ function Players() {
   const [filteredTeam, setFilteredTeam] = useState<Team | "">("");
   const [filteredPosition, setFilteredPosition] = useState<Position | "">("");
   const [filteredArchetype, setFilteredArchetype] = useState("");
-  const [selectedSkill, setSelectedSkill] =
+  const [selectedRatingView, setSelectedRatingView] =
     useState<PlayerRatingCategory>("careerOverall");
-  const [sortBy, setSortBy] = useState<SortValue>("careerOverall");
+  const [sortBy, setSortBy] = useState<SortValue>("");
   const [sortDirection, setSortDirection] = useState<SortDirection>("primary");
   const [openDropdown, setOpenDropdown] = useState<
     "team" | "position" | "sort" | "archetype" | "skill" | null
@@ -141,6 +141,7 @@ function Players() {
     filteredArchetype,
     sortBy,
     sortDirection,
+    selectedRatingView,
   });
 
   const visiblePlayers = filteredPlayers.slice(0, 100);
@@ -320,7 +321,7 @@ function Players() {
   }
 
   function selectSkillFilter(skill: PlayerRatingCategory) {
-    setSelectedSkill(skill);
+    setSelectedRatingView(skill);
     setOpenDropdown(null);
   }
 
@@ -330,7 +331,7 @@ function Players() {
     setFilteredTeam("");
     setFilteredPosition("");
     setFilteredArchetype("");
-    setSortBy("careerOverall");
+    setSortBy("");
     setSortDirection("primary");
     setOpenDropdown(null);
   }
@@ -474,7 +475,7 @@ function Players() {
               onSelectPosition={selectPositionFilter}
               onSelectSort={selectSortFilter}
               onResetFilters={resetAllFilters}
-              selectedSkill={selectedSkill}
+              selectedSkill={selectedRatingView}
               onSelectSkill={selectSkillFilter}
             />
 
@@ -484,7 +485,7 @@ function Players() {
               currentPlayer={currentPlayer}
               favorites={favorites}
               showFavorites={showFavorites}
-              selectedSkill={selectedSkill}
+              selectedSkill={selectedRatingView}
               sortBy={sortBy}
               onToggleFavorite={toggleFavorite}
               onSelectPlayer={selectPlayerFromList}

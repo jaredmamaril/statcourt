@@ -3,6 +3,7 @@ import { normalizeStat, statMaxValues, type Player } from "./court-data";
 export type PlayerRatingCategory =
   | "careerOverall"
   | "peakOverall"
+  | "currentOverall"
   | "scoring"
   | "shooting"
   | "playmaking"
@@ -75,23 +76,52 @@ function getPeakOverallScore({
   return toOverallRating(peakScore);
 }
 
+function getStatsForCategory(player: Player, category: PlayerRatingCategory) {
+  if (category === "peakOverall") {
+    return (
+      player.statProfiles?.peak ?? player.statProfiles?.career ?? player.stats
+    );
+  }
+
+  if (category === "currentOverall") {
+    return (
+      player.statProfiles?.current ??
+      player.statProfiles?.career ??
+      player.stats
+    );
+  }
+
+  return player.statProfiles?.career ?? player.stats;
+}
+
 export function getPlayerRating(
   player: Player,
   category: PlayerRatingCategory = "careerOverall",
 ) {
-  const ppgScore = normalizeStat(player.stats.ppg, statMaxValues.ppg);
-  const rpgScore = normalizeStat(player.stats.rpg, statMaxValues.rpg);
-  const apgScore = normalizeStat(player.stats.apg, statMaxValues.apg);
+  const activeStats = getStatsForCategory(player, category);
+
+  const ppgScore = normalizeStat(
+    safeNumber(activeStats.ppg, 0),
+    statMaxValues.ppg,
+  );
+  const rpgScore = normalizeStat(
+    safeNumber(activeStats.rpg, 0),
+    statMaxValues.rpg,
+  );
+  const apgScore = normalizeStat(
+    safeNumber(activeStats.apg, 0),
+    statMaxValues.apg,
+  );
   const fgScore = normalizeStat(
-    player.stats.fgPercent,
+    safeNumber(activeStats.fgPercent, 0),
     statMaxValues.fgPercent,
   );
   const threeScore = normalizeStat(
-    player.stats.threePercent,
+    safeNumber(activeStats.threePercent, 0),
     statMaxValues.threePercent,
   );
   const ftScore = normalizeStat(
-    player.stats.ftPercent,
+    safeNumber(activeStats.ftPercent, 0),
     statMaxValues.ftPercent,
   );
 
@@ -138,7 +168,7 @@ export function getPlayerRating(
 
   const versatilityBonus = Math.min(starCategories * 0.35, 2.1);
 
-  const games = safeNumber(player.stats.games, 0);
+  const games = safeNumber(activeStats.games, 0);
 
   const careerSamplePenalty =
     games < 250 ? 3.5 : games < 500 ? 2.0 : games < 750 ? 0.8 : 0;
