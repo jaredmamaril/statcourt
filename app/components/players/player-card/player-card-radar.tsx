@@ -82,8 +82,8 @@ export function PlayerCardRadar({
     <div className="relative z-10 mt-2 h-48 w-full">
       <div className="absolute left-0 top-0 z-10 ml-6 flex h-full flex-col justify-around py-2">
         <StatLabel
-          label="FG%"
-          value={player.stats.fgPercent}
+          label="FT%"
+          value={player.stats.ftPercent}
           color={teamColor}
         />
         <StatLabel
@@ -92,8 +92,8 @@ export function PlayerCardRadar({
           color={teamColor}
         />
         <StatLabel
-          label="FT%"
-          value={player.stats.ftPercent}
+          label="FG%"
+          value={player.stats.fgPercent}
           color={teamColor}
         />
       </div>

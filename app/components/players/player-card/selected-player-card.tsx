@@ -12,6 +12,7 @@ import { PlayerCardShell } from "./player-card-shell";
 
 type SelectedPlayerCardProps = {
   player: Player;
+  statModeLabel: string;
   isCardFlipped: boolean;
   isGoingToCourt: boolean;
   compareSlots: {
@@ -42,6 +43,7 @@ type SelectedPlayerCardProps = {
 
 export function SelectedPlayerCard({
   player,
+  statModeLabel,
   isCardFlipped,
   isGoingToCourt,
   compareSlots,
@@ -87,6 +89,12 @@ export function SelectedPlayerCard({
                 player={player}
                 getPlayerNameTextClass={getPlayerNameTextClass}
               />
+
+              <div className="relative z-20 -mt-1 flex justify-center">
+                <div className="rounded border border-white/10 bg-white/5 px-3 py-1 font-michroma text-[8px] uppercase tracking-wide text-white/45">
+                  {statModeLabel} Profile
+                </div>
+              </div>
 
               <div className="relative z-20 mx-auto mt-2 grid w-[90%] grid-cols-2 gap-2 font-michroma">
                 <div className="rounded-md border border-[#EFBF04]/30 bg-[#EFBF04]/10 px-2 py-1 text-center">

@@ -13,7 +13,7 @@ export function PlayerCardBackHeader({
 }: PlayerCardBackHeaderProps) {
   const teamColor = getReadableTeamColor(player.team);
   return (
-    <div className="relative z-10 grid grid-cols-[88px_1fr_52px] items-center gap-4 px-3 pt-1 font-michroma uppercase">
+    <div className="relative z-10 grid grid-cols-[72px_1fr_48px] items-center gap-4 px-3 pt-1 font-michroma uppercase">
       <PlayerImage
         src={getPlayerHeadshot(player)}
         alt={player.name}

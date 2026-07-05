@@ -102,6 +102,13 @@ function Players() {
 
   const selectedStatMode = getStatModeFromRatingView(selectedRatingView);
 
+  const selectedStatModeLabel =
+    selectedRatingView === "peakOverall"
+      ? "3-Year Peak"
+      : selectedRatingView === "currentOverall"
+        ? "Latest Season"
+        : "Career";
+
   const playerInsights = selectedPlayer
     ? getPlayerInsights(selectedPlayer, selectedStatMode)
     : null;
@@ -526,6 +533,7 @@ function Players() {
               <div ref={playerCardRef} className="w-full max-w-md">
                 <SelectedPlayerCard
                   player={selectedPlayer}
+                  statModeLabel={selectedStatModeLabel}
                   isCardFlipped={isCardFlipped}
                   isGoingToCourt={isGoingToCourt}
                   compareSlots={compareSlots}
