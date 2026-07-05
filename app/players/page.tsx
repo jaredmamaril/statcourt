@@ -7,6 +7,7 @@ import {
   getSimilarPlayers,
   normalizeTeamCode,
   type Player,
+  type StatMode,
 } from "../components/court-data";
 import { getPlayerRating } from "../components/player-ratings";
 import type { PlayerRatingCategory } from "../components/player-ratings";
@@ -99,8 +100,10 @@ function Players() {
     (player) => player.name === currentPlayer,
   );
 
+  const selectedStatMode = getStatModeFromRatingView(selectedRatingView);
+
   const playerInsights = selectedPlayer
-    ? getPlayerInsights(selectedPlayer)
+    ? getPlayerInsights(selectedPlayer, selectedStatMode)
     : null;
 
   const similarPlayers = selectedPlayer
@@ -114,14 +117,14 @@ function Players() {
   const archetypeOptions = Array.from(
     new Map(
       players
-        .map((player) => getPlayerInsights(player).archetype)
+        .map((player) => getPlayerInsights(player, selectedStatMode).archetype)
         .filter((archetype) => archetype !== null)
         .map((archetype) => [archetype.label, archetype]),
     ).values(),
   );
 
   const hasUnclassifiedPlayers = players.some(
-    (player) => getPlayerInsights(player).archetype === null,
+    (player) => getPlayerInsights(player, selectedStatMode).archetype === null,
   );
 
   const teamOptions = Array.from(
@@ -156,7 +159,10 @@ function Players() {
   // Database snapshot data
   const positionBreakdown = getPositionBreakdown(players);
 
-  const topArchetypeDistribution = getTopArchetypeDistribution(players);
+  const topArchetypeDistribution = getTopArchetypeDistribution(
+    players,
+    selectedStatMode,
+  );
 
   const {
     highestOverallPlayer,
@@ -233,7 +239,7 @@ function Players() {
     featuredPlayerPool[featuredPlayerIndex % featuredPlayerPool.length];
 
   const featuredPlayerInsights = featuredPlayer
-    ? getPlayerInsights(featuredPlayer)
+    ? getPlayerInsights(featuredPlayer, selectedStatMode)
     : null;
 
   // Open a player card when coming from rankings with /players?player=name
@@ -414,6 +420,15 @@ function Players() {
     }
 
     openPlayerCard(playerName);
+  }
+
+  function getStatModeFromRatingView(
+    ratingView: PlayerRatingCategory,
+  ): StatMode {
+    if (ratingView === "peakOverall") return "peak";
+    if (ratingView === "currentOverall") return "current";
+
+    return "career";
   }
 
   return (

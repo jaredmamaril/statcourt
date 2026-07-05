@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   getPlayerRating,
@@ -32,7 +32,7 @@ import { RemainingRankingList } from "../components/rankings/remaining-ranking-l
 
 export default function Rankings() {
   // Page state
-  const [activeTab, setActiveTab] = useState<RankingTab>("overall");
+  const [activeTab, setActiveTab] = useState<RankingTab>("careerOverall");
   const [openFilter, setOpenFilter] = useState<
     "era" | "position" | "team" | "archetype" | null
   >(null);
@@ -103,7 +103,7 @@ export default function Rankings() {
         )
         .sort(
           (a, b) =>
-            getPlayerRating(b, "overall") - getPlayerRating(a, "overall"),
+            getPlayerRating(b, "careerOverall") - getPlayerRating(a, "careerOverall"),
         )
     : [];
 
@@ -116,7 +116,7 @@ export default function Rankings() {
 
   // Ranking data
   const ratingCategory: PlayerRatingCategory =
-    activeTab === "archetypes" ? "overall" : activeTab;
+    activeTab === "archetypes" ? "careerOverall" : activeTab;
 
   const filteredPlayers = players.filter((player) => {
     const archetype = getPlayerInsights(player).archetype;
@@ -149,7 +149,7 @@ export default function Rankings() {
     rankingTabs.find((tab) => tab.value === activeTab)?.label ?? "Overall";
 
   const rankingHeading =
-    activeTab === "overall"
+    activeTab === "careerOverall"
       ? "Top Overall Players"
       : `Top ${activeTabLabel} Ratings`;
 
@@ -237,3 +237,4 @@ export default function Rankings() {
     </main>
   );
 }
+

@@ -1,11 +1,11 @@
 import {
   getPlayerInsights,
   normalizeStat,
-  positions,
   statMaxValues,
   type Player,
   type PlayerInsightDisplay,
   type Position,
+  type StatMode,
 } from "../court-data";
 import { getPlayerRating } from "../player-ratings";
 
@@ -36,10 +36,13 @@ export function getPositionBreakdown(players: Player[]) {
   return breakdown;
 }
 
-export function getTopArchetypeDistribution(players: Player[]) {
+export function getTopArchetypeDistribution(
+  players: Player[],
+  statMode: StatMode = "career",
+) {
   const archetypeDistribution = players.reduce(
     (counts, player) => {
-      const archetype = getPlayerInsights(player).archetype;
+      const archetype = getPlayerInsights(player, statMode).archetype;
       const label = archetype?.label ?? "Unclassified";
       const rarity = archetype?.rarity ?? "gray";
 

@@ -1,4 +1,4 @@
-import {
+﻿import {
   Trophy,
   Sparkles,
   Flame,
@@ -20,7 +20,7 @@ const rankingTabs: {
   Icon: LucideIcon;
   color: string;
 }[] = [
-  { label: "Overall", value: "overall", Icon: Trophy, color: "#EFBF04" },
+  { label: "Overall", value: "careerOverall", Icon: Trophy, color: "#EFBF04" },
   {
     label: "Archetypes",
     value: "archetypes",
@@ -86,3 +86,4 @@ export function RankingTabs({ activeTab, onSelectTab }: RankingTabsProps) {
 }
 
 export { rankingTabs };
+

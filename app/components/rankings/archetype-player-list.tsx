@@ -1,4 +1,4 @@
-import PlayerImage from "../player-image";
+﻿import PlayerImage from "../player-image";
 import { getPlayerHeadshot } from "../player-images";
 import { getPlayerRating } from "../player-ratings";
 import { getTeamColor, type Player } from "../court-data";
@@ -28,7 +28,7 @@ export function ArchetypePlayerList({
           </p>
         ) : (
           players.map((player, index) => {
-            const rating = getPlayerRating(player, "overall").toFixed(1);
+            const rating = getPlayerRating(player, "careerOverall").toFixed(1);
             const teamColor = getTeamColor(player.team);
 
             return (
@@ -81,3 +81,4 @@ export function ArchetypePlayerList({
     </>
   );
 }
+

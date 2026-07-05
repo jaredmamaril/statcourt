@@ -83,8 +83,15 @@ export function getFilteredPlayers({
         ? player.position === filteredPosition
         : true;
 
+      const statMode =
+        selectedRatingView === "peakOverall"
+          ? "peak"
+          : selectedRatingView === "currentOverall"
+            ? "current"
+            : "career";
+
       const playerArchetype =
-        getPlayerInsights(player).archetype?.label ?? null;
+        getPlayerInsights(player, statMode).archetype?.label ?? null;
 
       const matchesArchetype =
         filteredArchetype === "Unclassified"

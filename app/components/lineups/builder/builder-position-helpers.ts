@@ -1,4 +1,4 @@
-import type { LineupSlot } from "../../court-data";
+﻿import type { LineupSlot } from "../../court-data";
 import { players } from "../../court-data";
 import { getPlayerRating } from "../../player-ratings";
 
@@ -7,7 +7,7 @@ type Player = (typeof players)[number];
 export type PositionFit = "natural" | "secondary" | "mismatch";
 
 export function getBuilderPlayerRating(player: Player) {
-  return getPlayerRating(player, "overall");
+  return getPlayerRating(player, "careerOverall");
 }
 
 export function getPositionFit(player: Player, slot: LineupSlot): PositionFit {
@@ -53,3 +53,4 @@ export function getBuilderPlayerRatingForPosition(
     getPositionPenalty(getPositionFit(player, slot))
   );
 }
+

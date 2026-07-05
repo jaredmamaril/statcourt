@@ -129,7 +129,7 @@ export function DatabaseSnapshot({
           <div className="mb-2">
             <SnapshotMetricLabel
               label="Common Archetypes"
-              tooltip="Most frequent player archetype labels from the current database."
+              tooltip="Common but meaningful archetype labels from the database."
             />
           </div>
 

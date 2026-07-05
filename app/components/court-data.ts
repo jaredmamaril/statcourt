@@ -1,4 +1,4 @@
-// This file contains the data and types related to players and their stats for the different pages.
+﻿// This file contains the data and types related to players and their stats for the different pages.
 
 // Global components
 
@@ -649,14 +649,42 @@ export type PlayerInsightDisplay = {
   rarity: InsightRarity;
   description: string;
 };
+
 // Insight results
 export type PlayerInsightResult = {
   archetype: PlayerInsightDisplay | null;
   traits: PlayerInsightDisplay[];
 };
 
+export type StatMode = "career" | "peak" | "current";
+
+function getStatsByMode(player: Player, statMode: StatMode): PlayerStats {
+  const profile =
+    statMode === "peak"
+      ? (player.statProfiles?.peak ?? player.statProfiles?.career)
+      : statMode === "current"
+        ? (player.statProfiles?.current ?? player.statProfiles?.career)
+        : player.statProfiles?.career;
+
+  return {
+    games: profile?.games ?? player.stats.games,
+    ppg: profile?.ppg ?? player.stats.ppg,
+    rpg: profile?.rpg ?? player.stats.rpg,
+    apg: profile?.apg ?? player.stats.apg,
+    spg: profile?.spg ?? player.stats.spg,
+    bpg: profile?.bpg ?? player.stats.bpg,
+    fgPercent: profile?.fgPercent ?? player.stats.fgPercent,
+    threePercent: profile?.threePercent ?? player.stats.threePercent,
+    ftPercent: profile?.ftPercent ?? player.stats.ftPercent,
+  };
+}
+
 // Main function to get player insights
-export function getPlayerInsights(player: Player): PlayerInsightResult {
+export function getPlayerInsights(
+  player: Player,
+  statMode: StatMode = "career",
+): PlayerInsightResult {
+  const stats = getStatsByMode(player, statMode);
   const insights: Insight[] = [];
 
   function addInsight(
@@ -671,83 +699,83 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
 
   // Derived values
   const scoringLoad =
-    player.stats.ppg / (player.stats.apg + player.stats.rpg + 1);
-  const isPreThreeEra = player.stats.threePercent < 10;
+    stats.ppg / (stats.apg + stats.rpg + 1);
+  const isPreThreeEra = stats.threePercent < 10;
 
   // Archetype rules
-  const isPrimaryScoringEngine = player.stats.ppg >= 24 && player.stats.apg < 6;
-  const isTwoWayThreat = player.stats.ppg >= 22 && player.stats.rpg >= 7;
-  const isFloorGeneral = player.stats.apg >= 8 && player.stats.fgPercent >= 48;
+  const isPrimaryScoringEngine = stats.ppg >= 24 && stats.apg < 6;
+  const isTwoWayThreat = stats.ppg >= 22 && stats.rpg >= 7;
+  const isFloorGeneral = stats.apg >= 8 && stats.fgPercent >= 48;
   const isPaintDominator =
-    player.stats.rpg >= 10 && player.stats.fgPercent >= 50;
-  const isStretchBig = player.stats.rpg >= 8 && player.stats.threePercent >= 33;
+    stats.rpg >= 10 && stats.fgPercent >= 50;
+  const isStretchBig = stats.rpg >= 8 && stats.threePercent >= 33;
   const isTripleDoubleMachine =
-    player.stats.ppg >= 20 && player.stats.rpg >= 7 && player.stats.apg >= 7;
+    stats.ppg >= 20 && stats.rpg >= 7 && stats.apg >= 7;
   const isBalancedStar =
-    player.stats.ppg >= 18 &&
-    player.stats.rpg >= 5 &&
-    player.stats.apg >= 4 &&
-    player.stats.fgPercent >= 48 &&
-    player.stats.ftPercent >= 75;
-  const isVolumeScorer = player.stats.ppg >= 25 && player.stats.fgPercent < 46;
+    stats.ppg >= 18 &&
+    stats.rpg >= 5 &&
+    stats.apg >= 4 &&
+    stats.fgPercent >= 48 &&
+    stats.ftPercent >= 75;
+  const isVolumeScorer = stats.ppg >= 25 && stats.fgPercent < 46;
   const isPostUpSpecialist =
-    player.stats.fgPercent >= 50 &&
-    player.stats.threePercent < 25 &&
-    player.stats.rpg >= 8;
-  const isPurePointGuard = player.stats.apg >= 8 && player.stats.ppg < 18;
+    stats.fgPercent >= 50 &&
+    stats.threePercent < 25 &&
+    stats.rpg >= 8;
+  const isPurePointGuard = stats.apg >= 8 && stats.ppg < 18;
   const isInteriorAnchor =
-    player.stats.rpg >= 10 &&
-    player.stats.fgPercent >= 50 &&
-    player.stats.threePercent < 25;
+    stats.rpg >= 10 &&
+    stats.fgPercent >= 50 &&
+    stats.threePercent < 25;
   const isGenerationalShooter =
-    player.stats.threePercent >= 42 && player.stats.ppg >= 20;
+    stats.threePercent >= 42 && stats.ppg >= 20;
 
   const isGuard = player.position === "G";
   const isForward = player.position === "F";
   const isCenter = player.position === "C";
   const isBig = isForward || isCenter;
   const isLeadGuard =
-    isGuard && player.stats.ppg >= 20 && player.stats.apg >= 5;
+    isGuard && stats.ppg >= 20 && stats.apg >= 5;
 
   const isRimPressureGuard =
     isGuard &&
-    player.stats.ppg >= 20 &&
-    player.stats.fgPercent >= 45 &&
-    player.stats.threePercent < 37;
+    stats.ppg >= 20 &&
+    stats.fgPercent >= 45 &&
+    stats.threePercent < 37;
 
   const isScoringLeadGuard =
     isGuard &&
-    player.stats.ppg >= 22 &&
-    player.stats.apg >= 4 &&
-    player.stats.apg < 8;
+    stats.ppg >= 22 &&
+    stats.apg >= 4 &&
+    stats.apg < 8;
 
   const isTwoWayWing =
-    isForward && player.stats.ppg >= 18 && player.ratings.defense >= 82;
+    isForward && stats.ppg >= 18 && player.ratings.defense >= 82;
 
   const isWingShotCreator =
     isForward &&
-    player.stats.ppg >= 20 &&
-    player.stats.apg >= 3 &&
-    player.stats.fgPercent >= 45;
+    stats.ppg >= 20 &&
+    stats.apg >= 3 &&
+    stats.fgPercent >= 45;
 
   const isClutchCreator =
     isGuard &&
-    player.stats.ppg >= 22 &&
-    player.stats.apg >= 5 &&
-    player.stats.fgPercent >= 46;
+    stats.ppg >= 22 &&
+    stats.apg >= 5 &&
+    stats.fgPercent >= 46;
 
   const isTwoWayConnector =
     isForward &&
-    player.stats.ppg >= 16 &&
-    player.stats.rpg >= 5 &&
-    player.stats.apg >= 4 &&
+    stats.ppg >= 16 &&
+    stats.rpg >= 5 &&
+    stats.apg >= 4 &&
     player.ratings.defense >= 82;
 
   const isCraftScoringGuard =
     isGuard &&
-    player.stats.ppg >= 16 &&
-    player.stats.apg >= 4 &&
-    player.stats.fgPercent >= 46;
+    stats.ppg >= 16 &&
+    stats.apg >= 4 &&
+    stats.fgPercent >= 46;
 
   if (isTripleDoubleMachine)
     addInsight(
@@ -880,7 +908,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
       "gray",
       "Scoring makes up a large share of this player's overall production.",
     );
-  if (player.stats.ppg >= 24 && player.stats.fgPercent >= 44)
+  if (stats.ppg >= 24 && stats.fgPercent >= 44)
     addInsight(
       "Elite Shot Creator",
       0.9,
@@ -888,7 +916,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
       "blue",
       "Creates high-level scoring chances while maintaining solid efficiency.",
     );
-  if (isPreThreeEra && player.stats.ppg >= 20)
+  if (isPreThreeEra && stats.ppg >= 20)
     addInsight(
       "Pre-3PT Era Dominant Big",
       0.86,
@@ -942,7 +970,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
 
   // Position-aware rules
   if (isBig) {
-    if (player.stats.apg >= 4)
+    if (stats.apg >= 4)
       addInsight(
         "Passing Big",
         0.85,
@@ -950,7 +978,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
         "gray",
         "Frontcourt player with above-average passing and offensive feel.",
       );
-    if (player.stats.threePercent >= 35)
+    if (stats.threePercent >= 35)
       addInsight(
         "Floor-Spacing Big",
         0.84,
@@ -961,7 +989,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
   }
 
   if (isGuard) {
-    if (player.stats.rpg >= 6)
+    if (stats.rpg >= 6)
       addInsight(
         "Rebounding Guard",
         0.84,
@@ -969,7 +997,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
         "gray",
         "Guard profile with unusual impact on the glass.",
       );
-    if (player.stats.ppg >= 22 && player.stats.apg >= 6)
+    if (stats.ppg >= 22 && stats.apg >= 6)
       addInsight(
         "Scoring Point Guard",
         0.86,
@@ -980,7 +1008,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
   }
 
   if (isForward) {
-    if (player.stats.apg >= 6 && player.stats.ppg >= 20)
+    if (stats.apg >= 6 && stats.ppg >= 20)
       addInsight(
         "Wing Playmaker",
         0.85,
@@ -988,7 +1016,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
         "gray",
         "Wing scorer with meaningful passing and creation ability.",
       );
-    if (player.stats.rpg >= 8 && player.stats.ppg >= 20)
+    if (stats.rpg >= 8 && stats.ppg >= 20)
       addInsight(
         "Versatile Wing",
         0.84,
@@ -999,7 +1027,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
   }
 
   // Role player / lower tier rules
-  if (player.stats.ppg >= 15 && player.stats.ppg < 20)
+  if (stats.ppg >= 15 && stats.ppg < 20)
     addInsight(
       "Consistent Contributor",
       0.5,
@@ -1007,7 +1035,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
       "gray",
       "Provides steady scoring without reaching primary star volume.",
     );
-  if (player.stats.ppg >= 10 && player.stats.ppg < 15)
+  if (stats.ppg >= 10 && stats.ppg < 15)
     addInsight(
       "Reliable Role Player",
       0.35,
@@ -1015,7 +1043,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
       "gray",
       "Contributes useful production in a smaller offensive role.",
     );
-  if (player.stats.rpg >= 6 && player.stats.rpg < 7)
+  if (stats.rpg >= 6 && stats.rpg < 7)
     addInsight(
       "Active on the Boards",
       0.4,
@@ -1023,7 +1051,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
       "gray",
       "Adds value with consistent rebounding activity.",
     );
-  if (player.stats.apg >= 4 && player.stats.apg < 5)
+  if (stats.apg >= 4 && stats.apg < 5)
     addInsight(
       "Capable Ball Handler",
       0.38,
@@ -1031,7 +1059,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
       "gray",
       "Shows useful passing and handling for their role.",
     );
-  if (player.stats.fgPercent >= 48 && player.stats.fgPercent < 52)
+  if (stats.fgPercent >= 48 && stats.fgPercent < 52)
     addInsight(
       "Solid Efficiency",
       0.42,
@@ -1039,7 +1067,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
       "gray",
       "Scores with dependable efficiency from the field.",
     );
-  if (player.stats.threePercent >= 35 && player.stats.threePercent < 38)
+  if (stats.threePercent >= 35 && stats.threePercent < 38)
     addInsight(
       "Reliable from Deep",
       0.4,
@@ -1047,7 +1075,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
       "gray",
       "Provides dependable three-point shooting value.",
     );
-  if (player.stats.ftPercent >= 80 && player.stats.ftPercent < 85)
+  if (stats.ftPercent >= 80 && stats.ftPercent < 85)
     addInsight(
       "Steady at the Line",
       0.38,
@@ -1057,134 +1085,205 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
     );
 
   // Stat-based strengths
-  if (player.stats.ppg >= 28)
+  if (stats.ppg >= 28)
     addInsight(
       "Generational Scorer",
-      normalizeStat(player.stats.ppg, statMaxValues.ppg),
+      normalizeStat(stats.ppg, statMaxValues.ppg),
       "core",
       "gold",
       "All-time scoring profile with top-tier points-per-game production.",
     );
-  else if (player.stats.ppg >= 25)
+  else if (stats.ppg >= 25)
     addInsight(
       "Elite Scorer",
-      normalizeStat(player.stats.ppg, statMaxValues.ppg),
+      normalizeStat(stats.ppg, statMaxValues.ppg),
       "core",
       "blue",
       "High-end scoring profile with star-level points-per-game volume.",
     );
-  else if (player.stats.ppg >= 20)
+  else if (stats.ppg >= 20)
     addInsight(
       "Reliable Offensive Threat",
-      normalizeStat(player.stats.ppg, statMaxValues.ppg),
+      normalizeStat(stats.ppg, statMaxValues.ppg),
       "supporting",
       "gray",
       "Strong scoring profile that consistently pressures defenses.",
     );
 
-  if (player.stats.rpg >= 15)
+  if (stats.rpg >= 15)
     addInsight(
       "Historic Rebounding",
-      normalizeStat(player.stats.rpg, statMaxValues.rpg),
+      normalizeStat(stats.rpg, statMaxValues.rpg),
       "core",
       "purple",
       "Rare rebounding profile with historically high board production.",
     );
-  else if (player.stats.rpg >= 10)
+  else if (stats.rpg >= 10)
     addInsight(
       "Dominant Rebounder",
-      normalizeStat(player.stats.rpg, statMaxValues.rpg),
+      normalizeStat(stats.rpg, statMaxValues.rpg),
       "supporting",
       "blue",
       "Controls possessions with elite rebounding volume.",
     );
-  else if (player.stats.rpg >= 7)
+  else if (stats.rpg >= 7)
     addInsight(
       "Strong Rebounding Impact",
-      normalizeStat(player.stats.rpg, statMaxValues.rpg),
+      normalizeStat(stats.rpg, statMaxValues.rpg),
       "supporting",
       "gray",
       "Adds strong value through rebounding for their role.",
     );
 
-  if (player.stats.apg >= 10)
+  if (stats.apg >= 10)
     addInsight(
       "Generational Creator",
-      normalizeStat(player.stats.apg, statMaxValues.apg),
+      normalizeStat(stats.apg, statMaxValues.apg),
       "core",
       "gold",
       "All-time playmaking profile with elite assist production.",
     );
-  else if (player.stats.apg >= 7)
+  else if (stats.apg >= 7)
     addInsight(
       "Elite Playmaker",
-      normalizeStat(player.stats.apg, statMaxValues.apg),
+      normalizeStat(stats.apg, statMaxValues.apg),
       "supporting",
       "blue",
       "Creates a high volume of scoring chances for teammates.",
     );
-  else if (player.stats.apg >= 5)
+  else if (stats.apg >= 5)
     addInsight(
       "Strong Playmaking Ability",
-      normalizeStat(player.stats.apg, statMaxValues.apg),
+      normalizeStat(stats.apg, statMaxValues.apg),
       "supporting",
       "gray",
       "Provides meaningful passing and offensive creation.",
     );
 
-  if (player.stats.fgPercent >= 57)
+  if (stats.fgPercent >= 57)
     addInsight(
       "Exceptional Efficiency",
-      normalizeStat(player.stats.fgPercent, statMaxValues.fgPercent),
+      normalizeStat(stats.fgPercent, statMaxValues.fgPercent),
       "supporting",
       "blue",
       "Finishes possessions with elite field-goal efficiency.",
     );
-  else if (player.stats.fgPercent >= 52)
+  else if (stats.fgPercent >= 52)
     addInsight(
       "Highly Efficient Scorer",
-      normalizeStat(player.stats.fgPercent, statMaxValues.fgPercent),
+      normalizeStat(stats.fgPercent, statMaxValues.fgPercent),
       "supporting",
       "gray",
       "Scores efficiently from the field for their role.",
     );
 
-  if (player.stats.threePercent >= 42)
+  if (stats.threePercent >= 42)
     addInsight(
       "Elite Perimeter Shooter",
-      normalizeStat(player.stats.threePercent, statMaxValues.threePercent),
+      normalizeStat(stats.threePercent, statMaxValues.threePercent),
       "supporting",
       "blue",
       "Elite perimeter shooting profile from three-point range.",
     );
-  else if (player.stats.threePercent >= 38)
+  else if (stats.threePercent >= 38)
     addInsight(
       "High-Level Shooter",
-      normalizeStat(player.stats.threePercent, statMaxValues.threePercent),
+      normalizeStat(stats.threePercent, statMaxValues.threePercent),
       "supporting",
       "gray",
       "Strong three-point shooting profile that stretches defenses.",
     );
 
-  if (player.stats.ftPercent >= 90)
+  if (stats.ftPercent >= 90)
     addInsight(
       "Automatic at the Line",
-      normalizeStat(player.stats.ftPercent, statMaxValues.ftPercent),
+      normalizeStat(stats.ftPercent, statMaxValues.ftPercent),
       "supporting",
       "blue",
       "Near-perfect free-throw profile with elite line efficiency.",
     );
-  else if (player.stats.ftPercent >= 85)
+  else if (stats.ftPercent >= 85)
     addInsight(
       "Elite Free Throw Shooter",
-      normalizeStat(player.stats.ftPercent, statMaxValues.ftPercent),
+      normalizeStat(stats.ftPercent, statMaxValues.ftPercent),
       "supporting",
       "blue",
       "Excellent free-throw shooter who reliably converts at the line.",
     );
 
+  // Fallback archetypes for players who miss the main core rules
+  const hasCoreArchetype = insights.some((insight) => insight.tier === "core");
+
+  if (!hasCoreArchetype) {
+    if (stats.games && stats.games < 100) {
+      addInsight(
+        "Small Sample Player",
+        0.3,
+        "core",
+        "gray",
+        "Limited career sample makes this player harder to classify confidently.",
+      );
+    } else if (stats.ppg >= 12) {
+      addInsight(
+        "Rotation Scorer",
+        0.55,
+        "core",
+        "gray",
+        "Provides useful scoring production in a regular rotation role.",
+      );
+    } else if (stats.apg >= 3.5) {
+      addInsight(
+        "Reserve Playmaker",
+        0.52,
+        "core",
+        "gray",
+        "Adds value through passing and offensive organization.",
+      );
+    } else if (stats.rpg >= 5.5) {
+      addInsight(
+        "Glass Cleaner",
+        0.52,
+        "core",
+        "gray",
+        "Contributes through rebounding and possession work.",
+      );
+    } else if (stats.threePercent >= 36 && stats.ppg >= 6) {
+      addInsight(
+        "Spot-Up Shooter",
+        0.5,
+        "core",
+        "gray",
+        "Provides floor-spacing value as a perimeter shooting option.",
+      );
+    } else if (player.position === "C") {
+      addInsight(
+        "Depth Big",
+        0.42,
+        "core",
+        "gray",
+        "Frontcourt depth profile with limited but useful production.",
+      );
+    } else if (player.position === "G") {
+      addInsight(
+        "Depth Guard",
+        0.42,
+        "core",
+        "gray",
+        "Backcourt depth profile with limited but useful production.",
+      );
+    } else {
+      addInsight(
+        "Depth Contributor",
+        0.4,
+        "core",
+        "gray",
+        "General depth profile with limited statistical production.",
+      );
+    }
+  }
+
   // Weaknesses
-  if (player.stats.ftPercent < 60)
+  if (stats.ftPercent < 60)
     addInsight(
       "FT Liability",
       -0.1,
@@ -1192,7 +1291,7 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
       "red",
       "Free-throw percentage is a notable weakness in this profile.",
     );
-  if (player.stats.threePercent < 25 && !isPreThreeEra)
+  if (stats.threePercent < 25 && !isPreThreeEra)
     addInsight(
       "Limited Range",
       -0.1,
@@ -1209,10 +1308,18 @@ export function getPlayerInsights(player: Player): PlayerInsightResult {
     weakness: 0,
   };
 
-  // Get archetype by highest score of core insight
-  const archetype = insights
-    .filter((insight) => insight.tier === "core")
-    .sort((a, b) => b.score - a.score)[0];
+  // Get archetype by highest available insight tier
+  const archetype =
+    insights
+      .filter((insight) => insight.tier === "core")
+      .sort((a, b) => b.score - a.score)[0] ??
+    insights
+      .filter((insight) => insight.tier === "supporting")
+      .sort((a, b) => b.score - a.score)[0] ??
+    insights
+      .filter((insight) => insight.tier === "bonus")
+      .sort((a, b) => b.score - a.score)[0] ??
+    null;
 
   // Get remaining traits
   const traits = insights
@@ -1423,3 +1530,4 @@ export type CompareSlots = {
   left: string;
   right: string;
 };
+

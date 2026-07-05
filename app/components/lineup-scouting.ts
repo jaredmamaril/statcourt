@@ -1,4 +1,4 @@
-import {
+﻿import {
   normalizeStat,
   players,
   type LineupSlot,
@@ -516,7 +516,7 @@ export function getBuilderPlayerRatingForPosition(
   slot: LineupSlot,
 ) {
   return (
-    getPlayerRating(player, "overall") -
+    getPlayerRating(player, "careerOverall") -
     getPositionPenalty(getPositionFit(player, slot))
   );
 }
@@ -1080,3 +1080,4 @@ export function getLineupScoutReport(
     badges,
   };
 }
+

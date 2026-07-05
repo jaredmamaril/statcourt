@@ -1,4 +1,4 @@
-import { players, getPlayerInsights } from "../court-data";
+﻿import { players, getPlayerInsights } from "../court-data";
 import { getPlayerRating } from "../player-ratings";
 import { getArchetypePillStyle } from "./ranking-style-helpers";
 
@@ -36,7 +36,7 @@ export function ArchetypeCardGrid({
         const averageRating =
           archetypePlayers.length > 0
             ? archetypePlayers.reduce(
-                (total, player) => total + getPlayerRating(player, "overall"),
+                (total, player) => total + getPlayerRating(player, "careerOverall"),
                 0,
               ) / archetypePlayers.length
             : null;
@@ -48,7 +48,7 @@ export function ArchetypeCardGrid({
           )
           .sort(
             (a, b) =>
-              getPlayerRating(b, "overall") - getPlayerRating(a, "overall"),
+              getPlayerRating(b, "careerOverall") - getPlayerRating(a, "careerOverall"),
           )[0];
 
         return (
@@ -105,3 +105,4 @@ export function ArchetypeCardGrid({
     </div>
   );
 }
+

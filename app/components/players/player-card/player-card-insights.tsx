@@ -19,11 +19,11 @@ export function PlayerCardInsights({
 }: PlayerCardInsightsProps) {
   return (
     <div className="flex w-fit flex-col items-center gap-1">
-      <span className="font-michroma text-[14px] uppercase tracking-wide text-white">
+      <span className="font-michroma text-[12px] uppercase tracking-wide text-white/50">
         Insights
       </span>
 
-      <span className="font-michroma text-[6px] uppercase tracking-wide text-white">
+      <span className="font-michroma text-[6px] uppercase tracking-wide text-white/45">
         Archetype
       </span>
 
@@ -50,7 +50,7 @@ export function PlayerCardInsights({
         </div>
       )}
 
-      <span className="font-michroma text-[6px] uppercase tracking-wide text-white">
+      <span className="font-michroma text-[6px] uppercase tracking-wide text-white/45">
         Traits
       </span>
 
