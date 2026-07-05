@@ -85,10 +85,12 @@ function Players() {
   >(null);
   const [isCardFlipped, setIsCardFlipped] = useState(false);
   const [isGoingToCourt, setIsGoingToCourt] = useState(false);
-  const [compareSlots, setCompareSlots] =
-    useState<CompareSlots>(getSavedCompareSlots);
+  const [compareSlots, setCompareSlots] = useState<CompareSlots>({
+    left: "",
+    right: "",
+  });
   const [recentlyViewedPlayers, setRecentlyViewedPlayers] = useState<string[]>(
-    getSavedRecentPlayers,
+    [],
   );
   const [featuredPlayerIndex, setFeaturedPlayerIndex] = useState(0);
 
@@ -164,6 +166,14 @@ function Players() {
   } = getPlayerDatabaseLeaders(players);
 
   // Effects
+  useEffect(() => {
+    setRecentlyViewedPlayers(getSavedRecentPlayers());
+  }, []);
+
+  useEffect(() => {
+    setCompareSlots(getSavedCompareSlots());
+  }, []);
+
   useEffect(() => {
     let isActive = true;
 
