@@ -128,8 +128,8 @@ export function DatabaseSnapshot({
         <div className="mb-4 border-t border-white/10 pt-3">
           <div className="mb-2">
             <SnapshotMetricLabel
-              label="Common Archetypes"
-              tooltip="Common but meaningful archetype labels from the database."
+              label="Featured Archetypes"
+              tooltip="Featured meaningful archetype labels from the database."
             />
           </div>
 

@@ -698,16 +698,14 @@ export function getPlayerInsights(
   }
 
   // Derived values
-  const scoringLoad =
-    stats.ppg / (stats.apg + stats.rpg + 1);
+  const scoringLoad = stats.ppg / (stats.apg + stats.rpg + 1);
   const isPreThreeEra = stats.threePercent < 10;
 
   // Archetype rules
   const isPrimaryScoringEngine = stats.ppg >= 24 && stats.apg < 6;
   const isTwoWayThreat = stats.ppg >= 22 && stats.rpg >= 7;
   const isFloorGeneral = stats.apg >= 8 && stats.fgPercent >= 48;
-  const isPaintDominator =
-    stats.rpg >= 10 && stats.fgPercent >= 50;
+  const isPaintDominator = stats.rpg >= 10 && stats.fgPercent >= 50;
   const isStretchBig = stats.rpg >= 8 && stats.threePercent >= 33;
   const isTripleDoubleMachine =
     stats.ppg >= 20 && stats.rpg >= 7 && stats.apg >= 7;
@@ -719,23 +717,17 @@ export function getPlayerInsights(
     stats.ftPercent >= 75;
   const isVolumeScorer = stats.ppg >= 25 && stats.fgPercent < 46;
   const isPostUpSpecialist =
-    stats.fgPercent >= 50 &&
-    stats.threePercent < 25 &&
-    stats.rpg >= 8;
+    stats.fgPercent >= 50 && stats.threePercent < 25 && stats.rpg >= 8;
   const isPurePointGuard = stats.apg >= 8 && stats.ppg < 18;
   const isInteriorAnchor =
-    stats.rpg >= 10 &&
-    stats.fgPercent >= 50 &&
-    stats.threePercent < 25;
-  const isGenerationalShooter =
-    stats.threePercent >= 42 && stats.ppg >= 20;
+    stats.rpg >= 10 && stats.fgPercent >= 50 && stats.threePercent < 25;
+  const isGenerationalShooter = stats.threePercent >= 42 && stats.ppg >= 20;
 
   const isGuard = player.position === "G";
   const isForward = player.position === "F";
   const isCenter = player.position === "C";
   const isBig = isForward || isCenter;
-  const isLeadGuard =
-    isGuard && stats.ppg >= 20 && stats.apg >= 5;
+  const isLeadGuard = isGuard && stats.ppg >= 20 && stats.apg >= 5;
 
   const isRimPressureGuard =
     isGuard &&
@@ -744,25 +736,16 @@ export function getPlayerInsights(
     stats.threePercent < 37;
 
   const isScoringLeadGuard =
-    isGuard &&
-    stats.ppg >= 22 &&
-    stats.apg >= 4 &&
-    stats.apg < 8;
+    isGuard && stats.ppg >= 22 && stats.apg >= 4 && stats.apg < 8;
 
   const isTwoWayWing =
     isForward && stats.ppg >= 18 && player.ratings.defense >= 82;
 
   const isWingShotCreator =
-    isForward &&
-    stats.ppg >= 20 &&
-    stats.apg >= 3 &&
-    stats.fgPercent >= 45;
+    isForward && stats.ppg >= 20 && stats.apg >= 3 && stats.fgPercent >= 45;
 
   const isClutchCreator =
-    isGuard &&
-    stats.ppg >= 22 &&
-    stats.apg >= 5 &&
-    stats.fgPercent >= 46;
+    isGuard && stats.ppg >= 22 && stats.apg >= 5 && stats.fgPercent >= 46;
 
   const isTwoWayConnector =
     isForward &&
@@ -772,15 +755,89 @@ export function getPlayerInsights(
     player.ratings.defense >= 82;
 
   const isCraftScoringGuard =
-    isGuard &&
-    stats.ppg >= 16 &&
-    stats.apg >= 4 &&
-    stats.fgPercent >= 46;
+    isGuard && stats.ppg >= 16 && stats.apg >= 4 && stats.fgPercent >= 46;
+
+  const isThreeLevelScorer =
+    stats.ppg >= 22 &&
+    stats.fgPercent >= 47 &&
+    stats.threePercent >= 36 &&
+    stats.ftPercent >= 80;
+
+  const isOffensiveHub =
+    stats.ppg >= 20 && stats.apg >= 6 && stats.fgPercent >= 48;
+
+  const isPlaymakingBig =
+    isBig && stats.ppg >= 15 && stats.rpg >= 7 && stats.apg >= 5;
+
+  const isPointForward =
+    isForward && stats.ppg >= 16 && stats.rpg >= 5 && stats.apg >= 5;
+
+  const isTwoWaySuperstar =
+    stats.ppg >= 22 &&
+    player.ratings.defense >= 88 &&
+    player.ratings.starPower >= 88;
+
+  const isDefensiveAnchor =
+    isBig && player.ratings.defense >= 90 && stats.rpg >= 8;
+
+  if (isTwoWaySuperstar)
+    addInsight(
+      "Two-Way Superstar",
+      0.99,
+      "core",
+      "gold",
+      "Elite star profile that combines high-level scoring with major defensive value.",
+    );
+
+  if (isOffensiveHub)
+    addInsight(
+      "Offensive Hub",
+      0.96,
+      "core",
+      "purple",
+      "Central offensive engine who blends scoring, creation, and efficiency.",
+    );
+
+  if (isThreeLevelScorer)
+    addInsight(
+      "Three-Level Scorer",
+      0.94,
+      "core",
+      "blue",
+      "Scoring profile that threatens defenses at the rim, from midrange, and beyond the arc.",
+    );
+
+  if (isPlaymakingBig)
+    addInsight(
+      "Playmaking Big",
+      0.93,
+      "core",
+      "blue",
+      "Frontcourt creator who combines size, scoring, rebounding, and passing.",
+    );
+
+  if (isPointForward)
+    addInsight(
+      "Point Forward",
+      0.91,
+      "core",
+      "blue",
+      "Forward profile that creates offense with scoring, size, and passing.",
+    );
+
+  if (isDefensiveAnchor)
+    addInsight(
+      "Defensive Anchor",
+      0.9,
+      "core",
+      "blue",
+      "Frontcourt defender who provides high-level interior presence and rebounding support.",
+    );
 
   if (isTripleDoubleMachine)
     addInsight(
       "Triple-Double Machine",
-      1.0,
+      0.97,
       "core",
       "purple",
       "Rare all-around production across scoring, rebounding, and playmaking.",
@@ -1214,62 +1271,261 @@ export function getPlayerInsights(
   // Fallback archetypes for players who miss the main core rules
   const hasCoreArchetype = insights.some((insight) => insight.tier === "core");
 
+  const isLowSample =
+    statMode === "career"
+      ? (stats.games ?? 0) > 0 && (stats.games ?? 0) < 20
+      : statMode === "peak"
+        ? (stats.games ?? 0) > 0 && (stats.games ?? 0) < 25
+        : (stats.games ?? 0) > 0 && (stats.games ?? 0) < 10;
+
   if (!hasCoreArchetype) {
-    if (stats.games && stats.games < 100) {
+    if (isLowSample) {
       addInsight(
         "Small Sample Player",
         0.3,
         "core",
         "gray",
-        "Limited career sample makes this player harder to classify confidently.",
+        "Limited sample makes this profile harder to classify confidently.",
       );
-    } else if (stats.ppg >= 12) {
+    } else if (isGuard && stats.ppg >= 12 && stats.apg >= 3.5) {
       addInsight(
-        "Rotation Scorer",
+        "Combo Guard",
+        0.58,
+        "core",
+        "gray",
+        "Backcourt profile that blends scoring with secondary playmaking.",
+      );
+    } else if (isGuard && stats.apg >= 4.5) {
+      addInsight(
+        "Reserve Playmaker",
         0.55,
         "core",
         "gray",
-        "Provides useful scoring production in a regular rotation role.",
+        "Guard profile that adds value through passing and offensive organization.",
       );
-    } else if (stats.apg >= 3.5) {
+    } else if (isGuard && stats.ppg >= 10) {
       addInsight(
-        "Reserve Playmaker",
+        "Bench Scorer",
+        0.54,
+        "core",
+        "gray",
+        "Backcourt scorer who provides useful offense in a rotation role.",
+      );
+    } else if (isGuard && stats.threePercent >= 35 && stats.ppg >= 5) {
+      addInsight(
+        "Spot-Up Guard",
         0.52,
         "core",
         "gray",
-        "Adds value through passing and offensive organization.",
+        "Guard profile that spaces the floor with reliable perimeter shooting.",
       );
-    } else if (stats.rpg >= 5.5) {
+    } else if (isGuard && stats.apg >= 3) {
       addInsight(
-        "Glass Cleaner",
-        0.52,
-        "core",
-        "gray",
-        "Contributes through rebounding and possession work.",
-      );
-    } else if (stats.threePercent >= 36 && stats.ppg >= 6) {
-      addInsight(
-        "Spot-Up Shooter",
+        "Backup Ball Handler",
         0.5,
         "core",
         "gray",
-        "Provides floor-spacing value as a perimeter shooting option.",
+        "Backcourt profile that provides secondary handling and passing.",
       );
-    } else if (player.position === "C") {
+    } else if (isGuard && stats.ppg >= 7) {
       addInsight(
-        "Depth Big",
-        0.42,
+        "Reserve Scoring Guard",
+        0.49,
         "core",
         "gray",
-        "Frontcourt depth profile with limited but useful production.",
+        "Guard profile that contributes scoring in a smaller offensive role.",
       );
-    } else if (player.position === "G") {
+    } else if (isGuard && stats.rpg >= 3.5) {
+      addInsight(
+        "Rebounding Guard",
+        0.48,
+        "core",
+        "gray",
+        "Guard profile with useful rebounding activity for the backcourt.",
+      );
+    } else if (isGuard && stats.threePercent >= 32 && stats.ppg >= 3.5) {
+      addInsight(
+        "Low-Usage Shooter",
+        0.46,
+        "core",
+        "gray",
+        "Low-usage guard profile with some floor-spacing value.",
+      );
+    } else if (isGuard && stats.apg >= 2) {
+      addInsight(
+        "Depth Ball Handler",
+        0.45,
+        "core",
+        "gray",
+        "Guard profile that provides basic handling and passing in limited minutes.",
+      );
+    } else if (isGuard && stats.ppg >= 4.5) {
+      addInsight(
+        "Low-Minute Scoring Guard",
+        0.44,
+        "core",
+        "gray",
+        "Backcourt profile that adds occasional scoring in a smaller role.",
+      );
+    } else if (isGuard) {
       addInsight(
         "Depth Guard",
         0.42,
         "core",
         "gray",
         "Backcourt depth profile with limited but useful production.",
+      );
+    } else if (isForward && stats.ppg >= 12 && stats.rpg >= 4) {
+      addInsight(
+        "Rotation Wing",
+        0.56,
+        "core",
+        "gray",
+        "Wing profile with enough scoring and rebounding to fit regular rotation minutes.",
+      );
+    } else if (isForward && stats.threePercent >= 35 && stats.ppg >= 6) {
+      addInsight(
+        "Floor-Spacing Forward",
+        0.54,
+        "core",
+        "gray",
+        "Forward profile that provides value by stretching defenses from the perimeter.",
+      );
+    } else if (isForward && stats.rpg >= 5.5) {
+      addInsight(
+        "Rebounding Forward",
+        0.53,
+        "core",
+        "gray",
+        "Forward profile that contributes through rebounding and possession work.",
+      );
+    } else if (isForward && player.ratings.defense >= 78) {
+      addInsight(
+        "Defensive Wing",
+        0.52,
+        "core",
+        "gray",
+        "Wing profile with defensive value and supporting production.",
+      );
+    } else if (isForward && stats.ppg >= 7) {
+      addInsight(
+        "Reserve Wing Scorer",
+        0.5,
+        "core",
+        "gray",
+        "Wing profile that adds scoring in a smaller rotation role.",
+      );
+    } else if (isForward && stats.rpg >= 4) {
+      addInsight(
+        "Energy Forward",
+        0.49,
+        "core",
+        "gray",
+        "Forward profile that contributes through rebounding, activity, and physical play.",
+      );
+    } else if (isForward && stats.threePercent >= 33 && stats.ppg >= 4) {
+      addInsight(
+        "Spot-Up Wing",
+        0.48,
+        "core",
+        "gray",
+        "Wing profile that provides spacing and supporting perimeter value.",
+      );
+    } else if (isForward && stats.threePercent >= 30 && stats.ppg >= 3.5) {
+      addInsight(
+        "Low-Usage Stretch Wing",
+        0.46,
+        "core",
+        "gray",
+        "Low-usage wing profile with some perimeter spacing value.",
+      );
+    } else if (isForward && stats.rpg >= 3) {
+      addInsight(
+        "Activity Forward",
+        0.45,
+        "core",
+        "gray",
+        "Forward profile that contributes through activity, size, and rebounding support.",
+      );
+    } else if (isForward && stats.ppg >= 4.5) {
+      addInsight(
+        "Low-Minute Wing Scorer",
+        0.44,
+        "core",
+        "gray",
+        "Wing profile that provides occasional scoring in limited minutes.",
+      );
+    } else if (isForward) {
+      addInsight(
+        "Depth Wing",
+        0.42,
+        "core",
+        "gray",
+        "Wing depth profile with limited but useful production.",
+      );
+    } else if (isCenter && stats.rpg >= 7 && stats.fgPercent >= 50) {
+      addInsight(
+        "Rim-Running Big",
+        0.56,
+        "core",
+        "gray",
+        "Center profile built around finishing, rebounding, and interior activity.",
+      );
+    } else if (isCenter && stats.rpg >= 6) {
+      addInsight(
+        "Glass-Cleaning Big",
+        0.54,
+        "core",
+        "gray",
+        "Big-man profile that adds value through rebounding and physical interior play.",
+      );
+    } else if (isCenter && stats.bpg && stats.bpg >= 0.8) {
+      addInsight(
+        "Rim Protector",
+        0.53,
+        "core",
+        "gray",
+        "Frontcourt profile that adds value through shot-blocking and interior defense.",
+      );
+    } else if (isCenter && player.ratings.defense >= 80) {
+      addInsight(
+        "Defensive Big",
+        0.52,
+        "core",
+        "gray",
+        "Frontcourt profile built around defensive presence and interior support.",
+      );
+    } else if (isCenter && stats.fgPercent >= 52 && stats.ppg >= 4) {
+      addInsight(
+        "Interior Finisher",
+        0.51,
+        "core",
+        "gray",
+        "Big-man profile built around efficient finishing near the basket.",
+      );
+    } else if (isCenter && stats.rpg >= 4.5) {
+      addInsight(
+        "Backup Big",
+        0.5,
+        "core",
+        "gray",
+        "Frontcourt profile that contributes size, rebounding, and interior minutes.",
+      );
+    } else if (isCenter && stats.ppg >= 5) {
+      addInsight(
+        "Reserve Interior Scorer",
+        0.49,
+        "core",
+        "gray",
+        "Center profile that provides scoring in a smaller frontcourt role.",
+      );
+    } else if (isCenter) {
+      addInsight(
+        "Depth Big",
+        0.42,
+        "core",
+        "gray",
+        "Frontcourt depth profile with limited but useful production.",
       );
     } else {
       addInsight(
@@ -1410,7 +1666,7 @@ function getArchetypeSimilarity(player: Player, otherPlayer: Player) {
   }
 
   // Same archetype = 100% match, else 40%
-  return playerArchetype === otherArchetype ? 100 : 40;
+  return playerArchetype.label === otherArchetype.label ? 100 : 40;
 }
 
 // Get confidence score of similar player match result
@@ -1530,4 +1786,3 @@ export type CompareSlots = {
   left: string;
   right: string;
 };
-

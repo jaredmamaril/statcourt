@@ -66,8 +66,22 @@ export function getTopArchetypeDistribution(
     >,
   );
 
+  const rarityRank = {
+    gold: 5,
+    purple: 4,
+    blue: 3,
+    gray: 2,
+    red: 1,
+  };
+
   return Object.entries(archetypeDistribution)
-    .sort((a, b) => b[1].count - a[1].count)
+    .filter(([, data]) => data.rarity !== "gray" && data.rarity !== "red")
+    .sort(
+      (a, b) =>
+        rarityRank[b[1].rarity] - rarityRank[a[1].rarity] ||
+        b[1].count - a[1].count ||
+        a[0].localeCompare(b[0]),
+    )
     .slice(0, 4);
 }
 

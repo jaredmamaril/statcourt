@@ -121,6 +121,14 @@ function Players() {
     ? getBestLineupFits(selectedPlayer)
     : [];
 
+  const rarityRank = {
+    gold: 5,
+    purple: 4,
+    blue: 3,
+    gray: 2,
+    red: 1,
+  };
+
   const archetypeOptions = Array.from(
     new Map(
       players
@@ -128,6 +136,10 @@ function Players() {
         .filter((archetype) => archetype !== null)
         .map((archetype) => [archetype.label, archetype]),
     ).values(),
+  ).sort(
+    (a, b) =>
+      rarityRank[b.rarity] - rarityRank[a.rarity] ||
+      a.label.localeCompare(b.label),
   );
 
   const hasUnclassifiedPlayers = players.some(
