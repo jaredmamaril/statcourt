@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { AuthPrompt } from "../components/auth/auth-prompt";
 
 import type {
   LineupTab,
@@ -461,42 +462,65 @@ export default function Lineups() {
 
         {activeTab === "saved" &&
           (user ? (
-            <SavedLineupsSection
-              savedLineups={savedLineups}
-              filteredSavedLineups={filteredSavedLineups}
-              savedLineupSearch={savedLineupSearch}
-              savedLineupSort={savedLineupSort}
-              savedSortLabel={savedSortLabel}
-              openSavedDropdown={openSavedDropdown}
-              onSearchChange={setSavedLineupSearch}
-              onToggleDropdown={() =>
-                setOpenSavedDropdown(
-                  openSavedDropdown === "sort" ? null : "sort",
-                )
-              }
-              onSelectSort={(value) => {
-                setSavedLineupSort(value);
-                setOpenSavedDropdown(null);
-              }}
-              onSetActiveTab={setActiveTab}
-              onSetHasStartedBuilder={setHasStartedBuilder}
-              onLoadLineup={loadSavedLineup}
-              onScoutLineup={scoutSavedLineup}
-              onRenameLineup={(lineup) => {
-                setLineupPendingRename(lineup);
-                setRenameLineupInput(lineup.name);
-              }}
-              onDeleteLineup={setLineupPendingDelete}
-            />
+            savedLineups.length > 0 ? (
+              <SavedLineupsSection
+                savedLineups={savedLineups}
+                filteredSavedLineups={filteredSavedLineups}
+                savedLineupSearch={savedLineupSearch}
+                savedLineupSort={savedLineupSort}
+                savedSortLabel={savedSortLabel}
+                openSavedDropdown={openSavedDropdown}
+                onSearchChange={setSavedLineupSearch}
+                onToggleDropdown={() =>
+                  setOpenSavedDropdown(
+                    openSavedDropdown === "sort" ? null : "sort",
+                  )
+                }
+                onSelectSort={(value) => {
+                  setSavedLineupSort(value);
+                  setOpenSavedDropdown(null);
+                }}
+                onSetActiveTab={setActiveTab}
+                onSetHasStartedBuilder={setHasStartedBuilder}
+                onLoadLineup={loadSavedLineup}
+                onScoutLineup={scoutSavedLineup}
+                onRenameLineup={(lineup) => {
+                  setLineupPendingRename(lineup);
+                  setRenameLineupInput(lineup.name);
+                }}
+                onDeleteLineup={setLineupPendingDelete}
+              />
+            ) : (
+              <div className="mx-auto mt-16 max-w-md rounded-lg border border-[#1bc2ec]/35 bg-[#06131d]/80 p-6 text-center shadow-[0_0_28px_rgba(27,194,236,0.16)]">
+                <p className="font-michroma text-lg uppercase text-white">
+                  No saved lineups yet
+                </p>
+
+                <p className="mt-3 font-michroma text-[10px] leading-relaxed text-white/45">
+                  Build your first lineup and save it to your court.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab("builder");
+                    setHasStartedBuilder(false);
+                    router.replace("/lineups?tab=builder", { scroll: false });
+                  }}
+                  className="mt-5 rounded-md border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-4 py-3 font-michroma text-[10px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white"
+                >
+                  Build Lineup
+                </button>
+              </div>
+            )
           ) : (
             <div className="mx-auto mt-16 max-w-md rounded-lg border border-[#1bc2ec]/35 bg-[#06131d]/80 p-6 text-center shadow-[0_0_28px_rgba(27,194,236,0.16)]">
               <p className="font-michroma text-lg uppercase text-white">
-                Saved Lineups
+                Sign in to view saved lineups
               </p>
 
               <p className="mt-3 font-michroma text-[10px] leading-relaxed text-white/45">
-                Sign in to save lineups, rename builds, and keep your scouting
-                history synced.
+                Your saved teams will appear here once you create an account.
               </p>
 
               <button
@@ -504,7 +528,7 @@ export default function Lineups() {
                 onClick={() => router.push("/signin")}
                 className="mt-5 rounded-md border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-4 py-3 font-michroma text-[10px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white"
               >
-                Sign In To View Saved Lineups
+                Sign In
               </button>
             </div>
           ))}
@@ -562,41 +586,12 @@ export default function Lineups() {
         />
       )}
 
-      {/* Temp */}
       {showAuthPrompt && (
-        <div className="fixed inset-0 z-999999 flex items-center justify-center bg-black/75">
-          <div className="w-[min(360px,90vw)] rounded-lg border border-[#1bc2ec]/40 bg-[#06131d] p-5 shadow-[0_0_30px_rgba(27,194,236,0.25)]">
-            <p className="font-michroma text-sm text-white">
-              {authPromptMessage}
-            </p>
-
-            <p className="mt-2 font-michroma text-[9px] leading-relaxed text-white/45">
-              Create an account to keep saved lineups, favorites, and player
-              history synced.
-            </p>
-
-            <div className="mt-4 flex gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowAuthPrompt(false);
-                  router.push("/signin");
-                }}
-                className="rounded-md border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-3 py-2 font-michroma text-[9px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white"
-              >
-                Sign In
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowAuthPrompt(false)}
-                className="rounded-md border border-white/10 px-3 py-2 font-michroma text-[9px] uppercase text-white/50 transition hover:border-white/25 hover:text-white"
-              >
-                Not Now
-              </button>
-            </div>
-          </div>
-        </div>
+        <AuthPrompt
+          title={authPromptMessage}
+          description="Create an account to save lineups, rename builds, and access them later."
+          onClose={() => setShowAuthPrompt(false)}
+        />
       )}
 
       {lineupPendingDelete && (
