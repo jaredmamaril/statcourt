@@ -118,7 +118,7 @@ function Players() {
     : [];
 
   const bestLineupFits = selectedPlayer
-    ? getBestLineupFits(selectedPlayer)
+    ? getBestLineupFits(selectedPlayer, selectedStatMode)
     : [];
 
   const rarityRank = {

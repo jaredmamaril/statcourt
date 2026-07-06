@@ -76,35 +76,54 @@ export function getRarityColor(rarity: PlayerInsightDisplay["rarity"]) {
 }
 
 export function getLineupFitStyles(fit: string): CSSProperties {
-  let color = "#CBD5E1";
+  const fitColors: Record<string, string> = {
+    // Pace / playmaking
+    "Transition Attack": "#1BC2EC",
+    "Showtime Offense": "#1BC2EC",
+    "Lead Guard Engine": "#1BC2EC",
+    "High-Post Hub": "#1BC2EC",
+    "Secondary Creator Unit": "#1BC2EC",
 
-  if (fit === "Transition Attack" || fit === "Showtime Offense") {
-    color = "#1bc2ec";
-  }
+    // Shooting / spacing
+    "Spacing Superteam": "#A855F7",
+    "Floor-Spacing Wing": "#A855F7",
+    "Secondary Spacing": "#A855F7",
+    "Spacing Support": "#A855F7",
+    "Off-Ball Shooting Unit": "#A855F7",
+    "Perimeter Guard Unit": "#A855F7",
 
-  if (fit === "Defensive Powerhouse") {
-    color = "#22C55E";
-  }
+    // Star / scoring
+    "Star-Powered Contender": "#F97316",
+    "Isolation Scoring Core": "#F97316",
+    "Bench Scoring Unit": "#F97316",
 
-  if (fit === "Spacing Superteam" || fit === "Floor Spacing Machine") {
-    color = "#A855F7";
-  }
+    // Defense
+    "Defensive Powerhouse": "#22C55E",
+    "Point-of-Attack Defense": "#22C55E",
+    "Switchable Defense": "#22C55E",
+    "Backline Defense": "#22C55E",
+    "Defensive Role Balance": "#22C55E",
+    "Defensive Support": "#22C55E",
 
-  if (fit === "Offensive Superteam") {
-    color = "#F97316";
-  }
+    // Interior / physicality
+    "Paint Control Unit": "#EF4444",
+    "Interior Support Unit": "#EF4444",
+    "Rim Pressure Attack": "#EF4444",
+    "Rebounding Support": "#EF4444",
+    "Interior Pressure Frontcourt": "#EF4444",
 
-  if (fit === "Two-Way Dynasty") {
-    color = "#EFBF04";
-  }
+    // Elite balance
+    "Two-Way Dynasty": "#EFBF04",
+    "Balanced Contender": "#EFBF04",
 
-  if (fit === "Star-Powered Contender") {
-    color = "#38BDF8";
-  }
+    // Depth / energy
+    "Guard Depth Unit": "#CBD5E1",
+    "Wing Depth Unit": "#CBD5E1",
+    "Frontcourt Depth Unit": "#CBD5E1",
+    "Energy Lineup": "#CBD5E1",
+  };
 
-  if (fit === "Paint Control Unit") {
-    color = "#EF4444";
-  }
+  const color = fitColors[fit] ?? "#CBD5E1";
 
   return {
     color,

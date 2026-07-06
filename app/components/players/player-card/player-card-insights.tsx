@@ -28,7 +28,7 @@ export function PlayerCardInsights({
       </span>
 
       {playerInsights.archetype && (
-        <div className="group relative z-100 w-fit">
+        <div className="group relative z-100 w-fit cursor-help">
           <div
             className="ml-2 w-fit rounded border px-2 py-1 text-center font-michroma text-[10px] font-bold uppercase tracking-wide"
             style={getInsightRarityStyles(playerInsights.archetype, true)}
@@ -54,7 +54,7 @@ export function PlayerCardInsights({
         Traits
       </span>
 
-      <div className="flex flex-col items-center gap-1">
+      <div className="flex flex-col items-center gap-1 cursor-help">
         {playerInsights.traits.map((trait) => (
           <span
             key={trait.label}
