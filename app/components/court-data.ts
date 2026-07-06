@@ -1915,12 +1915,28 @@ export function getSimilarPlayers(
   const playerStats = getStatsByMode(player, statMode);
 
   return playerPool
-    .filter(
-      (otherPlayer) =>
-        otherPlayer.id !== player.id &&
-        otherPlayer.nbaId !== player.nbaId &&
-        otherPlayer.name !== player.name,
-    )
+    .filter((otherPlayer) => {
+      const otherStats = getStatsByMode(otherPlayer, statMode);
+
+      const isSamePlayer =
+        otherPlayer.id === player.id ||
+        otherPlayer.nbaId === player.nbaId ||
+        otherPlayer.name === player.name;
+
+      if (isSamePlayer) return false;
+
+      if (statMode === "career") {
+        const playerGames = playerStats.games ?? 0;
+        const otherGames = otherStats.games ?? 0;
+
+        const isEstablishedPlayer =
+          playerGames >= 500 || player.ratings.starPower >= 88;
+
+        return isEstablishedPlayer ? otherGames >= 400 : otherGames >= 150;
+      }
+
+      return true;
+    })
     .map((otherPlayer) => {
       const otherStats = getStatsByMode(otherPlayer, statMode);
       const weightedDifference =
@@ -1991,18 +2007,180 @@ export function getSimilarPlayers(
           ? 6
           : 0;
 
-      const isMajorPositionMismatch =
-        player.position === "F" && otherPlayer.position === "G";
+      const isGuardForwardMismatch =
+        (player.position === "G" && otherPlayer.position === "F") ||
+        (player.position === "F" && otherPlayer.position === "G");
 
-      const mismatchPenalty = isMajorPositionMismatch ? 8 : 0;
+      const isGuardCenterMismatch =
+        (player.position === "G" && otherPlayer.position === "C") ||
+        (player.position === "C" && otherPlayer.position === "G");
+
+      const isForwardCenterMismatch =
+        (player.position === "F" && otherPlayer.position === "C") ||
+        (player.position === "C" && otherPlayer.position === "F");
+
+      const mismatchPenalty = isGuardCenterMismatch
+        ? 12
+        : isGuardForwardMismatch
+          ? 7
+          : isForwardCenterMismatch
+            ? 3
+            : 0;
+
+      const playerIsPerimeterScorer =
+        playerStats.ppg >= 22 && playerStats.threePercent >= 34;
+
+      const otherIsPerimeterScorer =
+        otherStats.ppg >= 22 && otherStats.threePercent >= 34;
+
+      const playerIsInteriorScorer =
+        playerStats.ppg >= 22 &&
+        playerStats.fgPercent >= 50 &&
+        playerStats.threePercent < 32;
+
+      const otherIsInteriorScorer =
+        otherStats.ppg >= 22 &&
+        otherStats.fgPercent >= 50 &&
+        otherStats.threePercent < 32;
+
+      const scoringStylePenalty =
+        (playerIsPerimeterScorer && otherIsInteriorScorer) ||
+        (playerIsInteriorScorer && otherIsPerimeterScorer)
+          ? 8
+          : 0;
+
+      const playerIsWingCreator =
+        player.position === "F" &&
+        playerStats.ppg >= 18 &&
+        playerStats.apg >= 2.5 &&
+        playerStats.rpg < 8;
+
+      const otherIsWingCreator =
+        otherPlayer.position === "F" &&
+        otherStats.ppg >= 18 &&
+        otherStats.apg >= 2.5 &&
+        otherStats.rpg < 8;
+
+      const playerIsRimProtectorBig =
+        player.position === "C" ||
+        ((playerStats.bpg ?? 0) >= 1.2 &&
+          playerStats.rpg >= 5 &&
+          player.ratings.defense >= 84);
+
+      const otherIsRimProtectorBig =
+        otherPlayer.position === "C" ||
+        ((otherStats.bpg ?? 0) >= 1.2 &&
+          otherStats.rpg >= 5 &&
+          otherPlayer.ratings.defense >= 84);
+
+      const wingBigRolePenalty =
+        (playerIsWingCreator && otherIsRimProtectorBig) ||
+        (playerIsRimProtectorBig && otherIsWingCreator)
+          ? 24
+          : 0;
+
+      const playerIsJumboForwardCreator =
+        player.position === "F" && playerStats.apg >= 6 && playerStats.rpg >= 6;
+
+      const otherIsJumboForwardCreator =
+        otherPlayer.position === "F" &&
+        otherStats.apg >= 6 &&
+        otherStats.rpg >= 6;
+
+      const playerIsBallDominantGuard =
+        player.position === "G" && playerStats.apg >= 6 && playerStats.rpg < 6;
+
+      const otherIsBallDominantGuard =
+        otherPlayer.position === "G" &&
+        otherStats.apg >= 6 &&
+        otherStats.rpg < 6;
+
+      const jumboGuardPenalty =
+        (playerIsJumboForwardCreator && otherIsBallDominantGuard) ||
+        (playerIsBallDominantGuard && otherIsJumboForwardCreator)
+          ? 6
+          : 0;
+
+      const playerIsTallPerimeterScorer =
+        player.position === "F" &&
+        playerStats.ppg >= 22 &&
+        playerStats.threePercent >= 34 &&
+        playerStats.apg >= 3;
+
+      const otherIsTallPerimeterScorer =
+        otherPlayer.position === "F" &&
+        otherStats.ppg >= 22 &&
+        otherStats.threePercent >= 34 &&
+        otherStats.apg >= 3;
+
+      const playerIsInteriorStarBig =
+        (player.position === "C" || playerStats.threePercent < 32) &&
+        playerStats.ppg >= 22 &&
+        playerStats.rpg >= 8 &&
+        playerStats.fgPercent >= 48;
+
+      const otherIsInteriorStarBig =
+        (otherPlayer.position === "C" || otherStats.threePercent < 32) &&
+        otherStats.ppg >= 22 &&
+        otherStats.rpg >= 8 &&
+        otherStats.fgPercent >= 48;
+
+      const perimeterInteriorStarPenalty =
+        (playerIsTallPerimeterScorer && otherIsInteriorStarBig) ||
+        (playerIsInteriorStarBig && otherIsTallPerimeterScorer)
+          ? 22
+          : 0;
+
+      const playerIsPerimeterForward =
+        player.position === "F" &&
+        playerStats.ppg >= 20 &&
+        playerStats.threePercent >= 34 &&
+        playerStats.apg >= 3;
+
+      const otherIsPerimeterForward =
+        otherPlayer.position === "F" &&
+        otherStats.ppg >= 20 &&
+        otherStats.threePercent >= 34 &&
+        otherStats.apg >= 3;
+
+      const playerIsCenterScorer =
+        player.position === "C" &&
+        playerStats.ppg >= 20 &&
+        playerStats.rpg >= 8;
+
+      const otherIsCenterScorer =
+        otherPlayer.position === "C" &&
+        otherStats.ppg >= 20 &&
+        otherStats.rpg >= 8;
+
+      const perimeterCenterPenalty =
+        (playerIsPerimeterForward && otherIsCenterScorer) ||
+        (playerIsCenterScorer && otherIsPerimeterForward)
+          ? 14
+          : 0;
+
+      const careerExperienceGap =
+        statMode === "career"
+          ? Math.abs((playerStats.games ?? 0) - (otherStats.games ?? 0))
+          : 0;
+
+      const experiencePenalty =
+        statMode === "career" && careerExperienceGap >= 500 ? 5 : 0;
 
       const matchScore = Math.round(
-        statSimilarity * 0.6 +
-          positionSimilarity * 0.15 +
-          archetypeSimilarity * 0.17 +
-          defenseSimilarity * 0.08 -
+        statSimilarity * 0.45 +
+          playstyleSimilarity * 0.25 +
+          archetypeSimilarity * 0.16 +
+          positionSimilarity * 0.08 +
+          defenseSimilarity * 0.06 -
           creatorScorerPenalty -
-          mismatchPenalty,
+          mismatchPenalty -
+          scoringStylePenalty -
+          experiencePenalty -
+          wingBigRolePenalty -
+          jumboGuardPenalty -
+          perimeterInteriorStarPenalty -
+          perimeterCenterPenalty,
       );
 
       return {
