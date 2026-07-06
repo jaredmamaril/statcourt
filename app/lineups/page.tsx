@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import type {
   LineupTab,
@@ -65,10 +65,18 @@ import {
 export default function Lineups() {
   // Refs and routing
   const router = useRouter();
+  const searchParams = useSearchParams();
   const lineupSectionRef = useRef<HTMLDivElement>(null);
 
   // Page state
   const [activeTab, setActiveTab] = useState<LineupTab>("featured");
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+
+    if (tab === "featured" || tab === "builder" || tab === "saved") {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   // Featured lineup state
   const [selectedLineupCategory, setSelectedLineupCategory] = useState<
@@ -214,6 +222,12 @@ export default function Lineups() {
   // Page actions
   function changeTab(tab: LineupTab) {
     setActiveTab(tab);
+
+    if (tab === "featured") {
+      router.replace("/lineups", { scroll: false });
+    } else {
+      router.replace(`/lineups?tab=${tab}`, { scroll: false });
+    }
 
     if (tab === "builder") {
       setHasStartedBuilder(false);

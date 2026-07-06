@@ -120,7 +120,7 @@ export default function Navbar() {
                     </Link>
 
                     <Link
-                      href="/lineups"
+                      href="/lineups?tab=saved"
                       className="flex items-center gap-2 rounded px-3 py-2 text-left font-michroma text-[10px] uppercase text-white/90 transition hover:bg-white/5 hover:text-[#1bc2ec]"
                     >
                       <Bookmark className="h-3.5 w-3.5" />
@@ -137,7 +137,7 @@ export default function Navbar() {
 
                     <button
                       type="button"
-                      className="mt-1 flex w-full items-center gap-2 rounded border-t border-white/10 px-3 py-2 text-left font-michroma text-[10px] uppercase text-red-600/80 transition hover:bg-white/5 hover:text-red-600"
+                      className="cursor-pointer mt-1 flex w-full items-center gap-2 rounded border-t border-white/10 px-3 py-2 text-left font-michroma text-[10px] uppercase text-red-600/80 transition hover:bg-white/5 hover:text-red-600"
                     >
                       <LogOut className="h-3.5 w-3.5" />
                       Sign Out
