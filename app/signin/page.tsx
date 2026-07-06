@@ -12,6 +12,7 @@ export default function SignInPage() {
         priority
         className="object-cover"
       />
+
       <section className="relative mx-auto flex min-h-[calc(100vh-120px)] max-w-md items-center justify-center">
         <div className="w-full rounded-lg border border-[#1bc2ec]/40 bg-[#06131d]/85 p-6 shadow-[0_0_36px_rgba(27,194,236,0.2)]">
           <div className="mb-6 flex flex-col items-center text-center">
@@ -29,7 +30,7 @@ export default function SignInPage() {
               StatCourt
             </p>
 
-            <h1 className="mt-3 font-michroma text-2xl uppercase text-white">
+            <h1 className="mt-3 font-michroma text-xl uppercase leading-snug text-white sm:text-2xl">
               Build your roster identity.
             </h1>
 
@@ -63,16 +64,20 @@ export default function SignInPage() {
               type="button"
               className="group flex items-center justify-center gap-2 rounded-md border border-white/15 bg-white/5 px-4 py-3 font-michroma text-[10px] uppercase text-white/65 transition hover:border-white/30 hover:bg-white/10 hover:text-white"
             >
-              <Sparkles className="h-4 w-4 text-[#EFBF04]" />
+              <Sparkles className="h-4 w-4 text-white/55 transition group-hover:text-white" />{" "}
               Continue with Google
             </button>
           </div>
 
+          <p className="mt-4 text-center font-michroma text-[8px] leading-relaxed text-white/30">
+            Authentication preview only. Real sign-in will connect later.
+          </p>
+
           <Link
             href="/players"
-            className="mt-6 block text-center font-michroma text-[9px] uppercase text-white/35 transition hover:text-[#1bc2ec]"
+            className="mt-3 block text-center font-michroma text-[9px] uppercase tracking-[0.25em] text-white/35 transition hover:text-[#1bc2ec]"
           >
-            Keep Browsing
+            Continue Browsing
           </Link>
         </div>
       </section>
