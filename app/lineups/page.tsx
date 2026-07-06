@@ -114,6 +114,11 @@ export default function Lineups() {
     null,
   );
 
+  // Auth
+  const user = null; // temporary until Supabase auth
+  const [authPromptMessage, setAuthPromptMessage] = useState("");
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+
   // Builder state and derived data
   const {
     hasStartedBuilder,
@@ -265,6 +270,17 @@ export default function Lineups() {
     });
   }
 
+  // Auth
+  function requireAuth(message: string, action: () => void) {
+    if (!user) {
+      setAuthPromptMessage(message);
+      setShowAuthPrompt(true);
+      return;
+    }
+
+    action();
+  }
+
   // Saved lineup actions
   function saveLineup(lineupName: string) {
     if (!customLineupOverall) return;
@@ -299,12 +315,19 @@ export default function Lineups() {
     updateSavedLineups(nextLineups);
   }
 
-  function deleteSavedLineup(lineupId: string) {
-    updateSavedLineups(getLineupsAfterDelete(savedLineups, lineupId));
+  function deleteSavedLineup(lineupId: string, onDeleted?: () => void) {
+    requireAuth("Sign in to delete saved lineups", () => {
+      updateSavedLineups(getLineupsAfterDelete(savedLineups, lineupId));
+      onDeleted?.();
+    });
   }
 
   function renameSavedLineup(lineupId: string, newName: string) {
-    updateSavedLineups(getLineupsAfterRename(savedLineups, lineupId, newName));
+    requireAuth("Sign in to rename saved lineups", () => {
+      updateSavedLineups(
+        getLineupsAfterRename(savedLineups, lineupId, newName),
+      );
+    });
   }
 
   function applySavedLineupPlayers(lineup: SavedLineup) {
@@ -422,33 +445,55 @@ export default function Lineups() {
           </section>
         )}
 
-        {activeTab === "saved" && (
-          <SavedLineupsSection
-            savedLineups={savedLineups}
-            filteredSavedLineups={filteredSavedLineups}
-            savedLineupSearch={savedLineupSearch}
-            savedLineupSort={savedLineupSort}
-            savedSortLabel={savedSortLabel}
-            openSavedDropdown={openSavedDropdown}
-            onSearchChange={setSavedLineupSearch}
-            onToggleDropdown={() =>
-              setOpenSavedDropdown(openSavedDropdown === "sort" ? null : "sort")
-            }
-            onSelectSort={(value) => {
-              setSavedLineupSort(value);
-              setOpenSavedDropdown(null);
-            }}
-            onSetActiveTab={setActiveTab}
-            onSetHasStartedBuilder={setHasStartedBuilder}
-            onLoadLineup={loadSavedLineup}
-            onScoutLineup={scoutSavedLineup}
-            onRenameLineup={(lineup) => {
-              setLineupPendingRename(lineup);
-              setRenameLineupInput(lineup.name);
-            }}
-            onDeleteLineup={setLineupPendingDelete}
-          />
-        )}
+        {activeTab === "saved" &&
+          (user ? (
+            <SavedLineupsSection
+              savedLineups={savedLineups}
+              filteredSavedLineups={filteredSavedLineups}
+              savedLineupSearch={savedLineupSearch}
+              savedLineupSort={savedLineupSort}
+              savedSortLabel={savedSortLabel}
+              openSavedDropdown={openSavedDropdown}
+              onSearchChange={setSavedLineupSearch}
+              onToggleDropdown={() =>
+                setOpenSavedDropdown(
+                  openSavedDropdown === "sort" ? null : "sort",
+                )
+              }
+              onSelectSort={(value) => {
+                setSavedLineupSort(value);
+                setOpenSavedDropdown(null);
+              }}
+              onSetActiveTab={setActiveTab}
+              onSetHasStartedBuilder={setHasStartedBuilder}
+              onLoadLineup={loadSavedLineup}
+              onScoutLineup={scoutSavedLineup}
+              onRenameLineup={(lineup) => {
+                setLineupPendingRename(lineup);
+                setRenameLineupInput(lineup.name);
+              }}
+              onDeleteLineup={setLineupPendingDelete}
+            />
+          ) : (
+            <div className="mx-auto mt-16 max-w-md rounded-lg border border-[#1bc2ec]/35 bg-[#06131d]/80 p-6 text-center shadow-[0_0_28px_rgba(27,194,236,0.16)]">
+              <p className="font-michroma text-lg uppercase text-white">
+                Saved Lineups
+              </p>
+
+              <p className="mt-3 font-michroma text-[10px] leading-relaxed text-white/45">
+                Sign in to save lineups, rename builds, and keep your scouting
+                history synced.
+              </p>
+
+              <button
+                type="button"
+                onClick={() => router.push("/signin")}
+                className="mt-5 rounded-md border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-4 py-3 font-michroma text-[10px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white"
+              >
+                Sign In To View Saved Lineups
+              </button>
+            </div>
+          ))}
       </section>
 
       {isScoutOpen && (
@@ -481,8 +526,10 @@ export default function Lineups() {
             setScoutedSavedLineup(null);
           }}
           onSaveLineup={() => {
-            setLineupNameInput("");
-            setIsNamingLineup(true);
+            requireAuth("Sign in to save this lineup", () => {
+              setLineupNameInput("");
+              setIsNamingLineup(true);
+            });
           }}
         />
       )}
@@ -501,14 +548,52 @@ export default function Lineups() {
         />
       )}
 
+      {/* Temp */}
+      {showAuthPrompt && (
+        <div className="fixed inset-0 z-999999 flex items-center justify-center bg-black/75">
+          <div className="w-[min(360px,90vw)] rounded-lg border border-[#1bc2ec]/40 bg-[#06131d] p-5 shadow-[0_0_30px_rgba(27,194,236,0.25)]">
+            <p className="font-michroma text-sm text-white">
+              {authPromptMessage}
+            </p>
+
+            <p className="mt-2 font-michroma text-[9px] leading-relaxed text-white/45">
+              Create an account to keep saved lineups, favorites, and player
+              history synced.
+            </p>
+
+            <div className="mt-4 flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAuthPrompt(false);
+                  router.push("/signin");
+                }}
+                className="rounded-md border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-3 py-2 font-michroma text-[9px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white"
+              >
+                Sign In
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowAuthPrompt(false)}
+                className="rounded-md border border-white/10 px-3 py-2 font-michroma text-[9px] uppercase text-white/50 transition hover:border-white/25 hover:text-white"
+              >
+                Not Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {lineupPendingDelete && (
         <DeleteLineupModal
           lineup={lineupPendingDelete}
           onCancel={() => setLineupPendingDelete(null)}
           onConfirm={() => {
-            deleteSavedLineup(lineupPendingDelete.id);
-            setLineupPendingDelete(null);
-            setIsLineupDeletedOpen(true);
+            deleteSavedLineup(lineupPendingDelete.id, () => {
+              setLineupPendingDelete(null);
+              setIsLineupDeletedOpen(true);
+            });
           }}
         />
       )}

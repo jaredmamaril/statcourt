@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { User } from "lucide-react";
+import { Bookmark, LogOut, Settings, User, UserCircle } from "lucide-react";
 
 {
   /* Future: consider adding a mobile menu for smaller screens, and implementing user authentication to conditionally show different nav items or a user profile dropdown when signed in */
@@ -38,6 +38,17 @@ export default function Navbar() {
   if (pathname === "/") {
     return null; // Don't render the navbar on the homepage
   }
+
+  // Auth
+  const user = {
+    name: "Tyler",
+    initials: "T",
+  };
+  // temporary future shape:
+  // const user = {
+  //   name: "Tyler",
+  //   initials: "T",
+  // };
 
   return (
     <>
@@ -82,23 +93,76 @@ export default function Navbar() {
               );
             })}
           </nav>
-          <div className="justify-self-end">
-            <button
-              type="button"
-              className="
-                cursor-pointer group inline-flex items-center gap-2 rounded-md
-                border border-[#1bc2ec]/35 bg-[#06131d]/80
+          <div className="flex items-center justify-end justify-self-end">
+            {user ? (
+              <>
+                <div className="group relative">
+                  <button
+                    type="button"
+                    className="flex h-10 w-44 items-center gap-2 rounded-md border border-[#1bc2ec]/60 bg-[#1bc2ec]/10 px-3 font-michroma text-[12px] text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.24)] transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/20 hover:text-white hover:shadow-[0_0_24px_rgba(27,194,236,0.42)]"
+                  >
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-[#06131d] text-[10px] uppercase text-[#1bc2ec]">
+                      T
+                    </span>
+
+                    <span className="min-w-0 flex-1 truncate text-left">
+                      Tyler
+                    </span>
+                  </button>
+
+                  <div className="pointer-events-none absolute right-0 z-999 w-44 rounded-md border border-white/10 bg-[#06131d]/95 p-2 opacity-0 shadow-[0_0_24px_rgba(0,0,0,0.45)] transition group-hover:pointer-events-auto group-hover:opacity-100">
+                    <Link
+                      href="/profile"
+                      className="flex items-center gap-2 rounded px-3 py-2 text-left font-michroma text-[10px] uppercase text-white/90 transition hover:bg-white/5 hover:text-[#1bc2ec]"
+                    >
+                      <UserCircle className="h-3.5 w-3.5" />
+                      My Profile
+                    </Link>
+
+                    <Link
+                      href="/lineups"
+                      className="flex items-center gap-2 rounded px-3 py-2 text-left font-michroma text-[10px] uppercase text-white/90 transition hover:bg-white/5 hover:text-[#1bc2ec]"
+                    >
+                      <Bookmark className="h-3.5 w-3.5" />
+                      Saved Lineups
+                    </Link>
+
+                    <Link
+                      href="/settings"
+                      className="flex items-center gap-2 rounded px-3 py-2 text-left font-michroma text-[10px] uppercase text-white/90 transition hover:bg-white/5 hover:text-[#1bc2ec]"
+                    >
+                      <Settings className="h-3.5 w-3.5" />
+                      Settings
+                    </Link>
+
+                    <button
+                      type="button"
+                      className="mt-1 flex w-full items-center gap-2 rounded border-t border-white/10 px-3 py-2 text-left font-michroma text-[10px] uppercase text-red-600/80 transition hover:bg-white/5 hover:text-red-600"
+                    >
+                      <LogOut className="h-3.5 w-3.5" />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <Link
+                href="/signin"
+                className="
+                group inline-flex cursor-pointer items-center gap-2 rounded-md
+                border border-[#1bc2ec]/60 bg-[#06131d]/80
                 px-3.5 py-2 font-michroma text-[9px] uppercase tracking-wide
-                text-[#1bc2ec] shadow-[0_0_14px_rgba(27,194,236,0.12)]
+                text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.22)]
                 transition duration-200
                 hover:border-[#1bc2ec]/80 hover:bg-[#1bc2ec]/10
                 hover:text-white hover:shadow-[0_0_20px_rgba(27,194,236,0.35)]
                 active:scale-[0.97]
-                "
-            >
-              <User className="h-3.5 w-3.5 transition group-hover:brightness-125" />
-              Sign In
-            </button>
+              "
+              >
+                <User className="h-3.5 w-3.5 transition group-hover:brightness-125" />
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       </header>
