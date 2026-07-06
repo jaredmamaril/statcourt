@@ -1,6 +1,7 @@
 "use client";
 
 import { AuthPrompt } from "../components/auth/auth-prompt";
+import { mockUser as user } from "../lib/mock-auth";
 import {
   players as fallbackPlayers,
   positions,
@@ -97,7 +98,6 @@ function Players() {
   const [featuredPlayerIndex, setFeaturedPlayerIndex] = useState(0);
 
   // Auth
-  const user = null; // temporary until Supabase auth
   const [authPromptMessage, setAuthPromptMessage] = useState("");
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 

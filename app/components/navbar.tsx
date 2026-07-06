@@ -1,5 +1,6 @@
 "use client";
 
+import { mockUser as user } from "../lib/mock-auth";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -38,17 +39,6 @@ export default function Navbar() {
   if (pathname === "/") {
     return null; // Don't render the navbar on the homepage
   }
-
-  // Auth
-  const user = {
-    name: "Tyler",
-    initials: "T",
-  };
-  // temporary future shape:
-  // const user = {
-  //   name: "Tyler",
-  //   initials: "T",
-  // };
 
   return (
     <>

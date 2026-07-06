@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthPrompt } from "../components/auth/auth-prompt";
+import { mockUser as user } from "../lib/mock-auth";
 
 import type {
   LineupTab,
@@ -124,7 +125,6 @@ export default function Lineups() {
   );
 
   // Auth
-  const user = null; // temporary until Supabase auth
   const [authPromptMessage, setAuthPromptMessage] = useState("");
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 
