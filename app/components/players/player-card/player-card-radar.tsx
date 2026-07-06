@@ -1,4 +1,4 @@
-import type { Player } from "../../court-data";
+import type { Player, StatMode } from "../../court-data";
 import {
   getReadableTeamColor,
   normalizeStat,
@@ -22,6 +22,7 @@ type StatLabelProps = {
 
 type PlayerCardRadarProps = {
   player: Player;
+  statMode: StatMode;
   isCardFlipped: boolean;
 };
 
@@ -40,39 +41,57 @@ function StatLabel({ label, value, color, align = "left" }: StatLabelProps) {
   );
 }
 
+function getRadarStats(player: Player, statMode: StatMode) {
+  if (statMode === "peak") {
+    return (
+      player.statProfiles?.peak ?? player.statProfiles?.career ?? player.stats
+    );
+  }
+
+  if (statMode === "current") {
+    return (
+      player.statProfiles?.current ??
+      player.statProfiles?.career ??
+      player.stats
+    );
+  }
+
+  return player.statProfiles?.career ?? player.stats;
+}
+
 export function PlayerCardRadar({
   player,
+  statMode,
   isCardFlipped,
 }: PlayerCardRadarProps) {
+  const stats = getRadarStats(player, statMode);
+
   if (!isCardFlipped) return null;
 
   const radarData = [
     {
       stat: "PPG",
-      value: normalizeStat(player.stats.ppg, statMaxValues.ppg),
+      value: normalizeStat(stats.ppg ?? 0, statMaxValues.ppg),
     },
     {
       stat: "RPG",
-      value: normalizeStat(player.stats.rpg, statMaxValues.rpg),
+      value: normalizeStat(stats.rpg ?? 0, statMaxValues.rpg),
     },
     {
       stat: "APG",
-      value: normalizeStat(player.stats.apg, statMaxValues.apg),
+      value: normalizeStat(stats.apg ?? 0, statMaxValues.apg),
     },
     {
       stat: "FG%",
-      value: normalizeStat(player.stats.fgPercent, statMaxValues.fgPercent),
+      value: normalizeStat(stats.fgPercent ?? 0, statMaxValues.fgPercent),
     },
     {
       stat: "3PT%",
-      value: normalizeStat(
-        player.stats.threePercent,
-        statMaxValues.threePercent,
-      ),
+      value: normalizeStat(stats.threePercent ?? 0, statMaxValues.threePercent),
     },
     {
       stat: "FT%",
-      value: normalizeStat(player.stats.ftPercent, statMaxValues.ftPercent),
+      value: normalizeStat(stats.ftPercent ?? 0, statMaxValues.ftPercent),
     },
   ];
 
@@ -81,39 +100,31 @@ export function PlayerCardRadar({
   return (
     <div className="relative z-10 mt-2 h-48 w-full">
       <div className="absolute left-0 top-0 z-10 ml-6 flex h-full flex-col justify-around py-2">
-        <StatLabel
-          label="FT%"
-          value={player.stats.ftPercent}
-          color={teamColor}
-        />
+        <StatLabel label="FT%" value={stats.ftPercent ?? 0} color={teamColor} />
         <StatLabel
           label="3PT%"
-          value={player.stats.threePercent}
+          value={stats.threePercent ?? 0}
           color={teamColor}
         />
-        <StatLabel
-          label="FG%"
-          value={player.stats.fgPercent}
-          color={teamColor}
-        />
+        <StatLabel label="FG%" value={stats.fgPercent ?? 0} color={teamColor} />
       </div>
 
       <div className="absolute right-0 top-0 z-10 mr-6 flex h-full flex-col justify-around py-2">
         <StatLabel
           label="PPG"
-          value={player.stats.ppg}
+          value={stats.ppg ?? 0}
           color={teamColor}
           align="right"
         />
         <StatLabel
           label="RPG"
-          value={player.stats.rpg}
+          value={stats.rpg ?? 0}
           color={teamColor}
           align="right"
         />
         <StatLabel
           label="APG"
-          value={player.stats.apg}
+          value={stats.apg ?? 0}
           color={teamColor}
           align="right"
         />

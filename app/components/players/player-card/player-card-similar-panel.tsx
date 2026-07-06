@@ -1,6 +1,7 @@
 import { getTeamColor, type Player } from "../../court-data";
 
 type PlayerCardSimilarPanelProps = {
+  statModeLabel: string;
   similarPlayers: {
     player: Player;
     matchScore: number;
@@ -11,6 +12,7 @@ type PlayerCardSimilarPanelProps = {
 };
 
 export function PlayerCardSimilarPanel({
+  statModeLabel,
   similarPlayers,
   bestLineupFits,
   getLineupFitStyles,
@@ -22,7 +24,7 @@ export function PlayerCardSimilarPanel({
         Similar To
       </span>
       <span className="-mt-1 font-michroma text-[6px] text-white/45">
-        by Career Statistical Match
+        {statModeLabel} Playstyle Match
       </span>
 
       <div className="mt-1 flex flex-col items-center gap-0.5 brightness-125">

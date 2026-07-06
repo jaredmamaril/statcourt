@@ -1635,6 +1635,95 @@ function getPositionWeights(
   };
 }
 
+function getSimilarityWeights(
+  player: Player,
+  statMode: StatMode,
+): Record<CorePlayerStatKey, number> {
+  const stats = getStatsByMode(player, statMode);
+  const archetype = getPlayerInsights(player, statMode).archetype?.label;
+
+  // Jokic, Sabonis, Walton, big creators
+  if (
+    archetype === "Playmaking Big" ||
+    archetype === "Offensive Hub" ||
+    (player.position === "C" && stats.apg >= 5)
+  ) {
+    return {
+      ppg: 1.15,
+      rpg: 1.35,
+      apg: 1.75,
+      fgPercent: 1.25,
+      threePercent: 0.75,
+      ftPercent: 0.65,
+    };
+  }
+
+  // Magic, LeBron, Bird-style jumbo creators
+  if (
+    archetype === "Point Forward" ||
+    archetype === "Floor General" ||
+    archetype === "Triple-Double Machine" ||
+    stats.apg >= 7
+  ) {
+    return {
+      ppg: 1.05,
+      rpg: 1.1,
+      apg: 1.85,
+      fgPercent: 1.0,
+      threePercent: 0.75,
+      ftPercent: 0.55,
+    };
+  }
+
+  // Jordan, Kobe, KD-style scorers
+  if (
+    archetype === "Primary Scoring Engine" ||
+    archetype === "Three-Level Scorer" ||
+    archetype === "Elite Shot Creator" ||
+    stats.ppg >= 24
+  ) {
+    return {
+      ppg: 1.75,
+      rpg: 0.75,
+      apg: 0.95,
+      fgPercent: 1.05,
+      threePercent: 0.85,
+      ftPercent: 0.65,
+    };
+  }
+
+  // Curry, Ray, Dame-style shooters
+  if (archetype === "Generational Shooter" || stats.threePercent >= 40) {
+    return {
+      ppg: 1.45,
+      rpg: 0.45,
+      apg: 1.05,
+      fgPercent: 0.85,
+      threePercent: 1.85,
+      ftPercent: 1.0,
+    };
+  }
+
+  // Hakeem, Shaq, Duncan, Wilt-style interior bigs
+  if (
+    archetype === "Paint Dominator" ||
+    archetype === "Interior Anchor" ||
+    archetype === "Defensive Anchor" ||
+    player.position === "C"
+  ) {
+    return {
+      ppg: 1.05,
+      rpg: 1.65,
+      apg: 0.65,
+      fgPercent: 1.35,
+      threePercent: 0.35,
+      ftPercent: 0.45,
+    };
+  }
+
+  return getPositionWeights(player.position);
+}
+
 // Position similarity
 function getPositionSimilarity(
   playerPosition: Position,
@@ -1656,20 +1745,156 @@ function getPositionSimilarity(
 }
 
 // Archetype similarity
-function getArchetypeSimilarity(player: Player, otherPlayer: Player) {
-  const playerArchetype = getPlayerInsights(player).archetype;
-  const otherArchetype = getPlayerInsights(otherPlayer).archetype;
+function getArchetypeSimilarity(
+  player: Player,
+  otherPlayer: Player,
+  statMode: StatMode,
+) {
+  const playerArchetype = getPlayerInsights(player, statMode).archetype?.label;
+  const otherArchetype = getPlayerInsights(otherPlayer, statMode).archetype
+    ?.label;
 
-  // If no archetypes
   if (!playerArchetype || !otherArchetype) {
     return 50;
   }
 
-  // Same archetype = 100% match, else 40%
-  return playerArchetype.label === otherArchetype.label ? 100 : 40;
+  if (playerArchetype === otherArchetype) {
+    return 100;
+  }
+
+  const creatorArchetypes = [
+    "Offensive Hub",
+    "Playmaking Big",
+    "Point Forward",
+    "Floor General",
+    "Triple-Double Machine",
+    "Lead Creator",
+    "Pure Point Guard",
+  ];
+
+  const scorerArchetypes = [
+    "Primary Scoring Engine",
+    "Three-Level Scorer",
+    "Elite Shot Creator",
+    "Volume Scorer",
+    "Scoring Lead Guard",
+    "Wing Shot Creator",
+    "Generational Scorer",
+    "Elite Scorer",
+  ];
+
+  const interiorArchetypes = [
+    "Paint Dominator",
+    "Interior Anchor",
+    "Defensive Anchor",
+    "Post-Up Specialist",
+    "Rim-Running Big",
+    "Glass-Cleaning Big",
+  ];
+
+  const shooterArchetypes = [
+    "Generational Shooter",
+    "Three-Level Scorer",
+    "High-Level Shooter",
+    "Elite Perimeter Shooter",
+    "Spot-Up Guard",
+    "Spot-Up Wing",
+    "Floor-Spacing Forward",
+    "Stretch Big",
+  ];
+
+  const twoWayArchetypes = [
+    "Two-Way Superstar",
+    "Two-Way Threat",
+    "Two-Way Wing",
+    "Two-Way Connector",
+    "Defensive Anchor",
+    "Defensive Wing",
+    "Defensive Big",
+  ];
+
+  const groups = [
+    creatorArchetypes,
+    scorerArchetypes,
+    interiorArchetypes,
+    shooterArchetypes,
+    twoWayArchetypes,
+  ];
+
+  const sameGroup = groups.some(
+    (group) =>
+      group.includes(playerArchetype) && group.includes(otherArchetype),
+  );
+
+  return sameGroup ? 78 : 42;
 }
 
-// Get confidence score of similar player match result
+function getPlaystyleSimilarity(
+  player: Player,
+  otherPlayer: Player,
+  statMode: StatMode,
+) {
+  const stats = getStatsByMode(player, statMode);
+  const otherStats = getStatsByMode(otherPlayer, statMode);
+
+  let score = 100;
+
+  const assistDifference = Math.abs(stats.apg - otherStats.apg);
+  const reboundDifference = Math.abs(stats.rpg - otherStats.rpg);
+  const scoringDifference = Math.abs(stats.ppg - otherStats.ppg);
+  const shootingDifference = Math.abs(
+    stats.threePercent - otherStats.threePercent,
+  );
+
+  score -= assistDifference * 5;
+  score -= reboundDifference * 2.5;
+  score -= scoringDifference * 1.4;
+  score -= shootingDifference * 0.3;
+
+  const playerIsJumboCreator =
+    stats.apg >= 6.5 && stats.rpg >= 6 && player.position !== "G";
+
+  const otherIsJumboCreator =
+    otherStats.apg >= 6.5 &&
+    otherStats.rpg >= 6 &&
+    otherPlayer.position !== "G";
+
+  const playerIsOversizedGuard =
+    player.position === "G" && stats.apg >= 7 && stats.rpg >= 5.5;
+
+  const otherIsOversizedGuard =
+    otherPlayer.position === "G" &&
+    otherStats.apg >= 7 &&
+    otherStats.rpg >= 5.5;
+
+  const playerIsPureScorer = stats.ppg >= 24 && stats.apg < 6;
+
+  const otherIsPureScorer = otherStats.ppg >= 24 && otherStats.apg < 6;
+
+  if (playerIsJumboCreator && otherIsJumboCreator) score += 12;
+  if (playerIsOversizedGuard && otherIsOversizedGuard) score += 12;
+
+  if (
+    (playerIsJumboCreator && otherIsOversizedGuard) ||
+    (playerIsOversizedGuard && otherIsJumboCreator)
+  ) {
+    score += 10;
+  }
+
+  if (playerIsPureScorer && otherIsPureScorer) score += 8;
+
+  if ((playerIsJumboCreator || playerIsOversizedGuard) && otherIsPureScorer) {
+    score -= 10;
+  }
+
+  if (playerIsPureScorer && (otherIsJumboCreator || otherIsOversizedGuard)) {
+    score -= 10;
+  }
+
+  return Math.max(0, Math.min(score, 100));
+}
+
+// Confidence score of similar player match result
 export type SimilarPlayerResult = {
   player: Player;
   matchScore: number;
@@ -1678,49 +1903,55 @@ export type SimilarPlayerResult = {
 // Function to display players similar to current player on card (max 3 players)
 export function getSimilarPlayers(
   player: Player,
+  playerPool: Player[],
   limit = 3,
+  statMode: StatMode = "career",
 ): SimilarPlayerResult[] {
-  const weights = getPositionWeights(player.position);
+  const weights = getSimilarityWeights(player, statMode);
   const totalWeight = Object.values(weights).reduce(
     (total, weight) => total + weight,
     0,
   );
+  const playerStats = getStatsByMode(player, statMode);
 
-  return players
-    .filter((otherPlayer) => otherPlayer.id !== player.id)
+  return playerPool
+    .filter(
+      (otherPlayer) =>
+        otherPlayer.id !== player.id &&
+        otherPlayer.nbaId !== player.nbaId &&
+        otherPlayer.name !== player.name,
+    )
     .map((otherPlayer) => {
+      const otherStats = getStatsByMode(otherPlayer, statMode);
       const weightedDifference =
         Math.abs(
-          normalizeStat(player.stats.ppg, statMaxValues.ppg) -
-            normalizeStat(otherPlayer.stats.ppg, statMaxValues.ppg),
+          normalizeStat(playerStats.ppg, statMaxValues.ppg) -
+            normalizeStat(otherStats.ppg, statMaxValues.ppg),
         ) *
           weights.ppg +
         Math.abs(
-          normalizeStat(player.stats.rpg, statMaxValues.rpg) -
-            normalizeStat(otherPlayer.stats.rpg, statMaxValues.rpg),
+          normalizeStat(playerStats.rpg, statMaxValues.rpg) -
+            normalizeStat(otherStats.rpg, statMaxValues.rpg),
         ) *
           weights.rpg +
         Math.abs(
-          normalizeStat(player.stats.apg, statMaxValues.apg) -
-            normalizeStat(otherPlayer.stats.apg, statMaxValues.apg),
+          normalizeStat(playerStats.apg, statMaxValues.apg) -
+            normalizeStat(otherStats.apg, statMaxValues.apg),
         ) *
           weights.apg +
         Math.abs(
-          normalizeStat(player.stats.fgPercent, statMaxValues.fgPercent) -
-            normalizeStat(otherPlayer.stats.fgPercent, statMaxValues.fgPercent),
+          normalizeStat(playerStats.fgPercent, statMaxValues.fgPercent) -
+            normalizeStat(otherStats.fgPercent, statMaxValues.fgPercent),
         ) *
           weights.fgPercent +
         Math.abs(
-          normalizeStat(player.stats.threePercent, statMaxValues.threePercent) -
-            normalizeStat(
-              otherPlayer.stats.threePercent,
-              statMaxValues.threePercent,
-            ),
+          normalizeStat(playerStats.threePercent, statMaxValues.threePercent) -
+            normalizeStat(otherStats.threePercent, statMaxValues.threePercent),
         ) *
           weights.threePercent +
         Math.abs(
-          normalizeStat(player.stats.ftPercent, statMaxValues.ftPercent) -
-            normalizeStat(otherPlayer.stats.ftPercent, statMaxValues.ftPercent),
+          normalizeStat(playerStats.ftPercent, statMaxValues.ftPercent) -
+            normalizeStat(otherStats.ftPercent, statMaxValues.ftPercent),
         ) *
           weights.ftPercent;
 
@@ -1730,12 +1961,48 @@ export function getSimilarPlayers(
         player.position,
         otherPlayer.position,
       );
-      const archetypeSimilarity = getArchetypeSimilarity(player, otherPlayer);
+      const archetypeSimilarity = getArchetypeSimilarity(
+        player,
+        otherPlayer,
+        statMode,
+      );
+
+      const defenseDifference = Math.abs(
+        player.ratings.defense - otherPlayer.ratings.defense,
+      );
+
+      const defenseSimilarity = Math.max(0, 100 - defenseDifference);
+
+      const playstyleSimilarity = getPlaystyleSimilarity(
+        player,
+        otherPlayer,
+        statMode,
+      );
+
+      const playerIsHighAssistCreator = playerStats.apg >= 7;
+      const otherIsHighAssistCreator = otherStats.apg >= 7;
+
+      const playerIsScoringFirst = playerStats.ppg >= 24 && playerStats.apg < 6;
+      const otherIsScoringFirst = otherStats.ppg >= 24 && otherStats.apg < 6;
+
+      const creatorScorerPenalty =
+        (playerIsHighAssistCreator && otherIsScoringFirst) ||
+        (playerIsScoringFirst && otherIsHighAssistCreator)
+          ? 6
+          : 0;
+
+      const isMajorPositionMismatch =
+        player.position === "F" && otherPlayer.position === "G";
+
+      const mismatchPenalty = isMajorPositionMismatch ? 8 : 0;
 
       const matchScore = Math.round(
-        statSimilarity * 0.7 +
-          positionSimilarity * 0.2 +
-          archetypeSimilarity * 0.1,
+        statSimilarity * 0.6 +
+          positionSimilarity * 0.15 +
+          archetypeSimilarity * 0.17 +
+          defenseSimilarity * 0.08 -
+          creatorScorerPenalty -
+          mismatchPenalty,
       );
 
       return {

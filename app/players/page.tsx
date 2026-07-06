@@ -114,7 +114,7 @@ function Players() {
     : null;
 
   const similarPlayers = selectedPlayer
-    ? getSimilarPlayers(selectedPlayer)
+    ? getSimilarPlayers(selectedPlayer, players, 3, selectedStatMode)
     : [];
 
   const bestLineupFits = selectedPlayer
@@ -545,6 +545,7 @@ function Players() {
               <div ref={playerCardRef} className="w-full max-w-md">
                 <SelectedPlayerCard
                   player={selectedPlayer}
+                  statMode={selectedStatMode}
                   statModeLabel={selectedStatModeLabel}
                   isCardFlipped={isCardFlipped}
                   isGoingToCourt={isGoingToCourt}

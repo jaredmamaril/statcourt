@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import type { Player, PlayerInsightDisplay } from "../../court-data";
+import type { Player, PlayerInsightDisplay, StatMode } from "../../court-data";
 import { getCareerLegacyTier, getStarPowerTier } from "../../player-ratings";
 import { PlayerCardFront } from "./player-card-front";
 import { PlayerCardBack } from "./player-card-back";
@@ -12,6 +12,7 @@ import { PlayerCardShell } from "./player-card-shell";
 
 type SelectedPlayerCardProps = {
   player: Player;
+  statMode: StatMode;
   statModeLabel: string;
   isCardFlipped: boolean;
   isGoingToCourt: boolean;
@@ -43,6 +44,7 @@ type SelectedPlayerCardProps = {
 
 export function SelectedPlayerCard({
   player,
+  statMode,
   statModeLabel,
   isCardFlipped,
   isGoingToCourt,
@@ -122,7 +124,11 @@ export function SelectedPlayerCard({
                 </div>
               </div>
 
-              <PlayerCardRadar player={player} isCardFlipped={isCardFlipped} />
+              <PlayerCardRadar
+                player={player}
+                statMode={statMode}
+                isCardFlipped={isCardFlipped}
+              />
 
               <div className="flex items-start justify-center gap-10">
                 {playerInsights && (
@@ -134,6 +140,7 @@ export function SelectedPlayerCard({
                 )}
 
                 <PlayerCardSimilarPanel
+                  statModeLabel={statModeLabel}
                   similarPlayers={similarPlayers}
                   bestLineupFits={bestLineupFits}
                   getLineupFitStyles={getLineupFitStyles}
