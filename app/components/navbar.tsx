@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { User } from "lucide-react";
 
 {
   /* Future: consider adding a mobile menu for smaller screens, and implementing user authentication to conditionally show different nav items or a user profile dropdown when signed in */
@@ -82,9 +83,21 @@ export default function Navbar() {
             })}
           </nav>
           <div className="justify-self-end">
-            {/* Future: this button could open a sign-in modal or redirect to a sign-in page, and could be conditionally rendered based on user authentication state */}
-            <button className="cursor-pointer rounded-md bg-[#347A99] px-4 py-2 text-base font-michroma text-white">
-              SIGN IN
+            <button
+              type="button"
+              className="
+                cursor-pointer group inline-flex items-center gap-2 rounded-md
+                border border-[#1bc2ec]/35 bg-[#06131d]/80
+                px-3.5 py-2 font-michroma text-[9px] uppercase tracking-wide
+                text-[#1bc2ec] shadow-[0_0_14px_rgba(27,194,236,0.12)]
+                transition duration-200
+                hover:border-[#1bc2ec]/80 hover:bg-[#1bc2ec]/10
+                hover:text-white hover:shadow-[0_0_20px_rgba(27,194,236,0.35)]
+                active:scale-[0.97]
+                "
+            >
+              <User className="h-3.5 w-3.5 transition group-hover:brightness-125" />
+              Sign In
             </button>
           </div>
         </div>
