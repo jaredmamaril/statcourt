@@ -130,13 +130,13 @@ export default function Court() {
   }
 
   return (
-    <main className="page-enter relative min-h-screen overflow-x-hidden bg-background text-white">
+    <main className="relative min-h-screen overflow-x-hidden bg-background text-white">
       <div
         className="pointer-events-none fixed inset-0 z-0 bg-[url('/court.svg')] bg-cover bg-center bg-no-repeat"
         aria-hidden="true"
       />
 
-      <section className="relative z-10 min-h-screen px-6 pt-2 pb-8 sm:px-10">
+      <section className="page-enter relative z-10 min-h-screen px-6 pt-2 pb-8 sm:px-10">
         <CourtComparisonHeader
           leftPlayer={selectedLeftPlayer}
           rightPlayer={selectedRightPlayer}
@@ -144,38 +144,44 @@ export default function Court() {
           onStatModeChange={setStatMode}
         />
 
-        <div className="mx-auto mt-1 grid w-full max-w-7xl items-center gap-8 lg:grid-cols-[320px_minmax(420px,1fr)_320px]">
-          <CourtPlayerPanel
-            side="left"
-            selectedPlayer={selectedLeftPlayer}
-            fallbackColor="#FFEA00"
-            selectedPlayerName={leftPlayer}
-            onOpenPicker={() => setActivePickerSide("left")}
-          />
+        <div className="mx-auto mt-2 grid w-full max-w-7xl grid-cols-2 items-start gap-x-3 gap-y-5 lg:mt-1 lg:grid-cols-[320px_minmax(420px,1fr)_320px] lg:items-center lg:gap-8">
+          <div className="order-1 lg:order-1">
+            <CourtPlayerPanel
+              side="left"
+              selectedPlayer={selectedLeftPlayer}
+              fallbackColor="#FFEA00"
+              selectedPlayerName={leftPlayer}
+              onOpenPicker={() => setActivePickerSide("left")}
+            />
+          </div>
 
-          <PlayerComparisonRadar
-            radarData={radarData}
-            selectedLeftPlayerName={selectedLeftPlayer?.name ?? ""}
-            selectedRightPlayerName={selectedRightPlayer?.name ?? ""}
-            leftColor={
-              selectedLeftPlayer
-                ? getTeamColor(selectedLeftPlayer.team)
-                : "#F4BB44"
-            }
-            rightColor={
-              selectedRightPlayer
-                ? getTeamColor(selectedRightPlayer.team)
-                : "#347A99"
-            }
-          />
+          <div className="order-3 col-span-2 lg:order-2 lg:col-span-1">
+            <PlayerComparisonRadar
+              radarData={radarData}
+              selectedLeftPlayerName={selectedLeftPlayer?.name ?? ""}
+              selectedRightPlayerName={selectedRightPlayer?.name ?? ""}
+              leftColor={
+                selectedLeftPlayer
+                  ? getTeamColor(selectedLeftPlayer.team)
+                  : "#F4BB44"
+              }
+              rightColor={
+                selectedRightPlayer
+                  ? getTeamColor(selectedRightPlayer.team)
+                  : "#347A99"
+              }
+            />
+          </div>
 
-          <CourtPlayerPanel
-            side="right"
-            selectedPlayer={selectedRightPlayer}
-            fallbackColor="#347A99"
-            selectedPlayerName={rightPlayer}
-            onOpenPicker={() => setActivePickerSide("right")}
-          />
+          <div className="order-2 lg:order-3">
+            <CourtPlayerPanel
+              side="right"
+              selectedPlayer={selectedRightPlayer}
+              fallbackColor="#347A99"
+              selectedPlayerName={rightPlayer}
+              onOpenPicker={() => setActivePickerSide("right")}
+            />
+          </div>
         </div>
 
         <CourtComparisonEdges

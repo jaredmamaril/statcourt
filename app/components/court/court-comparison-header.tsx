@@ -20,7 +20,7 @@ export function CourtComparisonHeader({
   ];
 
   const statModeControl = (
-    <div className="mt-2 inline-flex rounded-md border border-white/10 bg-black/25 p-0.5">
+    <div className="mt-1.5 inline-flex rounded-md border border-white/10 bg-black/25 p-0.5">
       {statModeOptions.map((option) => {
         const isActive = statMode === option.value;
 
@@ -29,9 +29,9 @@ export function CourtComparisonHeader({
             key={option.value}
             type="button"
             onClick={() => onStatModeChange(option.value)}
-            className={`rounded px-2.5 py-1 font-michroma text-[7px] uppercase tracking-wide transition ${
+            className={`rounded px-2 py-0.5 font-michroma text-[6px] uppercase tracking-wide transition sm:px-2.5 sm:py-1 sm:text-[7px] ${
               isActive
-                ? "bg-[#1bc2ec]/20 text-[#1bc2ec] shadow-[0_0_12px_rgba(27,194,236,0.18)]"
+                ? "bg-[#1bc2ec]/20 text-[#1bc2ec] shadow-[0_0_10px_rgba(27,194,236,0.16)]"
                 : "text-white/35 hover:bg-white/5 hover:text-white/70"
             }`}
           >
@@ -44,12 +44,12 @@ export function CourtComparisonHeader({
 
   if (!leftPlayer || !rightPlayer) {
     return (
-      <div className="mx-auto w-fit rounded-lg border border-[#1bc2ec]/25 bg-[#06131d]/82 px-4 py-3 text-center shadow-[0_0_20px_rgba(27,194,236,0.12)]">
-        <p className="font-michroma text-[10px] uppercase tracking-wide text-[#1bc2ec]">
+      <div className="mx-auto w-full max-w-70 rounded-lg border border-[#1bc2ec]/25 bg-[#06131d]/82 px-3 py-2 text-center shadow-[0_0_18px_rgba(27,194,236,0.1)] sm:w-fit sm:max-w-none sm:px-4 sm:py-2.5">
+        <p className="font-michroma text-[8px] uppercase tracking-wide text-[#1bc2ec] sm:text-[10px]">
           Court Comparison
         </p>
 
-        <h1 className="mt-2 font-michroma text-lg uppercase text-white">
+        <h1 className="mt-1 font-michroma text-sm uppercase text-white sm:text-lg">
           Choose Two Players
         </h1>
 
@@ -59,27 +59,29 @@ export function CourtComparisonHeader({
   }
 
   return (
-    <div className="mx-auto w-fit rounded-lg border border-[#1bc2ec]/25 bg-[#06131d]/82 px-2 py-2 text-center shadow-[0_0_20px_rgba(27,194,236,0.12)]">
-      <p className="font-michroma text-[10px] uppercase tracking-wide text-[#1bc2ec]">
+    <div className="mx-auto w-full max-w-70 rounded-lg border border-[#1bc2ec]/25 bg-[#06131d]/82 px-2 py-1.5 text-center shadow-[0_0_18px_rgba(27,194,236,0.1)] sm:w-fit sm:max-w-none sm:px-4 sm:py-2.5">
+      <p className="font-michroma text-[8px] uppercase tracking-wide text-[#1bc2ec] sm:text-[10px]">
         Court Comparison
       </p>
 
-      <h1 className="mt-0.5 font-michroma text-[15px] uppercase text-white">
+      <h1 className="mt-0.5 flex max-w-full flex-col items-center justify-center gap-0.5 font-michroma text-[9px] uppercase text-white sm:flex-row sm:text-[15px] brightness-125">
         <span
           style={{
             color: getTeamColor(leftPlayer.team),
-            textShadow: `0 0 14px ${getTeamColor(leftPlayer.team)}66`,
+            textShadow: `0 0 12px ${getTeamColor(leftPlayer.team)}66`,
           }}
         >
           {leftPlayer.name}
         </span>
 
-        <span className="px-2 text-[8px] text-white/45">vs</span>
+        <span className="px-1 text-[6px] text-white/45 sm:px-2 sm:text-[8px]">
+          vs
+        </span>
 
         <span
           style={{
             color: getTeamColor(rightPlayer.team),
-            textShadow: `0 0 14px ${getTeamColor(rightPlayer.team)}66`,
+            textShadow: `0 0 12px ${getTeamColor(rightPlayer.team)}66`,
           }}
         >
           {rightPlayer.name}

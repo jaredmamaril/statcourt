@@ -179,9 +179,9 @@ export function CourtMatchupSummary({
           : `${leftPlayer.name} and ${rightPlayer.name} split the matchup evenly, creating a balanced scouting comparison.`;
 
   return (
-    <div className="mx-auto mt-5 w-full max-w-5xl rounded-lg border border-[#1bc2ec]/25 bg-[#06131d]/88 p-5 shadow-[0_0_24px_rgba(27,194,236,0.14)]">
-      <div className="mb-3 flex items-center justify-between gap-4">
-        <p className="font-michroma text-[10px] uppercase tracking-wide text-[#1bc2ec]">
+    <div className="mx-auto mt-4 w-full max-w-5xl rounded-lg border border-[#1bc2ec]/25 bg-[#06131d]/88 p-4 shadow-[0_0_20px_rgba(27,194,236,0.12)] sm:mt-5 sm:p-5">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <p className="font-michroma text-[9px] uppercase tracking-wide text-[#1bc2ec] sm:text-[10px]">
           Matchup Summary
         </p>
 
@@ -190,13 +190,13 @@ export function CourtMatchupSummary({
         </p>
       </div>
 
-      <p className="font-michroma text-[10px] leading-relaxed text-white/55">
+      <p className="font-michroma text-[9px] leading-relaxed text-white/55 sm:text-[10px]">
         {summary}
       </p>
 
-      <div className="mt-4 grid min-h-21.5 gap-3 sm:grid-cols-2">
+      <div className="mt-3 grid gap-2 sm:mt-4 sm:grid-cols-2 sm:gap-3">
         {isBalancedMatchup ? (
-          <div className="rounded-md border border-[#1bc2ec]/35 bg-black/20 p-3 text-center shadow-[0_0_16px_rgba(27,194,236,0.14)] sm:col-span-2">
+          <div className="flex h-full flex-col justify-center rounded-md border border-[#1bc2ec]/35 bg-black/20 p-3 text-center shadow-[0_0_16px_rgba(27,194,236,0.14)] sm:col-span-2">
             <p className="font-michroma text-[8px] uppercase text-white/70">
               Balanced Matchup
             </p>
@@ -210,7 +210,7 @@ export function CourtMatchupSummary({
           supportPlayer && (
             <>
               <div
-                className="rounded-md border bg-black/20 p-3"
+                className="rounded-md border bg-black/20 p-2.5 sm:p-3"
                 style={{
                   borderColor: `${leadColor}55`,
                   boxShadow: `0 0 16px ${leadColor}22`,
@@ -221,7 +221,7 @@ export function CourtMatchupSummary({
                 </p>
 
                 <p
-                  className="mt-2 font-michroma text-sm"
+                  className="mt-1.5 truncate font-michroma text-[12px] sm:mt-2 sm:text-sm"
                   style={{
                     color: leadColor,
                     textShadow: `0 0 12px ${leadColor}66`,
@@ -232,7 +232,7 @@ export function CourtMatchupSummary({
               </div>
 
               <div
-                className="rounded-md border bg-black/20 p-3"
+                className="rounded-md border bg-black/20 p-2.5 sm:p-3"
                 style={{
                   borderColor: `${supportColor}55`,
                   boxShadow: `0 0 16px ${supportColor}22`,
@@ -243,7 +243,7 @@ export function CourtMatchupSummary({
                 </p>
 
                 <p
-                  className="mt-2 font-michroma text-sm"
+                  className="mt-1.5 truncate font-michroma text-[12px] sm:mt-2 sm:text-sm"
                   style={{
                     color: supportColor,
                     textShadow: `0 0 12px ${supportColor}66`,

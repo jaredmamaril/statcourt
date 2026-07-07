@@ -4,8 +4,16 @@ import { mockUser as user } from "../lib/mock-auth";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
-import { Bookmark, LogOut, Settings, User, UserCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Bookmark,
+  LogOut,
+  Menu,
+  Settings,
+  User,
+  UserCircle,
+  X,
+} from "lucide-react";
 
 {
   /* Future: consider adding a mobile menu for smaller screens, and implementing user authentication to conditionally show different nav items or a user profile dropdown when signed in */
@@ -28,12 +36,16 @@ export default function Navbar() {
   // Path to desired page
   const pathname = usePathname();
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   // Scrolling to the top when new page is clicked
   useEffect(() => {
     window.scrollTo({
       top: 0,
       behavior: "auto",
     });
+
+    setIsMobileMenuOpen(false);
   }, [pathname]);
 
   if (pathname === "/") {
@@ -52,7 +64,7 @@ export default function Navbar() {
           zIndex: 999999, // On top of everything
         }}
       >
-        <div className="grid h-12 w-full grid-cols-3 items-center px-3">
+        <div className="grid h-12 w-full grid-cols-[auto_1fr_auto] items-center gap-2 px-2 sm:px-3">
           {/* Logo and site name on the left */}
           <Link href="/" className="flex w-fit items-center gap-3">
             <Image
@@ -61,9 +73,9 @@ export default function Navbar() {
               width={32}
               height={32}
               priority
-              className="rounded-md h-12 w-12"
+              className="h-10 w-10 rounded-md sm:h-12 sm:w-12"
             />
-            <span className="font-michroma text-2xl font-bold text-[#1bc2ec]">
+            <span className="hidden font-michroma text-xl font-bold text-[#1bc2ec] min-[360px]:block sm:text-2xl">
               statcourt
             </span>
           </Link>
@@ -83,19 +95,32 @@ export default function Navbar() {
               );
             })}
           </nav>
-          <div className="flex items-center justify-end justify-self-end">
+          <div className="flex items-center justify-end justify-self-end gap-2">
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen((current) => !current)}
+              className="flex h-9 w-9 items-center justify-center rounded-md border border-white/15 bg-white/5 text-white/70 transition hover:border-[#1bc2ec]/50 hover:text-[#1bc2ec] md:hidden"
+              aria-label="Toggle navigation menu"
+            >
+              {isMobileMenuOpen ? (
+                <X className="h-4 w-4" />
+              ) : (
+                <Menu className="h-4 w-4" />
+              )}
+            </button>
+
             {user ? (
               <>
                 <div className="group relative">
                   <button
                     type="button"
-                    className="flex h-10 w-44 items-center gap-2 rounded-md border border-[#1bc2ec]/60 bg-[#1bc2ec]/10 px-3 font-michroma text-[12px] text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.24)] transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/20 hover:text-white hover:shadow-[0_0_24px_rgba(27,194,236,0.42)]"
+                    className="flex h-9 w-9 items-center justify-center rounded-md border border-[#1bc2ec]/60 bg-[#1bc2ec]/10 font-michroma text-[12px] text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.24)] transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/20 hover:text-white hover:shadow-[0_0_24px_rgba(27,194,236,0.42)] md:h-10 md:w-44 md:justify-start md:gap-2 md:px-3"
                   >
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-[#06131d] text-[10px] uppercase text-[#1bc2ec]">
                       T
                     </span>
 
-                    <span className="min-w-0 flex-1 truncate text-left">
+                    <span className="hidden min-w-0 flex-1 truncate text-left md:block">
                       Tyler
                     </span>
                   </button>
@@ -156,6 +181,30 @@ export default function Navbar() {
           </div>
         </div>
       </header>
+
+      {isMobileMenuOpen && (
+        <div className="fixed left-0 right-0 top-12 z-999998 border-b border-white/10 bg-[#06131d]/95 px-3 py-3 shadow-[0_0_24px_rgba(0,0,0,0.45)]  md:hidden">
+          <div className="grid gap-2">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`rounded-md border px-3 py-3 font-michroma text-[10px] tracking-wide transition ${
+                    isActive
+                      ? "border-[#1bc2ec]/60 bg-[#1bc2ec]/10 text-[#1bc2ec]"
+                      : "border-white/10 bg-black/20 text-white/70 hover:border-[#1bc2ec]/40 hover:text-[#1bc2ec]"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="h-12" aria-hidden="true" />
     </>

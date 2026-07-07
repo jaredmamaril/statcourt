@@ -143,18 +143,20 @@ export function CourtComparisonEdges({
   ];
 
   return (
-    <div className="mx-auto mt-6 grid w-full max-w-6xl grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+    <div className="mx-auto mt-4 grid w-full max-w-6xl grid-cols-2 gap-2 px-3 sm:grid-cols-2 sm:gap-3 sm:px-0 lg:grid-cols-5">
       {edges.map((edge) => (
         <div
           key={edge.label}
-          className="group relative cursor-help rounded-lg border border-white/15 bg-[#06131d]/90 px-4 py-3 text-center shadow-[0_0_18px_rgba(0,0,0,0.35)] transition hover:-translate-y-0.5 hover:border-[#1bc2ec]/50 hover:bg-[#071827] hover:shadow-[0_0_24px_rgba(27,194,236,0.18)]"
+          className={`group relative cursor-help rounded-lg border border-white/15 bg-[#06131d]/90 px-2.5 py-2 text-center shadow-[0_0_14px_rgba(0,0,0,0.3)] transition hover:-translate-y-0.5 hover:border-[#1bc2ec]/50 hover:bg-[#071827] hover:shadow-[0_0_20px_rgba(27,194,236,0.14)] sm:px-4 sm:py-3 ${
+            edge.label === "Efficiency Edge" ? "col-span-2 lg:col-span-1" : ""
+          }`}
         >
-          <p className="font-michroma text-[8px] uppercase tracking-wide text-white/75">
+          <p className="font-michroma text-[6.5px] uppercase tracking-wide text-white/75 sm:text-[8px]">
             {edge.label}
           </p>
 
           <p
-            className="mt-2 truncate font-michroma text-[14px] brightness-125"
+            className="mt-1 truncate font-michroma text-[10px] brightness-125 sm:mt-2 sm:text-[14px]"
             style={{
               color: edge.color,
               textShadow: `0 0 10px ${edge.color}, 0 0 20px ${edge.color}66`,

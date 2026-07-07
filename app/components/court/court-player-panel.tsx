@@ -32,15 +32,17 @@ export function CourtPlayerPanel({
         <button
           type="button"
           onClick={onOpenPicker}
-          className="mt-2 flex w-64 cursor-pointer items-center justify-between rounded-md border border-white/30 bg-black/60 px-4 py-2 font-michroma text-white outline-none transition-all duration-200 hover:border-[#1bc2ec]/70 hover:bg-[#1bc2ec]/10 active:scale-[0.98]"
+          className="mt-2 flex h-10 w-30 cursor-pointer items-center justify-between rounded-md border border-white/30 bg-black/60 px-2.5 font-michroma text-[11px] text-white outline-none transition-all duration-200 hover:border-[#1bc2ec]/70 hover:bg-[#1bc2ec]/10 active:scale-[0.98] sm:h-12 sm:w-64 sm:px-4 sm:text-base"
         >
           <span className="truncate">
             {selectedPlayerName || "Choose Player"}
           </span>
-          <span className="text-[#347A99]">{"\u25BE"}</span>
+
+          <span className="ml-2 shrink-0 text-[10px] text-[#347A99] sm:text-xs">
+            {"\u25BE"}
+          </span>
         </button>
       </div>
     </div>
   );
 }
-
