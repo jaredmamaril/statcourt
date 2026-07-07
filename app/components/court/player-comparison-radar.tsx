@@ -37,11 +37,17 @@ export function PlayerComparisonRadar({
         <p className="font-michroma text-base font-bold text-[#1bc2ec]">
           {label}
         </p>
-        <p className="mt-2 font-michroma" style={{ color: leftColor }}>
+        <p
+          className="mt-2 font-michroma brightness-125"
+          style={{ color: leftColor }}
+        >
           {selectedLeftPlayerName || "Player 1"}: {data.playerOneActual}
         </p>
 
-        <p className="mt-2 font-michroma" style={{ color: rightColor }}>
+        <p
+          className="mt-2 font-michroma brightness-125"
+          style={{ color: rightColor }}
+        >
           {selectedRightPlayerName || "Player 2"}: {data.playerTwoActual}
         </p>
       </div>

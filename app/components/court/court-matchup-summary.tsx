@@ -194,7 +194,7 @@ export function CourtMatchupSummary({
         {summary}
       </p>
 
-      <div className="mt-4 grid min-h-[86px] gap-3 sm:grid-cols-2">
+      <div className="mt-4 grid min-h-21.5 gap-3 sm:grid-cols-2">
         {isBalancedMatchup ? (
           <div className="rounded-md border border-[#1bc2ec]/35 bg-black/20 p-3 text-center shadow-[0_0_16px_rgba(27,194,236,0.14)] sm:col-span-2">
             <p className="font-michroma text-[8px] uppercase text-white/70">

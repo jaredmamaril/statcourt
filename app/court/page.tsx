@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 import {
   players as fallbackPlayers,
@@ -22,6 +22,8 @@ import { CourtComparisonHeader } from "../components/court/court-comparison-head
 import { CourtComparisonEdges } from "../components/court/court-comparison-edges";
 import { CourtMatchupSummary } from "../components/court/court-matchup-summary";
 
+import { CourtPlayerPickerModal } from "../components/court/court-player-picker-modal";
+
 export default function Court() {
   // Compare state
   const [comparePlayers, setComparePlayers] =
@@ -38,13 +40,10 @@ export default function Court() {
   );
 
   // Dropdown state
-  const [isLeftDropdownOpen, setIsLeftDropdownOpen] = useState(false);
-  const [isRightDropdownOpen, setIsRightDropdownOpen] = useState(false);
-  const [leftSearch, setLeftSearch] = useState("");
-  const [rightSearch, setRightSearch] = useState("");
-
-  const leftDropdownRef = useRef<HTMLDivElement>(null);
-  const rightDropdownRef = useRef<HTMLDivElement>(null);
+  const [activePickerSide, setActivePickerSide] = useState<
+    "left" | "right" | null
+  >(null);
+  const [pickerSearch, setPickerSearch] = useState("");
 
   // Saved compare slots
   const [hasLoadedSavedPlayers, setHasLoadedSavedPlayers] = useState(false);
@@ -105,33 +104,6 @@ export default function Court() {
     });
   }, [leftPlayer, rightPlayer, hasLoadedSavedPlayers]);
 
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (!(event.target instanceof Node)) {
-        return;
-      }
-      const target = event.target;
-      if (
-        leftDropdownRef.current &&
-        !leftDropdownRef.current.contains(target)
-      ) {
-        setIsLeftDropdownOpen(false);
-      }
-      if (
-        rightDropdownRef.current &&
-        !rightDropdownRef.current.contains(target)
-      ) {
-        setIsRightDropdownOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
   // Radar chart data
   const radarData = getRadarData(
     selectedLeftPlayer,
@@ -139,13 +111,23 @@ export default function Court() {
     statMode,
   );
 
-  // Dropdown search results
-  const filteredLeftPlayers = comparePlayers.filter((player) =>
-    player.name.toLowerCase().includes(leftSearch.toLowerCase()),
+  // Chosen results
+  const filteredPickerPlayers = comparePlayers.filter((player) =>
+    player.name.toLowerCase().includes(pickerSearch.toLowerCase()),
   );
-  const filteredRightPlayers = comparePlayers.filter((player) =>
-    player.name.toLowerCase().includes(rightSearch.toLowerCase()),
-  );
+
+  function selectModalPlayer(playerName: string) {
+    if (activePickerSide === "left") {
+      setLeftPlayer(playerName);
+    }
+
+    if (activePickerSide === "right") {
+      setRightPlayer(playerName);
+    }
+
+    setActivePickerSide(null);
+    setPickerSearch("");
+  }
 
   return (
     <main className="page-enter relative min-h-screen overflow-x-hidden bg-background text-white">
@@ -167,14 +149,8 @@ export default function Court() {
             side="left"
             selectedPlayer={selectedLeftPlayer}
             fallbackColor="#FFEA00"
-            dropdownRef={leftDropdownRef}
             selectedPlayerName={leftPlayer}
-            isOpen={isLeftDropdownOpen}
-            setIsOpen={setIsLeftDropdownOpen}
-            search={leftSearch}
-            setSearch={setLeftSearch}
-            filteredPlayers={filteredLeftPlayers}
-            setPlayer={setLeftPlayer}
+            onOpenPicker={() => setActivePickerSide("left")}
           />
 
           <PlayerComparisonRadar
@@ -197,14 +173,8 @@ export default function Court() {
             side="right"
             selectedPlayer={selectedRightPlayer}
             fallbackColor="#347A99"
-            dropdownRef={rightDropdownRef}
             selectedPlayerName={rightPlayer}
-            isOpen={isRightDropdownOpen}
-            setIsOpen={setIsRightDropdownOpen}
-            search={rightSearch}
-            setSearch={setRightSearch}
-            filteredPlayers={filteredRightPlayers}
-            setPlayer={setRightPlayer}
+            onOpenPicker={() => setActivePickerSide("right")}
           />
         </div>
 
@@ -220,6 +190,19 @@ export default function Court() {
           statMode={statMode}
         />
       </section>
+
+      <CourtPlayerPickerModal
+        isOpen={activePickerSide !== null}
+        side={activePickerSide}
+        players={filteredPickerPlayers}
+        search={pickerSearch}
+        setSearch={setPickerSearch}
+        onSelectPlayer={selectModalPlayer}
+        onClose={() => {
+          setActivePickerSide(null);
+          setPickerSearch("");
+        }}
+      />
     </main>
   );
 }
