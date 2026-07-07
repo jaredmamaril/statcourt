@@ -49,7 +49,7 @@ export function PlayerComparisonRadar({
   }
 
   return (
-    <div className="absolute left-1/2 top-1/2 z-20 h-120 w-130 -translate-x-1/2 -translate-y-1/2">
+    <div className="relative z-10 mx-auto h-110 w-full max-w-130">
       <div className="flex h-full w-full items-center justify-center rounded-full bg-black/40 backdrop animate-[courtRadarIn_700ms_ease-out_150ms_both]">
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart data={radarData}>

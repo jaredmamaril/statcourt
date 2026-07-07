@@ -32,13 +32,11 @@ export function CourtPlayerPanel({
 }: CourtPlayerPanelProps) {
   const sideClass =
     side === "left"
-      ? "left-0 justify-start pl-3 animate-[courtLeftIn_600ms_ease-out_both]"
-      : "right-0 justify-end pr-3 animate-[courtRightIn_600ms_ease-out_both]";
+      ? "animate-[courtLeftIn_600ms_ease-out_both]"
+      : "animate-[courtRightIn_600ms_ease-out_both]";
 
   return (
-    <div
-      className={`pointer-events-none absolute top-0 z-10 flex h-full w-1/2 pt-20 ${sideClass}`}
-    >
+    <div className={`relative z-10 flex justify-center ${sideClass}`}>
       <div className="pointer-events-auto flex flex-col items-center">
         <CourtPlayerPreview
           selectedPlayer={selectedPlayer}

@@ -18,7 +18,7 @@ export function CourtPlayerPreview({
   return (
     <>
       <h1
-        className="font-michroma text-xl font-bold"
+        className="font-michroma text-[18px] font-bold brightness-125"
         style={{ color: playerColor }}
       >
         CHOOSE YOUR PLAYER

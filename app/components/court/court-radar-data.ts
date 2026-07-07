@@ -2,85 +2,112 @@ import {
   normalizeStat,
   statMaxValues,
   type Player,
+  type PlayerStats,
   type RadarStatRow,
+  type StatMode,
 } from "../court-data";
+
+function getStatsByMode(player: Player, statMode: StatMode): PlayerStats {
+  const profile =
+    statMode === "peak"
+      ? (player.statProfiles?.peak ?? player.statProfiles?.career)
+      : statMode === "current"
+        ? (player.statProfiles?.current ?? player.statProfiles?.career)
+        : player.statProfiles?.career;
+
+  return {
+    games: profile?.games ?? player.stats.games,
+    ppg: profile?.ppg ?? player.stats.ppg,
+    rpg: profile?.rpg ?? player.stats.rpg,
+    apg: profile?.apg ?? player.stats.apg,
+    spg: profile?.spg ?? player.stats.spg,
+    bpg: profile?.bpg ?? player.stats.bpg,
+    fgPercent: profile?.fgPercent ?? player.stats.fgPercent,
+    threePercent: profile?.threePercent ?? player.stats.threePercent,
+    ftPercent: profile?.ftPercent ?? player.stats.ftPercent,
+  };
+}
 
 export function getRadarData(
   leftPlayer: Player | undefined,
   rightPlayer: Player | undefined,
+  statMode: StatMode,
 ): RadarStatRow[] {
+  const leftStats = leftPlayer ? getStatsByMode(leftPlayer, statMode) : null;
+  const rightStats = rightPlayer ? getStatsByMode(rightPlayer, statMode) : null;
+
   return [
     {
       stat: "PPG",
-      playerOne: leftPlayer
-        ? normalizeStat(leftPlayer.stats.ppg, statMaxValues.ppg)
+      playerOne: leftStats
+        ? normalizeStat(leftStats.ppg, statMaxValues.ppg)
         : 0,
-      playerTwo: rightPlayer
-        ? normalizeStat(rightPlayer.stats.ppg, statMaxValues.ppg)
+      playerTwo: rightStats
+        ? normalizeStat(rightStats.ppg, statMaxValues.ppg)
         : 0,
-      playerOneActual: leftPlayer ? leftPlayer.stats.ppg : 0,
-      playerTwoActual: rightPlayer ? rightPlayer.stats.ppg : 0,
+      playerOneActual: leftStats ? leftStats.ppg : 0,
+      playerTwoActual: rightStats ? rightStats.ppg : 0,
     },
     {
       stat: "RPG",
-      playerOne: leftPlayer
-        ? normalizeStat(leftPlayer.stats.rpg, statMaxValues.rpg)
+      playerOne: leftStats
+        ? normalizeStat(leftStats.rpg, statMaxValues.rpg)
         : 0,
-      playerTwo: rightPlayer
-        ? normalizeStat(rightPlayer.stats.rpg, statMaxValues.rpg)
+      playerTwo: rightStats
+        ? normalizeStat(rightStats.rpg, statMaxValues.rpg)
         : 0,
-      playerOneActual: leftPlayer ? leftPlayer.stats.rpg : 0,
-      playerTwoActual: rightPlayer ? rightPlayer.stats.rpg : 0,
+      playerOneActual: leftStats ? leftStats.rpg : 0,
+      playerTwoActual: rightStats ? rightStats.rpg : 0,
     },
     {
       stat: "APG",
-      playerOne: leftPlayer
-        ? normalizeStat(leftPlayer.stats.apg, statMaxValues.apg)
+      playerOne: leftStats
+        ? normalizeStat(leftStats.apg, statMaxValues.apg)
         : 0,
-      playerTwo: rightPlayer
-        ? normalizeStat(rightPlayer.stats.apg, statMaxValues.apg)
+      playerTwo: rightStats
+        ? normalizeStat(rightStats.apg, statMaxValues.apg)
         : 0,
-      playerOneActual: leftPlayer ? leftPlayer.stats.apg : 0,
-      playerTwoActual: rightPlayer ? rightPlayer.stats.apg : 0,
+      playerOneActual: leftStats ? leftStats.apg : 0,
+      playerTwoActual: rightStats ? rightStats.apg : 0,
     },
     {
       stat: "FG%",
-      playerOne: leftPlayer
-        ? normalizeStat(leftPlayer.stats.fgPercent, statMaxValues.fgPercent)
+      playerOne: leftStats
+        ? normalizeStat(leftStats.fgPercent, statMaxValues.fgPercent)
         : 0,
-      playerTwo: rightPlayer
-        ? normalizeStat(rightPlayer.stats.fgPercent, statMaxValues.fgPercent)
+      playerTwo: rightStats
+        ? normalizeStat(rightStats.fgPercent, statMaxValues.fgPercent)
         : 0,
-      playerOneActual: leftPlayer ? leftPlayer.stats.fgPercent : 0,
-      playerTwoActual: rightPlayer ? rightPlayer.stats.fgPercent : 0,
+      playerOneActual: leftStats ? leftStats.fgPercent : 0,
+      playerTwoActual: rightStats ? rightStats.fgPercent : 0,
     },
     {
       stat: "3PT%",
-      playerOne: leftPlayer
+      playerOne: leftStats
         ? normalizeStat(
-            leftPlayer.stats.threePercent,
+            leftStats.threePercent,
             statMaxValues.threePercent,
           )
         : 0,
-      playerTwo: rightPlayer
+      playerTwo: rightStats
         ? normalizeStat(
-            rightPlayer.stats.threePercent,
+            rightStats.threePercent,
             statMaxValues.threePercent,
           )
         : 0,
-      playerOneActual: leftPlayer ? leftPlayer.stats.threePercent : 0,
-      playerTwoActual: rightPlayer ? rightPlayer.stats.threePercent : 0,
+      playerOneActual: leftStats ? leftStats.threePercent : 0,
+      playerTwoActual: rightStats ? rightStats.threePercent : 0,
     },
     {
       stat: "FT%",
-      playerOne: leftPlayer
-        ? normalizeStat(leftPlayer.stats.ftPercent, statMaxValues.ftPercent)
+      playerOne: leftStats
+        ? normalizeStat(leftStats.ftPercent, statMaxValues.ftPercent)
         : 0,
-      playerTwo: rightPlayer
-        ? normalizeStat(rightPlayer.stats.ftPercent, statMaxValues.ftPercent)
+      playerTwo: rightStats
+        ? normalizeStat(rightStats.ftPercent, statMaxValues.ftPercent)
         : 0,
-      playerOneActual: leftPlayer ? leftPlayer.stats.ftPercent : 0,
-      playerTwoActual: rightPlayer ? rightPlayer.stats.ftPercent : 0,
+      playerOneActual: leftStats ? leftStats.ftPercent : 0,
+      playerTwoActual: rightStats ? rightStats.ftPercent : 0,
     },
   ];
 }

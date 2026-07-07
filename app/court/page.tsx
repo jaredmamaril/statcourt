@@ -2,7 +2,12 @@
 
 import { useState, useRef, useEffect } from "react";
 
-import { players, getTeamColor } from "../components/court-data";
+import {
+  players as fallbackPlayers,
+  getTeamColor,
+  type Player,
+  type StatMode,
+} from "../components/court-data";
 
 import {
   getSavedCompareSlots,
@@ -13,15 +18,22 @@ import { PlayerComparisonRadar } from "../components/court/player-comparison-rad
 import { CourtPlayerPanel } from "../components/court/court-player-panel";
 import { getRadarData } from "../components/court/court-radar-data";
 
+import { CourtComparisonHeader } from "../components/court/court-comparison-header";
+import { CourtComparisonEdges } from "../components/court/court-comparison-edges";
+import { CourtMatchupSummary } from "../components/court/court-matchup-summary";
+
 export default function Court() {
   // Compare state
+  const [comparePlayers, setComparePlayers] =
+    useState<Player[]>(fallbackPlayers);
   const [leftPlayer, setLeftPlayer] = useState("");
   const [rightPlayer, setRightPlayer] = useState("");
+  const [statMode, setStatMode] = useState<StatMode>("career");
 
-  const selectedLeftPlayer = players.find(
+  const selectedLeftPlayer = comparePlayers.find(
     (player) => player.name === leftPlayer,
   );
-  const selectedRightPlayer = players.find(
+  const selectedRightPlayer = comparePlayers.find(
     (player) => player.name === rightPlayer,
   );
 
@@ -36,6 +48,39 @@ export default function Court() {
 
   // Saved compare slots
   const [hasLoadedSavedPlayers, setHasLoadedSavedPlayers] = useState(false);
+
+  // Load full player data, including stat profiles
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadPlayers() {
+      try {
+        const response = await fetch("/api/players");
+
+        if (!response.ok) {
+          throw new Error("Failed to load players");
+        }
+
+        const data = (await response.json()) as {
+          players?: Player[];
+        };
+
+        if (isActive && data.players && data.players.length > 0) {
+          setComparePlayers(data.players);
+        }
+      } catch {
+        if (isActive) {
+          setComparePlayers(fallbackPlayers);
+        }
+      }
+    }
+
+    loadPlayers();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   // Load saved comparison players
   useEffect(() => {
@@ -88,67 +133,91 @@ export default function Court() {
   }, []);
 
   // Radar chart data
-  const radarData = getRadarData(selectedLeftPlayer, selectedRightPlayer);
+  const radarData = getRadarData(
+    selectedLeftPlayer,
+    selectedRightPlayer,
+    statMode,
+  );
 
   // Dropdown search results
-  const filteredLeftPlayers = players.filter((player) =>
+  const filteredLeftPlayers = comparePlayers.filter((player) =>
     player.name.toLowerCase().includes(leftSearch.toLowerCase()),
   );
-  const filteredRightPlayers = players.filter((player) =>
+  const filteredRightPlayers = comparePlayers.filter((player) =>
     player.name.toLowerCase().includes(rightSearch.toLowerCase()),
   );
 
   return (
-    <main className="page-enter min-h-screen overflow-x-hidden text-white">
-      <section className="relative flex min-h-screen overflow-hidden items-center justify-between bg-[url('/court.svg')] bg-cover bg-center bg-no-repeat px-6 sm:px-10">
-        <div className="absolute left-1/2 top-6 z-30 max-w-xl -translate-x-1/2 text-center">
-          <p className="font-michroma text-xs leading-relaxed text-white/40">
-            Choose two players to compare their scoring, shooting, playmaking,
-            rebounding, and efficiency profiles.
-          </p>
+    <main className="page-enter relative min-h-screen overflow-x-hidden bg-background text-white">
+      <div
+        className="pointer-events-none fixed inset-0 z-0 bg-[url('/court.svg')] bg-cover bg-center bg-no-repeat"
+        aria-hidden="true"
+      />
+
+      <section className="relative z-10 min-h-screen px-6 pt-2 pb-8 sm:px-10">
+        <CourtComparisonHeader
+          leftPlayer={selectedLeftPlayer}
+          rightPlayer={selectedRightPlayer}
+          statMode={statMode}
+          onStatModeChange={setStatMode}
+        />
+
+        <div className="mx-auto mt-1 grid w-full max-w-7xl items-center gap-8 lg:grid-cols-[320px_minmax(420px,1fr)_320px]">
+          <CourtPlayerPanel
+            side="left"
+            selectedPlayer={selectedLeftPlayer}
+            fallbackColor="#FFEA00"
+            dropdownRef={leftDropdownRef}
+            selectedPlayerName={leftPlayer}
+            isOpen={isLeftDropdownOpen}
+            setIsOpen={setIsLeftDropdownOpen}
+            search={leftSearch}
+            setSearch={setLeftSearch}
+            filteredPlayers={filteredLeftPlayers}
+            setPlayer={setLeftPlayer}
+          />
+
+          <PlayerComparisonRadar
+            radarData={radarData}
+            selectedLeftPlayerName={selectedLeftPlayer?.name ?? ""}
+            selectedRightPlayerName={selectedRightPlayer?.name ?? ""}
+            leftColor={
+              selectedLeftPlayer
+                ? getTeamColor(selectedLeftPlayer.team)
+                : "#F4BB44"
+            }
+            rightColor={
+              selectedRightPlayer
+                ? getTeamColor(selectedRightPlayer.team)
+                : "#347A99"
+            }
+          />
+
+          <CourtPlayerPanel
+            side="right"
+            selectedPlayer={selectedRightPlayer}
+            fallbackColor="#347A99"
+            dropdownRef={rightDropdownRef}
+            selectedPlayerName={rightPlayer}
+            isOpen={isRightDropdownOpen}
+            setIsOpen={setIsRightDropdownOpen}
+            search={rightSearch}
+            setSearch={setRightSearch}
+            filteredPlayers={filteredRightPlayers}
+            setPlayer={setRightPlayer}
+          />
         </div>
-        <CourtPlayerPanel
-          side="left"
-          selectedPlayer={selectedLeftPlayer}
-          fallbackColor="#FFEA00"
-          dropdownRef={leftDropdownRef}
-          selectedPlayerName={leftPlayer}
-          isOpen={isLeftDropdownOpen}
-          setIsOpen={setIsLeftDropdownOpen}
-          search={leftSearch}
-          setSearch={setLeftSearch}
-          filteredPlayers={filteredLeftPlayers}
-          setPlayer={setLeftPlayer}
+
+        <CourtComparisonEdges
+          leftPlayer={selectedLeftPlayer}
+          rightPlayer={selectedRightPlayer}
+          statMode={statMode}
         />
 
-        <PlayerComparisonRadar
-          radarData={radarData}
-          selectedLeftPlayerName={selectedLeftPlayer?.name ?? ""}
-          selectedRightPlayerName={selectedRightPlayer?.name ?? ""}
-          leftColor={
-            selectedLeftPlayer
-              ? getTeamColor(selectedLeftPlayer.team)
-              : "#F4BB44"
-          }
-          rightColor={
-            selectedRightPlayer
-              ? getTeamColor(selectedRightPlayer.team)
-              : "#347A99"
-          }
-        />
-
-        <CourtPlayerPanel
-          side="right"
-          selectedPlayer={selectedRightPlayer}
-          fallbackColor="#347A99"
-          dropdownRef={rightDropdownRef}
-          selectedPlayerName={rightPlayer}
-          isOpen={isRightDropdownOpen}
-          setIsOpen={setIsRightDropdownOpen}
-          search={rightSearch}
-          setSearch={setRightSearch}
-          filteredPlayers={filteredRightPlayers}
-          setPlayer={setRightPlayer}
+        <CourtMatchupSummary
+          leftPlayer={selectedLeftPlayer}
+          rightPlayer={selectedRightPlayer}
+          statMode={statMode}
         />
       </section>
     </main>
