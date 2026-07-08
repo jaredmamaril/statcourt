@@ -18,9 +18,10 @@ export function PlayerCardFront({
 }: PlayerCardFrontProps) {
   const teamLogo = getTeamLogo(player.team);
   const teamColor = getReadableTeamColor(player.team);
+
   return (
     <div
-      className={`absolute inset-0 min-h-134 rounded-3xl border border-[#1bc2ec]/10 bg-black/30 p-6 ${
+      className={`absolute inset-0 h-full rounded-2xl border border-[#1bc2ec]/10 bg-black/30 p-4 lg:min-h-134 lg:rounded-3xl lg:p-6 ${
         isCardFlipped ? "pointer-events-none" : "pointer-events-auto"
       }`}
       style={{ backfaceVisibility: "hidden" }}
@@ -55,7 +56,7 @@ export function PlayerCardFront({
         />
       </svg>
 
-      <div className="absolute -inset-30 z-10 rotate-90 opacity-50">
+      <div className="absolute -inset-20 z-10 rotate-90 opacity-50 lg:-inset-30">
         <Image
           src="/court.svg"
           alt="Court background"
@@ -65,41 +66,42 @@ export function PlayerCardFront({
       </div>
 
       <div
-        className="absolute top-18 right-14 z-30"
+        className="absolute top-13 right-9 z-30 lg:top-18 lg:right-14"
         style={{ color: teamColor }}
       >
         <div className="flex flex-col items-center">
-          <span className="font-michroma text-3xl font-bold opacity-70">
+          <span className="font-michroma text-xl font-bold opacity-70 lg:text-3xl">
             #{player.jerseyNumber}
           </span>
-          <span className="font-michroma text-2xl font-bold text-white opacity-70">
+
+          <span className="font-michroma text-lg font-bold text-white opacity-70 lg:text-2xl">
             {player.position}
           </span>
         </div>
       </div>
 
-      <div className="absolute top-15 left-12 z-30 opacity-70">
+      <div className="absolute top-13 left-9 z-30 opacity-70 lg:top-15 lg:left-12">
         <Image
           src={teamLogo}
           alt={`${player.team} logo`}
           width={240}
           height={240}
-          className="h-24 w-24 object-contain"
+          className="h-16 w-16 object-contain lg:h-24 lg:w-24"
         />
       </div>
 
-      <div className="absolute inset-0 z-20 flex -top-18 items-center justify-center">
+      <div className="absolute inset-0 -top-10.5 z-20 flex items-center justify-center lg:-top-18">
         <PlayerImage
           src={getPlayerHeadshot(player)}
           alt={player.name}
           width={520}
           height={380}
-          className="h-84 w-84 rounded-md object-cover"
+          className="h-56 w-56 rounded-md object-cover lg:h-84 lg:w-84"
         />
       </div>
 
-      <div className="absolute bottom-8 left-0 right-0 z-30 flex items-center justify-center px-6 text-center">
-        <span className="w-full wrap-break-word py-11 font-michroma text-xl font-bold uppercase tracking-wide text-white">
+      <div className="absolute right-0 bottom-16 left-0 z-30 flex items-center justify-center px-5 text-center lg:bottom-8 lg:px-6">
+        <span className="w-full wrap-break-word font-michroma text-[14px] font-bold uppercase tracking-wide text-white lg:py-11 lg:text-xl">
           {player.name}
         </span>
       </div>

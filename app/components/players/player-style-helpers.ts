@@ -3,22 +3,22 @@ import type { PlayerInsightDisplay } from "../court-data";
 
 export function getPlayerNameTextClass(name: string) {
   if (name.length >= 20) {
-    return "max-w-72 text-[18px] leading-tight whitespace-normal";
+    return "max-w-32 text-[11px] leading-tight whitespace-normal lg:max-w-72 lg:text-[18px]";
   }
 
   if (name.length >= 16) {
-    return "max-w-80 text-[22px] leading-tight whitespace-normal";
+    return "max-w-34 text-[12px] leading-tight whitespace-normal lg:max-w-80 lg:text-[22px]";
   }
 
   if (name.length >= 15) {
-    return "max-w-80 text-[24px] leading-tight whitespace-normal";
+    return "max-w-36 text-[13px] leading-tight whitespace-normal lg:max-w-80 lg:text-[24px]";
   }
 
   if (name.length >= 12) {
-    return "max-w-80 text-[26px] leading-tight whitespace-normal";
+    return "max-w-38 text-[14px] leading-tight whitespace-normal lg:max-w-80 lg:text-[26px]";
   }
 
-  return "max-w-88 text-2xl leading-none whitespace-nowrap";
+  return "max-w-38 text-base leading-none whitespace-nowrap lg:max-w-88 lg:text-2xl";
 }
 
 export function getInsightRarityStyles(

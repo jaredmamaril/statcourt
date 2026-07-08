@@ -97,6 +97,8 @@ export const lineupFitDescriptions: Record<string, string> = {
 };
 
 type PlayerCardSimilarPanelProps = {
+  openTooltip: string | null;
+  onToggleTooltip: (id: string) => void;
   statModeLabel: string;
   similarPlayers: {
     player: Player;
@@ -108,18 +110,71 @@ type PlayerCardSimilarPanelProps = {
 };
 
 export function PlayerCardSimilarPanel({
+  openTooltip,
+  onToggleTooltip,
   statModeLabel,
   similarPlayers,
   bestLineupFits,
   getLineupFitStyles,
   onSelectSimilarPlayer,
 }: PlayerCardSimilarPanelProps) {
+  function toggleSimilarInfoOnTouch(event: React.PointerEvent) {
+    if (event.pointerType === "mouse") return;
+
+    event.stopPropagation();
+    onToggleTooltip("similar-info");
+  }
+
+  function toggleLineupLegendOnTouch(event: React.PointerEvent) {
+    if (event.pointerType === "mouse") return;
+
+    event.stopPropagation();
+    onToggleTooltip("lineup-legend");
+  }
+
+  function toggleLineupFitOnTouch(event: React.PointerEvent, fit: string) {
+    if (event.pointerType === "mouse") return;
+
+    event.stopPropagation();
+    onToggleTooltip(`lineup-fit-${fit}`);
+  }
+
   return (
-    <div className="relative z-30 flex w-40 flex-col items-center gap-0.5">
-      <span className="font-michroma text-[12px] uppercase tracking-wide text-white/50">
-        Similar To
-      </span>
-      <span className="-mt-1 font-michroma text-[6px] text-white/45">
+    <div
+      className={`relative flex w-34 flex-col items-center gap-0.5 sm:w-40 ${
+        openTooltip === "similar-info" ||
+        openTooltip === "lineup-legend" ||
+        openTooltip?.startsWith("lineup-fit-")
+          ? "z-9999"
+          : "z-30"
+      }`}
+    >
+      <div className="group/similarInfo relative flex items-center justify-center gap-1">
+        <span className="font-michroma text-[9px] uppercase tracking-wide text-white/50 sm:text-[12px]">
+          Similar To
+        </span>
+
+        <Info
+          className="h-2.5 w-2.5 cursor-help text-[#1bc2ec]/50 transition group-hover/similarInfo:text-[#1bc2ec] sm:h-3 sm:w-3"
+          onPointerDown={toggleSimilarInfoOnTouch}
+          onClick={(event) => {
+            event.stopPropagation();
+          }}
+        />
+
+        <div
+          className={`pointer-events-none absolute bottom-full right-0 z-999 mb-1 w-40 rounded-md border border-white/15 bg-black/95 p-2 text-left font-michroma text-[6px] leading-relaxed text-white/80 shadow-[0_0_18px_rgba(0,0,0,0.55)] transition-opacity duration-200 sm:left-1/2 sm:right-auto sm:w-52 sm:-translate-x-1/2 sm:text-[7px] ${
+            openTooltip === "similar-info"
+              ? "opacity-100"
+              : "opacity-0 group-hover/similarInfo:opacity-100"
+          }`}
+        >
+          Similar players are matched by the selected stat profile, playstyle,
+          archetype, role, and statistical shape.
+        </div>
+      </div>
+
+      <span className="-mt-1 font-michroma text-[5px] text-white/45 sm:text-[6px]">
         {statModeLabel} Playstyle Match
       </span>
 
@@ -138,7 +193,7 @@ export function PlayerCardSimilarPanel({
                 e.stopPropagation();
                 onSelectSimilarPlayer(player.name);
               }}
-              className="mr-2 flex w-44 cursor-pointer items-center justify-between gap-2 rounded border px-1.5 py-0.5 font-michroma text-[9px] text-white/70 transition-all duration-150 hover:brightness-150"
+              className="flex w-32 cursor-pointer items-center justify-between gap-1 rounded border px-1.5 py-0.5 font-michroma text-[7px] text-white/70 transition-all duration-150 hover:brightness-150 sm:w-44 sm:gap-2 sm:text-[9px]"
               style={{
                 borderColor: teamColor,
                 backgroundColor: `${teamColor}50`,
@@ -155,13 +210,25 @@ export function PlayerCardSimilarPanel({
 
       <div className="mt-1 flex flex-col items-center gap-0.5">
         <div className="group/fitLegend relative flex items-center justify-center gap-1">
-          <span className="font-michroma text-[9px] uppercase tracking-wide text-white/50">
+          <span className="font-michroma text-[7px] uppercase tracking-wide text-white/50 sm:text-[9px]">
             Best Lineup Fits
           </span>
 
-          <Info className="h-3 w-3 cursor-help text-[#1bc2ec]/50 transition group-hover/fitLegend:text-[#1bc2ec]" />
+          <Info
+            className="h-2.5 w-2.5 cursor-help text-[#1bc2ec]/50 transition group-hover/fitLegend:text-[#1bc2ec] sm:h-3 sm:w-3"
+            onPointerDown={toggleLineupLegendOnTouch}
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+          />
 
-          <div className="pointer-events-none absolute bottom-full left-1/2 z-999 mb-1 w-56 -translate-x-1/2 rounded-md border border-white/15 bg-black/95 p-2 text-left font-michroma text-[7px] leading-relaxed text-white/55 opacity-0 shadow-[0_0_18px_rgba(0,0,0,0.55)] transition-opacity duration-200 group-hover/fitLegend:opacity-100">
+          <div
+            className={`pointer-events-none absolute bottom-full right-0 z-999 mb-1 w-44 rounded-md border border-white/15 bg-black/95 p-2 text-left font-michroma text-[6px] leading-relaxed text-white/80 shadow-[0_0_18px_rgba(0,0,0,0.55)] transition-opacity duration-200 sm:left-1/2 sm:right-auto sm:w-56 sm:-translate-x-1/2 sm:text-[7px] ${
+              openTooltip === "lineup-legend"
+                ? "opacity-100"
+                : "opacity-0 group-hover/fitLegend:opacity-100"
+            }`}
+          >
             <p>
               <span className="text-[#1bc2ec]">Cyan</span> - pace, passing, and
               transition offense.
@@ -194,15 +261,32 @@ export function PlayerCardSimilarPanel({
         </div>
 
         {bestLineupFits.map((fit) => (
-          <div key={fit} className="group/fit relative cursor-help">
+          <div
+            key={fit}
+            className={`group/fit relative cursor-help ${
+              openTooltip === `lineup-fit-${fit}` ? "z-500" : "z-30"
+            }`}
+            onPointerDown={(event) => {
+              toggleLineupFitOnTouch(event, fit);
+            }}
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+          >
             <span
-              className="block cursor-help rounded border px-2 py-0.5 font-michroma text-[9px] brightness-125 truncate"
+              className="block max-w-36 cursor-help truncate rounded border px-1.5 py-0.5 font-michroma text-[7px] brightness-125 sm:max-w-44 sm:px-2 sm:text-[9px]"
               style={getLineupFitStyles(fit)}
             >
               ✓ {fit}
             </span>
 
-            <div className="pointer-events-none cursor- absolute left-1/2 bottom-full z-999 mt-1 w-52 -translate-x-1/2 rounded-md border border-white/15 bg-black/95 p-2 text-left font-michroma text-[7px] leading-relaxed text-white/55 opacity-0 shadow-[0_0_18px_rgba(0,0,0,0.55)] transition-opacity duration-200 group-hover/fit:opacity-100">
+            <div
+              className={`pointer-events-none absolute bottom-full right-0 z-999 mb-1 w-44 rounded-md border border-white/15 bg-black/95 p-2 text-left font-michroma text-[6px] leading-relaxed text-white/80 shadow-[0_0_18px_rgba(0,0,0,0.55)] transition-opacity duration-200 sm:left-1/2 sm:right-auto sm:w-52 sm:-translate-x-1/2 sm:text-[7px] ${
+                openTooltip === `lineup-fit-${fit}`
+                  ? "opacity-100"
+                  : "opacity-0 group-hover/fit:opacity-100"
+              }`}
+            >
               {lineupFitDescriptions[fit] ??
                 "Recommended lineup fit based on this player's statistical profile."}
             </div>

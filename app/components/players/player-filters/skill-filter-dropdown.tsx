@@ -10,6 +10,7 @@ type SkillFilterOption = {
   label: string;
   value: PlayerRatingCategory;
 };
+
 const skillFilterOptions: SkillFilterOption[] = [
   { label: statModeLabels.career, value: "careerOverall" },
   { label: statModeLabels.peak, value: "peakOverall" },
@@ -41,20 +42,23 @@ export function SkillFilterDropdown({
       <button
         type="button"
         onClick={onOpenDropdown}
-        className="flex cursor-pointer items-center gap-2 rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-2 py-1 font-michroma text-xs text-[#1bc2ec] transition-all duration-200"
+        className="flex h-6 cursor-pointer items-center gap-1 rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-2 font-michroma text-[9px] text-[#1bc2ec] transition-all duration-200 sm:h-auto sm:gap-2 sm:py-1 sm:text-xs"
       >
-        <span>{selectedSkillOption?.label ?? "Career OVR"}</span>
-        <span className="text-[#1bc2ec]">▾</span>
+        <span className="truncate">
+          {selectedSkillOption?.label ?? "Career OVR"}
+        </span>
+
+        <span className="shrink-0 text-[8px] text-[#1bc2ec] sm:text-xs">▾</span>
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-full z-30 mt-2 max-h-52 w-40 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
+        <div className="absolute left-0 top-full z-30 mt-1.5 max-h-44 w-22 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl sm:mt-2 sm:max-h-52 sm:w-40">
           {skillFilterOptions.map((option) => (
             <button
               key={option.value}
               type="button"
               onClick={() => onSelectSkill(option.value)}
-              className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs ${
+              className={`block w-full cursor-pointer px-2 py-1.5 text-left font-michroma text-[9px] sm:px-3 sm:py-2 sm:text-xs ${
                 selectedSkill === option.value
                   ? "bg-[#1bc2ec]/10 text-[#1bc2ec]"
                   : "text-white/70 hover:bg-white/10"

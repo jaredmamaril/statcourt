@@ -13,18 +13,18 @@ export function PlayerCardBackHeader({
 }: PlayerCardBackHeaderProps) {
   const teamColor = getReadableTeamColor(player.team);
   return (
-    <div className="relative z-10 grid grid-cols-[72px_1fr_48px] items-center gap-4 px-3 pt-1 font-michroma uppercase">
+    <div className="relative z-10 grid grid-cols-[42px_1fr_30px] items-center gap-1.5 px-1.5 pt-1.5 font-michroma uppercase sm:grid-cols-[52px_1fr_36px] sm:gap-2 sm:px-2 sm:pt-2 lg:grid-cols-[72px_1fr_48px] lg:gap-4 lg:px-3 lg:pt-1">
       <PlayerImage
         src={getPlayerHeadshot(player)}
         alt={player.name}
         width={240}
         height={240}
-        className="h-24 w-24 rounded-md object-cover"
+        className="h-13 w-13 rounded-md object-cover sm:h-14 sm:w-14 lg:h-24 lg:w-24"
       />
 
       <div className="flex min-w-0 justify-center text-center">
         <p
-          className={`line-clamp-2 text-center font-bold text-white ${getPlayerNameTextClass(
+          className={`text-center font-bold text-white ${getPlayerNameTextClass(
             player.name,
           )}`}
         >
@@ -32,15 +32,19 @@ export function PlayerCardBackHeader({
         </p>
       </div>
 
-      <div className="flex flex-col items-center gap-1">
-        <p className="shrink-0 text-xs text-white/55">{player.position}</p>
+      <div className="flex flex-col items-center gap-0.5 lg:gap-1">
+        <p className="shrink-0 text-[9px] text-white/55 sm:text-[8px] lg:text-xs">
+          {player.position}
+        </p>
         <p
-          className="shrink-0 text-xs text-white/55"
+          className="shrink-0 text-[9px] text-white/55 sm:text-[8px] lg:text-xs"
           style={{ color: teamColor }}
         >
           {player.team}
         </p>
-        <p className="shrink-0 text-xs text-white/55">#{player.jerseyNumber}</p>
+        <p className="shrink-0 text-[9px] text-white/55 sm:text-[8px] lg:text-xs">
+          #{player.jerseyNumber}
+        </p>
       </div>
     </div>
   );

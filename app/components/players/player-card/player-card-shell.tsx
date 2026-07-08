@@ -18,7 +18,7 @@ export function PlayerCardShell({
   return (
     <div
       key={player.id}
-      className={`relative w-full max-w-md min-h-134 overflow-hidden rounded-3xl animate-[cardIn_500ms_ease-out] transition-all duration-500 ${
+      className={`relative h-[calc(100vh-155px)] w-full max-w-71.25 overflow-hidden rounded-2xl animate-[cardIn_500ms_ease-out] transition-all duration-500 sm:max-w-md lg:h-auto lg:min-h-134 lg:rounded-3xl ${
         isGoingToCourt
           ? "scale-90 translate-y-20 opacity-0"
           : "scale-100 translate-y-0 opacity-100"
@@ -46,7 +46,7 @@ export function PlayerCardShell({
       aria-label={`${player.name} player card - click to flip`}
     >
       <div
-        className="relative w-full min-h-134"
+        className="relative h-full w-full lg:min-h-134"
         style={{
           transformStyle: "preserve-3d",
           transition: "transform 0.5s ease-out",

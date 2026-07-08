@@ -26,7 +26,7 @@ export function PlayerList({
   onSelectPlayer,
 }: PlayerListProps) {
   return (
-    <div className="statcourt-scroll mx-auto max-h-112.5 w-full max-w-100 overflow-y-auto pr-2">
+    <div className="statcourt-scroll mx-auto max-h-112.5 w-full max-w-100 overflow-y-auto pr-1">
       <div className="flex flex-col gap-1">
         {players.length === 0 ? (
           <p className="py-8 text-center font-michroma text-xs text-white/40">

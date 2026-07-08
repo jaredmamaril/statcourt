@@ -33,8 +33,14 @@ function StatLabel({ label, value, color, align = "left" }: StatLabelProps) {
         align === "right" ? "items-end" : "items-start"
       }`}
     >
-      <span className="font-michroma text-[10px] text-white">{label}</span>
-      <span className="font-michroma text-xs font-bold" style={{ color }}>
+      <span className="font-michroma text-[6px] text-white sm:text-[10px]">
+        {label}
+      </span>
+
+      <span
+        className="font-michroma text-[8px] font-bold sm:text-xs"
+        style={{ color }}
+      >
         {value}
       </span>
     </div>
@@ -98,8 +104,8 @@ export function PlayerCardRadar({
   const teamColor = getReadableTeamColor(player.team);
 
   return (
-    <div className="relative z-10 mt-2 h-48 w-full">
-      <div className="absolute left-0 top-0 z-10 ml-6 flex h-full flex-col justify-around py-2">
+    <div className="relative z-10 mt-1 h-40 w-full sm:mt-2 sm:h-48">
+      <div className="absolute left-0 top-0 z-10 ml-3 flex h-full flex-col justify-around py-1 sm:ml-6 sm:py-2">
         <StatLabel label="FT%" value={stats.ftPercent ?? 0} color={teamColor} />
         <StatLabel
           label="3PT%"
@@ -109,7 +115,7 @@ export function PlayerCardRadar({
         <StatLabel label="FG%" value={stats.fgPercent ?? 0} color={teamColor} />
       </div>
 
-      <div className="absolute right-0 top-0 z-10 mr-6 flex h-full flex-col justify-around py-2">
+      <div className="absolute right-0 top-0 z-10 mr-3 flex h-full flex-col justify-around py-1 sm:mr-6 sm:py-2">
         <StatLabel
           label="PPG"
           value={stats.ppg ?? 0}
@@ -137,7 +143,7 @@ export function PlayerCardRadar({
             dataKey="stat"
             tick={{
               fill: "white",
-              fontSize: 10,
+              fontSize: 7,
               fontFamily: "Michroma",
             }}
           />

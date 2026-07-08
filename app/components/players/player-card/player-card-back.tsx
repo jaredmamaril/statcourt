@@ -15,7 +15,7 @@ export function PlayerCardBack({
   const teamColor = getReadableTeamColor(player.team);
   return (
     <div
-      className={`absolute inset-0 min-h-134 rounded-3xl border bg-black/30 ${
+      className={`absolute inset-0 h-full rounded-2xl border bg-black/30 lg:min-h-134 lg:rounded-3xl ${
         isCardFlipped ? "pointer-events-auto" : "pointer-events-none"
       }`}
       style={{

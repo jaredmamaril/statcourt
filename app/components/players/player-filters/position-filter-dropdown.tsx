@@ -18,22 +18,22 @@ export function PositionFilterDropdown({
       <button
         type="button"
         onClick={onOpenDropdown}
-        className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
+        className={`flex h-6 cursor-pointer items-center gap-1 rounded-md border px-2 font-michroma text-[9px] transition-all duration-200 sm:h-auto sm:gap-2 sm:py-1 sm:text-xs ${
           filteredPosition
             ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]"
             : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
         }`}
       >
         <span>{filteredPosition || "All Positions"}</span>
-        <span className="text-[#1bc2ec]">▾</span>
+        <span className="text-[8px] text-[#1bc2ec] sm:text-xs">▾</span>
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-full z-30 mt-2 max-h-40 w-36 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
+        <div className="absolute left-0 top-full z-30 mt-1.5 max-h-36 w-25 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl sm:mt-2 sm:max-h-40 sm:w-36">
           <button
             type="button"
             onClick={() => onSelectPosition("")}
-            className="block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs text-white/70 hover:bg-white/10"
+            className="block w-full cursor-pointer px-2 py-1.5 text-left font-michroma text-[9px] text-white/70 hover:bg-white/10 sm:px-3 sm:py-2 sm:text-xs"
           >
             All Positions
           </button>
@@ -43,7 +43,7 @@ export function PositionFilterDropdown({
               key={position}
               type="button"
               onClick={() => onSelectPosition(position)}
-              className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs ${
+              className={`block w-full cursor-pointer px-2 py-1.5 text-left font-michroma text-[9px] sm:px-3 sm:py-2 sm:text-xs ${
                 filteredPosition === position
                   ? "bg-[#1bc2ec]/10 text-[#1bc2ec]"
                   : "text-white/70 hover:bg-white/10"

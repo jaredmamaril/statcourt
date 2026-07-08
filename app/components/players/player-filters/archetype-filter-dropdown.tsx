@@ -27,24 +27,24 @@ export function ArchetypeFilterDropdown({
       <button
         type="button"
         onClick={onOpenDropdown}
-        className={`flex min-w-10 max-w-38 cursor-pointer items-center gap-2 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
+        className={`flex h-6 min-w-0 max-w-37.5 cursor-pointer items-center gap-1 rounded-md border px-2 font-michroma text-[10px] transition-all duration-200 sm:h-auto sm:max-w-38 sm:gap-2 sm:py-1 sm:text-xs ${
           filteredArchetype
             ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]"
             : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
         }`}
       >
-        <span className="max-w-52 truncate">
+        <span className="truncate">
           {filteredArchetype || "All Archetypes"}
         </span>
-        <span className="text-[#1bc2ec]">▾</span>
+        <span className="shrink-0 text-[9px] text-[#1bc2ec] sm:text-xs">▾</span>
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-full z-30 mt-2 max-h-48 w-56 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl">
+        <div className="absolute left-0 top-full z-30 mt-1.5 max-h-40 w-32 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl sm:mt-2 sm:max-h-48 sm:w-56">
           <button
             type="button"
             onClick={() => onSelectArchetype("")}
-            className="block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs text-white/70 hover:bg-white/10"
+            className="block w-full cursor-pointer px-2 py-1.5 text-left font-michroma text-[9px] text-white/70 hover:bg-white/10 sm:px-3 sm:py-2 sm:text-xs"
           >
             All Archetypes
           </button>
@@ -53,7 +53,7 @@ export function ArchetypeFilterDropdown({
             <button
               type="button"
               onClick={() => onSelectArchetype("Unclassified")}
-              className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs ${
+              className={`block w-full cursor-pointer px-2 py-1.5 text-left font-michroma text-[9px] sm:px-3 sm:py-2 sm:text-xs ${
                 filteredArchetype === "Unclassified"
                   ? "bg-red-500/10 text-red-400"
                   : "text-red-300/80 hover:bg-white/10"
@@ -71,7 +71,7 @@ export function ArchetypeFilterDropdown({
                 key={archetype.label}
                 type="button"
                 onClick={() => onSelectArchetype(archetype.label)}
-                className="block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs hover:bg-white/10"
+                className="block w-full cursor-pointer px-2 py-1.5 text-left font-michroma text-[9px] hover:bg-white/10 sm:px-3 sm:py-2 sm:text-xs"
                 style={{
                   color: archetypeStyle.color,
                   backgroundColor:

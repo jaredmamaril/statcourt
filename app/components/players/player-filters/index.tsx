@@ -71,12 +71,12 @@ export function PlayerFilters({
   return (
     <div
       ref={filtersRef}
-      className="statcourt-scroll mx-auto mb-4 flex max-w-175 flex-wrap items-center justify-center gap-2"
+      className="statcourt-scroll mx-auto mb-3 flex max-w-75 flex-wrap items-center justify-center gap-1.5 sm:mb-4 sm:max-w-175 sm:gap-2"
     >
       <button
         type="button"
         onClick={onToggleFavorites}
-        className={`flex cursor-pointer items-center gap-1.5 rounded-md border px-2 py-1 font-michroma text-xs transition-all duration-200 ${
+        className={`flex h-6 cursor-pointer items-center gap-1 rounded-md border px-2 font-michroma text-[10px] transition-all duration-200 sm:h-auto sm:gap-1.5 sm:py-1 sm:text-xs ${
           showFavorites
             ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]/90"
             : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
@@ -85,7 +85,7 @@ export function PlayerFilters({
         <span>☆</span>
         Favorites
         {favoritesCount > 0 && (
-          <span className="ml-0.5 text-[10px] opacity-70">
+          <span className="ml-0.5 text-[9px] opacity-70 sm:text-[10px]">
             ({favoritesCount})
           </span>
         )}
@@ -145,7 +145,7 @@ export function PlayerFilters({
           <button
             type="button"
             onClick={onResetFilters}
-            className="cursor-pointer rounded-md border border-white/20 bg-black/10 px-2 py-1 font-michroma text-xs text-white/60 transition-all duration-200 hover:border-red-700/60 hover:text-red-700"
+            className="cursor-pointer rounded-md border border-white/20 bg-black/10 px-2 py-1 font-michroma text-[9px] text-white/60 transition-all duration-200 hover:border-red-700/60 hover:text-red-700 sm:text-xs"
           >
             Reset Filters
           </button>

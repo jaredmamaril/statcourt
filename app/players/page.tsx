@@ -96,6 +96,7 @@ function Players() {
     [],
   );
   const [featuredPlayerIndex, setFeaturedPlayerIndex] = useState(0);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   // Auth
   const [authPromptMessage, setAuthPromptMessage] = useState("");
@@ -234,6 +235,22 @@ function Players() {
 
     return () => {
       isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+
+    function handleScreenChange() {
+      setIsDesktop(mediaQuery.matches);
+    }
+
+    handleScreenChange();
+
+    mediaQuery.addEventListener("change", handleScreenChange);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleScreenChange);
     };
   }, []);
 
@@ -477,7 +494,7 @@ function Players() {
 
   return (
     <main className="min-h-screen overflow-x-hidden text-white">
-      <section className="relative mx-auto w-full max-w-6xl px-6 pt-4 pb-12">
+      <section className="relative mx-auto w-full max-w-6xl px-4 pt-3 pb-12 sm:px-6 lg:px-6">
         <div
           className={
             selectedPlayer
@@ -488,11 +505,11 @@ function Players() {
           <div
             className={
               selectedPlayer
-                ? "relative flex h-full w-full flex-col opacity-10 transition-all duration-500 ease-out lg:-translate-x-5 [&_button]:pointer-events-none"
+                ? "hidden h-full w-full flex-col opacity-10 transition-all duration-500 ease-out lg:relative lg:flex lg:-translate-x-5 [&_button]:pointer-events-none"
                 : "pointer-events-auto relative flex h-full w-full flex-col translate-x-0 opacity-100 transition-all duration-500 ease-out"
             }
           >
-            {!selectedPlayer && featuredPlayer && (
+            {isDesktop && !selectedPlayer && featuredPlayer && (
               <FeaturedPlayerPanel
                 featuredPlayer={featuredPlayer}
                 featuredPlayerInsights={featuredPlayerInsights}
@@ -506,8 +523,8 @@ function Players() {
                 />
               </FeaturedPlayerPanel>
             )}
-
-            {!selectedPlayer && (
+            {/* Desktop-only side panels */}
+            {isDesktop && !selectedPlayer && (
               <DatabaseSnapshot
                 playersCount={players.length}
                 positions={positions}
@@ -521,12 +538,10 @@ function Players() {
                 getRarityColor={getRarityColor}
               />
             )}
-
             <PlayerPageHeader
               playerSearch={playerSearch}
               onPlayerSearchChange={setPlayerSearch}
             />
-
             <PlayerFilters
               filtersRef={filtersRef}
               showFavorites={showFavorites}
@@ -551,7 +566,6 @@ function Players() {
               selectedSkill={selectedRatingView}
               onSelectSkill={selectSkillFilter}
             />
-
             <PlayerList
               players={visiblePlayers}
               totalPlayersCount={filteredPlayers.length}
@@ -565,9 +579,9 @@ function Players() {
             />
           </div>
 
-          <div className="flex items-start justify-center">
+          <div className="flex w-full items-start justify-center">
             {selectedPlayer && (
-              <div ref={playerCardRef} className="w-full max-w-md">
+              <div ref={playerCardRef} className="w-full max-w-85 sm:max-w-md">
                 <SelectedPlayerCard
                   player={selectedPlayer}
                   statMode={selectedStatMode}

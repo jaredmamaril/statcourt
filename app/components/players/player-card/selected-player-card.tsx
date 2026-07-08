@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { useState } from "react";
 import type { Player, PlayerInsightDisplay, StatMode } from "../../court-data";
 import { getCareerLegacyTier, getStarPowerTier } from "../../player-ratings";
 import { PlayerCardFront } from "./player-card-front";
@@ -61,13 +62,20 @@ export function SelectedPlayerCard({
   onSelectSimilarPlayer,
   onAddPlayerToCompare,
 }: SelectedPlayerCardProps) {
+  const [openCardTooltip, setOpenCardTooltip] = useState<string | null>(null);
+
+  function toggleCardTooltip(id: string) {
+    setOpenCardTooltip((current) => (current === id ? null : id));
+  }
+
   const careerLegacy = player.ratings.careerLegacy ?? 0;
   const starPower = player.ratings.starPower ?? 0;
 
   const careerLegacyTier = getCareerLegacyTier(careerLegacy);
   const starPowerTier = getStarPowerTier(starPower);
+
   return (
-    <div className="flex flex-col items-start gap-2 w-full max-w-md">
+    <div className="mx-auto flex w-full max-w-75 flex-col items-start gap-2 sm:max-w-md">
       <button
         type="button"
         onClick={onBack}
@@ -93,32 +101,38 @@ export function SelectedPlayerCard({
               />
 
               <div className="relative z-20 -mt-1 flex justify-center">
-                <div className="rounded border border-white/10 bg-white/5 px-3 py-1 font-michroma text-[8px] uppercase tracking-wide text-white/45">
-                  {statModeLabel} Profile
+                <div className="relative z-20 mt-1 flex justify-center">
+                  <div className="rounded border border-white/10 bg-white/5 px-2.5 py-0.5 font-michroma text-[7px] uppercase tracking-wide text-white/45 sm:px-3 sm:py-1 sm:text-[8px]">
+                    {statModeLabel} Profile
+                  </div>
                 </div>
               </div>
 
-              <div className="relative z-20 mx-auto mt-2 grid w-[90%] grid-cols-2 gap-2 font-michroma">
-                <div className="rounded-md border border-[#EFBF04]/30 bg-[#EFBF04]/10 px-2 py-1 text-center">
-                  <p className="text-[7px] uppercase text-white/45">
+              <div className="relative z-20 mx-auto mt-1.5 grid w-[84%] grid-cols-2 gap-1.5 font-michroma sm:mt-2 sm:w-[90%] sm:gap-2">
+                <div className="rounded-md border border-[#EFBF04]/30 bg-[#EFBF04]/10 px-1.5 py-1 text-center sm:px-2">
+                  <p className="text-[6px] uppercase text-white/45 sm:text-[7px]">
                     Career Legacy
                   </p>
-                  <p className="text-sm text-[#EFBF04]">
+
+                  <p className="text-[11px] leading-tight text-[#EFBF04] sm:text-sm">
                     {careerLegacy.toFixed(1)}
                   </p>
-                  <p className="text-[7px] uppercase text-white/60">
+
+                  <p className="text-[6px] uppercase leading-tight text-white/60 sm:text-[7px]">
                     {careerLegacyTier}
                   </p>
                 </div>
 
-                <div className="rounded-md border border-[#1bc2ec]/30 bg-[#1bc2ec]/10 px-2 py-1 text-center">
-                  <p className="text-[7px] uppercase text-white/45">
+                <div className="rounded-md border border-[#1bc2ec]/30 bg-[#1bc2ec]/10 px-1.5 py-1 text-center sm:px-2">
+                  <p className="text-[6px] uppercase text-white/45 sm:text-[7px]">
                     Star Power
                   </p>
-                  <p className="text-sm text-[#1bc2ec]">
+
+                  <p className="text-[11px] leading-tight text-[#1bc2ec] sm:text-sm">
                     {starPower.toFixed(0)}
                   </p>
-                  <p className="text-[7px] uppercase text-white/60">
+
+                  <p className="text-[6px] uppercase leading-tight text-white/60 sm:text-[7px]">
                     {starPowerTier}
                   </p>
                 </div>
@@ -130,9 +144,12 @@ export function SelectedPlayerCard({
                 isCardFlipped={isCardFlipped}
               />
 
-              <div className="flex items-start justify-center gap-10">
+              <div className="flex items-start justify-center gap-6 sm:gap-10">
                 {playerInsights && (
                   <PlayerCardInsights
+                    openTooltip={openCardTooltip}
+                    onToggleTooltip={toggleCardTooltip}
+                    statModeLabel={statModeLabel}
                     playerInsights={playerInsights}
                     getInsightRarityStyles={getInsightRarityStyles}
                     getInsightRarityLabel={getInsightRarityLabel}
@@ -140,6 +157,8 @@ export function SelectedPlayerCard({
                 )}
 
                 <PlayerCardSimilarPanel
+                  openTooltip={openCardTooltip}
+                  onToggleTooltip={toggleCardTooltip}
                   statModeLabel={statModeLabel}
                   similarPlayers={similarPlayers}
                   bestLineupFits={bestLineupFits}
