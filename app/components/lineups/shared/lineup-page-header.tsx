@@ -15,8 +15,8 @@ export function LineupPageHeader({
   onTabChange,
 }: LineupPageHeaderProps) {
   return (
-    <div className="mt-0 flex w-full items-start justify-start overflow-x-auto border-t border-white/10">
-      <div className="flex shrink-0 items-start">
+    <div className="mt-0 w-full border-t border-white/10">
+      <div className="statcourt-scroll flex w-full items-center gap-1.5 overflow-x-auto px-2 py-2">
         {lineupTabs.map((tab) => {
           const isActive = activeTab === tab.value;
 
@@ -25,10 +25,10 @@ export function LineupPageHeader({
               key={tab.value}
               type="button"
               onClick={() => onTabChange(tab.value)}
-              className={`min-w-48 cursor-pointer rounded-b-md border border-t-0 px-4 font-michroma text-xs uppercase tracking-wide transition-all duration-200 ${
+              className={`h-6 shrink-0 cursor-pointer rounded-md border px-2 font-michroma text-[8px] uppercase tracking-wide transition-all duration-200 sm:h-9 sm:px-4 sm:text-xs ${
                 isActive
-                  ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/20 py-4 text-[#1bc2ec]"
-                  : "border-white/10 bg-black/30 py-2.5 text-white/50 hover:border-white/30 hover:text-white/80"
+                  ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/20 text-[#1bc2ec]"
+                  : "border-white/10 bg-black/30 text-white/50 hover:border-white/30 hover:text-white/80"
               }`}
             >
               {tab.label}
@@ -38,8 +38,8 @@ export function LineupPageHeader({
       </div>
 
       {shouldShowTopText && (
-        <div className="grid flex-1 grid-cols-[auto_1fr] items-start gap-6 pl-10 pt-5">
-          <p className="w-full overflow-hidden -mt-1 text-center font-michroma text-xs text-white/40">
+        <div className="mx-auto max-w-md px-5 pb-2 pt-1 sm:max-w-2xl sm:px-6 sm:pb-3">
+          <p className="text-center font-michroma text-[8px] leading-relaxed text-white/40 sm:text-xs">
             {activeTab === "featured"
               ? "Explore curated lineups and discover unique team archetypes, strengths, and playstyles."
               : activeTab === "builder"

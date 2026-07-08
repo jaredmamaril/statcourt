@@ -9,7 +9,14 @@ import {
   players as fallbackPlayers,
   getPlayerInsights,
 } from "../components/court-data";
-import type { Team, Position } from "../components/court-data";
+import type {
+  Player,
+  Team,
+  Position,
+  StatMode,
+} from "../components/court-data";
+
+import { RankingStatProfileFilter } from "../components/rankings/ranking-stat-profile-filter";
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -30,18 +37,22 @@ import { ArchetypesSection } from "../components/rankings/archetypes-section";
 
 import { RemainingRankingList } from "../components/rankings/remaining-ranking-list";
 
+type RankingStatProfile = "career" | "peak" | "current";
+
 export default function Rankings() {
   // Page state
   const [activeTab, setActiveTab] = useState<RankingTab>("careerOverall");
   const [openFilter, setOpenFilter] = useState<
-    "era" | "position" | "team" | "archetype" | null
+    "profile" | "position" | "team" | "archetype" | null
   >(null);
-  const [eraFilter, setEraFilter] = useState("all-time");
+  const [statProfileFilter, setStatProfileFilter] =
+    useState<RankingStatProfile>("career");
   const [positionFilter, setPositionFilter] = useState<Position | "">("");
   const [teamFilter, setTeamFilter] = useState<Team | "">("");
   const [playerSearch, setPlayerSearch] = useState("");
   const [archetypeFilter, setArchetypeFilter] = useState("");
   const [players, setPlayers] = useState(fallbackPlayers);
+  const statMode: StatMode = statProfileFilter;
 
   // Refs and routing
   const archetypeDescriptionRef = useRef<HTMLDivElement>(null);
@@ -69,20 +80,21 @@ export default function Rankings() {
   const archetypeOptions = Array.from(
     new Set(
       players
-        .map((player) => getPlayerInsights(player).archetype?.label)
+        .map((player) => getPlayerInsights(player, statMode).archetype?.label)
         .filter((label): label is string => Boolean(label)),
     ),
   ).sort();
 
   const archetypeOptionDetails = archetypeOptions.map((archetypeLabel) => {
     const matchingPlayer = players.find(
-      (player) => getPlayerInsights(player).archetype?.label === archetypeLabel,
+      (player) =>
+        getPlayerInsights(player, statMode).archetype?.label === archetypeLabel,
     );
 
     return {
       label: archetypeLabel,
       archetype: matchingPlayer
-        ? getPlayerInsights(matchingPlayer).archetype
+        ? getPlayerInsights(matchingPlayer, statMode).archetype
         : null,
     };
   });
@@ -99,11 +111,13 @@ export default function Rankings() {
     ? players
         .filter(
           (player) =>
-            getPlayerInsights(player).archetype?.label === archetypeFilter,
+            getPlayerInsights(player, statMode).archetype?.label ===
+            archetypeFilter,
         )
         .sort(
           (a, b) =>
-            getPlayerRating(b, "careerOverall") - getPlayerRating(a, "careerOverall"),
+            getPlayerRating(b, "careerOverall", statProfileFilter) -
+            getPlayerRating(a, "careerOverall", statProfileFilter),
         )
     : [];
 
@@ -115,11 +129,34 @@ export default function Rankings() {
       : undefined;
 
   // Ranking data
+  const overallCategoryByProfile: Record<
+    RankingStatProfile,
+    PlayerRatingCategory
+  > = {
+    career: "careerOverall",
+    peak: "peakOverall",
+    current: "currentOverall",
+  };
+
   const ratingCategory: PlayerRatingCategory =
-    activeTab === "archetypes" ? "careerOverall" : activeTab;
+    activeTab === "archetypes"
+      ? "careerOverall"
+      : activeTab === "careerOverall"
+        ? overallCategoryByProfile[statProfileFilter]
+        : activeTab;
+
+  function shouldShowPlayerInRanking(player: Player) {
+    const rating = getPlayerRating(player, ratingCategory, statProfileFilter);
+
+    if (ratingCategory === "shooting" || ratingCategory === "efficiency") {
+      return rating > 0;
+    }
+
+    return true;
+  }
 
   const filteredPlayers = players.filter((player) => {
-    const archetype = getPlayerInsights(player).archetype;
+    const archetype = getPlayerInsights(player, statMode).archetype;
 
     const matchesSearch = player.name
       .toLowerCase()
@@ -138,10 +175,13 @@ export default function Rankings() {
     return matchesSearch && matchesPosition && matchesTeam && matchesArchetype;
   });
 
-  const rankedPlayers = [...filteredPlayers].sort(
-    (a, b) =>
-      getPlayerRating(b, ratingCategory) - getPlayerRating(a, ratingCategory),
-  );
+  const rankedPlayers = filteredPlayers
+    .filter(shouldShowPlayerInRanking)
+    .sort(
+      (a, b) =>
+        getPlayerRating(b, ratingCategory, statProfileFilter) -
+        getPlayerRating(a, ratingCategory, statProfileFilter),
+    );
 
   const topThreePlayers = rankedPlayers.slice(0, 3);
 
@@ -187,15 +227,35 @@ export default function Rankings() {
         <div className="pt-2">
           <div className="mb-6">
             {activeTab === "archetypes" ? (
-              <ArchetypesSection
-                archetypeOptionDetails={archetypeOptionDetails}
-                selectedArchetype={archetypeFilter}
-                selectedArchetypeInfo={selectedArchetypeInfo}
-                selectedArchetypePlayers={selectedArchetypePlayers}
-                archetypeDescriptionRef={archetypeDescriptionRef}
-                onSelectArchetype={selectArchetypeCard}
-                onViewPlayer={viewPlayerCard}
-              />
+              <>
+                <div className="mb-1 flex justify-center">
+                  <RankingStatProfileFilter
+                    isOpen={openFilter === "profile"}
+                    selectedProfile={statProfileFilter}
+                    onToggle={() =>
+                      setOpenFilter(openFilter === "profile" ? null : "profile")
+                    }
+                    onSelectProfile={(profile) => {
+                      setStatProfileFilter(profile);
+                      setOpenFilter(null);
+                    }}
+                  />
+                </div>
+
+                <ArchetypesSection
+                  players={players}
+                  statProfileFilter={statProfileFilter}
+                  statMode={statMode}
+                  archetypeOptionDetails={archetypeOptionDetails}
+                  selectedArchetype={archetypeFilter}
+                  selectedArchetypeColor={selectedArchetypeColor}
+                  selectedArchetypeInfo={selectedArchetypeInfo}
+                  selectedArchetypePlayers={selectedArchetypePlayers}
+                  archetypeDescriptionRef={archetypeDescriptionRef}
+                  onSelectArchetype={selectArchetypeCard}
+                  onViewPlayer={viewPlayerCard}
+                />
+              </>
             ) : (
               <RankingLeaderboardSection
                 rankingHeading={rankingHeading}
@@ -203,7 +263,7 @@ export default function Rankings() {
                 ratingCategory={ratingCategory}
                 ratingLabel={ratingLabel}
                 openFilter={openFilter}
-                eraFilter={eraFilter}
+                statProfileFilter={statProfileFilter}
                 positionFilter={positionFilter}
                 teamFilter={teamFilter}
                 playerSearch={playerSearch}
@@ -212,7 +272,7 @@ export default function Rankings() {
                 selectedArchetypeOption={selectedArchetypeOption}
                 archetypeOptionDetails={archetypeOptionDetails}
                 onOpenFilter={setOpenFilter}
-                onEraFilterChange={setEraFilter}
+                onStatProfileFilterChange={setStatProfileFilter}
                 onPositionFilterChange={setPositionFilter}
                 onTeamFilterChange={setTeamFilter}
                 onArchetypeFilterChange={setArchetypeFilter}
@@ -228,6 +288,7 @@ export default function Rankings() {
                 players={rankedPlayers}
                 ratingCategory={ratingCategory}
                 ratingLabel={ratingLabel}
+                statProfileFilter={statProfileFilter}
                 onViewPlayer={viewPlayerCard}
               />
             </>
@@ -237,4 +298,3 @@ export default function Rankings() {
     </main>
   );
 }
-

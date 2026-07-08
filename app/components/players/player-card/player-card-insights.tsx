@@ -33,7 +33,7 @@ export function PlayerCardInsights({
   return (
     <div
       className={`relative flex min-w-0 flex-col items-center gap-0.5 ${
-        openTooltip?.startsWith("insight-") ? "z-[9999]" : "z-40"
+        openTooltip?.startsWith("insight-") ? "z-9999" : "z-40"
       }`}
     >
       <span className="font-michroma text-[8px] uppercase tracking-wide text-white/50 sm:text-[12px]">

@@ -7,20 +7,31 @@ type ArchetypeInfo =
 type ArchetypeDescriptionPanelProps = {
   archetypeLabel: string;
   archetypeInfo: ArchetypeInfo | undefined;
+  selectedArchetypeColor?: string;
 };
 
 export const ArchetypeDescriptionPanel = forwardRef<
   HTMLDivElement,
   ArchetypeDescriptionPanelProps
->(function ArchetypeDescriptionPanel({ archetypeLabel, archetypeInfo }, ref) {
+>(function ArchetypeDescriptionPanel(
+  { archetypeLabel, archetypeInfo, selectedArchetypeColor },
+  ref,
+) {
   if (!archetypeLabel) return null;
+  const archetypeColor = selectedArchetypeColor ?? "#1bc2ec";
 
   return (
     <div
       ref={ref}
       className="scroll-mt-24 mt-6 rounded-md border border-white/10 bg-black/30 p-4"
     >
-      <h2 className="font-michroma text-sm uppercase tracking-wide text-white">
+      <h2
+        className="font-michroma text-sm uppercase tracking-wide"
+        style={{
+          color: archetypeColor,
+          textShadow: `0 0 12px ${archetypeColor}66`,
+        }}
+      >
         {archetypeLabel}
       </h2>
 
@@ -39,7 +50,12 @@ export const ArchetypeDescriptionPanel = forwardRef<
             (trait) => (
               <span
                 key={trait}
-                className="rounded border border-[#1bc2ec]/40 bg-[#1bc2ec]/10 px-2 py-1 font-michroma text-[10px] text-[#1bc2ec]"
+                className="rounded border px-2 py-1 font-michroma text-[10px]"
+                style={{
+                  color: archetypeColor,
+                  borderColor: archetypeColor,
+                  backgroundColor: `${archetypeColor}18`,
+                }}
               >
                 {trait}
               </span>

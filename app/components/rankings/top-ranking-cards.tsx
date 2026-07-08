@@ -1,6 +1,10 @@
 import PlayerImage from "../player-image";
 import { getPlayerHeadshot } from "../player-images";
-import { getPlayerRating, type PlayerRatingCategory } from "../player-ratings";
+import {
+  getPlayerRating,
+  type PlayerRatingCategory,
+  type PlayerStatProfileMode,
+} from "../player-ratings";
 import { getTeamColor, getPlayerInsights, type Player } from "../court-data";
 
 import { getArchetypePillStyle } from "./ranking-style-helpers";
@@ -10,6 +14,7 @@ type TopRankingCardsProps = {
   players: Player[];
   ratingCategory: PlayerRatingCategory;
   ratingLabel: string;
+  statProfileFilter: PlayerStatProfileMode;
   onViewPlayer: (playerName: string) => void;
 };
 
@@ -17,6 +22,7 @@ export function TopRankingCards({
   players,
   ratingCategory,
   ratingLabel,
+  statProfileFilter,
   onViewPlayer,
 }: TopRankingCardsProps) {
   return (
@@ -24,7 +30,11 @@ export function TopRankingCards({
       {players.map((player, index) => {
         const rankLabel = index === 0 ? "1ST" : index === 1 ? "2ND" : "3RD";
         const archetype = getPlayerInsights(player).archetype;
-        const rating = getPlayerRating(player, ratingCategory).toFixed(1);
+        const rating = getPlayerRating(
+          player,
+          ratingCategory,
+          statProfileFilter,
+        ).toFixed(1);
         const rankColor =
           index === 0 ? "#EFBF04" : index === 1 ? "#C0C0C0" : "#CD7F32";
         const teamColor = getTeamColor(player.team);

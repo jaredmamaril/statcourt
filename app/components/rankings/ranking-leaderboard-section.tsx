@@ -19,8 +19,8 @@ type RankingLeaderboardSectionProps = {
   ratingCategory: PlayerRatingCategory;
   ratingLabel: string;
 
-  openFilter: "era" | "position" | "team" | "archetype" | null;
-  eraFilter: string;
+  openFilter: "profile" | "position" | "team" | "archetype" | null;
+  statProfileFilter: "career" | "peak" | "current";
   positionFilter: Position | "";
   teamFilter: Team | "";
   playerSearch: string;
@@ -30,9 +30,9 @@ type RankingLeaderboardSectionProps = {
   archetypeOptionDetails: ArchetypeOptionDetail[];
 
   onOpenFilter: Dispatch<
-    SetStateAction<"era" | "position" | "team" | "archetype" | null>
+    SetStateAction<"profile" | "position" | "team" | "archetype" | null>
   >;
-  onEraFilterChange: Dispatch<SetStateAction<string>>;
+  onStatProfileFilterChange: (value: "career" | "peak" | "current") => void;
   onPositionFilterChange: Dispatch<SetStateAction<Position | "">>;
   onTeamFilterChange: Dispatch<SetStateAction<Team | "">>;
   onArchetypeFilterChange: Dispatch<SetStateAction<string>>;
@@ -46,7 +46,7 @@ export function RankingLeaderboardSection({
   ratingCategory,
   ratingLabel,
   openFilter,
-  eraFilter,
+  statProfileFilter,
   positionFilter,
   teamFilter,
   playerSearch,
@@ -55,7 +55,7 @@ export function RankingLeaderboardSection({
   selectedArchetypeOption,
   archetypeOptionDetails,
   onOpenFilter,
-  onEraFilterChange,
+  onStatProfileFilterChange,
   onPositionFilterChange,
   onTeamFilterChange,
   onArchetypeFilterChange,
@@ -64,13 +64,13 @@ export function RankingLeaderboardSection({
 }: RankingLeaderboardSectionProps) {
   return (
     <>
-      <h1 className="text-center font-michroma text-lg uppercase tracking-wide text-white">
+      <h1 className="text-center font-michroma text-lg uppercase tracking-wide text-white sm:text-xl lg:text-2xl">
         {rankingHeading}
       </h1>
 
       <RankingFilterBar
         openFilter={openFilter}
-        eraFilter={eraFilter}
+        statProfileFilter={statProfileFilter}
         positionFilter={positionFilter}
         teamFilter={teamFilter}
         playerSearch={playerSearch}
@@ -79,7 +79,7 @@ export function RankingLeaderboardSection({
         selectedArchetypeOption={selectedArchetypeOption}
         archetypeOptionDetails={archetypeOptionDetails}
         onOpenFilter={onOpenFilter}
-        onEraFilterChange={onEraFilterChange}
+        onStatProfileFilterChange={onStatProfileFilterChange}
         onPositionFilterChange={onPositionFilterChange}
         onTeamFilterChange={onTeamFilterChange}
         onArchetypeFilterChange={onArchetypeFilterChange}
@@ -90,6 +90,7 @@ export function RankingLeaderboardSection({
         players={topThreePlayers}
         ratingCategory={ratingCategory}
         ratingLabel={ratingLabel}
+        statProfileFilter={statProfileFilter}
         onViewPlayer={onViewPlayer}
       />
     </>

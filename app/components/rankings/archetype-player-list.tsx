@@ -1,23 +1,32 @@
 ﻿import PlayerImage from "../player-image";
 import { getPlayerHeadshot } from "../player-images";
-import { getPlayerRating } from "../player-ratings";
+import { getPlayerRating, type PlayerStatProfileMode } from "../player-ratings";
 import { getTeamColor, type Player } from "../court-data";
 import { RankingPlayerTooltip } from "./ranking-player-tooltip";
 
 type ArchetypePlayerListProps = {
   players: Player[];
   onViewPlayer: (playerName: string) => void;
+  statProfileFilter: PlayerStatProfileMode;
 };
 
 export function ArchetypePlayerList({
   players,
   onViewPlayer,
+  statProfileFilter,
 }: ArchetypePlayerListProps) {
+  const statProfileLabels = {
+    career: "Career",
+    peak: "3-Year Peak",
+    current: "Latest Season",
+  };
+
   return (
     <>
       <div className="mt-4">
         <h2 className="font-michroma text-sm uppercase tracking-wide text-white">
-          Top Players In Selected Archetype
+          Top {statProfileLabels[statProfileFilter]} Players In Selected
+          Archetype
         </h2>
       </div>
 
@@ -28,7 +37,11 @@ export function ArchetypePlayerList({
           </p>
         ) : (
           players.map((player, index) => {
-            const rating = getPlayerRating(player, "careerOverall").toFixed(1);
+            const rating = getPlayerRating(
+              player,
+              "careerOverall",
+              statProfileFilter,
+            ).toFixed(1);
             const teamColor = getTeamColor(player.team);
 
             return (
@@ -81,4 +94,3 @@ export function ArchetypePlayerList({
     </>
   );
 }
-

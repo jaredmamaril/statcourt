@@ -8,6 +8,7 @@
   Gauge,
   ScrollText,
   Star,
+  Shield,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { PlayerRatingCategory } from "../player-ratings";
@@ -30,6 +31,12 @@ const rankingTabs: {
   { label: "Scoring", value: "scoring", Icon: Flame, color: "#EF4444" },
   { label: "Shooting", value: "shooting", Icon: Target, color: "#1bc2ec" },
   { label: "Playmaking", value: "playmaking", Icon: Brain, color: "#3B82F6" },
+  {
+    label: "Defense",
+    value: "defense",
+    Icon: Shield,
+    color: "#22C55E",
+  },
   {
     label: "Rebounding",
     value: "rebounding",
@@ -58,7 +65,7 @@ type RankingTabsProps = {
 
 export function RankingTabs({ activeTab, onSelectTab }: RankingTabsProps) {
   return (
-    <div className="mt-0 flex w-full items-start overflow-x-auto pb-0">
+    <div className="statcourt-scroll mt-0 flex w-full items-start gap-0 overflow-x-auto border-t border-white/10 px-2 py-0 lg:px-0">
       {rankingTabs.map((tab) => {
         const isActive = activeTab === tab.value;
         const Icon = tab.Icon;
@@ -68,14 +75,18 @@ export function RankingTabs({ activeTab, onSelectTab }: RankingTabsProps) {
             key={tab.value}
             type="button"
             onClick={() => onSelectTab(tab.value)}
-            className={`min-w-2 cursor-pointer rounded-b-md border border-t-0 px-4 font-michroma text-xs uppercase tracking-wide transition-all duration-200 ${
+            className={`flex shrink-0 cursor-pointer items-center justify-center rounded-b-md rounded-t-none border border-t-0 px-2 font-michroma text-[8px] uppercase tracking-wide transition-all duration-200 lg:min-w-0 lg:px-4 lg:text-xs ${
               isActive
-                ? "py-4 border-[#1bc2ec]/70 bg-[#1bc2ec]/20 text-[#1bc2ec]"
-                : "py-2.5 border-white/10 bg-black/30 text-white/50 hover:border-white/30 hover:text-white/80"
+                ? "h-7 border-[#1bc2ec]/70 bg-[#1bc2ec]/20 text-[#1bc2ec] lg:h-auto lg:py-4"
+                : "h-6 border-white/10 bg-black/30 text-white/50 hover:border-white/30 hover:text-white/80 lg:h-auto lg:py-2.5"
             }`}
           >
-            <span className="flex items-center justify-center gap-2 whitespace-nowrap">
-              <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
+            <span className="flex items-center justify-center gap-1 whitespace-nowrap lg:gap-2">
+              <Icon
+                className="h-2.5 w-2.5 shrink-0 lg:h-4 lg:w-4"
+                strokeWidth={2}
+              />
+
               <span>{tab.label}</span>
             </span>
           </button>
@@ -86,4 +97,3 @@ export function RankingTabs({ activeTab, onSelectTab }: RankingTabsProps) {
 }
 
 export { rankingTabs };
-

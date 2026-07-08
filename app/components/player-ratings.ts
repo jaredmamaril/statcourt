@@ -13,6 +13,8 @@ export type PlayerRatingCategory =
   | "careerLegacy"
   | "starPower";
 
+export type PlayerStatProfileMode = "career" | "peak" | "current";
+
 function clamp(value: number, min = 0, max = 100) {
   return Math.max(min, Math.min(max, value));
 }
@@ -76,7 +78,11 @@ function getPeakOverallScore({
   return toOverallRating(peakScore);
 }
 
-function getStatsForCategory(player: Player, category: PlayerRatingCategory) {
+function getStatsForCategory(
+  player: Player,
+  category: PlayerRatingCategory,
+  statProfileMode: PlayerStatProfileMode = "career",
+) {
   if (category === "peakOverall") {
     return (
       player.statProfiles?.peak ?? player.statProfiles?.career ?? player.stats
@@ -91,14 +97,68 @@ function getStatsForCategory(player: Player, category: PlayerRatingCategory) {
     );
   }
 
+  if (statProfileMode === "peak") {
+    return (
+      player.statProfiles?.peak ?? player.statProfiles?.career ?? player.stats
+    );
+  }
+
+  if (statProfileMode === "current") {
+    return (
+      player.statProfiles?.current ??
+      player.statProfiles?.career ??
+      player.stats
+    );
+  }
+
   return player.statProfiles?.career ?? player.stats;
+}
+
+function getProfileMinimums(statProfileMode: PlayerStatProfileMode) {
+  if (statProfileMode === "career") {
+    return {
+      shootingGames: 250,
+      efficiencyGames: 250,
+      minutesPerGame: 12,
+    };
+  }
+
+  if (statProfileMode === "peak") {
+    return {
+      shootingGames: 120,
+      efficiencyGames: 120,
+      minutesPerGame: 18,
+    };
+  }
+
+  return {
+    shootingGames: 25,
+    efficiencyGames: 25,
+    minutesPerGame: 15,
+  };
+}
+
+function hasEnoughSample(
+  stats: { games?: number | null; minutesPerGame?: number | null },
+  minimumGames: number,
+  minimumMinutes: number,
+) {
+  const games = safeNumber(stats.games, 0);
+  const minutesPerGame = stats.minutesPerGame;
+
+  const hasEnoughGames = games >= minimumGames;
+  const hasEnoughMinutes =
+    minutesPerGame == null || safeNumber(minutesPerGame, 0) >= minimumMinutes;
+
+  return hasEnoughGames && hasEnoughMinutes;
 }
 
 export function getPlayerRating(
   player: Player,
   category: PlayerRatingCategory = "careerOverall",
+  statProfileMode: PlayerStatProfileMode = "career",
 ) {
-  const activeStats = getStatsForCategory(player, category);
+  const activeStats = getStatsForCategory(player, category, statProfileMode);
 
   const ppgScore = normalizeStat(
     safeNumber(activeStats.ppg, 0),
@@ -134,12 +194,30 @@ export function getPlayerRating(
   const starPowerScore = safeNumber(player.ratings.starPower, 40);
   const careerLegacyScore = safeNumber(player.ratings.careerLegacy, 30);
 
+  const minimums = getProfileMinimums(statProfileMode);
+
+  const qualifiesForShootingRating = hasEnoughSample(
+    activeStats,
+    minimums.shootingGames,
+    minimums.minutesPerGame,
+  );
+
+  const qualifiesForEfficiencyRating = hasEnoughSample(
+    activeStats,
+    minimums.efficiencyGames,
+    minimums.minutesPerGame,
+  );
+
   if (category === "scoring") return toCategoryRating(scoringScore);
-  if (category === "shooting") return toCategoryRating(shootingScore);
+  if (category === "shooting") {
+    return qualifiesForShootingRating ? toCategoryRating(shootingScore) : 0;
+  }
   if (category === "playmaking") return toCategoryRating(playmakingScore);
   if (category === "rebounding") return toCategoryRating(reboundingScore);
   if (category === "defense") return defenseScore;
-  if (category === "efficiency") return toCategoryRating(efficiencyScore);
+  if (category === "efficiency") {
+    return qualifiesForEfficiencyRating ? toCategoryRating(efficiencyScore) : 0;
+  }
   if (category === "careerLegacy") return careerLegacyScore;
   if (category === "starPower") return starPowerScore;
   if (category === "peakOverall") {

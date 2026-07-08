@@ -1,5 +1,5 @@
-﻿import { players, getPlayerInsights } from "../court-data";
-import { getPlayerRating } from "../player-ratings";
+﻿import { getPlayerInsights, type Player, type StatMode } from "../court-data";
+import { getPlayerRating, type PlayerStatProfileMode } from "../player-ratings";
 import { getArchetypePillStyle } from "./ranking-style-helpers";
 
 type ArchetypeOptionDetail = {
@@ -8,18 +8,24 @@ type ArchetypeOptionDetail = {
 };
 
 type ArchetypeCardGridProps = {
+  players: Player[];
+  statProfileFilter: PlayerStatProfileMode;
+  statMode: StatMode;
   archetypeOptionDetails: ArchetypeOptionDetail[];
   selectedArchetype: string;
   onSelectArchetype: (label: string) => void;
 };
 
 export function ArchetypeCardGrid({
+  players,
+  statProfileFilter,
+  statMode,
   archetypeOptionDetails,
   selectedArchetype,
   onSelectArchetype,
 }: ArchetypeCardGridProps) {
   return (
-    <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="statcourt-scroll mt-4 grid max-h-80 gap-2 overflow-y-auto pr-1 sm:max-h-105 sm:grid-cols-2 lg:grid-cols-3">
       {archetypeOptionDetails.map(({ label, archetype }) => {
         const isSelected = selectedArchetype === label;
 
@@ -29,14 +35,17 @@ export function ArchetypeCardGrid({
 
         // Players in archetype group
         const archetypePlayers = players.filter(
-          (player) => getPlayerInsights(player).archetype?.label === label,
+          (player) =>
+            getPlayerInsights(player, statMode).archetype?.label === label,
         );
 
         // Average rating between all players in archetype
         const averageRating =
           archetypePlayers.length > 0
             ? archetypePlayers.reduce(
-                (total, player) => total + getPlayerRating(player, "careerOverall"),
+                (total, player) =>
+                  total +
+                  getPlayerRating(player, "careerOverall", statProfileFilter),
                 0,
               ) / archetypePlayers.length
             : null;
@@ -44,11 +53,13 @@ export function ArchetypeCardGrid({
         // Highest overall player in archetype group
         const representative = players
           .filter(
-            (player) => getPlayerInsights(player).archetype?.label === label,
+            (player) =>
+              getPlayerInsights(player, statMode).archetype?.label === label,
           )
           .sort(
             (a, b) =>
-              getPlayerRating(b, "careerOverall") - getPlayerRating(a, "careerOverall"),
+              getPlayerRating(b, "careerOverall", statProfileFilter) -
+              getPlayerRating(a, "careerOverall", statProfileFilter),
           )[0];
 
         return (
@@ -91,7 +102,7 @@ export function ArchetypeCardGrid({
               {averageRating !== null && (
                 <span className="text-center">
                   <span className="block text-[8px] uppercase text-white/35">
-                    Avg Ovr
+                    Avg Rating
                   </span>
                   <span className="mt-1 block text-md font-bold text-white">
                     {averageRating.toFixed(1)}
@@ -105,4 +116,3 @@ export function ArchetypeCardGrid({
     </div>
   );
 }
-

@@ -8,8 +8,9 @@ import {
   type Team,
 } from "../court-data";
 import { getArchetypePillStyle } from "./ranking-style-helpers";
+import { RankingStatProfileFilter } from "./ranking-stat-profile-filter";
 
-type OpenFilter = "era" | "position" | "team" | "archetype" | null;
+type OpenFilter = "profile" | "position" | "team" | "archetype" | null;
 
 type ArchetypeOptionDetail = {
   label: string;
@@ -18,7 +19,7 @@ type ArchetypeOptionDetail = {
 
 type RankingFilterBarProps = {
   openFilter: OpenFilter;
-  eraFilter: string;
+  statProfileFilter: "career" | "peak" | "current";
   positionFilter: Position | "";
   teamFilter: Team | "";
   playerSearch: string;
@@ -27,7 +28,7 @@ type RankingFilterBarProps = {
   selectedArchetypeOption: ArchetypeOptionDetail | undefined;
   archetypeOptionDetails: ArchetypeOptionDetail[];
   onOpenFilter: (filter: OpenFilter) => void;
-  onEraFilterChange: (value: string) => void;
+  onStatProfileFilterChange: (value: "career" | "peak" | "current") => void;
   onPositionFilterChange: (value: Position | "") => void;
   onTeamFilterChange: (value: Team | "") => void;
   onArchetypeFilterChange: (value: string) => void;
@@ -36,7 +37,7 @@ type RankingFilterBarProps = {
 
 export function RankingFilterBar({
   openFilter,
-  eraFilter,
+  statProfileFilter,
   positionFilter,
   teamFilter,
   playerSearch,
@@ -45,44 +46,31 @@ export function RankingFilterBar({
   selectedArchetypeOption,
   archetypeOptionDetails,
   onOpenFilter,
-  onEraFilterChange,
+  onStatProfileFilterChange,
   onPositionFilterChange,
   onTeamFilterChange,
   onArchetypeFilterChange,
   onPlayerSearchChange,
 }: RankingFilterBarProps) {
+  const statProfileLabels = {
+    career: "Career",
+    peak: "3-Year Peak",
+    current: "Latest Season",
+  };
+
   return (
     <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
-      {/* Era filter */}
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => onOpenFilter(openFilter === "era" ? null : "era")}
-          className="flex min-w-28 cursor-pointer items-center justify-between rounded-md border border-white/20 bg-black/30 px-3 py-1 font-michroma text-xs text-white/70 transition hover:border-[#1bc2ec]/60"
-        >
-          <span>{eraFilter === "all-time" ? "All-Time" : eraFilter}</span>
-          <span className="text-[#1bc2ec]">▾</span>
-        </button>
-
-        {openFilter === "era" && (
-          <div className="absolute left-0 top-full z-80 mt-2 w-full rounded-md border border-white/20 bg-[#07111f] py-1">
-            <button
-              type="button"
-              onClick={() => {
-                onEraFilterChange("all-time");
-                onOpenFilter(null);
-              }}
-              className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs transition ${
-                eraFilter === "all-time"
-                  ? "bg-[#1bc2ec]/20 text-[#1bc2ec]"
-                  : "text-white/70 hover:bg-white/10"
-              }`}
-            >
-              All-Time
-            </button>
-          </div>
-        )}
-      </div>
+      <RankingStatProfileFilter
+        isOpen={openFilter === "profile"}
+        selectedProfile={statProfileFilter}
+        onToggle={() =>
+          onOpenFilter(openFilter === "profile" ? null : "profile")
+        }
+        onSelectProfile={(profile) => {
+          onStatProfileFilterChange(profile);
+          onOpenFilter(null);
+        }}
+      />
 
       {/* Position filter */}
       <div className="relative">

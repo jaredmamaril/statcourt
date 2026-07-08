@@ -13,7 +13,7 @@ export function RankingPageDescription({
       : "Explore leaderboard tabs, filter by team or position, and see which players lead each statistical category.";
 
   return (
-    <p className="mx-auto mt-2 max-w-3xl text-center font-michroma text-xs leading-relaxed text-white/40">
+    <p className="mx-auto mt-2 max-w-70 text-center font-michroma text-[9px] leading-relaxed text-white/40 sm:max-w-3xl sm:text-xs">
       {description}
     </p>
   );

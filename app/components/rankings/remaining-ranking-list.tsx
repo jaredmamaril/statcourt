@@ -1,6 +1,10 @@
 import PlayerImage from "../player-image";
 import { getPlayerHeadshot } from "../player-images";
-import { getPlayerRating, type PlayerRatingCategory } from "../player-ratings";
+import {
+  getPlayerRating,
+  type PlayerRatingCategory,
+  type PlayerStatProfileMode,
+} from "../player-ratings";
 import { getTeamColor, getPlayerInsights, type Player } from "../court-data";
 
 import { getArchetypePillStyle } from "./ranking-style-helpers";
@@ -10,6 +14,7 @@ type RemainingRankingListProps = {
   players: Player[];
   ratingCategory: PlayerRatingCategory;
   ratingLabel: string;
+  statProfileFilter: PlayerStatProfileMode;
   onViewPlayer: (playerName: string) => void;
 };
 
@@ -17,6 +22,7 @@ export function RemainingRankingList({
   players,
   ratingCategory,
   ratingLabel,
+  statProfileFilter,
   onViewPlayer,
 }: RemainingRankingListProps) {
   const DISPLAY_LIMIT = 100;
@@ -30,7 +36,11 @@ export function RemainingRankingList({
       <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
         {players.slice(3, DISPLAY_LIMIT).map((player, index) => {
           const archetype = getPlayerInsights(player).archetype;
-          const rating = getPlayerRating(player, ratingCategory).toFixed(1);
+          const rating = getPlayerRating(
+            player,
+            ratingCategory,
+            statProfileFilter,
+          ).toFixed(1);
           const teamColor = getTeamColor(player.team);
 
           return (
