@@ -52,14 +52,8 @@ export function RankingFilterBar({
   onArchetypeFilterChange,
   onPlayerSearchChange,
 }: RankingFilterBarProps) {
-  const statProfileLabels = {
-    career: "Career",
-    peak: "3-Year Peak",
-    current: "Latest Season",
-  };
-
   return (
-    <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
+    <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5 px-3 sm:gap-2 sm:px-0">
       <RankingStatProfileFilter
         isOpen={openFilter === "profile"}
         selectedProfile={statProfileFilter}
@@ -72,17 +66,16 @@ export function RankingFilterBar({
         }}
       />
 
-      {/* Position filter */}
       <div className="relative">
         <button
           type="button"
           onClick={() =>
             onOpenFilter(openFilter === "position" ? null : "position")
           }
-          className={`flex cursor-pointer items-center gap-3 rounded-md border font-michroma text-xs transition ${
+          className={`flex h-6 cursor-pointer items-center gap-1 rounded-md border px-2 font-michroma text-[9px] transition sm:h-auto sm:gap-3 sm:py-1 sm:text-xs ${
             positionFilter
-              ? "w-18 border-[#1bc2ec] bg-[#1bc2ec]/10 px-3 py-1 text-[#1bc2ec]"
-              : "w-40 border-white/20 bg-black/30 px-3 py-1 text-white/70 hover:border-white/60"
+              ? "w-14 border-[#1bc2ec] bg-[#1bc2ec]/10 text-[#1bc2ec] sm:w-18 sm:px-3"
+              : "w-32 border-white/20 bg-black/30 text-white/70 hover:border-white/60 sm:w-40 sm:px-3"
           }`}
         >
           <span className="flex-1 text-left">
@@ -99,7 +92,7 @@ export function RankingFilterBar({
                 onPositionFilterChange("");
                 onOpenFilter(null);
               }}
-              className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs transition ${
+              className={`block w-full cursor-pointer px-2 py-1.5 text-[9px] sm:px-3 sm:py-2 sm:text-xs text-left font-michroma transition ${
                 positionFilter === ""
                   ? "bg-[#1bc2ec]/20 text-[#1bc2ec]"
                   : "text-white/70 hover:bg-white/10"
@@ -116,7 +109,7 @@ export function RankingFilterBar({
                   onPositionFilterChange(position);
                   onOpenFilter(null);
                 }}
-                className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs transition ${
+                className={`block w-full cursor-pointer px-2 py-1.5 text-[9px] sm:px-3 sm:py-2 sm:text-xs text-left font-michroma transition ${
                   positionFilter === position
                     ? "bg-[#1bc2ec]/20 text-[#1bc2ec]"
                     : "text-white/70 hover:bg-white/10"
@@ -134,7 +127,7 @@ export function RankingFilterBar({
         <button
           type="button"
           onClick={() => onOpenFilter(openFilter === "team" ? null : "team")}
-          className="flex min-w-32 cursor-pointer items-center justify-between rounded-md border border-white/20 bg-black/30 px-3 py-1 font-michroma text-xs text-white/70 transition hover:border-[#1bc2ec]/60"
+          className="flex h-6 min-w-28 cursor-pointer items-center justify-between rounded-md border border-white/20 bg-black/30 px-2 font-michroma text-[9px] text-white/70 transition hover:border-[#1bc2ec]/60 sm:h-auto sm:min-w-32 sm:px-3 sm:py-1 sm:text-xs"
           style={{
             color: teamFilter ? teamColors[teamFilter] : undefined,
             borderColor: teamFilter ? teamColors[teamFilter] : undefined,
@@ -147,7 +140,7 @@ export function RankingFilterBar({
                 alt={`${teamFilter} logo`}
                 width={16}
                 height={16}
-                className="h-4 w-4 object-contain"
+                className="h-3.5 w-3.5 object-contain sm:h-4 sm:w-4"
               />
             )}
             <span>{teamFilter || "All Teams"}</span>
@@ -163,7 +156,7 @@ export function RankingFilterBar({
                 onTeamFilterChange("");
                 onOpenFilter(null);
               }}
-              className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs transition ${
+              className={`block w-full cursor-pointer px-2 py-1.5 text-[9px] sm:px-3 sm:py-2 sm:text-xs text-left font-michroma text-xs transition ${
                 teamFilter === ""
                   ? "bg-[#1bc2ec]/20 text-[#1bc2ec]"
                   : "text-white/70 hover:bg-white/10"
@@ -180,7 +173,7 @@ export function RankingFilterBar({
                   onTeamFilterChange(team);
                   onOpenFilter(null);
                 }}
-                className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs transition ${
+                className={`block w-full cursor-pointer px-2 py-1.5 text-[9px] sm:px-3 sm:py-2 sm:text-xs text-left font-michroma transition ${
                   teamFilter === team ? "bg-[#1bc2ec]/20" : "hover:bg-white/10"
                 }`}
                 style={{ color: teamColors[team] }}
@@ -201,14 +194,13 @@ export function RankingFilterBar({
         )}
       </div>
 
-      {/* Archetype filter */}
       <div className="relative">
         <button
           type="button"
           onClick={() =>
             onOpenFilter(openFilter === "archetype" ? null : "archetype")
           }
-          className="flex min-w-40 cursor-pointer items-center justify-between rounded-md border border-white/20 bg-black/30 px-3 py-1 font-michroma text-xs text-white/70 transition hover:border-[#1bc2ec]/60"
+          className="flex h-6 min-w-36 cursor-pointer items-center justify-between rounded-md border border-white/20 bg-black/30 px-2 font-michroma text-[9px] text-white/70 transition hover:border-[#1bc2ec]/60 sm:h-auto sm:min-w-40 sm:px-3 sm:py-1 sm:text-xs"
           style={{
             borderColor: selectedArchetypeColor,
           }}
@@ -234,7 +226,7 @@ export function RankingFilterBar({
                 onArchetypeFilterChange("");
                 onOpenFilter(null);
               }}
-              className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs transition ${
+              className={`block w-full cursor-pointer px-2 py-1.5 text-[9px] sm:px-3 sm:py-2 sm:text-xs text-left font-michroma transition ${
                 archetypeFilter === ""
                   ? "bg-[#1bc2ec]/20 text-[#1bc2ec]"
                   : "text-white/70 hover:bg-white/10"
@@ -256,7 +248,7 @@ export function RankingFilterBar({
                     onArchetypeFilterChange(label);
                     onOpenFilter(null);
                   }}
-                  className={`block w-full cursor-pointer px-3 py-2 text-left font-michroma text-xs transition ${
+                  className={`block w-full cursor-pointer px-2 py-1.5 text-[9px] sm:px-3 sm:py-2 sm:text-xs text-left font-michroma transition ${
                     archetypeFilter === label
                       ? "bg-[#1bc2ec]/20"
                       : "hover:bg-white/10"
@@ -273,12 +265,11 @@ export function RankingFilterBar({
         )}
       </div>
 
-      {/* Player search */}
       <input
         value={playerSearch}
         onChange={(event) => onPlayerSearchChange(event.target.value)}
         placeholder="Search Player..."
-        className="min-w-44 rounded-md border border-white/20 bg-black/30 px-3 py-1 font-michroma text-xs text-white outline-none placeholder:text-white/35 focus:border-white"
+        className="h-6 min-w-40 rounded-md border border-white/20 bg-black/30 px-2 font-michroma text-[9px] text-white outline-none placeholder:text-white/35 focus:border-white sm:h-auto sm:min-w-44 sm:px-3 sm:py-1 sm:text-xs"
       />
     </div>
   );

@@ -28,7 +28,7 @@ export function RemainingRankingList({
   const DISPLAY_LIMIT = 100;
   return (
     <>
-      <div className="mb-2 flex items-center justify-between px-3 font-michroma text-[9px] uppercase tracking-wide text-white/40">
+      <div className="mb-2 flex items-center justify-between px-2 font-michroma text-[8px] uppercase tracking-wide text-white/40 sm:px-3 sm:text-[9px]">
         <span className="-ml-2">Remaining Rankings</span>
         <span className="-mr-2">Rating</span>
       </div>
@@ -46,9 +46,9 @@ export function RemainingRankingList({
           return (
             <div
               key={player.id}
-              className="group relative grid w-full grid-cols-[44px_40px_1fr_52px_56px] items-center rounded-md border border-white/10 bg-black/30 px-3 py-2 transition-all duration-200 hover:border-[#1bc2ec]/50 hover:bg-[#1bc2ec]/10"
+              className="group relative grid w-full grid-cols-[32px_38px_minmax(0,1fr)_42px] items-center gap-1.5 rounded-md border border-white/10 bg-black/30 px-2 py-1 transition-all duration-200 hover:border-[#1bc2ec]/50 hover:bg-[#1bc2ec]/10 sm:grid-cols-[44px_64px_minmax(0,1fr)_48px_56px] sm:gap-2 sm:px-3 sm:py-2"
             >
-              <span className="font-michroma text-xs font-bold text-[#1bc2ec]">
+              <span className="font-michroma text-[11px] font-bold text-[#1bc2ec] sm:text-xs">
                 #{index + 4}
               </span>
 
@@ -57,17 +57,17 @@ export function RemainingRankingList({
                 alt={player.name}
                 width={120}
                 height={120}
-                className="h-16 w-16 rounded-md object-cover"
+                className="h-9.5 w-9.5 rounded-md object-cover sm:h-16 sm:w-16"
               />
 
-              <div className="min-w-0 ml-4">
-                <p className="truncate font-michroma text-[13px] font-semibold text-white">
+              <div className="min-w-0 pt-1 sm:pt-0">
+                <p className="truncate font-michroma text-[10px] font-semibold text-white sm:text-[13px]">
                   {player.name}
                 </p>
 
                 {archetype && (
                   <span
-                    className="mt-1 inline-flex w-fit max-w-full rounded border px-2 py-0.5 font-michroma text-[9px]"
+                    className="inline-flex max-w-18 rounded border px-1 py-0.5 font-michroma text-[5.5px] leading-none sm:max-w-full sm:px-2 sm:text-[9px]"
                     style={getArchetypePillStyle(archetype)}
                   >
                     <span className="truncate uppercase">
@@ -76,13 +76,20 @@ export function RemainingRankingList({
                   </span>
                 )}
 
-                <p className="mt-0.5 font-michroma text-[9px] text-white/40">
+                <p
+                  className="font-michroma text-[7px] font-semibold sm:hidden"
+                  style={{ color: teamColor }}
+                >
+                  {player.team}
+                </p>
+
+                <p className="mt-0.5 font-michroma text-[7px] text-white/40 sm:text-[9px]">
                   {player.position} - #{player.jerseyNumber}
                 </p>
               </div>
 
               <span
-                className="text-right font-michroma font-semibold text-[11px]"
+                className="hidden text-right font-michroma text-[11px] font-semibold sm:block"
                 style={{
                   color: teamColor,
                 }}
@@ -90,7 +97,7 @@ export function RemainingRankingList({
                 {player.team}
               </span>
 
-              <span className="text-right font-michroma text-xs font-bold text-white">
+              <span className="justify-self-end text-right font-michroma text-[11px] font-bold text-white sm:text-xs">
                 {rating}
               </span>
 

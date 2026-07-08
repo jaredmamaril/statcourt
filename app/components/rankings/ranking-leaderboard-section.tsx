@@ -64,7 +64,7 @@ export function RankingLeaderboardSection({
 }: RankingLeaderboardSectionProps) {
   return (
     <>
-      <h1 className="text-center font-michroma text-lg uppercase tracking-wide text-white sm:text-xl lg:text-2xl">
+      <h1 className="text-center font-michroma text-[17px] uppercase tracking-wide text-white sm:text-xl lg:text-2xl">
         {rankingHeading}
       </h1>
 
