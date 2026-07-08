@@ -67,7 +67,7 @@ export function RemainingRankingList({
 
                 {archetype && (
                   <span
-                    className="inline-flex max-w-18 rounded border px-1 py-0.5 font-michroma text-[5.5px] leading-none sm:max-w-full sm:px-2 sm:text-[9px]"
+                    className="inline-flex max-w-18 rounded border px-1 py-1 font-michroma text-[5.5px] leading-none sm:max-w-full sm:px-2 sm:text-[9px]"
                     style={getArchetypePillStyle(archetype)}
                   >
                     <span className="truncate uppercase">
