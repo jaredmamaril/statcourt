@@ -1,4 +1,3 @@
-import type { LineupSlot } from "../../court-data";
 import type { SavedLineup } from "../shared/lineup-types";
 
 export function getSavedSortLabel(savedLineupSort: string) {
@@ -15,7 +14,6 @@ type GetFilteredSavedLineupsParams = {
   savedLineupSort: string;
   savedLineupTierFilter: string;
   savedLineupArchetypeFilter: string;
-  lineupPositions: LineupSlot[];
 };
 
 export function getFilteredSavedLineups({
@@ -24,7 +22,6 @@ export function getFilteredSavedLineups({
   savedLineupSort,
   savedLineupTierFilter,
   savedLineupArchetypeFilter,
-  lineupPositions,
 }: GetFilteredSavedLineupsParams) {
   return savedLineups
     .filter((lineup) => {

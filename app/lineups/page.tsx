@@ -77,7 +77,9 @@ export default function Lineups() {
     const tab = searchParams.get("tab");
 
     if (tab === "featured" || tab === "builder" || tab === "saved") {
-      setActiveTab(tab);
+      const frameId = requestAnimationFrame(() => setActiveTab(tab));
+
+      return () => cancelAnimationFrame(frameId);
     }
   }, [searchParams]);
 
@@ -118,9 +120,8 @@ export default function Lineups() {
   const { savedLineups, updateSavedLineups } = useSavedLineups();
   const [savedLineupSearch, setSavedLineupSearch] = useState("");
   const [savedLineupSort, setSavedLineupSort] = useState("highestOvr");
-  const [savedLineupTierFilter, setSavedLineupTierFilter] = useState("");
-  const [savedLineupArchetypeFilter, setSavedLineupArchetypeFilter] =
-    useState("");
+  const [savedLineupTierFilter] = useState("");
+  const [savedLineupArchetypeFilter] = useState("");
   const [openSavedDropdown, setOpenSavedDropdown] = useState<string | null>(
     null,
   );
@@ -203,7 +204,6 @@ export default function Lineups() {
     savedLineupSort,
     savedLineupTierFilter,
     savedLineupArchetypeFilter,
-    lineupPositions,
   });
 
   // Page display values
@@ -398,7 +398,7 @@ export default function Lineups() {
 
   return (
     <main className="min-h-screen overflow-x-hidden text-white">
-      <section className="mx-auto w-full max-w-7xl px-3 pb-12 sm:px-6">
+      <section className="mx-auto w-full max-w-7xl px-3 pb-12 lg:px-6">
         <LineupPageHeader
           activeTab={activeTab}
           shouldShowTopText={shouldShowTopText}
@@ -500,19 +500,19 @@ export default function Lineups() {
               />
             )
           ) : (
-            <div className="mx-auto mt-16 max-w-md rounded-lg border border-[#1bc2ec]/35 bg-[#06131d]/80 p-6 text-center shadow-[0_0_28px_rgba(27,194,236,0.16)]">
-              <p className="font-michroma text-lg uppercase text-white">
+            <div className="mx-auto mt-6 max-w-[300px] rounded-lg border border-[#1bc2ec]/35 bg-[#06131d]/80 p-3.5 text-center shadow-[0_0_22px_rgba(27,194,236,0.14)] lg:mt-16 lg:max-w-md lg:p-6 lg:shadow-[0_0_28px_rgba(27,194,236,0.16)]">
+              <p className="font-michroma text-[10px] uppercase text-white lg:text-lg">
                 Sign in to view saved lineups
               </p>
 
-              <p className="mt-3 font-michroma text-[10px] leading-relaxed text-white/45">
+              <p className="mt-2 font-michroma text-[7px] leading-relaxed text-white/45 lg:mt-3 lg:text-[10px]">
                 Your saved teams will appear here once you create an account.
               </p>
 
               <button
                 type="button"
                 onClick={() => router.push("/signin")}
-                className="mt-5 rounded-md border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-4 py-3 font-michroma text-[10px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white"
+                className="mt-3 rounded-md border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-3 py-2 font-michroma text-[7px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white lg:mt-5 lg:px-4 lg:py-3 lg:text-[10px]"
               >
                 Sign In
               </button>

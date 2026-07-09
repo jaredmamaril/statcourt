@@ -44,8 +44,6 @@ export default function Navbar() {
       top: 0,
       behavior: "auto",
     });
-
-    setIsMobileMenuOpen(false);
   }, [pathname]);
 
   if (pathname === "/") {
@@ -64,7 +62,7 @@ export default function Navbar() {
           zIndex: 999999, // On top of everything
         }}
       >
-        <div className="grid h-12 w-full grid-cols-[auto_1fr_auto] items-center gap-2 px-2 sm:px-3">
+        <div className="grid h-12 w-full grid-cols-[auto_1fr_auto] items-center gap-2 px-2 lg:px-3">
           {/* Logo and site name on the left */}
           <Link href="/" className="flex w-fit items-center gap-3">
             <Image
@@ -73,9 +71,9 @@ export default function Navbar() {
               width={32}
               height={32}
               priority
-              className="h-10 w-10 rounded-md sm:h-12 sm:w-12"
+              className="h-10 w-10 rounded-md lg:h-12 lg:w-12"
             />
-            <span className="hidden font-michroma text-xl font-bold text-[#1bc2ec] min-[360px]:block sm:text-2xl">
+            <span className="hidden font-michroma text-xl font-bold text-[#1bc2ec] min-[360px]:block lg:text-2xl">
               statcourt
             </span>
           </Link>
@@ -164,17 +162,18 @@ export default function Navbar() {
               <Link
                 href="/signin"
                 className="
-                group inline-flex cursor-pointer items-center gap-2 rounded-md
+                group inline-flex cursor-pointer items-center gap-1.5 rounded-md
                 border border-[#1bc2ec]/60 bg-[#06131d]/80
-                px-3.5 py-2 font-michroma text-[9px] uppercase tracking-wide
+                px-2.5 py-2 font-michroma text-[7px] uppercase tracking-wide
                 text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.22)]
                 transition duration-200
                 hover:border-[#1bc2ec]/80 hover:bg-[#1bc2ec]/10
                 hover:text-white hover:shadow-[0_0_20px_rgba(27,194,236,0.35)]
                 active:scale-[0.97]
+                lg:gap-2 lg:px-3.5 lg:text-[9px]
               "
               >
-                <User className="h-3.5 w-3.5 transition group-hover:brightness-125" />
+                <User className="h-3 w-3 transition group-hover:brightness-125 lg:h-3.5 lg:w-3.5" />
                 Sign In
               </Link>
             )}
@@ -183,8 +182,8 @@ export default function Navbar() {
       </header>
 
       {isMobileMenuOpen && (
-        <div className="fixed left-0 right-0 top-12 z-999998 border-b border-white/10 bg-[#06131d]/95 px-3 py-3 shadow-[0_0_24px_rgba(0,0,0,0.45)]  lg:hidden">
-          <div className="grid gap-2">
+        <div className="fixed left-0 right-0 top-12 z-999998 border-b border-white/10 bg-[#06131d]/95 px-3 py-2.5 shadow-[0_0_24px_rgba(0,0,0,0.45)] lg:hidden">
+          <div className="grid gap-1.5">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
 
@@ -192,7 +191,8 @@ export default function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`rounded-md border px-3 py-3 font-michroma text-[10px] tracking-wide transition ${
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`rounded-md border px-3 py-2.5 font-michroma text-[9px] tracking-wide transition ${
                     isActive
                       ? "border-[#1bc2ec]/60 bg-[#1bc2ec]/10 text-[#1bc2ec]"
                       : "border-white/10 bg-black/20 text-white/70 hover:border-[#1bc2ec]/40 hover:text-[#1bc2ec]"

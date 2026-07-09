@@ -50,7 +50,14 @@ import type {
   SortDirection,
   CompareSlots,
 } from "../components/court-data";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function PlayersPage() {
@@ -199,11 +206,19 @@ function Players() {
 
   // Effects
   useEffect(() => {
-    setRecentlyViewedPlayers(getSavedRecentPlayers());
+    const frameId = requestAnimationFrame(() => {
+      setRecentlyViewedPlayers(getSavedRecentPlayers());
+    });
+
+    return () => cancelAnimationFrame(frameId);
   }, []);
 
   useEffect(() => {
-    setCompareSlots(getSavedCompareSlots());
+    const frameId = requestAnimationFrame(() => {
+      setCompareSlots(getSavedCompareSlots());
+    });
+
+    return () => cancelAnimationFrame(frameId);
   }, []);
 
   useEffect(() => {
@@ -346,7 +361,7 @@ function Players() {
   }, []);
 
   // Event handlers
-  function addRecentlyViewedPlayer(playerName: string) {
+  const addRecentlyViewedPlayer = useCallback((playerName: string) => {
     setRecentlyViewedPlayers((currentRecentPlayers) => {
       const nextRecentPlayers = addRecentPlayer(
         currentRecentPlayers,
@@ -357,7 +372,7 @@ function Players() {
 
       return nextRecentPlayers;
     });
-  }
+  }, []);
 
   const updateFavorite = (playerName: string) => {
     setFavorites((prev) =>
@@ -424,11 +439,11 @@ function Players() {
     });
   }
 
-  function openPlayerCard(playerName: string) {
+  const openPlayerCard = useCallback((playerName: string) => {
     setCurrentPlayer(playerName);
     addRecentlyViewedPlayer(playerName);
     setIsCardFlipped(false);
-  }
+  }, [addRecentlyViewedPlayer]);
 
   function closePlayerCard() {
     setCurrentPlayer("");
@@ -494,7 +509,7 @@ function Players() {
 
   return (
     <main className="min-h-screen overflow-x-hidden text-white">
-      <section className="relative mx-auto w-full max-w-6xl px-4 pt-3 pb-12 sm:px-6 lg:px-6">
+      <section className="relative mx-auto w-full max-w-6xl px-4 pt-3 pb-12 lg:px-6">
         <div
           className={
             selectedPlayer

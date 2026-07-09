@@ -61,6 +61,7 @@ export function BuilderWorkspace({
 
           <div className="mt-2">
             <BuilderPlayerPicker
+              key={activeBuildPosition}
               activeBuildPosition={activeBuildPosition}
               customLineup={customLineup}
               buildPlayerSearch={buildPlayerSearch}

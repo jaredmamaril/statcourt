@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { LineupSlot } from "../../court-data";
 import { getBuilderPlayerRating } from "./builder-position-helpers";
 import { BuilderPlayerCard } from "./builder-player-card";
@@ -21,6 +22,15 @@ export function BuilderPlayerPicker({
   onSearchChange,
   onPickPlayer,
 }: BuilderPlayerPickerProps) {
+  const [openScoutPlayerId, setOpenScoutPlayerId] = useState<number | null>(
+    null,
+  );
+
+  function pickPlayer(playerName: string) {
+    setOpenScoutPlayerId(null);
+    onPickPlayer(playerName);
+  }
+
   return (
     <div className="flex min-w-0 flex-col gap-2">
       <div className="flex justify-center">
@@ -45,7 +55,13 @@ export function BuilderPlayerPicker({
                 player={player}
                 activeBuildPosition={activeBuildPosition}
                 isSelected={isSelected}
-                onPickPlayer={onPickPlayer}
+                isScoutOpen={openScoutPlayerId === player.id}
+                onToggleScout={() => {
+                  setOpenScoutPlayerId((currentPlayerId) =>
+                    currentPlayerId === player.id ? null : player.id,
+                  );
+                }}
+                onPickPlayer={pickPlayer}
               />
             );
           })}

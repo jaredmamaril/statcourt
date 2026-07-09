@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { normalizeStat, type LineupSlot } from "../../court-data";
 import PlayerImage from "../../player-image";
 import { getPlayerHeadshot } from "../../player-images";
@@ -16,6 +15,8 @@ type BuilderPlayerCardProps = {
   player: Player;
   activeBuildPosition: LineupSlot;
   isSelected: boolean;
+  isScoutOpen: boolean;
+  onToggleScout: () => void;
   onPickPlayer: (playerName: string) => void;
 };
 
@@ -23,9 +24,10 @@ export function BuilderPlayerCard({
   player,
   activeBuildPosition,
   isSelected,
+  isScoutOpen,
+  onToggleScout,
   onPickPlayer,
 }: BuilderPlayerCardProps) {
-  const [isScoutOpen, setIsScoutOpen] = useState(false);
   const positionFit = getPositionFit(player, activeBuildPosition);
   const positionRating = getBuilderPlayerRatingForPosition(
     player,
@@ -69,7 +71,7 @@ export function BuilderPlayerCard({
         const isTouchDevice = window.matchMedia("(hover: none)").matches;
 
         if (isTouchDevice) {
-          setIsScoutOpen((current) => !current);
+          onToggleScout();
           return;
         }
 
@@ -82,7 +84,7 @@ export function BuilderPlayerCard({
           const isTouchDevice = window.matchMedia("(hover: none)").matches;
 
           if (isTouchDevice) {
-            setIsScoutOpen((current) => !current);
+            onToggleScout();
             return;
           }
 
@@ -139,7 +141,6 @@ export function BuilderPlayerCard({
         isScoutOpen={isScoutOpen}
         onPickPlayer={() => {
           onPickPlayer(player.name);
-          setIsScoutOpen(false);
         }}
       />
     </div>

@@ -39,7 +39,7 @@ export function SavedLineupsSection({
   onDeleteLineup,
 }: SavedLineupsSectionProps) {
   return (
-    <section className="min-h-[calc(100vh-140px)]">
+    <section className="min-h-[calc(100svh-120px)] lg:min-h-[calc(100vh-140px)]">
       {savedLineups.length === 0 ? (
         <SavedLineupsEmptyState
           onBuildLineup={() => {
@@ -48,7 +48,7 @@ export function SavedLineupsSection({
           }}
         />
       ) : (
-        <div className="mt-6">
+        <div className="mt-3 lg:mt-6">
           <SavedLineupsToolbar
             savedLineupSearch={savedLineupSearch}
             savedLineupSort={savedLineupSort}
@@ -61,7 +61,7 @@ export function SavedLineupsSection({
           />
 
           {filteredSavedLineups.length === 0 ? (
-            <p className="mt-10 text-center font-michroma text-xs text-white/40">
+            <p className="mt-6 text-center font-michroma text-[8px] text-white/40 lg:mt-10 lg:text-xs">
               No saved lineups match your search.
             </p>
           ) : (

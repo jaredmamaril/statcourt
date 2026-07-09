@@ -10,7 +10,6 @@ export function useAnimatedScoutOverall(
     if (!isScoutOpen || displayedScoutOverall === null) return;
 
     const targetOverall = displayedScoutOverall;
-    setAnimatedScoutOverall(0);
 
     const duration = 600;
     const startTime = performance.now();

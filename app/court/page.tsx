@@ -136,7 +136,7 @@ export default function Court() {
         aria-hidden="true"
       />
 
-      <section className="page-enter relative z-10 min-h-screen px-6 pt-2 pb-8 sm:px-10">
+      <section className="page-enter relative z-10 min-h-screen px-3 pt-2 pb-8 lg:px-10">
         <CourtComparisonHeader
           leftPlayer={selectedLeftPlayer}
           rightPlayer={selectedRightPlayer}
