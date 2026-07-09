@@ -8,6 +8,8 @@ type BuilderPlayerCardOverlayProps = {
   baseRating: number;
   positionRating: number;
   positionPenalty: number;
+  isScoutOpen: boolean;
+  onPickPlayer: () => void;
 };
 
 export function BuilderPlayerCardOverlay({
@@ -15,25 +17,33 @@ export function BuilderPlayerCardOverlay({
   baseRating,
   positionRating,
   positionPenalty,
+  isScoutOpen,
+  onPickPlayer,
 }: BuilderPlayerCardOverlayProps) {
   return (
-    <div className="pointer-events-none absolute inset-0 flex flex-col justify-between bg-black/95 p-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-      <div>
-        <p className="font-michroma text-[8px] uppercase text-[#1bc2ec]">
+    <div
+      className={`absolute inset-0 flex flex-col bg-black/95 p-1 transition-opacity duration-200 lg:p-2 ${
+        isScoutOpen
+          ? "pointer-events-auto opacity-100"
+          : "pointer-events-none opacity-0 group-hover:opacity-100"
+      }`}
+    >
+      <div className="min-h-0 flex-1">
+        <p className="text-center font-michroma text-[5px] uppercase text-[#1bc2ec] lg:text-[8px]">
           Scout Impact
         </p>
 
-        <div className="mt-2 grid gap-1">
+        <div className="mt-0.5 grid gap-0.5 lg:mt-2 lg:gap-1">
           {scoutStats.map((stat) => (
             <div
               key={stat.label}
-              className="grid grid-cols-[45px_1fr_15px] items-center gap-2"
+              className="grid grid-cols-[25px_1fr_10px] items-center gap-0.5 lg:grid-cols-[45px_1fr_15px] lg:gap-2"
             >
-              <p className="font-michroma text-[7px] text-white/45">
+              <p className="truncate font-michroma text-[4.6px] text-white/45 lg:text-[7.7px]">
                 {stat.label}
               </p>
 
-              <div className="ml-1 h-1 overflow-hidden rounded-full bg-white/10">
+              <div className="h-0.5 overflow-hidden rounded-full bg-white/10 lg:ml-1 lg:h-1">
                 <div
                   className="h-full rounded-full bg-[#1bc2ec]"
                   style={{
@@ -42,7 +52,7 @@ export function BuilderPlayerCardOverlay({
                 />
               </div>
 
-              <p className="text-right font-michroma text-[7px] text-white/55">
+              <p className="text-right font-michroma text-[4.2px] text-white/55 lg:text-[7px]">
                 {stat.value}
               </p>
             </div>
@@ -50,7 +60,20 @@ export function BuilderPlayerCardOverlay({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 border-t border-white/10">
+      {/* Mobile button only */}
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          onPickPlayer();
+        }}
+        className="mt-1 rounded border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-1 py-0.5 font-michroma text-[5px] uppercase text-[#1bc2ec] lg:hidden"
+      >
+        Draft
+      </button>
+
+      {/* Desktop details only */}
+      <div className="hidden border-t border-white/10 pt-2 lg:grid lg:grid-cols-2 lg:gap-2">
         <div>
           <p className="font-michroma text-[7px] uppercase text-white/35">
             Base
@@ -73,10 +96,10 @@ export function BuilderPlayerCardOverlay({
           <p className="font-michroma text-[7px] uppercase text-white/35">
             Position Impact
           </p>
-          <p className="font-michroma text-[9px] text-white/60">
+          <p className="font-michroma text-[9px] leading-tight text-white/60">
             {positionPenalty === 0
-              ? "No OVR rating penalty"
-              : `-${positionPenalty} OVR position penalty`}
+              ? "No OVR penalty"
+              : `-${positionPenalty} OVR penalty`}
           </p>
         </div>
       </div>

@@ -7,6 +7,7 @@ import {
 
 type BuilderDraftBoardProps = {
   lineupPositions: LineupSlot[];
+  hoveredBuildPlayer: string;
   customLineup: Record<LineupSlot, string>;
   customLineupOverall: number | null;
   isLineupComplete: boolean;
@@ -19,6 +20,7 @@ type BuilderDraftBoardProps = {
 
 export function BuilderDraftBoard({
   lineupPositions,
+  hoveredBuildPlayer,
   customLineup,
   customLineupOverall,
   isLineupComplete,
@@ -29,38 +31,38 @@ export function BuilderDraftBoard({
   onScoutLineup,
 }: BuilderDraftBoardProps) {
   return (
-    <div
-      className="rounded-md border border-white/10 bg-black/20 p-4"
-      style={{ height: "480px" }}
-    >
+    <div className="rounded-md border border-white/10 bg-black/20 p-1.5 lg:p-4">
       <div className="flex items-center justify-between">
         <div>
-          <p className="font-michroma text-[10px] uppercase text-white/40">
+          <p className="font-michroma text-[7px] uppercase text-white/40 lg:text-[10px]">
             Your Lineup
           </p>
 
-          <h2 className="mt-1 font-michroma text-lg text-white">Draft Board</h2>
+          <h2 className="mt-0.5 font-michroma text-[9px] text-white lg:mt-1 lg:text-lg">
+            Draft Board
+          </h2>
         </div>
 
         <div className="text-center">
-          <p className="font-michroma text-[10px] uppercase text-white/40">
+          <p className="font-michroma text-[7px] uppercase text-white/40 lg:text-[10px]">
             OVR
           </p>
 
           <p
             key={customLineupOverall?.toFixed(1) ?? "--"}
-            className="animate-[ovrRise_250ms_ease-out] font-michroma text-2xl text-[#1bc2ec]"
+            className="animate-[ovrRise_250ms_ease-out] font-michroma text-sm text-[#1bc2ec] lg:text-2xl"
           >
             {customLineupOverall ? customLineupOverall.toFixed(1) : "--"}
           </p>
         </div>
       </div>
 
-      <div className="mt-4 grid gap-2">
+      <div className="mt-2 grid gap-1.5 lg:mt-4 lg:gap-2">
         {lineupPositions.map((position) => {
           const playerName = customLineup[position];
           const player = players.find((player) => player.name === playerName);
           const positionIndex = lineupPositions.indexOf(position);
+          const isHighlighted = player && player.name === hoveredBuildPlayer;
 
           return (
             <div
@@ -71,20 +73,29 @@ export function BuilderDraftBoard({
                   positionIndex,
                 ),
               }}
+              onClick={() => {
+                if (!player) return;
+
+                onHoverPlayer(
+                  hoveredBuildPlayer === player.name ? "" : player.name,
+                );
+              }}
               onMouseEnter={() => {
                 if (player) {
                   onHoverPlayer(player.name);
                 }
               }}
               onMouseLeave={() => onHoverPlayer("")}
-              className={`animate-[loadedPlayerReveal_360ms_ease-out_both] grid h-fit grid-cols-[44px_1fr_auto] items-center gap-2 rounded-md border px-3 py-2 transition ${
-                player
-                  ? "border-emerald-400/50 bg-emerald-400/10 hover:border-[#1bc2ec]/70 hover:bg-[#1bc2ec]/10"
-                  : "border-white/10 bg-black/20"
+              className={`animate-[loadedPlayerReveal_360ms_ease-out_both] grid h-fit grid-cols-[18px_1fr_auto] items-center gap-1 rounded-md border px-1 py-1 transition lg:grid-cols-[44px_1fr_auto] lg:gap-2 lg:px-3 lg:py-2 ${
+                isHighlighted
+                  ? "border-[#1bc2ec]/80 bg-[#1bc2ec]/15 shadow-[0_0_16px_rgba(27,194,236,0.35)]"
+                  : player
+                    ? "border-emerald-400/50 bg-emerald-400/10 hover:border-[#1bc2ec]/70 hover:bg-[#1bc2ec]/10"
+                    : "border-white/10 bg-black/20"
               }`}
             >
               <span
-                className={`font-michroma text-sm ${
+                className={`font-michroma text-[7px] lg:text-sm ${
                   player ? "text-emerald-400" : "text-white/40"
                 }`}
               >
@@ -92,11 +103,11 @@ export function BuilderDraftBoard({
               </span>
 
               <div>
-                <p className="max-w-44 truncate font-michroma text-sm text-white">
+                <p className="max-w-16 truncate font-michroma text-[7px] text-white lg:max-w-44 lg:text-sm">
                   {player ? player.name : "Select Player"}
                 </p>
 
-                <p className="mt-1 font-michroma text-[10px] text-white/35">
+                <p className="mt-0.5 font-michroma text-[5.5px] text-white/35 lg:mt-1 lg:text-[10px]">
                   {player
                     ? `${player.team} - #${player.jerseyNumber}`
                     : "Empty"}
@@ -106,7 +117,11 @@ export function BuilderDraftBoard({
               {player && (
                 <button
                   type="button"
-                  onClick={() => onRemovePlayer(position)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onRemovePlayer(position);
+                    onHoverPlayer("");
+                  }}
                   className="font-michroma text-xs text-white/40 transition hover:text-red-400"
                 >
                   x
@@ -120,7 +135,7 @@ export function BuilderDraftBoard({
           type="button"
           disabled={!isLineupComplete}
           onClick={onScoutLineup}
-          className={`mx-auto rounded-md border px-8 py-5 font-michroma text-[16px] uppercase transition ${
+          className={`mx-auto rounded-md border px-1.5 py-1 font-michroma text-[6px] uppercase transition lg:px-8 lg:py-5 lg:text-[16px] ${
             isLineupComplete
               ? "cursor-pointer border-[#1bc2ec]/70 bg-[#1bc2ec]/10 font-bold text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.35)] hover:bg-[#1bc2ec]/20"
               : "cursor-not-allowed border-white/10 bg-white/5 text-white/30"

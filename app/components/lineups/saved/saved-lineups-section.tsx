@@ -65,7 +65,7 @@ export function SavedLineupsSection({
               No saved lineups match your search.
             </p>
           ) : (
-            <div className="mt-2 grid gap-4 lg:grid-cols-3">
+            <div className="mt-2 grid grid-cols-2 gap-2 lg:grid-cols-3 lg:gap-4">
               {filteredSavedLineups.map((lineup) => (
                 <SavedLineupCard
                   key={lineup.id}

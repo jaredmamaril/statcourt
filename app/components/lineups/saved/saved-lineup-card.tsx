@@ -29,18 +29,18 @@ export function SavedLineupCard({
 
   return (
     <div
-      className="group rounded-md border border-white/10 bg-black/25 p-4 transition-all duration-200 hover:-translate-y-1"
+      className="group rounded-md border border-white/10 bg-black/25 p-2 transition-all duration-200 hover:-translate-y-1 lg:p-4"
       style={{
         borderColor: `${archetypeColor}33`,
       }}
     >
-      <div className="flex items-start justify-between gap-4">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 lg:flex lg:justify-between lg:gap-4">
         <div className="min-w-0">
-          <p className="truncate font-michroma text-[17px] text-white">
+          <p className="truncate font-michroma text-[7px] text-white lg:text-[17px]">
             {lineup.name}
           </p>
 
-          <p className="mt-1 font-michroma text-[8px] text-white/30">
+          <p className="mt-0.5 font-michroma text-[5px] text-white/30 lg:mt-1 lg:text-[8px]">
             Saved{" "}
             {new Date(lineup.createdAt).toLocaleDateString("en-US", {
               month: "short",
@@ -59,7 +59,7 @@ export function SavedLineupCard({
 
       <div>
         <p
-          className="font-michroma text-[15px]"
+          className="mt-1 font-michroma text-[6.5px] lg:text-[15px]"
           style={{
             color: archetypeColor,
             textShadow: `0 0 10px ${archetypeColor}77`,
@@ -69,21 +69,21 @@ export function SavedLineupCard({
         </p>
 
         <p
-          className="mt-1 font-michroma text-[12px]"
+          className="mt-0.5 font-michroma text-[5.5px] lg:mt-1 lg:text-[12px]"
           style={{ color: `${archetypeColor}bb` }}
         >
           {lineup.teamIdentity}
         </p>
 
         <p
-          className="mt-1 font-michroma text-[10px]"
+          className="mt-0.5 font-michroma text-[5px] lg:mt-1 lg:text-[10px]"
           style={{ color: tierColor }}
         >
           {lineup.tier ?? "Saved Lineup"}
         </p>
       </div>
 
-      <p className="mt-4 truncate font-michroma text-[9px] text-white/45 text-center">
+      <p className="mt-1 truncate text-center font-michroma text-[5px] text-white/45 lg:mt-4 lg:text-[9px]">
         {Object.values(lineup.players)
           .map((playerName) => playerName.split(" ").at(-1) ?? playerName)
           .join(" - ")}

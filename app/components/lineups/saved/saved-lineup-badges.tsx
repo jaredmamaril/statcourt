@@ -10,7 +10,7 @@ export function SavedLineupBadges({
   archetypeColor,
 }: SavedLineupBadgesProps) {
   return (
-    <div className="mt-4 flex flex-wrap gap-1">
+    <div className="mt-4 hidden flex-wrap gap-1 lg:flex">
       {badges.slice(0, 3).map((badge) => (
         <span
           key={badge}

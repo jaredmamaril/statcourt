@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { normalizeStat, type LineupSlot } from "../../court-data";
 import PlayerImage from "../../player-image";
 import { getPlayerHeadshot } from "../../player-images";
@@ -24,6 +25,7 @@ export function BuilderPlayerCard({
   isSelected,
   onPickPlayer,
 }: BuilderPlayerCardProps) {
+  const [isScoutOpen, setIsScoutOpen] = useState(false);
   const positionFit = getPositionFit(player, activeBuildPosition);
   const positionRating = getBuilderPlayerRatingForPosition(
     player,
@@ -60,10 +62,34 @@ export function BuilderPlayerCard({
   ];
 
   return (
-    <button
-      type="button"
-      onClick={() => onPickPlayer(player.name)}
-      className={`group relative h-52 overflow-hidden rounded-md border bg-black/30 p-3 text-center transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/10 ${
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => {
+        const isTouchDevice = window.matchMedia("(hover: none)").matches;
+
+        if (isTouchDevice) {
+          setIsScoutOpen((current) => !current);
+          return;
+        }
+
+        onPickPlayer(player.name);
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+
+          const isTouchDevice = window.matchMedia("(hover: none)").matches;
+
+          if (isTouchDevice) {
+            setIsScoutOpen((current) => !current);
+            return;
+          }
+
+          onPickPlayer(player.name);
+        }
+      }}
+      className={`group relative h-24 overflow-hidden rounded-md border bg-black/30 p-1 text-center transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/10 lg:h-52 lg:p-3 ${
         isSelected
           ? "border-[#1bc2ec] bg-[#1bc2ec]/15 shadow-[0_0_18px_rgba(27,194,236,0.35)]"
           : "border-white/15"
@@ -74,23 +100,23 @@ export function BuilderPlayerCard({
         alt={player.name}
         width={120}
         height={120}
-        className="mx-auto h-20 w-20 rounded-full object-cover"
+        className="mx-auto h-9 w-9 rounded-full object-cover lg:h-20 lg:w-20"
       />
 
-      <p className="mt-1 flex h-10 items-center justify-center text-center font-michroma text-[11px] leading-4 text-white">
+      <p className="mt-0.5 flex h-5 items-center justify-center text-center font-michroma text-[6px] leading-tight text-white lg:h-10 lg:text-[11px] lg:leading-4">
         {player.name}
       </p>
 
-      <p className="font-michroma text-[9px] text-white/40">
+      <p className="font-michroma text-[5.5px] text-white/40 lg:text-[9px]">
         {player.team} • {player.position}
       </p>
 
-      <p className="mt-1 font-michroma text-[10px] text-[#1bc2ec]">
+      <p className="mt-0.5 font-michroma text-[6.5px] text-[#1bc2ec] lg:mt-1 lg:text-[10px]">
         {positionRating.toFixed(1)} OVR
       </p>
 
       <p
-        className={`mt-1 font-michroma text-[8px] uppercase ${
+        className={`mt-0.5 font-michroma text-[5.5px] uppercase lg:mt-2 lg:text-[8px] ${
           positionFit === "natural"
             ? "text-emerald-400"
             : positionFit === "secondary"
@@ -110,7 +136,12 @@ export function BuilderPlayerCard({
         baseRating={baseRating}
         positionRating={positionRating}
         positionPenalty={positionPenalty}
+        isScoutOpen={isScoutOpen}
+        onPickPlayer={() => {
+          onPickPlayer(player.name);
+          setIsScoutOpen(false);
+        }}
       />
-    </button>
+    </div>
   );
 }

@@ -13,35 +13,37 @@ export function LoadingLineupModal({
 }: LoadingLineupModalProps) {
   return (
     <div
-      className={`fixed inset-0 z-1000 flex items-center justify-center bg-black/75 px-4 transition-opacity duration-300 ${
+      className={`fixed inset-0 z-1000 flex items-center justify-center bg-black/75 px-3 transition-opacity duration-300 ${
         isExiting ? "opacity-0" : "opacity-100"
       }`}
     >
       <div
-        className={`w-full max-w-md rounded-md border border-[#1bc2ec]/60 bg-[#07111f] p-6 shadow-[0_0_35px_rgba(27,194,236,0.25)] transition-all duration-300 ${
+        className={`w-full max-w-72 rounded-md border border-[#1bc2ec]/60 bg-[#07111f] p-4 shadow-[0_0_35px_rgba(27,194,236,0.25)] transition-all duration-300 sm:max-w-md sm:p-6 ${
           isExiting
             ? "translate-y-2 scale-95 opacity-0"
             : "translate-y-0 scale-100 opacity-100"
         }`}
       >
-        <p className="font-michroma text-lg text-white">Loading Lineup</p>
+        <p className="font-michroma text-sm text-white sm:text-lg">
+          Loading Lineup
+        </p>
 
-        <p className="mt-3 min-h-5 font-michroma text-sm text-[#1bc2ec]">
+        <p className="mt-2 min-h-4 font-michroma text-[10px] text-[#1bc2ec] sm:mt-3 sm:min-h-5 sm:text-sm">
           {steps[currentStep]}
         </p>
 
-        <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/10">
+        <div className="mt-4 h-1 overflow-hidden rounded-full bg-white/10 sm:mt-5 sm:h-1.5">
           <div
             className="h-full rounded-full bg-[#1bc2ec] transition-all duration-100"
             style={{ width: `${progress}%` }}
           />
         </div>
 
-        <div className="mt-5 grid gap-2">
+        <div className="mt-4 grid gap-1.5 sm:mt-5 sm:gap-2">
           {steps.map((step, index) => (
             <p
               key={step}
-              className={`font-michroma text-xs transition ${
+              className={`font-michroma text-[8px] leading-relaxed transition sm:text-xs ${
                 index <= currentStep ? "text-white/70" : "text-white/25"
               }`}
             >

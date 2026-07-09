@@ -3,6 +3,7 @@ import type { PlayerRevealMode } from "./builder-lineup-helpers";
 import { BuilderPlayerPicker } from "./builder-player-picker";
 import { BuilderDraftBoard } from "./builder-draft-board";
 import { BuilderCourtPreview } from "./builder-court-preview";
+import { BuilderPositionTabs } from "./builder-position-tabs";
 
 type Player = Parameters<
   typeof BuilderPlayerPicker
@@ -49,20 +50,30 @@ export function BuilderWorkspace({
 }: BuilderWorkspaceProps) {
   return (
     <div className="mt-3">
-      <div className="grid items-start gap-5 lg:grid-cols-[400px_300px_1fr]">
-        <BuilderPlayerPicker
-          lineupPositions={lineupPositions}
-          activeBuildPosition={activeBuildPosition}
-          customLineup={customLineup}
-          buildPlayerSearch={buildPlayerSearch}
-          availableBuildPlayers={availableBuildPlayers}
-          onSelectPosition={onSelectPosition}
-          onSearchChange={onSearchChange}
-          onPickPlayer={onPickPlayer}
-        />
+      <div className="grid grid-cols-[minmax(0,1fr)_135px] items-start gap-2 lg:grid-cols-[400px_300px_1fr] lg:gap-5">
+        <div className="min-w-0">
+          <BuilderPositionTabs
+            lineupPositions={lineupPositions}
+            activeBuildPosition={activeBuildPosition}
+            customLineup={customLineup}
+            onSelectPosition={onSelectPosition}
+          />
+
+          <div className="mt-2">
+            <BuilderPlayerPicker
+              activeBuildPosition={activeBuildPosition}
+              customLineup={customLineup}
+              buildPlayerSearch={buildPlayerSearch}
+              availableBuildPlayers={availableBuildPlayers}
+              onSearchChange={onSearchChange}
+              onPickPlayer={onPickPlayer}
+            />
+          </div>
+        </div>
 
         <BuilderDraftBoard
           lineupPositions={lineupPositions}
+          hoveredBuildPlayer={hoveredBuildPlayer}
           customLineup={customLineup}
           customLineupOverall={customLineupOverall}
           isLineupComplete={isLineupComplete}
@@ -73,6 +84,20 @@ export function BuilderWorkspace({
           onScoutLineup={onScoutLineup}
         />
 
+        {/* Desktop court */}
+        <div className="hidden lg:block">
+          <BuilderCourtPreview
+            lineupPositions={lineupPositions}
+            customLineup={customLineup}
+            hoveredBuildPlayer={hoveredBuildPlayer}
+            playerRevealMode={playerRevealMode}
+            onViewCard={onViewCard}
+          />
+        </div>
+      </div>
+
+      {/* Mobile court below picker + draft board */}
+      <div className="mt-4 lg:hidden">
         <BuilderCourtPreview
           lineupPositions={lineupPositions}
           customLineup={customLineup}

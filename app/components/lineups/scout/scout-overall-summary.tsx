@@ -19,7 +19,7 @@ export function ScoutOverallSummary({
     <div>
       <div className="flex items-center gap-2">
         <p
-          className="font-michroma text-3xl -tracking-widest"
+          className="font-michroma text-md -tracking-widest lg:text-3xl"
           style={{
             color: scoutArchetypeColor,
             textShadow: `0 0 12px ${scoutArchetypeColor}99`,
@@ -28,12 +28,15 @@ export function ScoutOverallSummary({
           {animatedScoutOverall.toFixed(1)}
         </p>
 
-        <p className="font-michroma text-[10px] uppercase text-white/40">
+        <p className="font-michroma text-[7px] uppercase text-white/40 lg:text-[10px]">
           Overall
         </p>
       </div>
 
-      <p className="font-michroma text-xs" style={{ color: scoutTierColor }}>
+      <p
+        className="font-michroma text-[9px] lg:text-xs"
+        style={{ color: scoutTierColor }}
+      >
         {lineupTier}
       </p>
 
@@ -41,7 +44,7 @@ export function ScoutOverallSummary({
         {lineupBadges.map((badge) => (
           <span
             key={badge}
-            className="flex items-center gap-1 rounded-md border px-1 py-1 font-michroma text-[6.5px]"
+            className="flex items-center gap-1 rounded-md border px-1 py-0.5 font-michroma text-[5.5px] lg:py-1 lg:text-[6.5px]"
             style={{
               color: scoutArchetypeColor,
               borderColor: `${scoutArchetypeColor}55`,

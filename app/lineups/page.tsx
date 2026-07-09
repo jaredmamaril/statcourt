@@ -42,6 +42,7 @@ import { DeleteLineupModal } from "../components/lineups/saved/delete-lineup-mod
 import { LineupDeletedModal } from "../components/lineups/saved/lineup-deleted-modal";
 import { LineupSavedModal } from "../components/lineups/saved/lineup-saved-modal";
 import { RenameLineupModal } from "../components/lineups/saved/rename-lineup-modal";
+import { SavedLineupsEmptyState } from "../components/lineups/saved/saved-lineups-empty-state";
 import {
   createSavedLineup,
   createSavedLineupInput,
@@ -491,27 +492,12 @@ export default function Lineups() {
                 onDeleteLineup={setLineupPendingDelete}
               />
             ) : (
-              <div className="mx-auto mt-16 max-w-md rounded-lg border border-[#1bc2ec]/35 bg-[#06131d]/80 p-6 text-center shadow-[0_0_28px_rgba(27,194,236,0.16)]">
-                <p className="font-michroma text-lg uppercase text-white">
-                  No saved lineups yet
-                </p>
-
-                <p className="mt-3 font-michroma text-[10px] leading-relaxed text-white/45">
-                  Build your first lineup and save it to your court.
-                </p>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveTab("builder");
-                    setHasStartedBuilder(false);
-                    router.replace("/lineups?tab=builder", { scroll: false });
-                  }}
-                  className="mt-5 rounded-md border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-4 py-3 font-michroma text-[10px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white"
-                >
-                  Build Lineup
-                </button>
-              </div>
+              <SavedLineupsEmptyState
+                onBuildLineup={() => {
+                  setActiveTab("builder");
+                  setHasStartedBuilder(false);
+                }}
+              />
             )
           ) : (
             <div className="mx-auto mt-16 max-w-md rounded-lg border border-[#1bc2ec]/35 bg-[#06131d]/80 p-6 text-center shadow-[0_0_28px_rgba(27,194,236,0.16)]">

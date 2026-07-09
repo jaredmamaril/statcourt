@@ -12,19 +12,21 @@ export function DeleteLineupModal({
   onConfirm,
 }: DeleteLineupModalProps) {
   return (
-    <div className="fixed inset-0 z-200 flex items-center justify-center bg-black/70">
-      <div className="w-full max-w-md rounded-md border border-red-500/40 bg-[#07111f] p-6 text-center">
-        <p className="font-michroma text-lg text-white">Delete Lineup</p>
+    <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/70 px-3">
+      <div className="w-full max-w-75 rounded-md border border-red-500/40 bg-[#07111f] p-4 text-center lg:max-w-md lg:p-6">
+        <p className="font-michroma text-sm text-white lg:text-lg">
+          Delete Lineup
+        </p>
 
-        <p className="mt-4 font-michroma text-xs leading-relaxed text-white/50">
+        <p className="mt-3 font-michroma text-[8px] leading-relaxed text-white/50 lg:mt-4 lg:text-xs">
           Delete {lineup.name}? This cannot be undone.
         </p>
 
-        <div className="mt-6 flex justify-center gap-3">
+        <div className="mt-4 flex justify-center gap-2 lg:mt-6 lg:gap-3">
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-md border border-white/15 px-5 py-3 font-michroma text-xs uppercase text-white/50 transition hover:text-white"
+            className="rounded-md border border-white/15 px-3 py-2 font-michroma text-[8px] uppercase text-white/50 transition hover:text-white lg:px-5 lg:py-3 lg:text-xs"
           >
             Cancel
           </button>
@@ -32,7 +34,7 @@ export function DeleteLineupModal({
           <button
             type="button"
             onClick={onConfirm}
-            className="rounded-md border border-red-500/50 bg-red-500/10 px-5 py-3 font-michroma text-xs uppercase text-red-400 transition hover:bg-red-500/20"
+            className="rounded-md border border-red-500/50 bg-red-500/10 px-3 py-2 font-michroma text-[8px] uppercase text-red-400 transition hover:bg-red-500/20 lg:px-5 lg:py-3 lg:text-xs"
           >
             Delete
           </button>

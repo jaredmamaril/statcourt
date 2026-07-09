@@ -14,7 +14,7 @@ export function BuilderPositionTabs({
   onSelectPosition,
 }: BuilderPositionTabsProps) {
   return (
-    <div className="flex justify-center gap-2">
+    <div className="flex justify-center gap-0.5 overflow-x-auto px-0.5 lg:gap-2 lg:px-1">
       {lineupPositions.map((position) => {
         const isActive = activeBuildPosition === position;
         const hasPlayer = customLineup[position] !== "";
@@ -24,7 +24,7 @@ export function BuilderPositionTabs({
             key={position}
             type="button"
             onClick={() => onSelectPosition(position)}
-            className={`h-10 w-14 cursor-pointer rounded-md border font-michroma text-xs transition ${
+            className={`h-6 min-w-7 cursor-pointer rounded border px-0.5 font-michroma text-[6px] transition lg:h-10 lg:w-14 lg:text-xs ${
               isActive
                 ? "border-[#1bc2ec] text-[#1bc2ec]"
                 : hasPlayer

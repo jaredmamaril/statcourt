@@ -16,8 +16,11 @@ export function ScoutLineupSummary({
   scoutArchetypeColor,
 }: ScoutLineupSummaryProps) {
   return (
-    <div className="absolute top-5 w-56" style={{ left: "340px" }}>
-      <p className="font-michroma text-[10px] uppercase text-white/40">
+    <div
+      className="mt-2 w-full rounded-md border border-white/10 bg-black/20 p-2 lg:absolute lg:top-5 lg:mt-0 lg:w-56 lg:border-0 lg:bg-transparent lg:p-0"
+      style={{ left: "340px" }}
+    >
+      <p className="font-michroma text-[7px] uppercase text-white/40 lg:text-[10px]">
         Lineup
       </p>
 
@@ -29,22 +32,22 @@ export function ScoutLineupSummary({
           return (
             <div
               key={position}
-              className="grid grid-cols-[34px_1fr] items-center gap-3"
+              className="grid grid-cols-[24px_1fr] items-center gap-2 lg:grid-cols-[34px_1fr] lg:gap-3"
             >
               <span
-                className="font-michroma text-[10px]"
+                className="font-michroma text-[7px] lg:text-[10px]"
                 style={{ color: scoutArchetypeColor }}
               >
                 {position}
               </span>
 
               <div>
-                <p className="truncate font-michroma text-[10px] text-white">
+                <p className="truncate font-michroma text-[7px] text-white lg:text-[10px]">
                   {player?.name ?? "Empty"}
                 </p>
 
                 <p
-                  className="mt-1 font-michroma text-[8px]"
+                  className="mt-0.5 font-michroma text-[6px] lg:mt-1 lg:text-[8px]"
                   style={{ color: `${scoutArchetypeColor}99` }}
                 >
                   {player ? `${player.team} • #${player.jerseyNumber}` : "--"}

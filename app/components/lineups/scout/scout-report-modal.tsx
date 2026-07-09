@@ -64,15 +64,15 @@ export function ScoutReportModal({
   onSaveLineup,
 }: ScoutReportModalProps) {
   return (
-    <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 px-4">
+    <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 px-2 lg:px-4">
       <div
-        className="relative w-full max-w-xl animate-[modalIn_260ms_ease-out] rounded-md border bg-[#07111f]"
+        className="relative w-full max-w-85 animate-[modalIn_260ms_ease-out] rounded-md border bg-[#07111f] lg:max-w-xl"
         style={{
           borderColor: `${scoutArchetypeColor}99`,
           boxShadow: `0 0 35px ${scoutArchetypeColor}40`,
         }}
       >
-        <div className="relative max-h-[78vh] overflow-y-auto p-5 scrollbar-none [&::-webkit-scrollbar]:hidden">
+        <div className="relative max-h-[78vh] overflow-y-auto p-3 scrollbar-none lg:p-5 [&::-webkit-scrollbar]:hidden">
           <ScoutReportHeader scoutSummary={scoutSummary} onClose={onClose} />
 
           <ScoutLineupSummary
@@ -82,7 +82,7 @@ export function ScoutReportModal({
             scoutArchetypeColor={scoutArchetypeColor}
           />
 
-          <div className="mt-1 grid max-w-xl gap-2">
+          <div className="mt-1 grid max-w-xl gap-1.5 lg:gap-2">
             <ScoutOverallSummary
               animatedScoutOverall={animatedScoutOverall}
               lineupTier={lineupTier}

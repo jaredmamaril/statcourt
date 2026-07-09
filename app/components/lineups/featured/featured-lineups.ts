@@ -74,9 +74,9 @@ export const featuredCourtMarkerPositions: Record<LineupSlot, string> = {
 };
 
 export const builderCourtMarkerPositions: Record<LineupSlot, string> = {
-  PG: "left-1/2 top-6",
-  SG: "left-[22%] top-16",
-  SF: "left-[78%] bottom-10",
-  PF: "left-[25%] bottom-20",
-  C: "left-[65%] top-50",
+  PG: "left-1/2 top-3 lg:top-6",
+  SG: "left-[24%] top-13 lg:left-[22%] lg:top-16",
+  SF: "left-[76%] bottom-8 lg:left-[78%] lg:bottom-10",
+  PF: "left-[28%] bottom-14 lg:left-[25%] lg:bottom-20",
+  C: "left-[64%] top-35 lg:left-[65%] lg:top-50",
 };
