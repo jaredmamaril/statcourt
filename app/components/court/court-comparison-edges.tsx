@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { getTeamColor, type Player, type StatMode } from "../court-data";
 
 type CourtComparisonEdgesProps = {
@@ -83,6 +84,7 @@ export function CourtComparisonEdges({
   rightPlayer,
   statMode,
 }: CourtComparisonEdgesProps) {
+  const [openEdge, setOpenEdge] = useState<string | null>(null);
   if (!leftPlayer || !rightPlayer) {
     return null;
   }
@@ -147,6 +149,21 @@ export function CourtComparisonEdges({
       {edges.map((edge) => (
         <div
           key={edge.label}
+          role="button"
+          tabIndex={0}
+          onClick={() =>
+            setOpenEdge((current) =>
+              current === edge.label ? null : edge.label,
+            )
+          }
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              setOpenEdge((current) =>
+                current === edge.label ? null : edge.label,
+              );
+            }
+          }}
           className={`group relative cursor-help rounded-lg border border-white/15 bg-[#06131d]/90 px-2.5 py-2 text-center shadow-[0_0_14px_rgba(0,0,0,0.3)] transition hover:-translate-y-0.5 hover:border-[#1bc2ec]/50 hover:bg-[#071827] hover:shadow-[0_0_20px_rgba(27,194,236,0.14)] sm:px-4 sm:py-3 ${
             edge.label === "Efficiency Edge" ? "col-span-2 lg:col-span-1" : ""
           }`}
@@ -165,12 +182,18 @@ export function CourtComparisonEdges({
             {edge.winner}
           </p>
 
-          <div className="pointer-events-none absolute top-[calc(100%+10px)] left-1/2 z-30 w-72 -translate-x-1/2 rounded-md border border-[#1bc2ec]/35 bg-[#030910]/95 p-3 text-left opacity-0 shadow-[0_0_24px_rgba(27,194,236,0.18)] transition duration-150 group-hover:opacity-100">
-            <p className="font-michroma text-[8px] uppercase tracking-wide text-[#1bc2ec]">
+          <div
+            className={`absolute top-[calc(100%+6px)] left-1/2 z-50 w-[min(180px,90vw)] -translate-x-1/2 rounded-md border border-[#1bc2ec]/35 bg-[#030910]/95 p-1.5 text-left shadow-[0_0_24px_rgba(27,194,236,0.18)] transition duration-150 lg:w-72 lg:p-3 ${
+              openEdge === edge.label
+                ? "pointer-events-auto opacity-100"
+                : "pointer-events-none opacity-0 group-hover:opacity-100"
+            }`}
+          >
+            <p className="font-michroma text-[6.5px] uppercase tracking-wide text-[#1bc2ec] sm:text-[8px]">
               {edge.label} Math
             </p>
 
-            <div className="mt-2 space-y-1 font-michroma text-[8px] text-white/65">
+            <div className="mt-1.5 space-y-1 font-michroma text-[6.5px] text-white/65 sm:mt-2 sm:text-[8px]">
               <p>
                 {leftPlayer.name}:{" "}
                 <span className="text-white">
@@ -200,7 +223,7 @@ export function CourtComparisonEdges({
               </p>
             </div>
 
-            <p className="mt-2 text-[10px] leading-snug text-white/45">
+            <p className="mt-1.5 text-[7px] leading-snug text-white/45 sm:mt-2 sm:text-[10px]">
               {edge.detail}
             </p>
           </div>
