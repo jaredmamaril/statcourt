@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { LineupSlot } from "../../court-data";
 import type { LineupDetail } from "../shared/lineup-types";
 import { featuredCourtMarkerPositions } from "./featured-lineups";
@@ -18,40 +19,46 @@ export function FeaturedLineupCourt({
   onHoverPlayer,
   onViewCard,
 }: FeaturedLineupCourtProps) {
+  const [openTooltipPlayer, setOpenTooltipPlayer] = useState<string | null>(
+    null,
+  );
   return (
-    <div className="relative min-h-96 overflow-visible rounded-md bg-transparent">
+    <div
+      className="relative min-h-72 overflow-visible rounded-md bg-transparent lg:min-h-96"
+      onClick={() => setOpenTooltipPlayer(null)}
+    >
       <div className="absolute inset-x-8 inset-y-6" />
 
       <div
-        className="absolute left-1/2 bottom-17 h-[60%] w-[70%] -translate-x-1/2 rounded-t-full border-t border-l border-r"
+        className="absolute left-1/2 bottom-12 h-[58%] w-[72%] -translate-x-1/2 rounded-t-full border-t border-l border-r lg:bottom-17 lg:h-[60%] lg:w-[70%]"
         style={{
           borderColor: `${selectedCategoryColor}40`,
         }}
       />
 
       <div
-        className="absolute left-1/2 bottom-17 h-36 w-24 -translate-x-1/2 border"
+        className="absolute left-1/2 bottom-12 h-28 w-18 -translate-x-1/2 border lg:bottom-17 lg:h-36 lg:w-24"
         style={{
           borderColor: `${selectedCategoryColor}40`,
         }}
       />
 
       <div
-        className="absolute left-1/2 bottom-53 h-12 w-24 -translate-x-1/2 rounded-t-full border-t border-l border-r"
+        className="absolute left-1/2 bottom-40 h-9 w-18 -translate-x-1/2 rounded-t-full border-t border-l border-r lg:bottom-53 lg:h-12 lg:w-24"
         style={{
           borderColor: `${selectedCategoryColor}40`,
         }}
       />
 
       <div
-        className="absolute left-1/2 bottom-24 h-3 w-3 -translate-x-1/2 rounded-full border"
+        className="absolute left-1/2 bottom-18 h-2.5 w-2.5 -translate-x-1/2 rounded-full border lg:bottom-24 lg:h-3 lg:w-3"
         style={{
           borderColor: `${selectedCategoryColor}80`,
         }}
       />
 
       <div
-        className="absolute left-1/2 bottom-24 h-px w-14 -translate-x-1/2"
+        className="absolute left-1/2 bottom-18 h-px w-10 -translate-x-1/2 lg:bottom-24 lg:w-14"
         style={{
           backgroundColor: `${selectedCategoryColor}80`,
         }}
@@ -64,13 +71,24 @@ export function FeaturedLineupCourt({
           <div
             key={`${lineupPosition}-${playerName || "empty"}`}
             onMouseEnter={() => onHoverPlayer(playerName)}
-            onMouseLeave={() => onHoverPlayer("")}
+            onMouseLeave={() => {
+              onHoverPlayer("");
+              setOpenTooltipPlayer(null);
+            }}
           >
             <LineupMarker
               position={lineupPosition}
               name={playerName || "Select Player"}
               color={selectedCategoryColor}
               isHighlighted={hoveredLineupPlayer === playerName}
+              isTooltipOpen={openTooltipPlayer === playerName}
+              onToggleTooltip={() => {
+                const isAlreadyOpen = openTooltipPlayer === playerName;
+
+                setOpenTooltipPlayer(isAlreadyOpen ? null : playerName);
+                onHoverPlayer(isAlreadyOpen ? "" : playerName);
+              }}
+              onCloseTooltip={() => setOpenTooltipPlayer(null)}
               onViewCard={onViewCard}
               tooltipPosition={
                 lineupPosition === "PG" || lineupPosition === "SG"

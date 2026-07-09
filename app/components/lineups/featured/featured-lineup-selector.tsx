@@ -14,13 +14,13 @@ export function FeaturedLineupSelector({
   onSelectLineup,
 }: FeaturedLineupSelectorProps) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="grid grid-cols-1 gap-1.5 lg:flex lg:flex-col lg:gap-2">
       {selectedLineupNames.map((lineupName) => (
         <button
           key={lineupName}
           type="button"
           onClick={() => onSelectLineup(lineupName)}
-          className={`rounded-md border px-4 py-3 text-left font-michroma text-xs transition ${
+          className={`h-7 rounded-md border px-2 text-left font-michroma text-[8px] transition lg:h-auto lg:px-4 lg:py-3 lg:text-xs ${
             selectedLineupName === lineupName
               ? "bg-black/30"
               : "border-white/10 bg-black/30 text-white/60 hover:text-white"
@@ -35,7 +35,7 @@ export function FeaturedLineupSelector({
               : undefined
           }
         >
-          {lineupName}
+          <span className="block truncate">{lineupName}</span>
         </button>
       ))}
     </div>

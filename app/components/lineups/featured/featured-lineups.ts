@@ -66,11 +66,11 @@ export const lineupGroups = {
 
 // Court marker positions
 export const featuredCourtMarkerPositions: Record<LineupSlot, string> = {
-  PG: "left-1/2 top-5",
-  SG: "left-[20%] top-17",
-  SF: "left-[75%] bottom-18",
-  PF: "left-[27%] top-62",
-  C: "left-[65%] top-42",
+  PG: "left-1/2 top-2 lg:top-5",
+  SG: "left-[20%] top-9 lg:left-[20%] lg:top-17",
+  SF: "left-[75%] bottom-12 lg:left-[75%] lg:bottom-18",
+  PF: "left-[25%] top-37 lg:left-[27%] lg:top-62",
+  C: "left-[66%] top-20 lg:left-[65%] lg:top-42",
 };
 
 export const builderCourtMarkerPositions: Record<LineupSlot, string> = {

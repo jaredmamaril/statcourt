@@ -397,7 +397,7 @@ export default function Lineups() {
 
   return (
     <main className="min-h-screen overflow-x-hidden text-white">
-      <section className="mx-auto w-full max-w-7xl px-6 pb-12">
+      <section className="mx-auto w-full max-w-7xl px-3 pb-12 sm:px-6">
         <LineupPageHeader
           activeTab={activeTab}
           shouldShowTopText={shouldShowTopText}

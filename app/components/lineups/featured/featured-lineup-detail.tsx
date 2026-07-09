@@ -35,16 +35,16 @@ export function FeaturedLineupDetail({
   return (
     <div
       ref={lineupSectionRef}
-      className="scroll-mt-24 mt-8 rounded-md border border-white/10 bg-black/25 p-4"
+      className="scroll-mt-24 mt-4 rounded-md border border-white/10 bg-black/25 p-2 lg:mt-8 lg:p-4"
     >
       <h2
-        className="border-b pb-3 text-center font-michroma text-sm uppercase tracking-wide text-white"
+        className="border-b pb-1.5 text-center font-michroma text-[10px] uppercase tracking-wide text-white lg:pb-3 lg:text-sm"
         style={{ borderColor: `${selectedCategoryColor}55` }}
       >
         {selectedLineupCategory}
       </h2>
 
-      <div className="mt-5 grid gap-6 lg:grid-cols-[220px_1fr]">
+      <div className="mt-2 grid gap-2 lg:mt-5 lg:grid-cols-[220px_1fr] lg:gap-6">
         <FeaturedLineupSelector
           selectedLineupNames={selectedLineupNames}
           selectedLineupName={selectedLineupName}
@@ -53,11 +53,11 @@ export function FeaturedLineupDetail({
         />
 
         <div
-          className="relative min-h-96 rounded-md border bg-black/30 p-5"
+          className="relative min-h-0 rounded-md border bg-black/30 p-2 lg:min-h-96 lg:p-5"
           style={{ borderColor: `${selectedCategoryColor}55` }}
         >
           {selectedLineup ? (
-            <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
+            <div className="grid gap-3 lg:grid-cols-[1fr_1.2fr] lg:gap-6">
               <FeaturedLineupInfo
                 selectedLineup={selectedLineup}
                 selectedLineupName={selectedLineupName}
@@ -76,7 +76,7 @@ export function FeaturedLineupDetail({
               />
             </div>
           ) : (
-            <p className="font-michroma text-xs text-white/40">
+            <p className="font-michroma text-[10px] text-white/40 lg:text-xs">
               No current details.
             </p>
           )}
