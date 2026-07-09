@@ -92,7 +92,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 lg:grid-cols-4">
           {accountStats.map((stat) => {
             const Icon = stat.icon;
 
@@ -130,7 +130,7 @@ export default function ProfilePage() {
           })}
         </div>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-[1fr_1fr]">
+        <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_1fr]">
           <section className="rounded-lg border border-white/10 bg-[#06131d]/80 p-5">
             <div className="mb-4 flex items-center gap-3">
               <Activity className="h-5 w-5 text-[#1bc2ec]" />

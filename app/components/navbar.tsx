@@ -79,7 +79,7 @@ export default function Navbar() {
               statcourt
             </span>
           </Link>
-          <nav className="hidden items-center justify-center gap-6 md:flex">
+          <nav className="hidden items-center justify-center gap-6 lg:flex">
             {/* Navigation links */}
             {navItems.map((item) => {
               const isActive = pathname === item.href;
@@ -99,7 +99,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen((current) => !current)}
-              className="flex h-9 w-9 items-center justify-center rounded-md border border-white/15 bg-white/5 text-white/70 transition hover:border-[#1bc2ec]/50 hover:text-[#1bc2ec] md:hidden"
+              className="flex h-9 w-9 items-center justify-center rounded-md border border-white/15 bg-white/5 text-white/70 transition hover:border-[#1bc2ec]/50 hover:text-[#1bc2ec] lg:hidden"
               aria-label="Toggle navigation menu"
             >
               {isMobileMenuOpen ? (
@@ -114,13 +114,13 @@ export default function Navbar() {
                 <div className="group relative">
                   <button
                     type="button"
-                    className="flex h-9 w-9 items-center justify-center rounded-md border border-[#1bc2ec]/60 bg-[#1bc2ec]/10 font-michroma text-[12px] text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.24)] transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/20 hover:text-white hover:shadow-[0_0_24px_rgba(27,194,236,0.42)] md:h-10 md:w-44 md:justify-start md:gap-2 md:px-3"
+                    className="flex h-9 w-9 items-center justify-center rounded-md border border-[#1bc2ec]/60 bg-[#1bc2ec]/10 font-michroma text-[12px] text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.24)] transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/20 hover:text-white hover:shadow-[0_0_24px_rgba(27,194,236,0.42)] lg:h-10 lg:w-44 lg:justify-start lg:gap-2 lg:px-3"
                   >
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-[#06131d] text-[10px] uppercase text-[#1bc2ec]">
                       T
                     </span>
 
-                    <span className="hidden min-w-0 flex-1 truncate text-left md:block">
+                    <span className="hidden min-w-0 flex-1 truncate text-left lg:block">
                       Tyler
                     </span>
                   </button>
@@ -183,7 +183,7 @@ export default function Navbar() {
       </header>
 
       {isMobileMenuOpen && (
-        <div className="fixed left-0 right-0 top-12 z-999998 border-b border-white/10 bg-[#06131d]/95 px-3 py-3 shadow-[0_0_24px_rgba(0,0,0,0.45)]  md:hidden">
+        <div className="fixed left-0 right-0 top-12 z-999998 border-b border-white/10 bg-[#06131d]/95 px-3 py-3 shadow-[0_0_24px_rgba(0,0,0,0.45)]  lg:hidden">
           <div className="grid gap-2">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
