@@ -4,7 +4,10 @@ import {
   type Player,
   type PlayerInsightDisplay,
 } from "../../court-data";
-import { getPlayerRating } from "../../player-ratings";
+import {
+  getPlayerRating,
+  type PlayerRatingCategory,
+} from "../../player-ratings";
 
 type FeaturedPlayerPanelProps = {
   featuredPlayer: Player;
@@ -12,6 +15,9 @@ type FeaturedPlayerPanelProps = {
     archetype: PlayerInsightDisplay | null;
     traits: PlayerInsightDisplay[];
   } | null;
+  ratingView: PlayerRatingCategory;
+  statMode: "career" | "peak" | "current";
+  statModeLabel: string;
   getInsightRarityStyles: (
     insight: PlayerInsightDisplay,
     isArchetype?: boolean,
@@ -23,11 +29,19 @@ type FeaturedPlayerPanelProps = {
 export function FeaturedPlayerPanel({
   featuredPlayer,
   featuredPlayerInsights,
+  ratingView,
+  statMode,
+  statModeLabel,
   getInsightRarityStyles,
   onViewPlayer,
   children,
 }: FeaturedPlayerPanelProps) {
   const teamColor = getTeamColor(featuredPlayer.team);
+  const featuredPlayerRating = getPlayerRating(
+    featuredPlayer,
+    ratingView,
+    statMode,
+  );
 
   return (
     <div className="absolute -right-58 top-4 hidden w-64 text-center font-michroma uppercase xl:block">
@@ -47,8 +61,10 @@ export function FeaturedPlayerPanel({
         </p>
 
         <p className="mt-1 text-xs text-[#1bc2ec]">
-          {getPlayerRating(featuredPlayer).toFixed(1)} OVR
+          {featuredPlayerRating.toFixed(1)} OVR
         </p>
+
+        <p className="mt-1 text-[7px] text-white/35">{statModeLabel} Profile</p>
 
         <div className="mt-3 flex flex-col items-center gap-1">
           {featuredPlayerInsights?.archetype && (

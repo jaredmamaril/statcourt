@@ -512,6 +512,9 @@ function Players() {
             {isDesktop && !selectedPlayer && featuredPlayer && (
               <FeaturedPlayerPanel
                 featuredPlayer={featuredPlayer}
+                ratingView={selectedRatingView}
+                statMode={selectedStatMode}
+                statModeLabel={selectedStatModeLabel}
                 featuredPlayerInsights={featuredPlayerInsights}
                 getInsightRarityStyles={getInsightRarityStyles}
                 onViewPlayer={openPlayerCard}
