@@ -10,6 +10,7 @@ import { SavedLineupBadges } from "./saved-lineup-badges";
 
 type SavedLineupCardProps = {
   lineup: SavedLineup;
+  isLoadingPlayers: boolean;
   onLoad: (lineup: SavedLineup) => void;
   onScout: (lineup: SavedLineup) => void;
   onRename: (lineup: SavedLineup) => void;
@@ -18,6 +19,7 @@ type SavedLineupCardProps = {
 
 export function SavedLineupCard({
   lineup,
+  isLoadingPlayers,
   onLoad,
   onScout,
   onRename,
@@ -97,6 +99,7 @@ export function SavedLineupCard({
       <SavedLineupCardActions
         lineup={lineup}
         archetypeColor={archetypeColor}
+        isLoadingPlayers={isLoadingPlayers}
         onLoad={onLoad}
         onScout={onScout}
         onRename={onRename}

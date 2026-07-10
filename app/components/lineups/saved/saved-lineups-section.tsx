@@ -10,6 +10,7 @@ type SavedLineupsSectionProps = {
   savedLineupSort: string;
   savedSortLabel: string;
   openSavedDropdown: string | null;
+  isLoadingPlayers: boolean;
   onSearchChange: (value: string) => void;
   onToggleDropdown: () => void;
   onSelectSort: (value: string) => void;
@@ -28,6 +29,7 @@ export function SavedLineupsSection({
   savedLineupSort,
   savedSortLabel,
   openSavedDropdown,
+  isLoadingPlayers,
   onSearchChange,
   onToggleDropdown,
   onSelectSort,
@@ -60,6 +62,12 @@ export function SavedLineupsSection({
             onSelectSort={onSelectSort}
           />
 
+          {isLoadingPlayers && (
+            <p className="mt-2 text-center font-michroma text-[7px] uppercase text-[#1bc2ec]/70 lg:text-[10px]">
+              Loading lineup player profiles...
+            </p>
+          )}
+
           {filteredSavedLineups.length === 0 ? (
             <p className="mt-6 text-center font-michroma text-[8px] text-white/40 lg:mt-10 lg:text-xs">
               No saved lineups match your search.
@@ -70,6 +78,7 @@ export function SavedLineupsSection({
                 <SavedLineupCard
                   key={lineup.id}
                   lineup={lineup}
+                  isLoadingPlayers={isLoadingPlayers}
                   onLoad={onLoadLineup}
                   onScout={onScoutLineup}
                   onRename={onRenameLineup}

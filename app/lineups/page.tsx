@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthPrompt } from "../components/auth/auth-prompt";
 import { mockUser as user } from "../lib/mock-auth";
+import { DatabaseErrorState } from "../components/loading/database-error-state";
+import { DatabaseLoadingState } from "../components/loading/database-loading-state";
+import { players as fallbackPlayers, type Player } from "../components/court-data";
 
 import type {
   LineupTab,
@@ -73,6 +76,10 @@ export default function Lineups() {
 
   // Page state
   const [activeTab, setActiveTab] = useState<LineupTab>("featured");
+  const [players, setPlayers] = useState<Player[]>(fallbackPlayers);
+  const [isLoadingPlayers, setIsLoadingPlayers] = useState(true);
+  const [playerLoadError, setPlayerLoadError] = useState("");
+
   useEffect(() => {
     const tab = searchParams.get("tab");
 
@@ -82,6 +89,48 @@ export default function Lineups() {
       return () => cancelAnimationFrame(frameId);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadPlayers() {
+      try {
+        setIsLoadingPlayers(true);
+        setPlayerLoadError("");
+
+        const response = await fetch("/api/players");
+
+        if (!response.ok) {
+          throw new Error("Failed to load players");
+        }
+
+        const data = (await response.json()) as {
+          players?: Player[];
+        };
+
+        if (isActive && data.players && data.players.length > 0) {
+          setPlayers(data.players);
+        }
+      } catch (error) {
+        console.error("Failed to load lineup players", error);
+
+        if (isActive) {
+          setPlayers(fallbackPlayers);
+          setPlayerLoadError("Could not load lineup player database.");
+        }
+      } finally {
+        if (isActive) {
+          setIsLoadingPlayers(false);
+        }
+      }
+    }
+
+    loadPlayers();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   // Featured lineup state
   const [selectedLineupCategory, setSelectedLineupCategory] = useState<
@@ -155,7 +204,7 @@ export default function Lineups() {
     resetDraft,
     startNewDraft,
     continueDraft,
-  } = useLineupBuilder({ lineupPositions });
+  } = useLineupBuilder({ players, lineupPositions });
 
   // Scout report data
   const {
@@ -437,26 +486,40 @@ export default function Lineups() {
                 onStartNewDraft={startNewDraft}
                 onContinueDraft={continueDraft}
               />
-            ) : (
-              <BuilderWorkspace
-                lineupPositions={lineupPositions}
-                activeBuildPosition={activeBuildPosition}
-                customLineup={customLineup}
-                buildPlayerSearch={buildPlayerSearch}
-                availableBuildPlayers={availableBuildPlayers}
-                customLineupOverall={customLineupOverall}
-                isLineupComplete={isLineupComplete}
-                selectedLineupCount={selectedLineupCount}
-                hoveredBuildPlayer={hoveredBuildPlayer}
-                playerRevealMode={playerRevealMode}
-                onSelectPosition={setActiveBuildPosition}
-                onSearchChange={setBuildPlayerSearch}
-                onPickPlayer={pickBuildPlayer}
-                onHoverPlayer={setHoveredBuildPlayer}
-                onRemovePlayer={removeBuildPlayer}
-                onScoutLineup={scoutDraftLineup}
-                onViewCard={viewPlayerCard}
+            ) : isLoadingPlayers ? (
+              <DatabaseLoadingState
+                title="Loading Lineup Players"
+                description="Syncing draft board profiles..."
               />
+            ) : (
+              <>
+                {playerLoadError && (
+                  <DatabaseErrorState
+                    title="Lineup Players Unavailable"
+                    description="Showing fallback draft board data."
+                  />
+                )}
+
+                <BuilderWorkspace
+                  lineupPositions={lineupPositions}
+                  activeBuildPosition={activeBuildPosition}
+                  customLineup={customLineup}
+                  buildPlayerSearch={buildPlayerSearch}
+                  availableBuildPlayers={availableBuildPlayers}
+                  customLineupOverall={customLineupOverall}
+                  isLineupComplete={isLineupComplete}
+                  selectedLineupCount={selectedLineupCount}
+                  hoveredBuildPlayer={hoveredBuildPlayer}
+                  playerRevealMode={playerRevealMode}
+                  onSelectPosition={setActiveBuildPosition}
+                  onSearchChange={setBuildPlayerSearch}
+                  onPickPlayer={pickBuildPlayer}
+                  onHoverPlayer={setHoveredBuildPlayer}
+                  onRemovePlayer={removeBuildPlayer}
+                  onScoutLineup={scoutDraftLineup}
+                  onViewCard={viewPlayerCard}
+                />
+              </>
             )}
           </section>
         )}
@@ -471,6 +534,7 @@ export default function Lineups() {
                 savedLineupSort={savedLineupSort}
                 savedSortLabel={savedSortLabel}
                 openSavedDropdown={openSavedDropdown}
+                isLoadingPlayers={isLoadingPlayers}
                 onSearchChange={setSavedLineupSearch}
                 onToggleDropdown={() =>
                   setOpenSavedDropdown(
@@ -500,7 +564,7 @@ export default function Lineups() {
               />
             )
           ) : (
-            <div className="mx-auto mt-6 max-w-[300px] rounded-lg border border-[#1bc2ec]/35 bg-[#06131d]/80 p-3.5 text-center shadow-[0_0_22px_rgba(27,194,236,0.14)] lg:mt-16 lg:max-w-md lg:p-6 lg:shadow-[0_0_28px_rgba(27,194,236,0.16)]">
+            <div className="mx-auto mt-6 max-w-75 rounded-lg border border-[#1bc2ec]/35 bg-[#06131d]/80 p-3.5 text-center shadow-[0_0_22px_rgba(27,194,236,0.14)] lg:mt-16 lg:max-w-md lg:p-6 lg:shadow-[0_0_28px_rgba(27,194,236,0.16)]">
               <p className="font-michroma text-[10px] uppercase text-white lg:text-lg">
                 Sign in to view saved lineups
               </p>

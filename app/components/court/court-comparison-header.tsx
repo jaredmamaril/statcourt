@@ -3,6 +3,7 @@ import { getTeamColor, type Player, type StatMode } from "../court-data";
 type CourtComparisonHeaderProps = {
   leftPlayer?: Player;
   rightPlayer?: Player;
+  isLoadingPlayers?: boolean;
   statMode: StatMode;
   onStatModeChange: (statMode: StatMode) => void;
 };
@@ -10,6 +11,7 @@ type CourtComparisonHeaderProps = {
 export function CourtComparisonHeader({
   leftPlayer,
   rightPlayer,
+  isLoadingPlayers = false,
   statMode,
   onStatModeChange,
 }: CourtComparisonHeaderProps) {
@@ -42,7 +44,7 @@ export function CourtComparisonHeader({
     </div>
   );
 
-  if (!leftPlayer || !rightPlayer) {
+  if (isLoadingPlayers || !leftPlayer || !rightPlayer) {
     return (
       <div className="mx-auto w-full max-w-70 rounded-lg border border-[#1bc2ec]/25 bg-[#06131d]/82 px-3 py-2 text-center shadow-[0_0_18px_rgba(27,194,236,0.1)] sm:w-fit sm:max-w-none sm:px-4 sm:py-2.5">
         <p className="font-michroma text-[8px] uppercase tracking-wide text-[#1bc2ec] sm:text-[10px]">
@@ -50,7 +52,7 @@ export function CourtComparisonHeader({
         </p>
 
         <h1 className="mt-1 font-michroma text-sm uppercase text-white sm:text-lg">
-          Choose Two Players
+          {isLoadingPlayers ? "Loading Player Profiles" : "Choose Two Players"}
         </h1>
 
         {statModeControl}

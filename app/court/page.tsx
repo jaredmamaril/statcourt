@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react";
 
+import { DatabaseLoadingState } from "../components/loading/database-loading-state";
+import { DatabaseErrorState } from "../components/loading/database-error-state";
+
 import {
   players as fallbackPlayers,
   getTeamColor,
@@ -28,6 +31,8 @@ export default function Court() {
   // Compare state
   const [comparePlayers, setComparePlayers] =
     useState<Player[]>(fallbackPlayers);
+  const [isLoadingPlayers, setIsLoadingPlayers] = useState(true);
+  const [playerLoadError, setPlayerLoadError] = useState("");
   const [leftPlayer, setLeftPlayer] = useState("");
   const [rightPlayer, setRightPlayer] = useState("");
   const [statMode, setStatMode] = useState<StatMode>("career");
@@ -54,6 +59,9 @@ export default function Court() {
 
     async function loadPlayers() {
       try {
+        setIsLoadingPlayers(true);
+        setPlayerLoadError("");
+
         const response = await fetch("/api/players");
 
         if (!response.ok) {
@@ -67,9 +75,16 @@ export default function Court() {
         if (isActive && data.players && data.players.length > 0) {
           setComparePlayers(data.players);
         }
-      } catch {
+      } catch (error) {
+        console.error("Failed to load court players", error);
+
         if (isActive) {
           setComparePlayers(fallbackPlayers);
+          setPlayerLoadError("Could not load court player database.");
+        }
+      } finally {
+        if (isActive) {
+          setIsLoadingPlayers(false);
         }
       }
     }
@@ -140,61 +155,78 @@ export default function Court() {
         <CourtComparisonHeader
           leftPlayer={selectedLeftPlayer}
           rightPlayer={selectedRightPlayer}
+          isLoadingPlayers={isLoadingPlayers}
           statMode={statMode}
           onStatModeChange={setStatMode}
         />
 
-        <div className="mx-auto mt-2 grid w-full max-w-7xl grid-cols-2 items-start gap-x-3 gap-y-5 lg:mt-1 lg:grid-cols-[320px_minmax(420px,1fr)_320px] lg:items-center lg:gap-8">
-          <div className="order-1 lg:order-1">
-            <CourtPlayerPanel
-              side="left"
-              selectedPlayer={selectedLeftPlayer}
-              fallbackColor="#FFEA00"
-              selectedPlayerName={leftPlayer}
-              onOpenPicker={() => setActivePickerSide("left")}
+        {isLoadingPlayers ? (
+          <DatabaseLoadingState
+            title="Loading Court Players"
+            description="Syncing comparison profiles..."
+          />
+        ) : (
+          <>
+            {playerLoadError && (
+              <DatabaseErrorState
+                title="Court Players Unavailable"
+                description="Showing fallback player data."
+              />
+            )}
+
+            <div className="mx-auto mt-2 grid w-full max-w-7xl grid-cols-2 items-start gap-x-3 gap-y-5 lg:mt-1 lg:grid-cols-[320px_minmax(420px,1fr)_320px] lg:items-center lg:gap-8">
+              <div className="order-1 lg:order-1">
+                <CourtPlayerPanel
+                  side="left"
+                  selectedPlayer={selectedLeftPlayer}
+                  fallbackColor="#FFEA00"
+                  selectedPlayerName={leftPlayer}
+                  onOpenPicker={() => setActivePickerSide("left")}
+                />
+              </div>
+
+              <div className="order-3 col-span-2 lg:order-2 lg:col-span-1">
+                <PlayerComparisonRadar
+                  radarData={radarData}
+                  selectedLeftPlayerName={selectedLeftPlayer?.name ?? ""}
+                  selectedRightPlayerName={selectedRightPlayer?.name ?? ""}
+                  leftColor={
+                    selectedLeftPlayer
+                      ? getTeamColor(selectedLeftPlayer.team)
+                      : "#F4BB44"
+                  }
+                  rightColor={
+                    selectedRightPlayer
+                      ? getTeamColor(selectedRightPlayer.team)
+                      : "#347A99"
+                  }
+                />
+              </div>
+
+              <div className="order-2 lg:order-3">
+                <CourtPlayerPanel
+                  side="right"
+                  selectedPlayer={selectedRightPlayer}
+                  fallbackColor="#347A99"
+                  selectedPlayerName={rightPlayer}
+                  onOpenPicker={() => setActivePickerSide("right")}
+                />
+              </div>
+            </div>
+
+            <CourtComparisonEdges
+              leftPlayer={selectedLeftPlayer}
+              rightPlayer={selectedRightPlayer}
+              statMode={statMode}
             />
-          </div>
 
-          <div className="order-3 col-span-2 lg:order-2 lg:col-span-1">
-            <PlayerComparisonRadar
-              radarData={radarData}
-              selectedLeftPlayerName={selectedLeftPlayer?.name ?? ""}
-              selectedRightPlayerName={selectedRightPlayer?.name ?? ""}
-              leftColor={
-                selectedLeftPlayer
-                  ? getTeamColor(selectedLeftPlayer.team)
-                  : "#F4BB44"
-              }
-              rightColor={
-                selectedRightPlayer
-                  ? getTeamColor(selectedRightPlayer.team)
-                  : "#347A99"
-              }
+            <CourtMatchupSummary
+              leftPlayer={selectedLeftPlayer}
+              rightPlayer={selectedRightPlayer}
+              statMode={statMode}
             />
-          </div>
-
-          <div className="order-2 lg:order-3">
-            <CourtPlayerPanel
-              side="right"
-              selectedPlayer={selectedRightPlayer}
-              fallbackColor="#347A99"
-              selectedPlayerName={rightPlayer}
-              onOpenPicker={() => setActivePickerSide("right")}
-            />
-          </div>
-        </div>
-
-        <CourtComparisonEdges
-          leftPlayer={selectedLeftPlayer}
-          rightPlayer={selectedRightPlayer}
-          statMode={statMode}
-        />
-
-        <CourtMatchupSummary
-          leftPlayer={selectedLeftPlayer}
-          rightPlayer={selectedRightPlayer}
-          statMode={statMode}
-        />
+          </>
+        )}
       </section>
 
       <CourtPlayerPickerModal

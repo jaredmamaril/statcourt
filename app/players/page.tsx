@@ -2,6 +2,8 @@
 
 import { AuthPrompt } from "../components/auth/auth-prompt";
 import { mockUser as user } from "../lib/mock-auth";
+import { DatabaseLoadingState } from "../components/loading/database-loading-state";
+import { DatabaseErrorState } from "../components/loading/database-error-state";
 import {
   players as fallbackPlayers,
   positions,
@@ -79,6 +81,8 @@ function Players() {
 
   // Page state
   const [players, setPlayers] = useState<Player[]>(fallbackPlayers);
+  const [isLoadingPlayers, setIsLoadingPlayers] = useState(true);
+  const [playerLoadError, setPlayerLoadError] = useState("");
   const [currentPlayer, setCurrentPlayer] = useState("");
   const [playerSearch, setPlayerSearch] = useState("");
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -226,6 +230,9 @@ function Players() {
 
     async function loadPlayers() {
       try {
+        setIsLoadingPlayers(true);
+        setPlayerLoadError("");
+
         const response = await fetch("/api/players");
 
         if (!response.ok) {
@@ -239,9 +246,16 @@ function Players() {
         if (isActive && data.players && data.players.length > 0) {
           setPlayers(data.players);
         }
-      } catch {
+      } catch (error) {
+        console.error("Failed to load players", error);
+
         if (isActive) {
           setPlayers(fallbackPlayers);
+          setPlayerLoadError("Could not load player database.");
+        }
+      } finally {
+        if (isActive) {
+          setIsLoadingPlayers(false);
         }
       }
     }
@@ -298,6 +312,28 @@ function Players() {
   const featuredPlayerInsights = featuredPlayer
     ? getPlayerInsights(featuredPlayer, selectedStatMode)
     : null;
+
+  const addRecentlyViewedPlayer = useCallback((playerName: string) => {
+    setRecentlyViewedPlayers((currentRecentPlayers) => {
+      const nextRecentPlayers = addRecentPlayer(
+        currentRecentPlayers,
+        playerName,
+      );
+
+      saveRecentPlayers(nextRecentPlayers);
+
+      return nextRecentPlayers;
+    });
+  }, []);
+
+  const openPlayerCard = useCallback(
+    (playerName: string) => {
+      setCurrentPlayer(playerName);
+      addRecentlyViewedPlayer(playerName);
+      setIsCardFlipped(false);
+    },
+    [addRecentlyViewedPlayer],
+  );
 
   // Open a player card when coming from rankings with /players?player=name
   useEffect(() => {
@@ -361,18 +397,6 @@ function Players() {
   }, []);
 
   // Event handlers
-  const addRecentlyViewedPlayer = useCallback((playerName: string) => {
-    setRecentlyViewedPlayers((currentRecentPlayers) => {
-      const nextRecentPlayers = addRecentPlayer(
-        currentRecentPlayers,
-        playerName,
-      );
-
-      saveRecentPlayers(nextRecentPlayers);
-
-      return nextRecentPlayers;
-    });
-  }, []);
 
   const updateFavorite = (playerName: string) => {
     setFavorites((prev) =>
@@ -438,12 +462,6 @@ function Players() {
       }, 450);
     });
   }
-
-  const openPlayerCard = useCallback((playerName: string) => {
-    setCurrentPlayer(playerName);
-    addRecentlyViewedPlayer(playerName);
-    setIsCardFlipped(false);
-  }, [addRecentlyViewedPlayer]);
 
   function closePlayerCard() {
     setCurrentPlayer("");
@@ -524,25 +542,28 @@ function Players() {
                 : "pointer-events-auto relative flex h-full w-full flex-col translate-x-0 opacity-100 transition-all duration-500 ease-out"
             }
           >
-            {isDesktop && !selectedPlayer && featuredPlayer && (
-              <FeaturedPlayerPanel
-                featuredPlayer={featuredPlayer}
-                ratingView={selectedRatingView}
-                statMode={selectedStatMode}
-                statModeLabel={selectedStatModeLabel}
-                featuredPlayerInsights={featuredPlayerInsights}
-                getInsightRarityStyles={getInsightRarityStyles}
-                onViewPlayer={openPlayerCard}
-              >
-                <RecentlyScouted
-                  players={players}
-                  recentlyViewedPlayers={recentlyViewedPlayers}
+            {isDesktop &&
+              !selectedPlayer &&
+              !isLoadingPlayers &&
+              featuredPlayer && (
+                <FeaturedPlayerPanel
+                  featuredPlayer={featuredPlayer}
+                  ratingView={selectedRatingView}
+                  statMode={selectedStatMode}
+                  statModeLabel={selectedStatModeLabel}
+                  featuredPlayerInsights={featuredPlayerInsights}
+                  getInsightRarityStyles={getInsightRarityStyles}
                   onViewPlayer={openPlayerCard}
-                />
-              </FeaturedPlayerPanel>
-            )}
-            {/* Desktop-only side panels */}
-            {isDesktop && !selectedPlayer && (
+                >
+                  <RecentlyScouted
+                    players={players}
+                    recentlyViewedPlayers={recentlyViewedPlayers}
+                    onViewPlayer={openPlayerCard}
+                  />
+                </FeaturedPlayerPanel>
+              )}
+
+            {isDesktop && !selectedPlayer && !isLoadingPlayers && (
               <DatabaseSnapshot
                 playersCount={players.length}
                 positions={positions}
@@ -584,17 +605,29 @@ function Players() {
               selectedSkill={selectedRatingView}
               onSelectSkill={selectSkillFilter}
             />
-            <PlayerList
-              players={visiblePlayers}
-              totalPlayersCount={filteredPlayers.length}
-              currentPlayer={currentPlayer}
-              favorites={favorites}
-              showFavorites={showFavorites}
-              selectedSkill={selectedRatingView}
-              sortBy={sortBy}
-              onToggleFavorite={toggleFavorite}
-              onSelectPlayer={selectPlayerFromList}
-            />
+
+            {isLoadingPlayers ? (
+              <DatabaseLoadingState
+                title="Loading Players"
+                description="Building player dashboard..."
+              />
+            ) : (
+              <>
+                {playerLoadError && <DatabaseErrorState />}
+
+                <PlayerList
+                  players={visiblePlayers}
+                  totalPlayersCount={filteredPlayers.length}
+                  currentPlayer={currentPlayer}
+                  favorites={favorites}
+                  showFavorites={showFavorites}
+                  selectedSkill={selectedRatingView}
+                  sortBy={sortBy}
+                  onToggleFavorite={toggleFavorite}
+                  onSelectPlayer={selectPlayerFromList}
+                />
+              </>
+            )}
           </div>
 
           <div className="flex w-full items-start justify-center">

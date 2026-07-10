@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { LineupSlot } from "../../court-data";
+import type { LineupSlot, Player } from "../../court-data";
 import {
   EMPTY_LINEUP,
   getAvailableBuildPlayers,
@@ -9,10 +9,14 @@ import {
 } from "./builder-lineup-helpers";
 
 type UseLineupBuilderProps = {
+  players: Player[];
   lineupPositions: LineupSlot[];
 };
 
-export function useLineupBuilder({ lineupPositions }: UseLineupBuilderProps) {
+export function useLineupBuilder({
+  players,
+  lineupPositions,
+}: UseLineupBuilderProps) {
   const [hasStartedBuilder, setHasStartedBuilder] = useState(false);
   const [customLineup, setCustomLineup] =
     useState<Record<LineupSlot, string>>(EMPTY_LINEUP);
@@ -24,6 +28,7 @@ export function useLineupBuilder({ lineupPositions }: UseLineupBuilderProps) {
     useState<PlayerRevealMode>("instant");
 
   const selectedCustomPlayerSlots = getSelectedCustomPlayerSlots(
+    players,
     customLineup,
     lineupPositions,
   );
@@ -37,6 +42,7 @@ export function useLineupBuilder({ lineupPositions }: UseLineupBuilderProps) {
   const activePositionPlayerName = customLineup[activeBuildPosition];
 
   const availableBuildPlayers = getAvailableBuildPlayers({
+    players,
     buildPlayerSearch,
     activeBuildPosition,
     activePositionPlayerName,

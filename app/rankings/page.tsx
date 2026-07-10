@@ -1,5 +1,8 @@
 ﻿"use client";
 
+import { DatabaseLoadingState } from "../components/loading/database-loading-state";
+import { DatabaseErrorState } from "../components/loading/database-error-state";
+
 import {
   getPlayerRating,
   type PlayerRatingCategory,
@@ -15,8 +18,6 @@ import type {
   Position,
   StatMode,
 } from "../components/court-data";
-
-import { RankingStatProfileFilter } from "../components/rankings/ranking-stat-profile-filter";
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -38,6 +39,15 @@ import { ArchetypesSection } from "../components/rankings/archetypes-section";
 import { RemainingRankingList } from "../components/rankings/remaining-ranking-list";
 
 type RankingStatProfile = "career" | "peak" | "current";
+type ArchetypeSort = "rarity" | "name";
+
+const archetypeRarityRank = {
+  gold: 0,
+  purple: 1,
+  blue: 2,
+  gray: 3,
+  red: 4,
+} as const;
 
 export default function Rankings() {
   // Page state
@@ -51,7 +61,11 @@ export default function Rankings() {
   const [teamFilter, setTeamFilter] = useState<Team | "">("");
   const [playerSearch, setPlayerSearch] = useState("");
   const [archetypeFilter, setArchetypeFilter] = useState("");
+  const [archetypeSort, setArchetypeSort] =
+    useState<ArchetypeSort>("rarity");
   const [players, setPlayers] = useState(fallbackPlayers);
+  const [isLoadingPlayers, setIsLoadingPlayers] = useState(true);
+  const [playerLoadError, setPlayerLoadError] = useState("");
   const statMode: StatMode = statProfileFilter;
 
   // Refs and routing
@@ -62,10 +76,26 @@ export default function Rankings() {
     let isMounted = true;
 
     async function loadPlayers() {
-      const loadedPlayers = await getPlayersFromSupabaseWithFallback();
+      try {
+        setIsLoadingPlayers(true);
+        setPlayerLoadError("");
 
-      if (isMounted) {
-        setPlayers(loadedPlayers);
+        const loadedPlayers = await getPlayersFromSupabaseWithFallback();
+
+        if (isMounted) {
+          setPlayers(loadedPlayers);
+        }
+      } catch (error) {
+        console.error("Failed to load ranking players", error);
+
+        if (isMounted) {
+          setPlayers(fallbackPlayers);
+          setPlayerLoadError("Could not load ranking database.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingPlayers(false);
+        }
       }
     }
 
@@ -85,19 +115,31 @@ export default function Rankings() {
     ),
   ).sort();
 
-  const archetypeOptionDetails = archetypeOptions.map((archetypeLabel) => {
-    const matchingPlayer = players.find(
-      (player) =>
-        getPlayerInsights(player, statMode).archetype?.label === archetypeLabel,
-    );
+  const archetypeOptionDetails = archetypeOptions
+    .map((archetypeLabel) => {
+      const matchingPlayer = players.find(
+        (player) =>
+          getPlayerInsights(player, statMode).archetype?.label ===
+          archetypeLabel,
+      );
 
-    return {
-      label: archetypeLabel,
-      archetype: matchingPlayer
-        ? getPlayerInsights(matchingPlayer, statMode).archetype
-        : null,
-    };
-  });
+      return {
+        label: archetypeLabel,
+        archetype: matchingPlayer
+          ? getPlayerInsights(matchingPlayer, statMode).archetype
+          : null,
+      };
+    })
+    .sort((a, b) => {
+      if (archetypeSort === "name") {
+        return a.label.localeCompare(b.label);
+      }
+
+      const aRank = a.archetype ? archetypeRarityRank[a.archetype.rarity] : 99;
+      const bRank = b.archetype ? archetypeRarityRank[b.archetype.rarity] : 99;
+
+      return aRank - bRank || a.label.localeCompare(b.label);
+    });
 
   const selectedArchetypeOption = archetypeOptionDetails.find(
     (option) => option.label === archetypeFilter,
@@ -227,35 +269,55 @@ export default function Rankings() {
         <div className="pt-2">
           <div className="mb-6">
             {activeTab === "archetypes" ? (
-              <>
-                <div className="mb-1 flex justify-center">
-                  <RankingStatProfileFilter
-                    isOpen={openFilter === "profile"}
-                    selectedProfile={statProfileFilter}
-                    onToggle={() =>
+              isLoadingPlayers ? (
+                <DatabaseLoadingState
+                  title="Loading Archetypes"
+                  description="Classifying player profiles..."
+                />
+              ) : (
+                <>
+                  {playerLoadError && (
+                    <DatabaseErrorState
+                      title="Archetypes Unavailable"
+                      description="Showing fallback archetype data."
+                    />
+                  )}
+
+                  <ArchetypesSection
+                    players={players}
+                    statProfileFilter={statProfileFilter}
+                    statMode={statMode}
+                    isProfileFilterOpen={openFilter === "profile"}
+                    onToggleProfileFilter={() =>
                       setOpenFilter(openFilter === "profile" ? null : "profile")
                     }
-                    onSelectProfile={(profile) => {
+                    onSelectProfileFilter={(profile) => {
                       setStatProfileFilter(profile);
+                      setArchetypeFilter("");
                       setOpenFilter(null);
                     }}
+                    archetypeSort={archetypeSort}
+                    onToggleArchetypeSort={() =>
+                      setArchetypeSort((current) =>
+                        current === "rarity" ? "name" : "rarity",
+                      )
+                    }
+                    archetypeOptionDetails={archetypeOptionDetails}
+                    selectedArchetype={archetypeFilter}
+                    selectedArchetypeColor={selectedArchetypeColor}
+                    selectedArchetypeInfo={selectedArchetypeInfo}
+                    selectedArchetypePlayers={selectedArchetypePlayers}
+                    archetypeDescriptionRef={archetypeDescriptionRef}
+                    onSelectArchetype={selectArchetypeCard}
+                    onViewPlayer={viewPlayerCard}
                   />
-                </div>
-
-                <ArchetypesSection
-                  players={players}
-                  statProfileFilter={statProfileFilter}
-                  statMode={statMode}
-                  archetypeOptionDetails={archetypeOptionDetails}
-                  selectedArchetype={archetypeFilter}
-                  selectedArchetypeColor={selectedArchetypeColor}
-                  selectedArchetypeInfo={selectedArchetypeInfo}
-                  selectedArchetypePlayers={selectedArchetypePlayers}
-                  archetypeDescriptionRef={archetypeDescriptionRef}
-                  onSelectArchetype={selectArchetypeCard}
-                  onViewPlayer={viewPlayerCard}
-                />
-              </>
+                </>
+              )
+            ) : isLoadingPlayers ? (
+              <DatabaseLoadingState
+                title="Loading Rankings"
+                description="Syncing top player ratings..."
+              />
             ) : (
               <RankingLeaderboardSection
                 rankingHeading={rankingHeading}
@@ -282,8 +344,15 @@ export default function Rankings() {
             )}
           </div>
 
-          {activeTab !== "archetypes" && (
+          {activeTab !== "archetypes" && !isLoadingPlayers && (
             <>
+              {playerLoadError && (
+                <DatabaseErrorState
+                  title="Rankings Unavailable"
+                  description="Showing fallback rankings."
+                />
+              )}
+
               <RemainingRankingList
                 players={rankedPlayers}
                 ratingCategory={ratingCategory}

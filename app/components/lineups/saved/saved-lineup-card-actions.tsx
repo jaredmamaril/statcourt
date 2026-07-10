@@ -3,6 +3,7 @@ import type { SavedLineup } from "../shared/lineup-types";
 type SavedLineupCardActionsProps = {
   lineup: SavedLineup;
   archetypeColor: string;
+  isLoadingPlayers: boolean;
   onLoad: (lineup: SavedLineup) => void;
   onScout: (lineup: SavedLineup) => void;
   onRename: (lineup: SavedLineup) => void;
@@ -12,6 +13,7 @@ type SavedLineupCardActionsProps = {
 export function SavedLineupCardActions({
   lineup,
   archetypeColor,
+  isLoadingPlayers,
   onLoad,
   onScout,
   onRename,
@@ -21,8 +23,9 @@ export function SavedLineupCardActions({
     <div className="mt-2 grid grid-cols-2 gap-1.5 lg:mt-5 lg:flex lg:gap-2">
       <button
         type="button"
+        disabled={isLoadingPlayers}
         onClick={() => onLoad(lineup)}
-        className="rounded-md border px-2 py-2 font-michroma text-[6px] uppercase transition lg:hover:scale-105 lg:hover:shadow-[0_0_14px_rgba(27,194,236,0.22)] lg:px-3 lg:text-[8px]"
+        className="rounded-md border px-2 py-2 font-michroma text-[6px] uppercase transition disabled:cursor-not-allowed disabled:opacity-35 lg:hover:scale-105 lg:hover:shadow-[0_0_14px_rgba(27,194,236,0.22)] lg:px-3 lg:text-[8px]"
         style={{
           color: archetypeColor,
           borderColor: `${archetypeColor}80`,
@@ -34,8 +37,9 @@ export function SavedLineupCardActions({
 
       <button
         type="button"
+        disabled={isLoadingPlayers}
         onClick={() => onScout(lineup)}
-        className="rounded-md border px-2 py-2 font-michroma text-[6px] uppercase transition lg:hover:scale-105 lg:hover:shadow-[0_0_14px_rgba(27,194,236,0.22)] lg:px-3 lg:text-[8px]"
+        className="rounded-md border px-2 py-2 font-michroma text-[6px] uppercase transition disabled:cursor-not-allowed disabled:opacity-35 lg:hover:scale-105 lg:hover:shadow-[0_0_14px_rgba(27,194,236,0.22)] lg:px-3 lg:text-[8px]"
         style={{
           color: archetypeColor,
           borderColor: `${archetypeColor}50`,
