@@ -37,9 +37,9 @@ export function BuilderPlayerCardOverlay({
           {scoutStats.map((stat) => (
             <div
               key={stat.label}
-              className="grid grid-cols-[25px_1fr_10px] items-center gap-0.5 lg:grid-cols-[45px_1fr_15px] lg:gap-2"
+              className="grid grid-cols-[22px_30px_8px] items-center justify-center gap-0.5 lg:grid-cols-[45px_1fr_15px] lg:justify-stretch lg:gap-2"
             >
-              <p className="truncate font-michroma text-[4.6px] text-white/45 lg:text-[7.7px]">
+              <p className="truncate font-michroma text-[4.2px] text-white/45 lg:text-[7.7px]">
                 {stat.label}
               </p>
 
@@ -52,7 +52,7 @@ export function BuilderPlayerCardOverlay({
                 />
               </div>
 
-              <p className="text-right font-michroma text-[4.2px] text-white/55 lg:text-[7px]">
+              <p className="text-right font-michroma text-[4px] text-white/55 lg:text-[7px]">
                 {stat.value}
               </p>
             </div>

@@ -50,7 +50,7 @@ export function BuilderWorkspace({
 }: BuilderWorkspaceProps) {
   return (
     <div className="mt-3">
-      <div className="grid grid-cols-[minmax(0,1fr)_135px] items-start gap-2 lg:grid-cols-[400px_300px_1fr] lg:gap-5">
+      <div className="grid grid-cols-[minmax(0,1fr)_122px] items-start gap-1 lg:grid-cols-[400px_300px_1fr] lg:gap-5">
         <div className="min-w-0">
           <BuilderPositionTabs
             lineupPositions={lineupPositions}

@@ -91,7 +91,7 @@ export function BuilderPlayerCard({
           onPickPlayer(player.name);
         }
       }}
-      className={`group relative h-24 overflow-hidden rounded-md border bg-black/30 p-1 text-center transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/10 lg:h-52 lg:p-3 ${
+      className={`group relative h-21 overflow-hidden rounded-md border bg-black/30 p-[3px] text-center transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/10 lg:h-52 lg:p-3 ${
         isSelected
           ? "border-[#1bc2ec] bg-[#1bc2ec]/15 shadow-[0_0_18px_rgba(27,194,236,0.35)]"
           : "border-white/15"
@@ -102,23 +102,23 @@ export function BuilderPlayerCard({
         alt={player.name}
         width={120}
         height={120}
-        className="mx-auto h-9 w-9 rounded-full object-cover lg:h-20 lg:w-20"
+        className="mx-auto h-[30px] w-[30px] rounded-full object-cover lg:h-20 lg:w-20"
       />
 
-      <p className="mt-0.5 flex h-5 items-center justify-center text-center font-michroma text-[6px] leading-tight text-white lg:h-10 lg:text-[11px] lg:leading-4">
+      <p className="mt-0.5 flex h-5 items-center justify-center text-center font-michroma text-[5px] leading-tight text-white lg:h-10 lg:text-[11px] lg:leading-4">
         {player.name}
       </p>
 
-      <p className="font-michroma text-[5.5px] text-white/40 lg:text-[9px]">
+      <p className="font-michroma text-[4.5px] text-white/40 lg:text-[9px]">
         {player.team} • {player.position}
       </p>
 
-      <p className="mt-0.5 font-michroma text-[6.5px] text-[#1bc2ec] lg:mt-1 lg:text-[10px]">
+      <p className="mt-0.5 font-michroma text-[5.4px] text-[#1bc2ec] lg:mt-1 lg:text-[10px]">
         {positionRating.toFixed(1)} OVR
       </p>
 
       <p
-        className={`mt-0.5 font-michroma text-[5.5px] uppercase lg:mt-2 lg:text-[8px] ${
+        className={`mt-0.5 font-michroma text-[4.5px] uppercase lg:mt-2 lg:text-[8px] ${
           positionFit === "natural"
             ? "text-emerald-400"
             : positionFit === "secondary"
