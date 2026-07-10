@@ -10,7 +10,12 @@ export function getSavedLineups() {
   }
 
   try {
-    return JSON.parse(saved) as SavedLineup[];
+    const lineups = JSON.parse(saved) as SavedLineup[];
+
+    return lineups.map((lineup) => ({
+      statProfile: "career",
+      ...lineup,
+    }));
   } catch {
     return [];
   }

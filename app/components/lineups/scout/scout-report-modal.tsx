@@ -14,6 +14,7 @@ type ScoutReportModalProps = {
   scoutScores: LineupScoutScores;
   scoutArchetypeColor: string;
   scoutSummary: string;
+  statProfileLabel: string;
   animatedScoutOverall: number;
   lineupTier: string;
   scoutTierColor: string;
@@ -42,6 +43,7 @@ export function ScoutReportModal({
   scoutScores,
   scoutArchetypeColor,
   scoutSummary,
+  statProfileLabel,
   animatedScoutOverall,
   lineupTier,
   scoutTierColor,
@@ -73,7 +75,11 @@ export function ScoutReportModal({
         }}
       >
         <div className="relative max-h-[78vh] overflow-y-auto p-3 scrollbar-none lg:p-5 [&::-webkit-scrollbar]:hidden">
-          <ScoutReportHeader scoutSummary={scoutSummary} onClose={onClose} />
+          <ScoutReportHeader
+            scoutSummary={scoutSummary}
+            statProfileLabel={statProfileLabel}
+            onClose={onClose}
+          />
 
           <ScoutLineupSummary
             lineupPositions={lineupPositions}

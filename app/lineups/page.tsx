@@ -7,6 +7,7 @@ import { mockUser as user } from "../lib/mock-auth";
 import { DatabaseErrorState } from "../components/loading/database-error-state";
 import { DatabaseLoadingState } from "../components/loading/database-loading-state";
 import { players as fallbackPlayers, type Player } from "../components/court-data";
+import type { PlayerStatProfileMode } from "../components/player-ratings";
 
 import type {
   LineupTab,
@@ -67,6 +68,13 @@ import {
   loadLineupSteps,
   scoutLineupSteps,
 } from "../components/lineups/scout/lineup-loading-steps";
+
+const statProfileLabels: Record<PlayerStatProfileMode | "all", string> = {
+  all: "All Profiles",
+  career: "Career",
+  peak: "3-Year Peak",
+  current: "Latest Season",
+};
 
 export default function Lineups() {
   // Refs and routing
@@ -169,6 +177,9 @@ export default function Lineups() {
   const { savedLineups, updateSavedLineups } = useSavedLineups();
   const [savedLineupSearch, setSavedLineupSearch] = useState("");
   const [savedLineupSort, setSavedLineupSort] = useState("highestOvr");
+  const [savedLineupProfileFilter, setSavedLineupProfileFilter] = useState<
+    PlayerStatProfileMode | "all"
+  >("all");
   const [savedLineupTierFilter] = useState("");
   const [savedLineupArchetypeFilter] = useState("");
   const [openSavedDropdown, setOpenSavedDropdown] = useState<string | null>(
@@ -253,6 +264,7 @@ export default function Lineups() {
     savedLineups,
     savedLineupSearch,
     savedLineupSort,
+    savedLineupProfileFilter,
     savedLineupTierFilter,
     savedLineupArchetypeFilter,
   });
@@ -262,6 +274,10 @@ export default function Lineups() {
     activeTab === "featured" || activeTab === "saved" || hasStartedBuilder;
 
   const savedSortLabel = getSavedSortLabel(savedLineupSort);
+  const savedProfileLabel = statProfileLabels[savedLineupProfileFilter];
+  const scoutStatProfile =
+    scoutedSavedLineup?.statProfile ?? builderStatProfile;
+  const scoutStatProfileLabel = statProfileLabels[scoutStatProfile];
 
   // Scout report animation
   const displayedScoutOverall =
@@ -354,6 +370,7 @@ export default function Lineups() {
 
     const newLineupInput = createSavedLineupInput({
       name: lineupName.trim() || `Lineup ${savedLineups.length + 1}`,
+      statProfile: builderStatProfile,
       players: customLineup,
       overall: customLineupOverall,
       summary: scoutSummary,
@@ -403,6 +420,7 @@ export default function Lineups() {
 
   function applyLoadedLineup(lineup: SavedLineup) {
     setPlayerRevealMode("savedLoad");
+    setBuilderStatProfile(lineup.statProfile ?? "career");
     applySavedLineupPlayers(lineup);
     setActiveTab("builder");
     setHasStartedBuilder(true);
@@ -443,6 +461,7 @@ export default function Lineups() {
 
   function scoutSavedLineup(lineup: SavedLineup) {
     setScoutedSavedLineup(lineup);
+    setBuilderStatProfile(lineup.statProfile ?? "career");
     applySavedLineupPlayers(lineup);
     setIsScoutOpen(true);
   }
@@ -503,6 +522,7 @@ export default function Lineups() {
                 )}
 
                 <BuilderWorkspace
+                  players={players}
                   lineupPositions={lineupPositions}
                   activeBuildPosition={activeBuildPosition}
                   customLineup={customLineup}
@@ -536,17 +556,28 @@ export default function Lineups() {
                 filteredSavedLineups={filteredSavedLineups}
                 savedLineupSearch={savedLineupSearch}
                 savedLineupSort={savedLineupSort}
+                savedLineupProfileFilter={savedLineupProfileFilter}
                 savedSortLabel={savedSortLabel}
+                savedProfileLabel={savedProfileLabel}
                 openSavedDropdown={openSavedDropdown}
                 isLoadingPlayers={isLoadingPlayers}
                 onSearchChange={setSavedLineupSearch}
-                onToggleDropdown={() =>
+                onToggleSortDropdown={() =>
                   setOpenSavedDropdown(
                     openSavedDropdown === "sort" ? null : "sort",
                   )
                 }
+                onToggleProfileDropdown={() =>
+                  setOpenSavedDropdown(
+                    openSavedDropdown === "profile" ? null : "profile",
+                  )
+                }
                 onSelectSort={(value) => {
                   setSavedLineupSort(value);
+                  setOpenSavedDropdown(null);
+                }}
+                onSelectProfile={(value) => {
+                  setSavedLineupProfileFilter(value);
                   setOpenSavedDropdown(null);
                 }}
                 onSetActiveTab={setActiveTab}
@@ -595,6 +626,7 @@ export default function Lineups() {
           scoutScores={scoutScores}
           scoutArchetypeColor={scoutArchetypeColor}
           scoutSummary={scoutSummary}
+          statProfileLabel={scoutStatProfileLabel}
           animatedScoutOverall={animatedScoutOverall}
           lineupTier={lineupTier}
           scoutTierColor={scoutTierColor}

@@ -1,4 +1,5 @@
 import type { LineupTab, SavedLineup } from "../shared/lineup-types";
+import type { PlayerStatProfileMode } from "../../player-ratings";
 import { SavedLineupsEmptyState } from "./saved-lineups-empty-state";
 import { SavedLineupsToolbar } from "./saved-lineups-toolbar";
 import { SavedLineupCard } from "./saved-lineup-card";
@@ -8,12 +9,16 @@ type SavedLineupsSectionProps = {
   filteredSavedLineups: SavedLineup[];
   savedLineupSearch: string;
   savedLineupSort: string;
+  savedLineupProfileFilter: PlayerStatProfileMode | "all";
   savedSortLabel: string;
+  savedProfileLabel: string;
   openSavedDropdown: string | null;
   isLoadingPlayers: boolean;
   onSearchChange: (value: string) => void;
-  onToggleDropdown: () => void;
+  onToggleSortDropdown: () => void;
+  onToggleProfileDropdown: () => void;
   onSelectSort: (value: string) => void;
+  onSelectProfile: (value: PlayerStatProfileMode | "all") => void;
   onSetActiveTab: (tab: LineupTab) => void;
   onSetHasStartedBuilder: (value: boolean) => void;
   onLoadLineup: (lineup: SavedLineup) => void;
@@ -27,12 +32,16 @@ export function SavedLineupsSection({
   filteredSavedLineups,
   savedLineupSearch,
   savedLineupSort,
+  savedLineupProfileFilter,
   savedSortLabel,
+  savedProfileLabel,
   openSavedDropdown,
   isLoadingPlayers,
   onSearchChange,
-  onToggleDropdown,
+  onToggleSortDropdown,
+  onToggleProfileDropdown,
   onSelectSort,
+  onSelectProfile,
   onSetActiveTab,
   onSetHasStartedBuilder,
   onLoadLineup,
@@ -54,12 +63,16 @@ export function SavedLineupsSection({
           <SavedLineupsToolbar
             savedLineupSearch={savedLineupSearch}
             savedLineupSort={savedLineupSort}
+            savedLineupProfileFilter={savedLineupProfileFilter}
             savedSortLabel={savedSortLabel}
+            savedProfileLabel={savedProfileLabel}
             openSavedDropdown={openSavedDropdown}
             savedLineupCount={savedLineups.length}
             onSearchChange={onSearchChange}
-            onToggleDropdown={onToggleDropdown}
+            onToggleSortDropdown={onToggleSortDropdown}
+            onToggleProfileDropdown={onToggleProfileDropdown}
             onSelectSort={onSelectSort}
+            onSelectProfile={onSelectProfile}
           />
 
           {isLoadingPlayers && (

@@ -97,6 +97,8 @@ export function mapSupabasePlayerToPlayer(
     id: row.id,
     nbaId: row.nba_id ?? undefined,
     name: row.name,
+    heightInches: row.height_inches,
+    weightPounds: row.weight_pounds,
     fallbackImage: row.fallback_image ?? undefined,
     team: row.team as Team,
     position: row.position as Position,

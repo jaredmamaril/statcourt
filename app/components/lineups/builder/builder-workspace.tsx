@@ -11,6 +11,7 @@ type Player = Parameters<
 >[0]["availableBuildPlayers"][number];
 
 type BuilderWorkspaceProps = {
+  players: Player[];
   lineupPositions: LineupSlot[];
   activeBuildPosition: LineupSlot;
   customLineup: Record<LineupSlot, string>;
@@ -33,6 +34,7 @@ type BuilderWorkspaceProps = {
 };
 
 export function BuilderWorkspace({
+  players,
   lineupPositions,
   activeBuildPosition,
   customLineup,
@@ -108,6 +110,7 @@ export function BuilderWorkspace({
         </div>
 
         <BuilderDraftBoard
+          players={players}
           lineupPositions={lineupPositions}
           hoveredBuildPlayer={hoveredBuildPlayer}
           customLineup={customLineup}

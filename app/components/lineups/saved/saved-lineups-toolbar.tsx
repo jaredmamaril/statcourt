@@ -1,12 +1,18 @@
+import type { PlayerStatProfileMode } from "../../player-ratings";
+
 type SavedLineupsToolbarProps = {
   savedLineupSearch: string;
   savedLineupSort: string;
+  savedLineupProfileFilter: PlayerStatProfileMode | "all";
   savedSortLabel: string;
+  savedProfileLabel: string;
   openSavedDropdown: string | null;
   savedLineupCount: number;
   onSearchChange: (value: string) => void;
-  onToggleDropdown: () => void;
+  onToggleSortDropdown: () => void;
+  onToggleProfileDropdown: () => void;
   onSelectSort: (value: string) => void;
+  onSelectProfile: (value: PlayerStatProfileMode | "all") => void;
 };
 
 const savedSortOptions = [
@@ -16,15 +22,27 @@ const savedSortOptions = [
   { label: "Oldest Saved", value: "oldest" },
 ];
 
+const savedProfileOptions: { label: string; value: PlayerStatProfileMode | "all" }[] =
+  [
+    { label: "All Profiles", value: "all" },
+    { label: "Career", value: "career" },
+    { label: "3-Year Peak", value: "peak" },
+    { label: "Latest Season", value: "current" },
+  ];
+
 export function SavedLineupsToolbar({
   savedLineupSearch,
   savedLineupSort,
+  savedLineupProfileFilter,
   savedSortLabel,
+  savedProfileLabel,
   openSavedDropdown,
   savedLineupCount,
   onSearchChange,
-  onToggleDropdown,
+  onToggleSortDropdown,
+  onToggleProfileDropdown,
   onSelectSort,
+  onSelectProfile,
 }: SavedLineupsToolbarProps) {
   return (
     <>
@@ -40,7 +58,41 @@ export function SavedLineupsToolbar({
         <div className="relative shrink-0">
           <button
             type="button"
-            onClick={onToggleDropdown}
+            onClick={onToggleProfileDropdown}
+            className={`flex h-8 min-w-24 cursor-pointer items-center justify-between gap-1 rounded-md border px-2 font-michroma text-[7px] transition lg:h-auto lg:min-w-42 lg:gap-3 lg:px-4 lg:py-3 lg:text-xs ${
+              savedLineupProfileFilter !== "all"
+                ? "border-[#ffd700]/70 bg-[#ffd700]/10 text-[#ffd700]"
+                : "border-white/15 bg-black/30 text-white/60 hover:border-white/40"
+            }`}
+          >
+            <span>{savedProfileLabel}</span>
+            <span className="text-[#1bc2ec]">v</span>
+          </button>
+
+          {openSavedDropdown === "profile" && (
+            <div className="absolute right-0 top-full z-100 mt-1 w-32 overflow-hidden rounded-md border border-white/15 bg-[#07111f] shadow-[0_0_20px_rgba(0,0,0,0.45)] lg:mt-2 lg:w-full">
+              {savedProfileOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => onSelectProfile(option.value)}
+                  className={`block w-full cursor-pointer px-2 py-2 text-left font-michroma text-[7px] transition lg:px-4 lg:py-3 lg:text-xs ${
+                    savedLineupProfileFilter === option.value
+                      ? "bg-[#ffd700]/10 text-[#ffd700]"
+                      : "text-white/60 hover:bg-white/10 hover:text-white"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="relative shrink-0">
+          <button
+            type="button"
+            onClick={onToggleSortDropdown}
             className={`flex h-8 min-w-24 cursor-pointer items-center justify-between gap-1 rounded-md border px-2 font-michroma text-[7px] transition lg:h-auto lg:min-w-48 lg:gap-3 lg:px-4 lg:py-3 lg:text-xs ${
               savedLineupSort !== "highestOvr"
                 ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]"

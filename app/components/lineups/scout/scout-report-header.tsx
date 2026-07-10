@@ -1,10 +1,12 @@
 type ScoutReportHeaderProps = {
   scoutSummary: string;
+  statProfileLabel: string;
   onClose: () => void;
 };
 
 export function ScoutReportHeader({
   scoutSummary,
+  statProfileLabel,
   onClose,
 }: ScoutReportHeaderProps) {
   return (
@@ -14,6 +16,10 @@ export function ScoutReportHeader({
           <h2 className="font-michroma text-xs text-white lg:text-lg">
             Scouting Report
           </h2>
+
+          <p className="mt-1 w-fit rounded border border-[#1bc2ec]/35 bg-[#1bc2ec]/10 px-2 py-0.5 font-michroma text-[6px] uppercase text-[#1bc2ec] lg:text-[9px]">
+            Based on {statProfileLabel}
+          </p>
 
           <div
             className="scout-section-reveal"

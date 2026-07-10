@@ -3,6 +3,8 @@ import type { LineupSlot, Player } from "../../court-data";
 import type { BuilderStatProfileMode } from "./builder-position-helpers";
 import { BuilderPlayerCard } from "./builder-player-card";
 
+const DISPLAYED_BUILD_PLAYER_LIMIT = 60;
+
 type BuilderPlayerPickerProps = {
   activeBuildPosition: LineupSlot;
   customLineup: Record<LineupSlot, string>;
@@ -31,6 +33,11 @@ export function BuilderPlayerPicker({
     onPickPlayer(playerName);
   }
 
+  const displayedBuildPlayers = availableBuildPlayers.slice(
+    0,
+    DISPLAYED_BUILD_PLAYER_LIMIT,
+  );
+
   return (
     <div className="flex min-w-0 flex-col gap-2">
       <div className="flex justify-center">
@@ -45,7 +52,7 @@ export function BuilderPlayerPicker({
 
       <div className="statcourt-scroll max-h-50 overflow-y-auto pr-1 lg:max-h-100 lg:pr-2">
         <div className="grid grid-cols-[repeat(2,75px)] justify-center gap-1.5 lg:grid-cols-3 lg:justify-stretch lg:gap-2">
-          {availableBuildPlayers.map((player) => {
+          {displayedBuildPlayers.map((player) => {
             const isSelected =
               customLineup[activeBuildPosition] === player.name;
 

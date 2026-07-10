@@ -8,6 +8,12 @@ import { SavedLineupOverallBox } from "./saved-lineup-overall-box";
 import { SavedLineupCardActions } from "./saved-lineup-card-actions";
 import { SavedLineupBadges } from "./saved-lineup-badges";
 
+const statProfileLabels = {
+  career: "Career",
+  peak: "3-Year Peak",
+  current: "Latest Season",
+};
+
 type SavedLineupCardProps = {
   lineup: SavedLineup;
   isLoadingPlayers: boolean;
@@ -28,6 +34,7 @@ export function SavedLineupCard({
   const archetypeColor = getSavedLineupArchetypeColor(lineup.archetype);
   const tierColor = getLineupTierColor(lineup.tier);
   const topScore = getSavedLineupTopScore(lineup);
+  const statProfileLabel = statProfileLabels[lineup.statProfile ?? "career"];
 
   return (
     <div
@@ -49,6 +56,10 @@ export function SavedLineupCard({
               day: "numeric",
               year: "numeric",
             })}
+          </p>
+
+          <p className="mt-1 w-fit rounded border border-[#1bc2ec]/35 bg-[#1bc2ec]/10 px-1.5 py-0.5 font-michroma text-[5px] uppercase text-[#1bc2ec] lg:px-2 lg:text-[8px]">
+            {statProfileLabel}
           </p>
         </div>
 

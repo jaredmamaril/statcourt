@@ -1,4 +1,5 @@
 import type { SavedLineup } from "../shared/lineup-types";
+import type { PlayerStatProfileMode } from "../../player-ratings";
 
 export function getSavedSortLabel(savedLineupSort: string) {
   if (savedLineupSort === "lowestOvr") return "Lowest OVR";
@@ -12,6 +13,7 @@ type GetFilteredSavedLineupsParams = {
   savedLineups: SavedLineup[];
   savedLineupSearch: string;
   savedLineupSort: string;
+  savedLineupProfileFilter: PlayerStatProfileMode | "all";
   savedLineupTierFilter: string;
   savedLineupArchetypeFilter: string;
 };
@@ -20,6 +22,7 @@ export function getFilteredSavedLineups({
   savedLineups,
   savedLineupSearch,
   savedLineupSort,
+  savedLineupProfileFilter,
   savedLineupTierFilter,
   savedLineupArchetypeFilter,
 }: GetFilteredSavedLineupsParams) {
@@ -29,6 +32,10 @@ export function getFilteredSavedLineups({
 
       const matchesSearch = lineup.name.toLowerCase().includes(search);
 
+      const matchesProfile =
+        savedLineupProfileFilter === "all" ||
+        (lineup.statProfile ?? "career") === savedLineupProfileFilter;
+
       const matchesTier =
         savedLineupTierFilter === "" || lineup.tier === savedLineupTierFilter;
 
@@ -36,7 +43,7 @@ export function getFilteredSavedLineups({
         savedLineupArchetypeFilter === "" ||
         lineup.archetype === savedLineupArchetypeFilter;
 
-      return matchesSearch && matchesTier && matchesArchetype;
+      return matchesSearch && matchesProfile && matchesTier && matchesArchetype;
     })
     .toSorted((a, b) => {
       if (savedLineupSort === "lowestOvr") {

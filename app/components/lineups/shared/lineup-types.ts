@@ -1,5 +1,6 @@
 import type { LineupSlot } from "../../court-data";
 import type { LineupScoutScores, TeamGrades } from "../../lineup-scouting";
+import type { PlayerStatProfileMode } from "../../player-ratings";
 
 export type LineupTab = "featured" | "builder" | "saved";
 
@@ -32,6 +33,7 @@ export type LineupDetail = {
 export type SavedLineup = {
   id: string;
   name: string;
+  statProfile: PlayerStatProfileMode;
   players: Record<LineupSlot, string>;
   overall: number;
   summary: string;

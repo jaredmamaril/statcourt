@@ -135,10 +135,10 @@ export function BuilderPlayerCard({
         {positionFit === "natural"
           ? "Natural Fit"
           : positionFit === "flex"
-            ? "Flexible Fit"
+            ? `Flex Fit -${positionPenalty}`
             : positionFit === "reach"
-              ? "Position Reach"
-              : "Mismatch -10"}
+              ? `Reach -${positionPenalty}`
+              : `Mismatch -${positionPenalty}`}
       </p>
 
       <BuilderPlayerCardOverlay

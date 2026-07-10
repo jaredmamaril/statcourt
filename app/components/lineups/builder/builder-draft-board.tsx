@@ -1,11 +1,11 @@
-import type { LineupSlot } from "../../court-data";
-import { players } from "../../court-data";
+import type { LineupSlot, Player } from "../../court-data";
 import {
   getPlayerRevealDelay,
   type PlayerRevealMode,
 } from "./builder-lineup-helpers";
 
 type BuilderDraftBoardProps = {
+  players: Player[];
   lineupPositions: LineupSlot[];
   hoveredBuildPlayer: string;
   customLineup: Record<LineupSlot, string>;
@@ -19,6 +19,7 @@ type BuilderDraftBoardProps = {
 };
 
 export function BuilderDraftBoard({
+  players,
   lineupPositions,
   hoveredBuildPlayer,
   customLineup,

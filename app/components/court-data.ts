@@ -308,11 +308,12 @@ export type PlayerStatProfiles = Partial<
   Record<StatProfileType, PlayerStatProfile>
 >;
 
-// Future: adding more stats or player attributes as needed, such as player position, team, or career highlights, to enhance the user experience and provide more comprehensive information about each player.
 export type Player = {
   id: number;
   nbaId?: number;
   name: string;
+  heightInches?: number | null;
+  weightPounds?: number | null;
   team: Team;
   position: Position;
   jerseyNumber: number;
@@ -603,7 +604,6 @@ export const players: Player[] = [
   },
 ];
 
-// Future: these max values could be dynamically calculated based on the player data or fetched from an API to ensure they remain accurate and relevant as new players are added or stats are updated.
 export const statMaxValues: Record<CorePlayerStatKey, number> = {
   ppg: 35,
   rpg: 15,
@@ -2192,7 +2192,6 @@ export function getSimilarPlayers(
     .slice(0, limit);
 }
 
-// Future: this type can be expanded to include more stats or player attributes as needed, and can be used to structure the data for the radar chart or other visualizations on the court page.
 // Labels for the radar display
 export type RadarStatRow = {
   stat: string;
