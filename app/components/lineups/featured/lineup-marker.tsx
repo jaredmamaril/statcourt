@@ -1,8 +1,9 @@
-import { players } from "../../court-data";
+import { players, type Player } from "../../court-data";
 import PlayerImage from "../../player-image";
 import { getPlayerHeadshot } from "../../player-images";
 
 type LineupMarkerProps = {
+  player?: Player;
   position: string;
   name: string;
   className: string;
@@ -17,6 +18,7 @@ type LineupMarkerProps = {
 };
 
 export function LineupMarker({
+  player: providedPlayer,
   position,
   name,
   className,
@@ -29,7 +31,8 @@ export function LineupMarker({
   onToggleTooltip,
   onCloseTooltip,
 }: LineupMarkerProps) {
-  const player = players.find((player) => player.name === name);
+  const player =
+    providedPlayer ?? players.find((player) => player.name === name);
   const imageSrc = player ? getPlayerHeadshot(player) : "/blank-player.svg";
   const tooltipClass =
     tooltipPosition === "bottom" ? "top-full" : "bottom-full";

@@ -126,6 +126,7 @@ export function BuilderWorkspace({
         {/* Desktop court */}
         <div className="hidden lg:block">
           <BuilderCourtPreview
+            players={players}
             lineupPositions={lineupPositions}
             customLineup={customLineup}
             hoveredBuildPlayer={hoveredBuildPlayer}
@@ -138,6 +139,7 @@ export function BuilderWorkspace({
       {/* Mobile court below picker + draft board */}
       <div className="mt-4 lg:hidden">
         <BuilderCourtPreview
+          players={players}
           lineupPositions={lineupPositions}
           customLineup={customLineup}
           hoveredBuildPlayer={hoveredBuildPlayer}

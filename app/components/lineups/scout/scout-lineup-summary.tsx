@@ -1,8 +1,9 @@
-import { players, type LineupSlot } from "../../court-data";
+import type { LineupSlot, Player } from "../../court-data";
 import type { LineupScoutScores } from "../../lineup-scouting";
 import { ScoutScoreProfile } from "./scout-score-profile";
 
 type ScoutLineupSummaryProps = {
+  players: Player[];
   lineupPositions: LineupSlot[];
   customLineup: Record<LineupSlot, string>;
   scoutScores: LineupScoutScores;
@@ -10,6 +11,7 @@ type ScoutLineupSummaryProps = {
 };
 
 export function ScoutLineupSummary({
+  players,
   lineupPositions,
   customLineup,
   scoutScores,
@@ -43,7 +45,7 @@ export function ScoutLineupSummary({
 
               <div>
                 <p className="truncate font-michroma text-[7px] text-white lg:text-[10px]">
-                  {player?.name ?? "Empty"}
+                  {player?.name ?? playerName ?? "Empty"}
                 </p>
 
                 <p

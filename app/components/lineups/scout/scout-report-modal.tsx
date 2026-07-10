@@ -1,4 +1,4 @@
-import type { LineupSlot } from "../../court-data";
+import type { LineupSlot, Player } from "../../court-data";
 import type { LineupScoutScores, TeamGrades } from "../../lineup-scouting";
 import { ScoutLineupSummary } from "./scout-lineup-summary";
 import { ScoutOverallSummary } from "./scout-overall-summary";
@@ -9,6 +9,7 @@ import { ScoutReportHeader } from "./scout-report-header";
 import { ScoutReportSaveButton } from "./scout-report-save-button";
 
 type ScoutReportModalProps = {
+  players: Player[];
   lineupPositions: LineupSlot[];
   customLineup: Record<LineupSlot, string>;
   scoutScores: LineupScoutScores;
@@ -38,6 +39,7 @@ type ScoutReportModalProps = {
 };
 
 export function ScoutReportModal({
+  players,
   lineupPositions,
   customLineup,
   scoutScores,
@@ -82,6 +84,7 @@ export function ScoutReportModal({
           />
 
           <ScoutLineupSummary
+            players={players}
             lineupPositions={lineupPositions}
             customLineup={customLineup}
             scoutScores={scoutScores}

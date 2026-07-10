@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { LineupSlot } from "../../court-data";
+import type { LineupSlot, Player } from "../../court-data";
 import { builderCourtMarkerPositions } from "../featured/featured-lineups";
 import { LineupMarker } from "../featured/lineup-marker";
 import {
@@ -8,6 +8,7 @@ import {
 } from "./builder-lineup-helpers";
 
 type BuilderCourtPreviewProps = {
+  players: Player[];
   lineupPositions: LineupSlot[];
   customLineup: Record<LineupSlot, string>;
   hoveredBuildPlayer: string;
@@ -16,6 +17,7 @@ type BuilderCourtPreviewProps = {
 };
 
 export function BuilderCourtPreview({
+  players,
   lineupPositions,
   customLineup,
   hoveredBuildPlayer,
@@ -44,11 +46,13 @@ export function BuilderCourtPreview({
 
         {lineupPositions.map((position) => {
           const playerName = customLineup[position];
+          const player = players.find((player) => player.name === playerName);
           const positionIndex = lineupPositions.indexOf(position);
 
           return (
             <LineupMarker
               key={`${position}-${playerName || "empty"}`}
+              player={player}
               position={position}
               name={playerName || "Select Player"}
               color="#1bc2ec"

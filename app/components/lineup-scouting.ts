@@ -4,7 +4,10 @@
   type LineupSlot,
   type Player,
 } from "./court-data";
-import { getPlayerRating } from "./player-ratings";
+import {
+  getBuilderPlayerRatingForPosition,
+  type BuilderStatProfileMode,
+} from "../components/lineups/builder/builder-position-helpers";
 
 export type TeamGrades = {
   offense: string;
@@ -107,9 +110,8 @@ export type LineupScoutScores = {
   rebounding: number;
   starPower: number;
   balance: number;
+  overall: number;
 };
-
-export type PositionFit = "natural" | "secondary" | "mismatch";
 
 export type LineupScoutReport = {
   summary: string;
@@ -253,7 +255,7 @@ export function getCourtBalanceDescription(
 
 export function getRankedScoutScores(scores: LineupScoutScores) {
   return Object.entries(scores)
-    .filter(([key]) => key !== "balance")
+    .filter(([key]) => key !== "balance" && key !== "overall")
     .sort(([, a], [, b]) => b - a)
     .map(([key, value]) => ({
       key,
@@ -376,20 +378,25 @@ export function getXFactorDescription(
       ? "Primary organizer who ties the star talent together."
       : "Highest-impact player across the lineup structure.";
 }
-
 function getXFactorForArchetype(
   archetype: string,
   selectedSlots: {
     position: LineupSlot;
-    player: (typeof players)[number];
+    player: Player;
   }[],
+  statProfileMode: BuilderStatProfileMode,
 ): XFactorResult {
   const rankedPlayers = selectedSlots
     .map((slot) => {
       const player = slot.player;
 
       let fitScore =
-        getBuilderPlayerRatingForPosition(player, slot.position) * 0.35 +
+        getBuilderPlayerRatingForPosition(
+          player,
+          slot.position,
+          statProfileMode,
+        ) *
+          0.35 +
         player.ratings.starPower * 0.25 +
         player.ratings.defense * 0.15 +
         player.stats.ppg * 0.8;
@@ -477,50 +484,6 @@ function getPlayerTraits(
   };
 }
 
-export function getPositionFit(player: Player, slot: LineupSlot): PositionFit {
-  if (player.position === "G" && (slot === "PG" || slot === "SG")) {
-    return "natural";
-  }
-
-  if (player.position === "F" && (slot === "SF" || slot === "PF")) {
-    return "natural";
-  }
-
-  if (player.position === "C" && slot === "C") {
-    return "natural";
-  }
-
-  if (player.position === "G" && slot === "SF") {
-    return "secondary";
-  }
-
-  if (player.position === "F" && (slot === "SG" || slot === "C")) {
-    return "secondary";
-  }
-
-  if (player.position === "C" && slot === "PF") {
-    return "secondary";
-  }
-
-  return "mismatch";
-}
-
-export function getPositionPenalty(fit: PositionFit) {
-  if (fit === "natural") return 0;
-  if (fit === "secondary") return 3;
-  return 9;
-}
-
-export function getBuilderPlayerRatingForPosition(
-  player: Player,
-  slot: LineupSlot,
-) {
-  return (
-    getPlayerRating(player, "careerOverall") -
-    getPositionPenalty(getPositionFit(player, slot))
-  );
-}
-
 export function clampScore(score: number) {
   return Math.max(0, Math.min(100, score));
 }
@@ -528,8 +491,9 @@ export function clampScore(score: number) {
 export function getLineupScoutReport(
   selectedSlots: {
     position: LineupSlot;
-    player: (typeof players)[number];
+    player: Player;
   }[],
+  statProfileMode: BuilderStatProfileMode = "career",
 ): LineupScoutReport {
   if (selectedSlots.length === 0) {
     return {
@@ -555,6 +519,7 @@ export function getLineupScoutReport(
         rebounding: 0,
         starPower: 0,
         balance: 0,
+        overall: 0,
       },
       xFactor: null,
       similarTo: "--",
@@ -670,7 +635,12 @@ export function getLineupScoutReport(
   const adjustedOverall =
     selectedSlots.reduce(
       (total, slot) =>
-        total + getBuilderPlayerRatingForPosition(slot.player, slot.position),
+        total +
+        getBuilderPlayerRatingForPosition(
+          slot.player,
+          slot.position,
+          statProfileMode,
+        ),
       0,
     ) / selectedSlots.length;
 
@@ -765,6 +735,18 @@ export function getLineupScoutReport(
   adjustedOffenseScore = clampScore(adjustedOffenseScore);
   adjustedDefenseScore = clampScore(adjustedDefenseScore);
 
+  const teamCategoryAverage =
+    adjustedOffenseScore * 0.24 +
+    adjustedDefenseScore * 0.18 +
+    adjustedShootingScore * 0.14 +
+    adjustedPlaymakingScore * 0.14 +
+    adjustedReboundingScore * 0.18 +
+    starPower * 0.12;
+
+  const lineupCeiling = adjustedOverall * 0.6 + teamCategoryAverage * 0.4;
+
+  const finalOverall = Number(clampScore(lineupCeiling).toFixed(1));
+
   const scores: LineupScoutScores = {
     offense: adjustedOffenseScore,
     defense: adjustedDefenseScore,
@@ -777,10 +759,10 @@ export function getLineupScoutReport(
         adjustedDefenseScore +
         adjustedShootingScore +
         adjustedPlaymakingScore +
-        adjustedReboundingScore +
-        starPower) /
-        6,
+        adjustedReboundingScore) /
+        5,
     ),
+    overall: finalOverall,
   };
 
   const similarLineupMatches = getSimilarLineupMatches(scores);
@@ -857,14 +839,12 @@ export function getLineupScoutReport(
               ? "This lineup trades some glass control for skill, speed, or spacing."
               : "No major tradeoff.";
 
-  const lineupCeiling = adjustedOverall * 0.75 + starPower * 0.25;
-
   const tier =
-    lineupCeiling >= 94
+    finalOverall >= 94
       ? "Championship Favorite"
-      : lineupCeiling >= 90
+      : finalOverall >= 90
         ? "Championship Contender"
-        : lineupCeiling >= 86
+        : finalOverall >= 86
           ? "Playoff-Caliber"
           : "Developmental Lineup";
 
@@ -916,7 +896,11 @@ export function getLineupScoutReport(
     archetype = "Star-Powered Contender";
   }
 
-  const xFactor = getXFactorForArchetype(archetype, selectedSlots);
+  const xFactor = getXFactorForArchetype(
+    archetype,
+    selectedSlots,
+    statProfileMode,
+  );
 
   const teamIdentity =
     archetype === "Two-Way Dynasty"
@@ -940,7 +924,7 @@ export function getLineupScoutReport(
                       : archetype === "Playmaking Engine"
                         ? "Five-Man Creation"
                         : archetype === "Offensive Superteam"
-                          ? "Transition Pressure"
+                          ? "Shot Creation"
                           : archetype === "Paint Control Unit"
                             ? "Paint Dominance"
                             : archetype === "Defensive Powerhouse"
@@ -1080,4 +1064,3 @@ export function getLineupScoutReport(
     badges,
   };
 }
-

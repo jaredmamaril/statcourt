@@ -6,7 +6,10 @@ import { AuthPrompt } from "../components/auth/auth-prompt";
 import { mockUser as user } from "../lib/mock-auth";
 import { DatabaseErrorState } from "../components/loading/database-error-state";
 import { DatabaseLoadingState } from "../components/loading/database-loading-state";
-import { players as fallbackPlayers, type Player } from "../components/court-data";
+import {
+  players as fallbackPlayers,
+  type Player,
+} from "../components/court-data";
 import type { PlayerStatProfileMode } from "../components/player-ratings";
 
 import type {
@@ -219,6 +222,9 @@ export default function Lineups() {
     continueDraft,
   } = useLineupBuilder({ players, lineupPositions });
 
+  const scoutStatProfile =
+    scoutedSavedLineup?.statProfile ?? builderStatProfile;
+
   // Scout report data
   const {
     scoutReport,
@@ -246,6 +252,7 @@ export default function Lineups() {
   } = getScoutReportDisplay({
     selectedCustomPlayerSlots,
     scoutedSavedLineup,
+    statProfileMode: scoutStatProfile,
   });
 
   // Featured lineup data
@@ -275,13 +282,10 @@ export default function Lineups() {
 
   const savedSortLabel = getSavedSortLabel(savedLineupSort);
   const savedProfileLabel = statProfileLabels[savedLineupProfileFilter];
-  const scoutStatProfile =
-    scoutedSavedLineup?.statProfile ?? builderStatProfile;
   const scoutStatProfileLabel = statProfileLabels[scoutStatProfile];
 
   // Scout report animation
-  const displayedScoutOverall =
-    scoutedSavedLineup?.overall ?? customLineupOverall;
+  const displayedScoutOverall = scoutScores.overall;
 
   const animatedScoutOverall = useAnimatedScoutOverall(
     isScoutOpen,
@@ -372,7 +376,7 @@ export default function Lineups() {
       name: lineupName.trim() || `Lineup ${savedLineups.length + 1}`,
       statProfile: builderStatProfile,
       players: customLineup,
-      overall: customLineupOverall,
+      overall: scoutReport.scores.overall,
       summary: scoutSummary,
       tier: lineupTier,
       archetype: lineupArchetype,
@@ -621,6 +625,7 @@ export default function Lineups() {
 
       {isScoutOpen && (
         <ScoutReportModal
+          players={players}
           lineupPositions={lineupPositions}
           customLineup={customLineup}
           scoutScores={scoutScores}

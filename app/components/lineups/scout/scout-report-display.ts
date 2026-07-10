@@ -1,23 +1,36 @@
 import {
   getCourtBalanceColor,
+  getLineupScoutReport,
   getLineupTierColor,
   getScoutReason,
 } from "../../lineup-scouting";
 import { getSavedLineupArchetypeColor } from "../shared/lineup-style-helpers";
 import type { SavedLineup } from "../shared/lineup-types";
 import type { SelectedCustomPlayerSlot } from "../builder/builder-lineup-helpers";
-import { getLineupScoutReport } from "../../lineup-scouting";
+import type { PlayerStatProfileMode } from "../../player-ratings";
 
 type GetScoutReportDisplayParams = {
   selectedCustomPlayerSlots: SelectedCustomPlayerSlot[];
   scoutedSavedLineup: SavedLineup | null;
+  statProfileMode: PlayerStatProfileMode;
 };
 
 export function getScoutReportDisplay({
   selectedCustomPlayerSlots,
   scoutedSavedLineup,
+  statProfileMode,
 }: GetScoutReportDisplayParams) {
-  const scoutReport = getLineupScoutReport(selectedCustomPlayerSlots);
+  const scoutReport = getLineupScoutReport(
+    selectedCustomPlayerSlots,
+    statProfileMode,
+  );
+
+  const savedScores = scoutedSavedLineup?.scores;
+
+  const scoutScores =
+    savedScores && typeof savedScores.overall === "number"
+      ? savedScores
+      : scoutReport.scores;
 
   const archetype = scoutedSavedLineup?.archetype ?? scoutReport.archetype;
   const tier = scoutedSavedLineup?.tier ?? scoutReport.tier;
@@ -56,7 +69,7 @@ export function getScoutReportDisplay({
       scoutReport.courtBalanceDescription,
     courtBalanceColor: getCourtBalanceColor(courtBalance),
     teamGrades: scoutedSavedLineup?.grades ?? scoutReport.grades,
-    scoutScores: scoutedSavedLineup?.scores ?? scoutReport.scores,
+    scoutScores,
     scoutReason: getScoutReason(archetype),
     lineupBadges: scoutedSavedLineup?.badges ?? scoutReport.badges,
   };
