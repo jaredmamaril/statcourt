@@ -35,7 +35,7 @@ export const ArchetypeDescriptionPanel = forwardRef<
         {archetypeLabel}
       </h2>
 
-      <p className="mt-2 font-michroma text-[9px] leading-relaxed text-white/60 lg:mt-3 lg:text-xs">
+      <p className="mt-2 font-michroma text-[7px] leading-relaxed text-white/60 lg:mt-3 lg:text-xs">
         {archetypeInfo?.description ??
           "A player identity class based on this player's strongest statistical profile."}
       </p>
@@ -50,7 +50,7 @@ export const ArchetypeDescriptionPanel = forwardRef<
             (trait) => (
               <span
                 key={trait}
-                className="rounded border px-1.5 py-1 font-michroma text-[7px] lg:px-2 lg:text-[10px]"
+                className="rounded border px-1.5 py-1 font-michroma text-[6px] lg:px-2 lg:text-[10px]"
                 style={{
                   color: archetypeColor,
                   borderColor: archetypeColor,
@@ -74,15 +74,15 @@ export const ArchetypeDescriptionPanel = forwardRef<
           ].map(([label, value]) => (
             <div key={label} className="mt-2">
               <div className="mb-1 flex items-center justify-between gap-3">
-                <span className="font-michroma text-[8px] text-white/50 lg:text-[9px]">
+                <span className="font-michroma text-[7px] text-white/50 lg:text-[9px]">
                   {label}
                 </span>
-                <span className="font-michroma text-[8px] text-white/40 lg:text-[9px]">
+                <span className="font-michroma text-[7px] text-white/40 lg:text-[9px]">
                   {value}/10
                 </span>
               </div>
 
-              <div className="h-1.5 w-full rounded bg-white/10">
+              <div className="h-0.5 w-full rounded bg-white/10">
                 <div
                   className="h-full rounded bg-[#1bc2ec]"
                   style={{

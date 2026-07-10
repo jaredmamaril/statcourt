@@ -24,7 +24,7 @@ export function ArchetypePlayerList({
   return (
     <>
       <div className="mt-4">
-        <h2 className="font-michroma text-[11px] uppercase tracking-wide text-white lg:text-sm">
+        <h2 className="font-michroma text-[9px] uppercase tracking-wide text-white lg:text-sm">
           Top {statProfileLabels[statProfileFilter]} Players In Selected
           Archetype
         </h2>

@@ -13,17 +13,17 @@ export function ArchetypeHeader() {
           Rarity
         </button>
 
-        <div className="pointer-events-none absolute left-1/2 top-full z-100 mt-2 w-52 -translate-x-1/2 rounded-md border border-[#1bc2ec]/40 bg-black/95 p-2.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 lg:left-0 lg:w-56 lg:translate-x-0 lg:p-3">
-          <p className="font-michroma text-[9px] text-[#EFBF04]">
+        <div className="pointer-events-none absolute left-1/2 top-full z-100 mt-2 w-46 -translate-x-1/2 rounded-md border border-[#1bc2ec]/40 bg-black/95 p-2.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 lg:left-0 lg:w-56 lg:translate-x-0 lg:p-3">
+          <p className="font-michroma text-[8px] text-[#EFBF04]">
             Gold - Generational
           </p>
-          <p className="mt-1 font-michroma text-[9px] text-[#A855F7]">
+          <p className="mt-1 font-michroma text-[8px] text-[#A855F7]">
             Purple - Historic
           </p>
-          <p className="mt-1 font-michroma text-[9px] text-[#38BDF8]">
+          <p className="mt-1 font-michroma text-[8px] text-[#38BDF8]">
             Blue - Elite
           </p>
-          <p className="mt-2 font-michroma text-[8px] leading-relaxed text-white/50">
+          <p className="mt-2 font-michroma text-[7px] leading-relaxed text-white/50">
             Rarity shows how an archetype is ranked within the StatCourt player
             identity system.
           </p>
@@ -31,7 +31,7 @@ export function ArchetypeHeader() {
       </div>
 
       <p className="text-[9px] text-white/20 lg:-ml-2 lg:text-xs">
-        <span className="lg:hidden">Tap rarity</span>
+        <span className="lg:hidden inline">Tap me!</span>
         <span className="hidden lg:inline">Hover over me!</span>
       </p>
     </div>

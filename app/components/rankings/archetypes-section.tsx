@@ -6,6 +6,7 @@ import { ArchetypeCardGrid } from "./archetype-card-grid";
 import { ArchetypeDescriptionPanel } from "./archetype-description-panel";
 import { ArchetypePlayerList } from "./archetype-player-list";
 import type { archetypeInfoByLabel } from "./archetype-metadata";
+import { RankingStatProfileFilter } from "./ranking-stat-profile-filter";
 
 type ArchetypeOptionDetail = {
   label: string;
@@ -22,6 +23,7 @@ type ArchetypeInfo =
 type ArchetypesSectionProps = {
   players: Player[];
   archetypeOptionDetails: ArchetypeOptionDetail[];
+  archetypeSort: "rarity" | "name";
   selectedArchetype: string;
   selectedArchetypeColor?: string;
   selectedArchetypeInfo: ArchetypeInfo | undefined;
@@ -29,6 +31,10 @@ type ArchetypesSectionProps = {
   archetypeDescriptionRef: RefObject<HTMLDivElement | null>;
   statProfileFilter: PlayerStatProfileMode;
   statMode: StatMode;
+  isProfileFilterOpen: boolean;
+  onToggleProfileFilter: () => void;
+  onSelectProfileFilter: (profile: PlayerStatProfileMode) => void;
+  onToggleArchetypeSort: () => void;
   onSelectArchetype: (label: string) => void;
   onViewPlayer: (playerName: string) => void;
 };
@@ -36,6 +42,7 @@ type ArchetypesSectionProps = {
 export function ArchetypesSection({
   players,
   archetypeOptionDetails,
+  archetypeSort,
   selectedArchetype,
   selectedArchetypeColor,
   selectedArchetypeInfo,
@@ -43,12 +50,33 @@ export function ArchetypesSection({
   archetypeDescriptionRef,
   statProfileFilter,
   statMode,
+  isProfileFilterOpen,
+  onToggleProfileFilter,
+  onSelectProfileFilter,
+  onToggleArchetypeSort,
   onSelectArchetype,
   onViewPlayer,
 }: ArchetypesSectionProps) {
   return (
     <>
       <ArchetypeHeader />
+
+      <div className="mt-3 flex justify-center gap-2">
+        <RankingStatProfileFilter
+          isOpen={isProfileFilterOpen}
+          selectedProfile={statProfileFilter}
+          onToggle={onToggleProfileFilter}
+          onSelectProfile={onSelectProfileFilter}
+        />
+
+        <button
+          type="button"
+          onClick={onToggleArchetypeSort}
+          className="flex h-6 cursor-pointer items-center rounded-md border border-white/20 bg-black/30 px-2 font-michroma text-[9px] text-white/70 transition hover:border-[#1bc2ec]/60 lg:h-auto lg:px-3 lg:py-1 lg:text-xs"
+        >
+          Sort: {archetypeSort === "rarity" ? "Rarity" : "A-Z"}
+        </button>
+      </div>
 
       <ArchetypeCardGrid
         players={players}
