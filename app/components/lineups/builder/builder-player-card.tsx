@@ -6,6 +6,7 @@ import {
   getBuilderPlayerRatingForPosition,
   getPositionFit,
   getPositionPenalty,
+  type BuilderStatProfileMode,
 } from "./builder-position-helpers";
 import { BuilderPlayerCardOverlay } from "./builder-player-card-overlay";
 
@@ -14,6 +15,7 @@ type Player = Parameters<typeof getBuilderPlayerRating>[0];
 type BuilderPlayerCardProps = {
   player: Player;
   activeBuildPosition: LineupSlot;
+  builderStatProfile: BuilderStatProfileMode;
   isSelected: boolean;
   isScoutOpen: boolean;
   onToggleScout: () => void;
@@ -23,6 +25,7 @@ type BuilderPlayerCardProps = {
 export function BuilderPlayerCard({
   player,
   activeBuildPosition,
+  builderStatProfile,
   isSelected,
   isScoutOpen,
   onToggleScout,
@@ -32,8 +35,9 @@ export function BuilderPlayerCard({
   const positionRating = getBuilderPlayerRatingForPosition(
     player,
     activeBuildPosition,
+    builderStatProfile,
   );
-  const baseRating = getBuilderPlayerRating(player);
+  const baseRating = getBuilderPlayerRating(player, builderStatProfile);
   const positionPenalty = getPositionPenalty(positionFit);
 
   const scoutStats = [
@@ -91,7 +95,7 @@ export function BuilderPlayerCard({
           onPickPlayer(player.name);
         }
       }}
-      className={`group relative h-21 overflow-hidden rounded-md border bg-black/30 p-[3px] text-center transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/10 lg:h-52 lg:p-3 ${
+      className={`group relative h-21 overflow-hidden rounded-md border bg-black/30 p-0.75 text-center transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/10 lg:h-52 lg:p-3 ${
         isSelected
           ? "border-[#1bc2ec] bg-[#1bc2ec]/15 shadow-[0_0_18px_rgba(27,194,236,0.35)]"
           : "border-white/15"
@@ -102,7 +106,7 @@ export function BuilderPlayerCard({
         alt={player.name}
         width={120}
         height={120}
-        className="mx-auto h-[30px] w-[30px] rounded-full object-cover lg:h-20 lg:w-20"
+        className="mx-auto h-7.5 w-7.5 rounded-full object-cover lg:h-20 lg:w-20"
       />
 
       <p className="mt-0.5 flex h-5 items-center justify-center text-center font-michroma text-[5px] leading-tight text-white lg:h-10 lg:text-[11px] lg:leading-4">
@@ -121,16 +125,20 @@ export function BuilderPlayerCard({
         className={`mt-0.5 font-michroma text-[4.5px] uppercase lg:mt-2 lg:text-[8px] ${
           positionFit === "natural"
             ? "text-emerald-400"
-            : positionFit === "secondary"
+            : positionFit === "flex"
               ? "text-[#1bc2ec]"
-              : "text-red-400"
+              : positionFit === "reach"
+                ? "text-yellow-400"
+                : "text-red-400"
         }`}
       >
         {positionFit === "natural"
           ? "Natural Fit"
-          : positionFit === "secondary"
-            ? "Secondary Fit"
-            : "Mismatch -9"}
+          : positionFit === "flex"
+            ? "Flexible Fit"
+            : positionFit === "reach"
+              ? "Position Reach"
+              : "Mismatch -10"}
       </p>
 
       <BuilderPlayerCardOverlay

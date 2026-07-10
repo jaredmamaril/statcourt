@@ -1,13 +1,17 @@
-﻿import type { LineupSlot } from "../../court-data";
-import { players } from "../../court-data";
-import { getPlayerRating } from "../../player-ratings";
+import type { LineupSlot, Player } from "../../court-data";
+import {
+  getPlayerRating,
+  type PlayerStatProfileMode,
+} from "../../player-ratings";
 
-type Player = (typeof players)[number];
+export type BuilderStatProfileMode = PlayerStatProfileMode;
+export type PositionFit = "natural" | "flex" | "reach" | "mismatch";
 
-export type PositionFit = "natural" | "secondary" | "mismatch";
-
-export function getBuilderPlayerRating(player: Player) {
-  return getPlayerRating(player, "careerOverall");
+export function getBuilderPlayerRating(
+  player: Player,
+  statProfileMode: BuilderStatProfileMode,
+) {
+  return getPlayerRating(player, "careerOverall", statProfileMode);
 }
 
 export function getPositionFit(player: Player, slot: LineupSlot): PositionFit {
@@ -24,15 +28,23 @@ export function getPositionFit(player: Player, slot: LineupSlot): PositionFit {
   }
 
   if (player.position === "G" && slot === "SF") {
-    return "secondary";
+    return "flex";
   }
 
   if (player.position === "F" && (slot === "SG" || slot === "C")) {
-    return "secondary";
+    return "flex";
   }
 
   if (player.position === "C" && slot === "PF") {
-    return "secondary";
+    return "flex";
+  }
+
+  if (player.position === "G" && slot === "PF") {
+    return "reach";
+  }
+
+  if (player.position === "F" && slot === "PG") {
+    return "reach";
   }
 
   return "mismatch";
@@ -40,17 +52,18 @@ export function getPositionFit(player: Player, slot: LineupSlot): PositionFit {
 
 export function getPositionPenalty(fit: PositionFit) {
   if (fit === "natural") return 0;
-  if (fit === "secondary") return 3;
-  return 9;
+  if (fit === "flex") return 2;
+  if (fit === "reach") return 5;
+  return 10;
 }
 
 export function getBuilderPlayerRatingForPosition(
   player: Player,
   slot: LineupSlot,
+  statProfileMode: BuilderStatProfileMode,
 ) {
   return (
-    getBuilderPlayerRating(player) -
+    getBuilderPlayerRating(player, statProfileMode) -
     getPositionPenalty(getPositionFit(player, slot))
   );
 }
-

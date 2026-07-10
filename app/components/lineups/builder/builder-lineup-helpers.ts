@@ -1,5 +1,8 @@
 import type { LineupSlot, Player } from "../../court-data";
-import { getBuilderPlayerRatingForPosition } from "./builder-position-helpers";
+import {
+  getBuilderPlayerRatingForPosition,
+  type BuilderStatProfileMode,
+} from "./builder-position-helpers";
 
 export const EMPTY_LINEUP: Record<LineupSlot, string> = {
   PG: "",
@@ -32,6 +35,7 @@ export function getSelectedCustomPlayerSlots(
 
 export function getCustomLineupOverall(
   selectedCustomPlayerSlots: SelectedCustomPlayerSlot[],
+  statProfileMode: BuilderStatProfileMode,
 ) {
   if (selectedCustomPlayerSlots.length === 0) {
     return null;
@@ -40,7 +44,12 @@ export function getCustomLineupOverall(
   return (
     selectedCustomPlayerSlots.reduce(
       (total, slot) =>
-        total + getBuilderPlayerRatingForPosition(slot.player, slot.position),
+        total +
+        getBuilderPlayerRatingForPosition(
+          slot.player,
+          slot.position,
+          statProfileMode,
+        ),
       0,
     ) / selectedCustomPlayerSlots.length
   );
@@ -52,6 +61,7 @@ type GetAvailableBuildPlayersParams = {
   activeBuildPosition: LineupSlot;
   activePositionPlayerName: string;
   selectedCustomPlayers: Player[];
+  statProfileMode: BuilderStatProfileMode;
 };
 
 export function getAvailableBuildPlayers({
@@ -60,6 +70,7 @@ export function getAvailableBuildPlayers({
   activeBuildPosition,
   activePositionPlayerName,
   selectedCustomPlayers,
+  statProfileMode,
 }: GetAvailableBuildPlayersParams) {
   const selectedBuildPlayerNames = new Set(
     selectedCustomPlayers.map((player) => player.name),
@@ -84,8 +95,16 @@ export function getAvailableBuildPlayers({
     })
     .sort(
       (a, b) =>
-        getBuilderPlayerRatingForPosition(b, activeBuildPosition) -
-        getBuilderPlayerRatingForPosition(a, activeBuildPosition),
+        getBuilderPlayerRatingForPosition(
+          b,
+          activeBuildPosition,
+          statProfileMode,
+        ) -
+        getBuilderPlayerRatingForPosition(
+          a,
+          activeBuildPosition,
+          statProfileMode,
+        ),
     );
 }
 

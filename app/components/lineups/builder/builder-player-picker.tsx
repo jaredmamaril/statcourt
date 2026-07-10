@@ -1,14 +1,13 @@
 import { useState } from "react";
-import type { LineupSlot } from "../../court-data";
-import { getBuilderPlayerRating } from "./builder-position-helpers";
+import type { LineupSlot, Player } from "../../court-data";
+import type { BuilderStatProfileMode } from "./builder-position-helpers";
 import { BuilderPlayerCard } from "./builder-player-card";
-
-type Player = Parameters<typeof getBuilderPlayerRating>[0];
 
 type BuilderPlayerPickerProps = {
   activeBuildPosition: LineupSlot;
   customLineup: Record<LineupSlot, string>;
   buildPlayerSearch: string;
+  builderStatProfile: BuilderStatProfileMode;
   availableBuildPlayers: Player[];
   onSearchChange: (value: string) => void;
   onPickPlayer: (playerName: string) => void;
@@ -18,6 +17,7 @@ export function BuilderPlayerPicker({
   activeBuildPosition,
   customLineup,
   buildPlayerSearch,
+  builderStatProfile,
   availableBuildPlayers,
   onSearchChange,
   onPickPlayer,
@@ -54,6 +54,7 @@ export function BuilderPlayerPicker({
                 key={player.id}
                 player={player}
                 activeBuildPosition={activeBuildPosition}
+                builderStatProfile={builderStatProfile}
                 isSelected={isSelected}
                 isScoutOpen={openScoutPlayerId === player.id}
                 onToggleScout={() => {

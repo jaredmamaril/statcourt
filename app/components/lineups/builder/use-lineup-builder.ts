@@ -7,6 +7,7 @@ import {
   getSelectedCustomPlayerSlots,
   type PlayerRevealMode,
 } from "./builder-lineup-helpers";
+import type { BuilderStatProfileMode } from "./builder-position-helpers";
 
 type UseLineupBuilderProps = {
   players: Player[];
@@ -24,6 +25,8 @@ export function useLineupBuilder({
     useState<LineupSlot>("PG");
   const [hoveredBuildPlayer, setHoveredBuildPlayer] = useState("");
   const [buildPlayerSearch, setBuildPlayerSearch] = useState("");
+  const [builderStatProfile, setBuilderStatProfile] =
+    useState<BuilderStatProfileMode>("career");
   const [playerRevealMode, setPlayerRevealMode] =
     useState<PlayerRevealMode>("instant");
 
@@ -37,7 +40,10 @@ export function useLineupBuilder({
     (slot) => slot.player,
   );
 
-  const customLineupOverall = getCustomLineupOverall(selectedCustomPlayerSlots);
+  const customLineupOverall = getCustomLineupOverall(
+    selectedCustomPlayerSlots,
+    builderStatProfile,
+  );
 
   const activePositionPlayerName = customLineup[activeBuildPosition];
 
@@ -47,6 +53,7 @@ export function useLineupBuilder({
     activeBuildPosition,
     activePositionPlayerName,
     selectedCustomPlayers,
+    statProfileMode: builderStatProfile,
   });
 
   const selectedLineupCount = selectedCustomPlayers.length;
@@ -100,6 +107,8 @@ export function useLineupBuilder({
     setHoveredBuildPlayer,
     buildPlayerSearch,
     setBuildPlayerSearch,
+    builderStatProfile,
+    setBuilderStatProfile,
     playerRevealMode,
     setPlayerRevealMode,
     selectedCustomPlayerSlots,

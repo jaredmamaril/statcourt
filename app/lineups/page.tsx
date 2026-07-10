@@ -191,6 +191,8 @@ export default function Lineups() {
     setHoveredBuildPlayer,
     buildPlayerSearch,
     setBuildPlayerSearch,
+    builderStatProfile,
+    setBuilderStatProfile,
     playerRevealMode,
     setPlayerRevealMode,
     selectedCustomPlayerSlots,
@@ -505,6 +507,7 @@ export default function Lineups() {
                   activeBuildPosition={activeBuildPosition}
                   customLineup={customLineup}
                   buildPlayerSearch={buildPlayerSearch}
+                  builderStatProfile={builderStatProfile}
                   availableBuildPlayers={availableBuildPlayers}
                   customLineupOverall={customLineupOverall}
                   isLineupComplete={isLineupComplete}
@@ -513,6 +516,7 @@ export default function Lineups() {
                   playerRevealMode={playerRevealMode}
                   onSelectPosition={setActiveBuildPosition}
                   onSearchChange={setBuildPlayerSearch}
+                  onStatProfileChange={setBuilderStatProfile}
                   onPickPlayer={pickBuildPlayer}
                   onHoverPlayer={setHoveredBuildPlayer}
                   onRemovePlayer={removeBuildPlayer}
