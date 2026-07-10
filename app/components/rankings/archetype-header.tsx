@@ -1,19 +1,19 @@
 export function ArchetypeHeader() {
   return (
-    <div className="flex flex-wrap items-center justify-center gap-3">
-      <h1 className="font-michroma text-lg uppercase tracking-wide text-white">
+    <div className="flex flex-wrap items-center justify-center gap-2 lg:gap-3">
+      <h1 className="font-michroma text-sm uppercase tracking-wide text-white lg:text-lg">
         Archetypes
       </h1>
 
       <div className="group relative">
         <button
           type="button"
-          className="cursor-help rounded border border-white/15 bg-black/30 px-2 py-1 font-michroma text-[9px] uppercase text-white/50"
+          className="cursor-help rounded border border-white/15 bg-black/30 px-2 py-1 font-michroma text-[8px] uppercase text-white/50 lg:text-[9px]"
         >
           Rarity
         </button>
 
-        <div className="pointer-events-none absolute left-0 top-full z-100 mt-2 w-56 rounded-md border border-[#1bc2ec]/40 bg-black/95 p-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+        <div className="pointer-events-none absolute left-1/2 top-full z-100 mt-2 w-52 -translate-x-1/2 rounded-md border border-[#1bc2ec]/40 bg-black/95 p-2.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 lg:left-0 lg:w-56 lg:translate-x-0 lg:p-3">
           <p className="font-michroma text-[9px] text-[#EFBF04]">
             Gold - Generational
           </p>
@@ -30,7 +30,10 @@ export function ArchetypeHeader() {
         </div>
       </div>
 
-      <p className="-ml-2 text-xs text-white/20">Hover over me!</p>
+      <p className="text-[9px] text-white/20 lg:-ml-2 lg:text-xs">
+        <span className="lg:hidden">Tap rarity</span>
+        <span className="hidden lg:inline">Hover over me!</span>
+      </p>
     </div>
   );
 }

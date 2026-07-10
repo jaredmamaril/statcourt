@@ -25,7 +25,7 @@ export function ArchetypeCardGrid({
   onSelectArchetype,
 }: ArchetypeCardGridProps) {
   return (
-    <div className="statcourt-scroll mt-4 grid max-h-80 gap-2 overflow-y-auto pr-1 sm:max-h-105 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="statcourt-scroll mt-3 grid max-h-72 gap-1.5 overflow-y-auto pr-1 lg:mt-4 lg:max-h-105 lg:grid-cols-3 lg:gap-2">
       {archetypeOptionDetails.map(({ label, archetype }) => {
         const isSelected = selectedArchetype === label;
 
@@ -68,7 +68,7 @@ export function ArchetypeCardGrid({
             key={label}
             type="button"
             onClick={() => onSelectArchetype(label)}
-            className={`rounded-md cursor-pointer border bg-black/30 px-4 py-4 text-left font-michroma transition-all duration-200 hover:bg-white/10 ${
+            className={`cursor-pointer rounded-md border bg-black/30 px-2.5 py-2 text-left font-michroma transition-all duration-200 hover:bg-white/10 lg:px-4 lg:py-4 ${
               isSelected ? "scale-[1.02]" : ""
             }`}
             style={{
@@ -78,21 +78,23 @@ export function ArchetypeCardGrid({
                 : "rgba(255,255,255,0.12)",
             }}
           >
-            <span className="grid grid-cols-[1fr_auto] items-center gap-4">
+            <span className="grid grid-cols-[1fr_auto] items-center gap-2 lg:gap-4">
               <span className="min-w-0">
-                <span className="block truncate text-sm">{label}</span>
+                <span className="block truncate text-[10px] lg:text-sm">
+                  {label}
+                </span>
 
-                <span className="mt-1 block text-[10px] text-white/40">
+                <span className="mt-1 block text-[7px] text-white/40 lg:text-[10px]">
                   {archetypePlayers.length}{" "}
                   {archetypePlayers.length === 1 ? "Player" : "Players"}
                 </span>
 
                 {representative && (
                   <>
-                    <span className="mt-4 block text-[9px] uppercase text-white/35">
+                    <span className="mt-2 block text-[6.5px] uppercase text-white/35 lg:mt-4 lg:text-[9px]">
                       Face of Archetype
                     </span>
-                    <span className="mt-1 block truncate text-[10px] text-white/75">
+                    <span className="mt-1 block truncate text-[7.5px] text-white/75 lg:text-[10px]">
                       {representative.name}
                     </span>
                   </>
@@ -101,10 +103,10 @@ export function ArchetypeCardGrid({
 
               {averageRating !== null && (
                 <span className="text-center">
-                  <span className="block text-[8px] uppercase text-white/35">
+                  <span className="block text-[6px] uppercase text-white/35 lg:text-[8px]">
                     Avg Rating
                   </span>
-                  <span className="mt-1 block text-md font-bold text-white">
+                  <span className="mt-1 block text-[11px] font-bold text-white lg:text-lg">
                     {averageRating.toFixed(1)}
                   </span>
                 </span>

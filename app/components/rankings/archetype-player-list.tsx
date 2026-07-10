@@ -24,7 +24,7 @@ export function ArchetypePlayerList({
   return (
     <>
       <div className="mt-4">
-        <h2 className="font-michroma text-sm uppercase tracking-wide text-white">
+        <h2 className="font-michroma text-[11px] uppercase tracking-wide text-white lg:text-sm">
           Top {statProfileLabels[statProfileFilter]} Players In Selected
           Archetype
         </h2>
@@ -47,9 +47,9 @@ export function ArchetypePlayerList({
             return (
               <div
                 key={player.id}
-                className="group relative grid w-full grid-cols-[48px_48px_1fr_72px] items-center rounded-md border border-white/10 bg-black/30 px-4 py-3 transition-all duration-200 hover:border-[#1bc2ec]/50 hover:bg-[#1bc2ec]/10"
+                className="group relative grid w-full grid-cols-[28px_34px_minmax(0,1fr)_42px] items-center rounded-md border border-white/10 bg-black/30 px-2 py-1.5 transition-all duration-200 hover:border-[#1bc2ec]/50 hover:bg-[#1bc2ec]/10 lg:grid-cols-[48px_48px_1fr_72px] lg:px-4 lg:py-3"
               >
-                <span className="font-michroma text-xs font-bold text-[#1bc2ec]">
+                <span className="font-michroma text-[9px] font-bold text-[#1bc2ec] lg:text-xs">
                   #{index + 1}
                 </span>
 
@@ -58,25 +58,25 @@ export function ArchetypePlayerList({
                   alt={player.name}
                   width={120}
                   height={120}
-                  className="-ml-3 h-16 w-16 rounded-md object-cover"
+                  className="-ml-1 h-10 w-10 rounded-md object-cover lg:-ml-3 lg:h-16 lg:w-16"
                 />
 
                 <div className="min-w-0">
-                  <p className="truncate font-michroma text-sm font-semibold text-white">
+                  <p className="truncate font-michroma text-[10px] font-semibold text-white lg:text-sm">
                     {player.name}
                   </p>
                   <p
-                    className="mt-0.5 font-michroma text-[9px]"
+                    className="mt-0.5 font-michroma text-[7px] lg:text-[9px]"
                     style={{ color: teamColor }}
                   >
                     {player.team}
                   </p>
-                  <p className="mt-0.5 font-michroma text-[9px] text-white/40">
+                  <p className="mt-0.5 font-michroma text-[7px] text-white/40 lg:text-[9px]">
                     {player.position} - #{player.jerseyNumber}
                   </p>
                 </div>
 
-                <span className="text-right font-michroma text-sm font-bold text-white">
+                <span className="text-right font-michroma text-[10px] font-bold text-white lg:text-sm">
                   {rating}
                 </span>
 
