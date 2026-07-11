@@ -1,8 +1,8 @@
 ﻿import {
   normalizeStat,
-  players,
   type LineupSlot,
   type Player,
+  type PlayerStats,
 } from "./court-data";
 import {
   getBuilderPlayerRatingForPosition,
@@ -30,6 +30,30 @@ type SimilarLineupProfile = {
   >;
   description: string;
 };
+
+function getStatsByMode(
+  player: Player,
+  statProfileMode: BuilderStatProfileMode,
+): PlayerStats {
+  const profile =
+    statProfileMode === "peak"
+      ? (player.statProfiles?.peak ?? player.statProfiles?.career)
+      : statProfileMode === "current"
+        ? (player.statProfiles?.current ?? player.statProfiles?.career)
+        : player.statProfiles?.career;
+
+  return {
+    games: profile?.games ?? player.stats.games,
+    ppg: profile?.ppg ?? player.stats.ppg,
+    rpg: profile?.rpg ?? player.stats.rpg,
+    apg: profile?.apg ?? player.stats.apg,
+    spg: profile?.spg ?? player.stats.spg,
+    bpg: profile?.bpg ?? player.stats.bpg,
+    fgPercent: profile?.fgPercent ?? player.stats.fgPercent,
+    threePercent: profile?.threePercent ?? player.stats.threePercent,
+    ftPercent: profile?.ftPercent ?? player.stats.ftPercent,
+  };
+}
 
 const similarLineupProfiles: SimilarLineupProfile[] = [
   {
@@ -169,14 +193,11 @@ export function getScoutReason(archetype: string) {
     "Two-Way Dynasty":
       "Elite star power, interior control, and defensive versatility create a championship-caliber foundation.",
 
-    "Spacing Superteam":
+    "Floor Spacing Machine":
       "Multiple elite shooters stretch defenses beyond their limits while maintaining high-level creation.",
 
     "Point-Center Offense":
       "The offense flows through a frontcourt playmaker capable of creating advantages from every area of the floor.",
-
-    "Floor Spacing Machine":
-      "Shooting depth across the lineup creates constant spacing pressure and opens clean driving lanes.",
 
     "Iso Superteam":
       "Multiple elite shot creators can win individual matchups without needing a perfect offensive structure.",
@@ -306,19 +327,20 @@ export function getSimilarLineupMatches(scores: LineupScoutScores) {
 
 export function getXFactorDescription(
   archetype: string,
-  player: (typeof players)[number],
+  player: Player,
+  stats: PlayerStats,
 ): string {
   const isBig = player.position === "F" || player.position === "C";
   const isWing = player.position === "F";
   const isGuard = player.position === "G";
-  const isPrimaryScorer = player.stats.ppg >= 25;
-  const isElitePlaymaker = player.stats.apg >= 7;
+  const ppg = stats.ppg ?? 0;
+  const apg = stats.apg ?? 0;
+
+  const isPrimaryScorer = ppg >= 25;
+  const isElitePlaymaker = apg >= 7;
   const isEliteDefender = player.ratings.defense >= 90;
 
-  if (
-    archetype === "Spacing Superteam" ||
-    archetype === "Floor Spacing Machine"
-  ) {
+  if (archetype === "Floor Spacing Machine") {
     return isGuard
       ? "Shooting gravity bends the defense and opens the floor early."
       : isBig
@@ -389,6 +411,11 @@ function getXFactorForArchetype(
   const rankedPlayers = selectedSlots
     .map((slot) => {
       const player = slot.player;
+      const stats = getStatsByMode(player, statProfileMode);
+      const ppg = stats.ppg ?? 0;
+      const rpg = stats.rpg ?? 0;
+      const apg = stats.apg ?? 0;
+      const threePercent = stats.threePercent ?? 0;
 
       let fitScore =
         getBuilderPlayerRatingForPosition(
@@ -399,13 +426,13 @@ function getXFactorForArchetype(
           0.35 +
         player.ratings.starPower * 0.25 +
         player.ratings.defense * 0.15 +
-        player.stats.ppg * 0.8;
+        ppg * 0.8;
 
       if (
         archetype === "Spacing Superteam" ||
         archetype === "Floor Spacing Machine"
       ) {
-        fitScore += player.stats.threePercent * 0.9;
+        fitScore += threePercent * 0.9;
       }
 
       if (
@@ -413,14 +440,14 @@ function getXFactorForArchetype(
         archetype === "Point-Center Offense" ||
         archetype === "Positionless Basketball"
       ) {
-        fitScore += player.stats.apg * 5;
+        fitScore += apg * 5;
       }
 
       if (
         archetype === "Paint Control Unit" ||
         archetype === "Rim Pressure Unit"
       ) {
-        fitScore += player.stats.rpg * 4;
+        fitScore += rpg * 4;
       }
 
       if (
@@ -436,7 +463,7 @@ function getXFactorForArchetype(
         archetype === "Iso Superteam" ||
         archetype === "Transition Attack"
       ) {
-        fitScore += player.stats.ppg * 2;
+        fitScore += ppg * 2;
       }
 
       return {
@@ -447,40 +474,47 @@ function getXFactorForArchetype(
     .toSorted((a, b) => b.fitScore - a.fitScore);
 
   const player = rankedPlayers[0].player;
+  const stats = getStatsByMode(player, statProfileMode);
 
   return {
     player,
-    description: getXFactorDescription(archetype, player),
+    description: getXFactorDescription(archetype, player, stats),
   };
 }
 
 function getPlayerTraits(
-  player: (typeof players)[number],
+  player: Player,
+  statProfileMode: BuilderStatProfileMode,
   slotPosition?: LineupSlot,
 ) {
+  const stats = getStatsByMode(player, statProfileMode);
+  const ppg = stats.ppg ?? 0;
+  const rpg = stats.rpg ?? 0;
+  const apg = stats.apg ?? 0;
+  const threePercent = stats.threePercent ?? 0;
+
   const isBig = player.position === "F" || player.position === "C";
   const isForward = player.position === "F";
   return {
-    eliteShooter: player.stats.threePercent >= 38,
-    eliteScorer: player.stats.ppg >= 25,
-    elitePlaymaker: player.stats.apg >= 7,
-    eliteRebounder: player.stats.rpg >= 10,
+    eliteShooter: threePercent >= 38,
+    eliteScorer: ppg >= 25,
+    elitePlaymaker: apg >= 7,
+    eliteRebounder: rpg >= 10,
     eliteDefender: player.ratings.defense >= 90,
     highStarPower: player.ratings.starPower >= 95,
 
-    eliteCreator: player.stats.ppg >= 24 && player.stats.apg >= 5,
-    elitePasser: player.stats.apg >= 7,
-    eliteTwoWay: player.stats.ppg >= 22 && player.ratings.defense >= 88,
+    eliteCreator: ppg >= 24 && apg >= 5,
+    elitePasser: apg >= 7,
+    eliteTwoWay: ppg >= 22 && player.ratings.defense >= 88,
 
-    versatileForward: isForward && player.stats.apg >= 5,
-    stretchBig: isBig && player.stats.threePercent >= 35,
-    interiorBig:
-      isBig && (player.stats.rpg >= 10 || player.ratings.defense >= 88),
+    versatileForward: isForward && apg >= 5,
+    stretchBig: isBig && threePercent >= 35,
+    interiorBig: isBig && (rpg >= 10 || player.ratings.defense >= 88),
 
     eliteBig:
       (slotPosition === "PF" || slotPosition === "C") &&
       player.ratings.starPower >= 90 &&
-      player.stats.rpg >= 9,
+      rpg >= 9,
   };
 }
 
@@ -538,11 +572,14 @@ export function getLineupScoutReport(
   }
 
   const selectedPlayers = selectedSlots.map((slot) => slot.player);
+  const selectedPlayerStats = selectedPlayers.map((player) =>
+    getStatsByMode(player, statProfileMode),
+  );
 
   const selectedPlayerTraits = selectedSlots.map((slot) => ({
     player: slot.player,
     position: slot.position,
-    traits: getPlayerTraits(slot.player, slot.position),
+    traits: getPlayerTraits(slot.player, statProfileMode, slot.position),
   }));
 
   const eliteShooters = selectedPlayerTraits.filter(
@@ -590,10 +627,15 @@ export function getLineupScoutReport(
   ).length;
 
   const pointCenterBigs = selectedPlayerTraits.filter(
-    (item) =>
-      (item.position === "PF" || item.position === "C") &&
-      item.player.stats.apg >= 6 &&
-      item.player.stats.rpg >= 8,
+    (item) => {
+      const stats = getStatsByMode(item.player, statProfileMode);
+
+      return (
+        (item.position === "PF" || item.position === "C") &&
+        (stats.apg ?? 0) >= 6 &&
+        (stats.rpg ?? 0) >= 8
+      );
+    },
   ).length;
 
   const versatileForwards = selectedPlayerTraits.filter(
@@ -604,31 +646,31 @@ export function getLineupScoutReport(
     (slot) => slot.position === "C" && slot.player.position === "C",
   ).length;
 
-  const passablePlayers = selectedPlayers.filter(
-    (player) => player.stats.apg >= 4.5,
+  const passablePlayers = selectedPlayerStats.filter(
+    (stats) => (stats.apg ?? 0) >= 4.5,
   ).length;
 
   const scoring =
-    selectedPlayers.reduce((total, player) => total + player.stats.ppg, 0) /
+    selectedPlayerStats.reduce((total, stats) => total + (stats.ppg ?? 0), 0) /
     selectedPlayers.length;
 
   const shooting =
-    selectedPlayers.reduce(
-      (total, player) => total + player.stats.threePercent,
+    selectedPlayerStats.reduce(
+      (total, stats) => total + (stats.threePercent ?? 0),
       0,
     ) / selectedPlayers.length;
 
   const playmaking =
-    selectedPlayers.reduce((total, player) => total + player.stats.apg, 0) /
+    selectedPlayerStats.reduce((total, stats) => total + (stats.apg ?? 0), 0) /
     selectedPlayers.length;
 
   const rebounding =
-    selectedPlayers.reduce((total, player) => total + player.stats.rpg, 0) /
+    selectedPlayerStats.reduce((total, stats) => total + (stats.rpg ?? 0), 0) /
     selectedPlayers.length;
 
   const efficiency =
-    selectedPlayers.reduce(
-      (total, player) => total + player.stats.fgPercent,
+    selectedPlayerStats.reduce(
+      (total, stats) => total + (stats.fgPercent ?? 0),
       0,
     ) / selectedPlayers.length;
 
@@ -883,7 +925,7 @@ export function getLineupScoutReport(
   ) {
     archetype = "Positionless Basketball";
   } else if (eliteShooters >= 3 && adjustedShootingScore >= 80) {
-    archetype = "Spacing Superteam";
+    archetype = "Floor Spacing Machine";
   } else if (elitePlaymakers >= 3 && adjustedPlaymakingScore >= 80) {
     archetype = "Playmaking Engine";
   } else if (eliteScorers >= 3 && adjustedOffenseScore >= 85) {
@@ -919,7 +961,7 @@ export function getLineupScoutReport(
                   ? "Role Flexibility"
                   : archetype === "Rim Pressure Unit"
                     ? "Paint Pressure"
-                    : archetype === "Spacing Superteam"
+                    : archetype === "Floor Spacing Machine"
                       ? "Shooting Gravity"
                       : archetype === "Playmaking Engine"
                         ? "Five-Man Creation"
@@ -953,7 +995,7 @@ export function getLineupScoutReport(
                   ? "A flexible lineup built around interchangeable roles, passing, and two-way versatility."
                   : archetype === "Rim Pressure Unit"
                     ? "A physical lineup built around paint attacks, rim pressure, and interior dominance."
-                    : archetype === "Spacing Superteam"
+                    : archetype === "Floor Spacing Machine"
                       ? `An elite spacing lineup built around shooting gravity, ball movement, and offensive versatility.`
                       : archetype === "Playmaking Engine"
                         ? `A high-IQ creation lineup built around passing, pace control, and easy shot generation.`

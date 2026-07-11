@@ -13,8 +13,8 @@ export function getSavedLineups() {
     const lineups = JSON.parse(saved) as SavedLineup[];
 
     return lineups.map((lineup) => ({
-      statProfile: "career",
       ...lineup,
+      statProfile: lineup.statProfile ?? "career",
     }));
   } catch {
     return [];

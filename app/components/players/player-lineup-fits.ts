@@ -79,7 +79,15 @@ export function getBestLineupFits(
   }
 
   if (threePercent >= 37 && ppg >= 14) {
-    addFit("Spacing Superteam", threePercent + ppg + starPower / 3, "premium");
+    addFit(
+      "Floor Spacing Machine",
+      threePercent + ppg + starPower / 3,
+      "premium",
+    );
+  }
+
+  if (ppg >= 24 && apg < 6) {
+    addFit("Iso Superteam", ppg * 3 + starPower / 2, "premium");
   }
 
   if (defense >= 88) {
@@ -90,8 +98,8 @@ export function getBestLineupFits(
     addFit("Paint Control Unit", rpg * 4 + fgPercent, "premium");
   }
 
-  if (ppg >= 24 && apg < 6) {
-    addFit("Isolation Scoring Core", ppg * 3 + starPower / 2, "premium");
+  if (ppg >= 22 && starPower >= 90 && apg >= 3) {
+    addFit("Offensive Superteam", ppg * 2 + apg * 3 + starPower / 2, "premium");
   }
 
   // Strong non-gray fits
@@ -119,8 +127,8 @@ export function getBestLineupFits(
     addFit("Switchable Defense", defense + rpg + ppg / 2, "strong");
   }
 
-  if (isBig && apg >= 3.5 && rpg >= 6) {
-    addFit("High-Post Hub", apg * 6 + rpg * 2, "strong");
+  if (isBig && apg >= 5 && rpg >= 7) {
+    addFit("Point-Center Offense", apg * 6 + rpg * 2, "strong");
   }
 
   if (isBig && rpg >= 6.5 && fgPercent >= 48) {
@@ -132,16 +140,16 @@ export function getBestLineupFits(
   }
 
   if (ppg >= 18 && fgPercent >= 50 && threePercent < 34) {
-    addFit("Rim Pressure Attack", ppg + fgPercent + rpg * 2, "strong");
+    addFit("Rim Pressure Unit", ppg + fgPercent + rpg * 2, "strong");
   }
 
   if (threePercent >= 37 && apg < 5 && ppg >= 10) {
     addFit("Off-Ball Shooting Unit", threePercent + ppg * 2, "strong");
   }
 
-  if (ppg >= 16 && rpg >= 4 && apg >= 3 && defense >= 78) {
+  if (ppg >= 14 && rpg >= 5 && apg >= 3 && defense >= 78) {
     addFit(
-      "Balanced Contender",
+      "Positionless Basketball",
       ppg + rpg * 2 + apg * 3 + defense / 2,
       "strong",
     );

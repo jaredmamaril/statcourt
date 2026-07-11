@@ -31,7 +31,11 @@ export function BuilderPlayerCard({
   onToggleScout,
   onPickPlayer,
 }: BuilderPlayerCardProps) {
-  const positionFit = getPositionFit(player, activeBuildPosition);
+  const positionFit = getPositionFit(
+    player,
+    activeBuildPosition,
+    builderStatProfile,
+  );
   const positionRating = getBuilderPlayerRatingForPosition(
     player,
     activeBuildPosition,

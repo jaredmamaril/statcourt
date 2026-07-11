@@ -1,4 +1,4 @@
-import type { LineupSlot, Player } from "../../court-data";
+import type { LineupSlot, Player, PlayerStats } from "../../court-data";
 import {
   getPlayerRating,
   type PlayerRatingCategory,
@@ -7,6 +7,30 @@ import {
 
 export type BuilderStatProfileMode = PlayerStatProfileMode;
 export type PositionFit = "natural" | "flex" | "reach" | "mismatch";
+
+function getStatsByMode(
+  player: Player,
+  statProfileMode: BuilderStatProfileMode,
+): PlayerStats {
+  const profile =
+    statProfileMode === "peak"
+      ? (player.statProfiles?.peak ?? player.statProfiles?.career)
+      : statProfileMode === "current"
+        ? (player.statProfiles?.current ?? player.statProfiles?.career)
+        : player.statProfiles?.career;
+
+  return {
+    games: profile?.games ?? player.stats.games,
+    ppg: profile?.ppg ?? player.stats.ppg,
+    rpg: profile?.rpg ?? player.stats.rpg,
+    apg: profile?.apg ?? player.stats.apg,
+    spg: profile?.spg ?? player.stats.spg,
+    bpg: profile?.bpg ?? player.stats.bpg,
+    fgPercent: profile?.fgPercent ?? player.stats.fgPercent,
+    threePercent: profile?.threePercent ?? player.stats.threePercent,
+    ftPercent: profile?.ftPercent ?? player.stats.ftPercent,
+  };
+}
 
 function upgradeFit(fit: PositionFit): PositionFit {
   if (fit === "mismatch") return "reach";
@@ -25,12 +49,14 @@ function applyStatBasedFitAdjustment(
   player: Player,
   slot: LineupSlot,
   fit: PositionFit,
+  statProfileMode: BuilderStatProfileMode,
 ): PositionFit {
-  const ppg = player.stats.ppg ?? 0;
-  const rpg = player.stats.rpg ?? 0;
-  const apg = player.stats.apg ?? 0;
-  const threePercent = player.stats.threePercent ?? 0;
-  const bpg = player.stats.bpg ?? 0;
+  const stats = getStatsByMode(player, statProfileMode);
+  const ppg = stats.ppg ?? 0;
+  const rpg = stats.rpg ?? 0;
+  const apg = stats.apg ?? 0;
+  const threePercent = stats.threePercent ?? 0;
+  const bpg = stats.bpg ?? 0;
 
   const defense = player.ratings.defense ?? 0;
 
@@ -124,7 +150,11 @@ export function getBuilderPlayerRating(
   );
 }
 
-export function getPositionFit(player: Player, slot: LineupSlot): PositionFit {
+export function getPositionFit(
+  player: Player,
+  slot: LineupSlot,
+  statProfileMode: BuilderStatProfileMode = "career",
+): PositionFit {
   const height = player.heightInches ?? 0;
   const weight = player.weightPounds ?? 0;
 
@@ -175,7 +205,7 @@ export function getPositionFit(player: Player, slot: LineupSlot): PositionFit {
     }
   }
 
-  return applyStatBasedFitAdjustment(player, slot, baseFit);
+  return applyStatBasedFitAdjustment(player, slot, baseFit, statProfileMode);
 }
 
 export function getPositionPenalty(fit: PositionFit) {
@@ -192,6 +222,6 @@ export function getBuilderPlayerRatingForPosition(
 ) {
   return (
     getBuilderPlayerRating(player, statProfileMode) -
-    getPositionPenalty(getPositionFit(player, slot))
+    getPositionPenalty(getPositionFit(player, slot, statProfileMode))
   );
 }
