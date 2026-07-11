@@ -110,11 +110,12 @@ export function getFilteredPlayers({
     })
     .sort((a, b) => {
       if (!sortBy) {
-        return (
+        const result =
           getPlayerRating(b, selectedRatingView) -
             getPlayerRating(a, selectedRatingView) ||
-          a.name.localeCompare(b.name)
-        );
+          a.name.localeCompare(b.name);
+
+        return sortDirection === "primary" ? result : -result;
       }
 
       let result = 0;

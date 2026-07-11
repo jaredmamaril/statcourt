@@ -133,6 +133,7 @@ export function PlayerFilters({
 
       <SkillFilterDropdown
         selectedSkill={selectedSkill}
+        sortDirection={sortDirection}
         isOpen={openDropdown === "skill"}
         onOpenDropdown={() =>
           onOpenDropdown(openDropdown === "skill" ? null : "skill")

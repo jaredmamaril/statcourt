@@ -428,7 +428,15 @@ function Players() {
   }
 
   function selectSkillFilter(skill: PlayerRatingCategory) {
-    setSelectedRatingView(skill);
+    setSortBy("");
+
+    if (selectedRatingView === skill) {
+      setSortDirection(sortDirection === "primary" ? "reverse" : "primary");
+    } else {
+      setSelectedRatingView(skill);
+      setSortDirection("primary");
+    }
+
     setOpenDropdown(null);
   }
 

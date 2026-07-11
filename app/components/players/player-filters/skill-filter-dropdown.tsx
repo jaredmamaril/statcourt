@@ -1,9 +1,10 @@
 import type { PlayerRatingCategory } from "../../player-ratings";
+import type { SortDirection } from "../../court-data";
 
 const statModeLabels = {
-  career: "Career",
-  peak: "3-Year Peak",
-  current: "Latest Season",
+  career: "Career OVR",
+  peak: "Peak OVR",
+  current: "Latest OVR",
 };
 
 type SkillFilterOption = {
@@ -22,6 +23,7 @@ const skillFilterOptions: SkillFilterOption[] = [
 
 type SkillFilterDropdownProps = {
   selectedSkill: PlayerRatingCategory;
+  sortDirection: SortDirection;
   isOpen: boolean;
   onOpenDropdown: () => void;
   onSelectSkill: (skill: PlayerRatingCategory) => void;
@@ -29,6 +31,7 @@ type SkillFilterDropdownProps = {
 
 export function SkillFilterDropdown({
   selectedSkill,
+  sortDirection,
   isOpen,
   onOpenDropdown,
   onSelectSkill,
@@ -46,6 +49,8 @@ export function SkillFilterDropdown({
       >
         <span className="truncate">
           {selectedSkillOption?.label ?? "Career OVR"}
+          {" "}
+          {sortDirection === "primary" ? "Hi-Lo" : "Lo-Hi"}
         </span>
 
         <span className="shrink-0 text-[8px] text-[#1bc2ec] sm:text-xs">▾</span>
