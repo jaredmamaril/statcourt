@@ -33,7 +33,7 @@ export function getSelectedCustomPlayerSlots(
     .filter((slot): slot is SelectedCustomPlayerSlot => Boolean(slot));
 }
 
-export function getCustomLineupOverall(
+export function getBuilderLineupAverageRating(
   selectedCustomPlayerSlots: SelectedCustomPlayerSlot[],
   statProfileMode: BuilderStatProfileMode,
 ) {

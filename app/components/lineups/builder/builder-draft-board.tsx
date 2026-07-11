@@ -9,7 +9,7 @@ type BuilderDraftBoardProps = {
   lineupPositions: LineupSlot[];
   hoveredBuildPlayer: string;
   customLineup: Record<LineupSlot, string>;
-  customLineupOverall: number | null;
+  builderLineupRating: number | null;
   isLineupComplete: boolean;
   selectedLineupCount: number;
   playerRevealMode: PlayerRevealMode;
@@ -23,7 +23,7 @@ export function BuilderDraftBoard({
   lineupPositions,
   hoveredBuildPlayer,
   customLineup,
-  customLineupOverall,
+  builderLineupRating,
   isLineupComplete,
   selectedLineupCount,
   playerRevealMode,
@@ -50,10 +50,10 @@ export function BuilderDraftBoard({
           </p>
 
           <p
-            key={customLineupOverall?.toFixed(1) ?? "--"}
+            key={builderLineupRating?.toFixed(1) ?? "--"}
             className="animate-[ovrRise_250ms_ease-out] font-michroma text-xs text-[#1bc2ec] lg:text-2xl"
           >
-            {customLineupOverall ? customLineupOverall.toFixed(1) : "--"}
+            {builderLineupRating ? builderLineupRating.toFixed(1) : "--"}
           </p>
         </div>
       </div>

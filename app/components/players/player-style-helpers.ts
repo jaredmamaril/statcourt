@@ -120,6 +120,7 @@ export function getLineupFitStyles(fit: string): CSSProperties {
     // Elite balance
     "Two-Way Dynasty": "#EFBF04",
     "Positionless Basketball": "#EFBF04",
+    "Versatile Wing Core": "#EFBF04",
     "Balanced Core": "#EFBF04",
 
     // Depth / energy

@@ -1,4 +1,4 @@
-import { normalizeStat, type LineupSlot } from "../../court-data";
+import { normalizeStat, type LineupSlot, type PlayerStats } from "../../court-data";
 import PlayerImage from "../../player-image";
 import { getPlayerHeadshot } from "../../player-images";
 import {
@@ -11,6 +11,30 @@ import {
 import { BuilderPlayerCardOverlay } from "./builder-player-card-overlay";
 
 type Player = Parameters<typeof getBuilderPlayerRating>[0];
+
+function getStatsByMode(
+  player: Player,
+  statProfileMode: BuilderStatProfileMode,
+): PlayerStats {
+  const profile =
+    statProfileMode === "peak"
+      ? (player.statProfiles?.peak ?? player.statProfiles?.career)
+      : statProfileMode === "current"
+        ? (player.statProfiles?.current ?? player.statProfiles?.career)
+        : player.statProfiles?.career;
+
+  return {
+    games: profile?.games ?? player.stats.games,
+    ppg: profile?.ppg ?? player.stats.ppg,
+    rpg: profile?.rpg ?? player.stats.rpg,
+    apg: profile?.apg ?? player.stats.apg,
+    spg: profile?.spg ?? player.stats.spg,
+    bpg: profile?.bpg ?? player.stats.bpg,
+    fgPercent: profile?.fgPercent ?? player.stats.fgPercent,
+    threePercent: profile?.threePercent ?? player.stats.threePercent,
+    ftPercent: profile?.ftPercent ?? player.stats.ftPercent,
+  };
+}
 
 type BuilderPlayerCardProps = {
   player: Player;
@@ -43,23 +67,24 @@ export function BuilderPlayerCard({
   );
   const baseRating = getBuilderPlayerRating(player, builderStatProfile);
   const positionPenalty = getPositionPenalty(positionFit);
+  const stats = getStatsByMode(player, builderStatProfile);
 
   const scoutStats = [
     {
       label: "Scoring",
-      value: Math.round(normalizeStat(player.stats.ppg, 25)),
+      value: Math.round(normalizeStat(stats.ppg ?? 0, 25)),
     },
     {
       label: "Shooting",
-      value: Math.round(normalizeStat(player.stats.threePercent, 40)),
+      value: Math.round(normalizeStat(stats.threePercent ?? 0, 40)),
     },
     {
       label: "Playmaking",
-      value: Math.round(normalizeStat(player.stats.apg, 8)),
+      value: Math.round(normalizeStat(stats.apg ?? 0, 8)),
     },
     {
       label: "Rebounding",
-      value: Math.round(normalizeStat(player.stats.rpg, 11)),
+      value: Math.round(normalizeStat(stats.rpg ?? 0, 11)),
     },
     {
       label: "Defense",

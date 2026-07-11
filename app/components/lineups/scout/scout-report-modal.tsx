@@ -76,7 +76,7 @@ export function ScoutReportModal({
           boxShadow: `0 0 35px ${scoutArchetypeColor}40`,
         }}
       >
-        <div className="relative max-h-[78vh] overflow-y-auto p-3 scrollbar-none lg:p-5 [&::-webkit-scrollbar]:hidden">
+        <div className="relative max-h-[78vh] overflow-y-auto p-3 scrollbar-none lg:max-h-[68vh] lg:p-5 [&::-webkit-scrollbar]:hidden">
           <ScoutReportHeader
             scoutSummary={scoutSummary}
             statProfileLabel={statProfileLabel}

@@ -20,7 +20,7 @@ export const splashSquadsLineups = {
     achievements: {
       note: "Built from elite shooters, passers, and floor spacers",
     },
-    archetype: "Spacing Superteam",
+    archetype: "Floor Spacing Machine",
     description:
       "A shooting-heavy lineup that stretches the floor with elite range, passing, and shot-making at nearly every spot.",
     strengths: ["Shooting", "Spacing", "Offensive versatility"],

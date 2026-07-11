@@ -428,10 +428,7 @@ function getXFactorForArchetype(
         player.ratings.defense * 0.15 +
         ppg * 0.8;
 
-      if (
-        archetype === "Spacing Superteam" ||
-        archetype === "Floor Spacing Machine"
-      ) {
+      if (archetype === "Floor Spacing Machine") {
         fitScore += threePercent * 0.9;
       }
 

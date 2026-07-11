@@ -15,34 +15,42 @@ import { getRankedScoutScores } from "../../lineup-scouting";
 import type { SavedLineup } from "../shared/lineup-types";
 
 export function getSavedLineupArchetypeColor(archetype: string) {
-  if (archetype === "Transition Attack") return "#1bc2ec";
-  if (archetype === "Showtime Offense") return "#1bc2ec";
+  const archetypeColors: Record<string, string> = {
+    "Transition Attack": "#1BC2EC",
+    "Showtime Offense": "#1BC2EC",
+    "Playmaking Engine": "#1BC2EC",
+    "Point-Center Offense": "#1BC2EC",
 
-  if (archetype === "Defensive Powerhouse") return "#22C55E";
-  if (archetype === "Defensive Juggernaut") return "#22C55E";
-  if (archetype === "Lockdown Unit") return "#22C55E";
+    "Defensive Powerhouse": "#22C55E",
+    "Defensive Juggernaut": "#22C55E",
+    "Lockdown Unit": "#22C55E",
 
-  if (archetype === "Spacing Superteam") return "#A855F7";
-  if (archetype === "Floor Spacing Machine") return "#A855F7";
-  if (archetype === "Spacing Engine") return "#A855F7";
+    "Floor Spacing Machine": "#A855F7",
+    "Spacing Engine": "#A855F7",
 
-  if (archetype === "Offensive Superteam") return "#F97316";
-  if (archetype === "Iso Superteam") return "#F97316";
+    "Offensive Superteam": "#F97316",
+    "Iso Superteam": "#F97316",
+    "Star-Powered Contender": "#F97316",
 
-  if (archetype === "Two-Way Dynasty") return "#EFBF04";
-  if (archetype === "Championship Dynasty") return "#EFBF04";
+    "Two-Way Dynasty": "#EFBF04",
+    "Championship Dynasty": "#EFBF04",
+    "Positionless Basketball": "#EFBF04",
+    "Balanced Core": "#EFBF04",
 
-  if (archetype === "Balanced Core") return "#CBD5E1";
-  if (archetype === "Star-Powered Contender") return "#38BDF8";
+    "Paint Control Unit": "#EF4444",
+    "Rim Pressure Unit": "#EF4444",
+  };
 
-  if (archetype === "Paint Control Unit") return "#EF4444";
-  if (archetype === "Rim Pressure Unit") return "#EF4444";
-  if (archetype === "Point-Center Offense") return "#EF4444";
-
-  return "#1bc2ec";
+  return archetypeColors[archetype] ?? "#1BC2EC";
 }
 
 export const archetypeColorLegend = [
+  {
+    color: "#EFBF04",
+    label: "Two-Way Dynasty",
+    description:
+      "Complete championship profile with elite offense, defense, and star power.",
+  },
   {
     color: "#1bc2ec",
     label: "Transition Attack",
@@ -50,14 +58,39 @@ export const archetypeColorLegend = [
       "Fast-paced offense built around transition scoring and playmaking.",
   },
   {
-    color: "#22C55E",
-    label: "Defensive Powerhouse",
-    description: "Elite defense, rebounding, and physical control.",
+    color: "#1bc2ec",
+    label: "Point-Center Offense",
+    description: "Frontcourt hub creation with passing, scoring, and size.",
   },
   {
     color: "#A855F7",
-    label: "Spacing Engine",
-    description: "High-level shooting and floor spacing.",
+    label: "Floor Spacing Machine",
+    description: "High-level shooting gravity and maximum spacing pressure.",
+  },
+  {
+    color: "#F97316",
+    label: "Iso Superteam",
+    description: "Elite isolation scoring and matchup hunting.",
+  },
+  {
+    color: "#22C55E",
+    label: "Defensive Juggernaut",
+    description: "Top-end defense, size, pressure, and glass control.",
+  },
+  {
+    color: "#EF4444",
+    label: "Rim Pressure Unit",
+    description: "Paint attacks, rim pressure, and interior physicality.",
+  },
+  {
+    color: "#EFBF04",
+    label: "Positionless Basketball",
+    description: "Interchangeable roles, passing, and multi-position talent.",
+  },
+  {
+    color: "#1bc2ec",
+    label: "Playmaking Engine",
+    description: "Multiple passers creating efficient looks across the floor.",
   },
   {
     color: "#F97316",
@@ -65,24 +98,24 @@ export const archetypeColorLegend = [
     description: "Explosive scoring from multiple creators.",
   },
   {
-    color: "#EFBF04",
-    label: "Two-Way Dynasty",
-    description: "Dominance on both offense and defense.",
+    color: "#EF4444",
+    label: "Paint Control Unit",
+    description: "Dominant size, rebounding, and interior control.",
   },
   {
-    color: "#CBD5E1",
-    label: "Balanced Core",
-    description: "Well-rounded lineup with no major specialization.",
+    color: "#22C55E",
+    label: "Defensive Powerhouse",
+    description: "Elite defense, rebounding, and physical control.",
   },
   {
-    color: "#38BDF8",
+    color: "#F97316",
     label: "Star-Powered Contender",
     description: "Driven by elite individual talent and star power.",
   },
   {
-    color: "#EF4444",
-    label: "Paint Control Unit",
-    description: "Interior scoring, rim protection, and rebounding.",
+    color: "#EFBF04",
+    label: "Balanced Core",
+    description: "Well-rounded lineup with no major specialization.",
   },
 ];
 

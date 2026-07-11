@@ -11,7 +11,7 @@ export const lineupFitDescriptions: Record<string, string> = {
   "Star-Powered Contender":
     "Best for lineups driven by elite individual talent and high-end shot creation.",
 
-  "Spacing Superteam":
+  "Floor Spacing Machine":
     "Best for lineups that maximize shooting gravity, floor spacing, and perimeter pressure.",
 
   "Defensive Powerhouse":
@@ -20,7 +20,10 @@ export const lineupFitDescriptions: Record<string, string> = {
   "Paint Control Unit":
     "Best for lineups that dominate inside through rebounding, rim pressure, and interior scoring.",
 
-  "Isolation Scoring Core":
+  "Offensive Superteam":
+    "Best for lineups built around multiple elite scorers who can pressure defenses in different ways.",
+
+  "Iso Superteam":
     "Best for lineups that need a go-to scorer who can create offense without relying heavily on teammates.",
 
   "Two-Way Dynasty":
@@ -44,7 +47,7 @@ export const lineupFitDescriptions: Record<string, string> = {
   "Switchable Defense":
     "Best for lineups that rely on defensive versatility, matchup flexibility, and wing coverage.",
 
-  "High-Post Hub":
+  "Point-Center Offense":
     "Best for lineups that run offense through a skilled frontcourt passer from the elbows or high post.",
 
   "Interior Support Unit":
@@ -53,13 +56,13 @@ export const lineupFitDescriptions: Record<string, string> = {
   "Backline Defense":
     "Best for lineups that need size, rim protection, rebounding, and defensive support behind the play.",
 
-  "Rim Pressure Attack":
+  "Rim Pressure Unit":
     "Best for lineups that attack the basket, collapse defenses, and create pressure through downhill scoring.",
 
   "Off-Ball Shooting Unit":
     "Best for lineups that use movement, spacing, and catch-and-shoot threats around primary creators.",
 
-  "Balanced Contender":
+  "Positionless Basketball":
     "Best for lineups that need all-around production without relying on one extreme strength.",
 
   "Secondary Spacing":

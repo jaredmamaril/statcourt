@@ -31,7 +31,7 @@ export function ScoutArchetypeTooltip({
       </div>
 
       <div
-        className={`absolute left-0 top-full z-999 mt-2 w-44 rounded-md border border-white/15 bg-black/95 p-1.5 shadow-[0_0_24px_rgba(0,0,0,0.55)] transition-opacity duration-200 lg:left-full lg:-top-20 lg:ml-3 lg:mt-0 lg:w-80 lg:p-3 ${
+        className={`statcourt-scroll absolute left-0 top-full z-999 mt-2 max-h-50 w-44 overflow-y-auto rounded-md border border-white/15 bg-black/95 p-1.5 shadow-[0_0_24px_rgba(0,0,0,0.55)] transition-opacity duration-200 lg:left-full lg:-top-20 lg:ml-0 lg:mt-0 lg:max-h-80 lg:w-80 lg:p-3 ${
           isOpen
             ? "pointer-events-auto opacity-100"
             : "pointer-events-none opacity-0 group-hover/archetype:pointer-events-auto group-hover/archetype:opacity-100"

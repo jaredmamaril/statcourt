@@ -18,7 +18,7 @@ type BuilderWorkspaceProps = {
   buildPlayerSearch: string;
   builderStatProfile: BuilderStatProfileMode;
   availableBuildPlayers: Player[];
-  customLineupOverall: number | null;
+  builderLineupRating: number | null;
   isLineupComplete: boolean;
   selectedLineupCount: number;
   hoveredBuildPlayer: string;
@@ -41,7 +41,7 @@ export function BuilderWorkspace({
   buildPlayerSearch,
   builderStatProfile,
   availableBuildPlayers,
-  customLineupOverall,
+  builderLineupRating,
   isLineupComplete,
   selectedLineupCount,
   hoveredBuildPlayer,
@@ -114,7 +114,7 @@ export function BuilderWorkspace({
           lineupPositions={lineupPositions}
           hoveredBuildPlayer={hoveredBuildPlayer}
           customLineup={customLineup}
-          customLineupOverall={customLineupOverall}
+          builderLineupRating={builderLineupRating}
           isLineupComplete={isLineupComplete}
           selectedLineupCount={selectedLineupCount}
           playerRevealMode={playerRevealMode}

@@ -210,7 +210,7 @@ export default function Lineups() {
     playerRevealMode,
     setPlayerRevealMode,
     selectedCustomPlayerSlots,
-    customLineupOverall,
+    builderLineupRating,
     availableBuildPlayers,
     selectedLineupCount,
     isLineupComplete,
@@ -370,7 +370,7 @@ export default function Lineups() {
 
   // Saved lineup actions
   function saveLineup(lineupName: string) {
-    if (!customLineupOverall) return;
+    if (!builderLineupRating) return;
 
     const newLineupInput = createSavedLineupInput({
       name: lineupName.trim() || `Lineup ${savedLineups.length + 1}`,
@@ -533,7 +533,7 @@ export default function Lineups() {
                   buildPlayerSearch={buildPlayerSearch}
                   builderStatProfile={builderStatProfile}
                   availableBuildPlayers={availableBuildPlayers}
-                  customLineupOverall={customLineupOverall}
+                  builderLineupRating={builderLineupRating}
                   isLineupComplete={isLineupComplete}
                   selectedLineupCount={selectedLineupCount}
                   hoveredBuildPlayer={hoveredBuildPlayer}

@@ -3,7 +3,7 @@ import type { LineupSlot, Player } from "../../court-data";
 import {
   EMPTY_LINEUP,
   getAvailableBuildPlayers,
-  getCustomLineupOverall,
+  getBuilderLineupAverageRating,
   getSelectedCustomPlayerSlots,
   type PlayerRevealMode,
 } from "./builder-lineup-helpers";
@@ -40,7 +40,7 @@ export function useLineupBuilder({
     (slot) => slot.player,
   );
 
-  const customLineupOverall = getCustomLineupOverall(
+  const builderLineupRating = getBuilderLineupAverageRating(
     selectedCustomPlayerSlots,
     builderStatProfile,
   );
@@ -113,7 +113,7 @@ export function useLineupBuilder({
     setPlayerRevealMode,
     selectedCustomPlayerSlots,
     selectedCustomPlayers,
-    customLineupOverall,
+    builderLineupRating,
     availableBuildPlayers,
     selectedLineupCount,
     isLineupComplete,
