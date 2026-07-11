@@ -1,4 +1,5 @@
 import type { RefObject } from "react";
+import type { Player } from "../../court-data";
 import type { LineupDetail } from "../shared/lineup-types";
 import type { LineupCategory, LineupName } from "./featured-lineups";
 import { FeaturedLineupSelector } from "./featured-lineup-selector";
@@ -6,6 +7,7 @@ import { FeaturedLineupInfo } from "./featured-lineup-info";
 import { FeaturedLineupCourt } from "./featured-lineup-court";
 
 type FeaturedLineupDetailProps = {
+  players: Player[];
   lineupSectionRef: RefObject<HTMLDivElement | null>;
   selectedLineupCategory: LineupCategory;
   selectedLineupName: LineupName | "";
@@ -20,6 +22,7 @@ type FeaturedLineupDetailProps = {
 };
 
 export function FeaturedLineupDetail({
+  players,
   lineupSectionRef,
   selectedLineupCategory,
   selectedLineupName,
@@ -68,6 +71,7 @@ export function FeaturedLineupDetail({
               />
 
               <FeaturedLineupCourt
+                players={players}
                 selectedLineup={selectedLineup}
                 selectedCategoryColor={selectedCategoryColor}
                 hoveredLineupPlayer={hoveredLineupPlayer}

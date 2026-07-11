@@ -145,12 +145,16 @@ export function CourtComparisonEdges({
   ];
 
   return (
-    <div className="mx-auto mt-4 grid w-full max-w-6xl grid-cols-2 gap-2 px-3 sm:grid-cols-2 sm:gap-3 sm:px-0 lg:grid-cols-5">
-      {edges.map((edge) => (
+    <div
+      key={`${leftPlayer.id}-${rightPlayer.id}-${statMode}`}
+      className="mx-auto mt-4 grid w-full max-w-6xl grid-cols-2 gap-2 px-3 sm:grid-cols-2 sm:gap-3 sm:px-0 lg:grid-cols-5"
+    >
+      {edges.map((edge, index) => (
         <div
           key={edge.label}
           role="button"
           tabIndex={0}
+          style={{ animationDelay: `${index * 45}ms` }}
           onClick={() =>
             setOpenEdge((current) =>
               current === edge.label ? null : edge.label,
@@ -166,7 +170,7 @@ export function CourtComparisonEdges({
           }}
           className={`group relative cursor-help rounded-lg border border-white/15 bg-[#06131d]/90 px-2.5 py-2 text-center shadow-[0_0_14px_rgba(0,0,0,0.3)] transition hover:-translate-y-0.5 hover:border-[#1bc2ec]/50 hover:bg-[#071827] hover:shadow-[0_0_20px_rgba(27,194,236,0.14)] sm:px-4 sm:py-3 ${
             edge.label === "Efficiency Edge" ? "col-span-2 lg:col-span-1" : ""
-          }`}
+          } animate-[courtEdgeReveal_220ms_ease-out_both]`}
         >
           <p className="font-michroma text-[6.5px] uppercase tracking-wide text-white/75 sm:text-[8px]">
             {edge.label}

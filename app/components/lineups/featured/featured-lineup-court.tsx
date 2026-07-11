@@ -1,10 +1,11 @@
 import { useState } from "react";
-import type { LineupSlot } from "../../court-data";
+import type { LineupSlot, Player } from "../../court-data";
 import type { LineupDetail } from "../shared/lineup-types";
 import { featuredCourtMarkerPositions } from "./featured-lineups";
 import { LineupMarker } from "../featured/lineup-marker";
 
 type FeaturedLineupCourtProps = {
+  players: Player[];
   selectedLineup: LineupDetail;
   selectedCategoryColor: string;
   hoveredLineupPlayer: string;
@@ -13,6 +14,7 @@ type FeaturedLineupCourtProps = {
 };
 
 export function FeaturedLineupCourt({
+  players,
   selectedLineup,
   selectedCategoryColor,
   hoveredLineupPlayer,
@@ -77,6 +79,7 @@ export function FeaturedLineupCourt({
             }}
           >
             <LineupMarker
+              players={players}
               position={lineupPosition}
               name={playerName || "Select Player"}
               color={selectedCategoryColor}

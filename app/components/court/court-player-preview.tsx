@@ -25,6 +25,7 @@ export function CourtPlayerPreview({
       </h1>
 
       <div
+        key={selectedPlayer?.id ?? "empty-player-preview"}
         className="mt-1 flex h-26 w-26 items-center justify-center rounded-md border-2 bg-black/25 text-xs text-white/70 transition-colors duration-300 sm:h-48 sm:w-48 lg:h-64 lg:w-64"
         style={{
           borderColor: playerColor,

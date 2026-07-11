@@ -23,7 +23,10 @@ export function CourtPlayerPanel({
 
   return (
     <div className={`relative z-10 flex justify-center ${sideClass}`}>
-      <div className="pointer-events-auto flex flex-col items-center">
+      <div
+        key={selectedPlayer?.id ?? "empty-player-panel"}
+        className="pointer-events-auto flex flex-col items-center animate-[courtPlayerSelectIn_260ms_ease-out_both]"
+      >
         <CourtPlayerPreview
           selectedPlayer={selectedPlayer}
           fallbackColor={fallbackColor}

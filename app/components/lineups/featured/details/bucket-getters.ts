@@ -20,7 +20,7 @@ export const bucketGettersLineups = {
     achievements: {
       note: "Built from elite isolation scorers",
     },
-    archetype: "Shot Creation Core",
+    archetype: "Iso Superteam",
     description:
       "A lineup built around elite one-on-one scorers who can create difficult shots without needing much setup.",
     strengths: ["Shot creation", "Clutch scoring", "Mismatch hunting"],
@@ -46,7 +46,7 @@ export const bucketGettersLineups = {
     achievements: {
       note: "Built from elite volume scorers across every scoring zone",
     },
-    archetype: "Three-Level Scoring Core",
+    archetype: "Offensive Superteam",
     description:
       "A scoring-heavy lineup with elite rim pressure, midrange shot creation, deep shooting, and late-clock bailout options.",
     strengths: ["Scoring", "Shot creation", "Late-clock offense"],
@@ -56,10 +56,10 @@ export const bucketGettersLineups = {
   "Wing Assassins": {
     players: {
       PG: "LeBron James",
-      SG: "Michael Jordan",
-      SF: "Kobe Bryant",
-      PF: "Kevin Durant",
-      C: "Hakeem Olajuwon",
+      SG: "Tracy McGrady",
+      SF: "Kevin Durant",
+      PF: "Kawhi Leonard",
+      C: "Giannis Antetokounmpo",
     },
     overall: 95.9,
     ratings: {
@@ -70,12 +70,64 @@ export const bucketGettersLineups = {
       defense: 91,
     },
     achievements: {
-      note: "Built around oversized creators and two-way wing pressure",
+      note: "Built around oversized creators, long wings, and two-way pressure",
     },
-    archetype: "Two-Way Shot Creation",
+    archetype: "Two-Way Dynasty",
     description:
-      "A wing-driven lineup built around elite isolation scoring, physical mismatches, and defensive versatility.",
-    strengths: ["Wing scoring", "Switchability", "Mismatch hunting"],
+      "A wing-driven lineup built around length, physical mismatches, isolation scoring, and defensive versatility.",
+    strengths: ["Wing scoring", "Switchability", "Rim pressure"],
     weaknesses: ["Traditional spacing", "Pure point guard play"],
+  },
+
+  "Midrange Masters": {
+    players: {
+      PG: "Chris Paul",
+      SG: "Michael Jordan",
+      SF: "Kawhi Leonard",
+      PF: "Kevin Durant",
+      C: "Dirk Nowitzki",
+    },
+    overall: 95.7,
+    ratings: {
+      scoring: 98,
+      shooting: 92,
+      playmaking: 88,
+      rebounding: 82,
+      defense: 87,
+    },
+    achievements: {
+      note: "Built from elite pull-up scorers and half-court shot makers",
+    },
+    archetype: "Iso Superteam",
+    description:
+      "A half-court scoring lineup loaded with midrange creators who can punish switches and generate clean looks late in the clock.",
+    strengths: ["Midrange scoring", "Shot creation", "Late-clock offense"],
+    weaknesses: ["Rim protection", "Pace"],
+  },
+
+  "Paint Punishers": {
+    players: {
+      PG: "Luka Doncic",
+      SG: "Dwyane Wade",
+      SF: "LeBron James",
+      PF: "Giannis Antetokounmpo",
+      C: "Shaquille O'Neal",
+    },
+    overall: 96.0,
+    ratings: {
+      scoring: 98,
+      shooting: 78,
+      playmaking: 91,
+      rebounding: 92,
+      defense: 86,
+    },
+    achievements: {
+      note: "Built around downhill pressure and constant paint collapse",
+    },
+    archetype: "Rim Pressure Unit",
+    description:
+      "A power-heavy lineup built to attack the rim, overwhelm help defense, and force rotations from every angle.",
+    strengths: ["Rim pressure", "Free-throw pressure", "Physical scoring"],
+    weaknesses: ["Spacing", "Perimeter volume"],
   },
 } satisfies Record<string, LineupDetail>;

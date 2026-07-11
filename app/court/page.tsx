@@ -27,6 +27,8 @@ import { CourtMatchupSummary } from "../components/court/court-matchup-summary";
 
 import { CourtPlayerPickerModal } from "../components/court/court-player-picker-modal";
 
+const COURT_PLAYER_PICKER_LIMIT = 120;
+
 export default function Court() {
   // Compare state
   const [comparePlayers, setComparePlayers] =
@@ -130,6 +132,10 @@ export default function Court() {
   const filteredPickerPlayers = comparePlayers.filter((player) =>
     player.name.toLowerCase().includes(pickerSearch.toLowerCase()),
   );
+  const displayedPickerPlayers = filteredPickerPlayers.slice(
+    0,
+    COURT_PLAYER_PICKER_LIMIT,
+  );
 
   function selectModalPlayer(playerName: string) {
     if (activePickerSide === "left") {
@@ -232,7 +238,7 @@ export default function Court() {
       <CourtPlayerPickerModal
         isOpen={activePickerSide !== null}
         side={activePickerSide}
-        players={filteredPickerPlayers}
+        players={displayedPickerPlayers}
         search={pickerSearch}
         setSearch={setPickerSearch}
         onSelectPlayer={selectModalPlayer}

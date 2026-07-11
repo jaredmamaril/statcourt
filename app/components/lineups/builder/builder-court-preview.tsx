@@ -52,6 +52,7 @@ export function BuilderCourtPreview({
           return (
             <LineupMarker
               key={`${position}-${playerName || "empty"}`}
+              players={players}
               player={player}
               position={position}
               name={playerName || "Select Player"}

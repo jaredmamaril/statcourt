@@ -44,24 +44,48 @@ export const lineupDetails = {
 export type LineupName = keyof typeof lineupDetails;
 
 export const lineupGroups = {
-  "Greatest Teams": ["1996 Bulls", "2017 Warriors", "1986 Celtics"],
-  "Bucket Getters": ["Isolation Killers", "Pure Scorers", "Wing Assassins"],
+  "Greatest Teams": [
+    "1996 Bulls",
+    "2017 Warriors",
+    "1986 Celtics",
+    "2001 Lakers",
+    "2013 Heat",
+  ],
+  "Bucket Getters": [
+    "Isolation Killers",
+    "Pure Scorers",
+    "Wing Assassins",
+    "Midrange Masters",
+    "Paint Punishers",
+  ],
   "Floor Generals": [
     "Pass First Legends",
     "Point God Lineup",
     "Five-Man Creation",
+    "Tempo Controllers",
+    "Jumbo Playmakers",
   ],
   "Lockdown Squads": [
     "All-Defense Unit",
     "Rim Protection Wall",
     "Switch Everything",
+    "Perimeter Clamps",
+    "Switch Wall",
   ],
   "Splash Squads": [
     "Spacing Nightmare",
     "Splash Brothers Core",
     "Five-Out Firepower",
+    "Three-Point Legends",
+    "Five-Out Creators",
   ],
-  "All-Time Teams": ["All-Time Lakers", "All-Time Bulls", "All-Time Warriors"],
+  "All-Time Teams": [
+    "All-Time Lakers",
+    "All-Time Bulls",
+    "All-Time Warriors",
+    "All-Time Spurs",
+    "All-Time Celtics",
+  ],
 } satisfies Record<LineupCategory, LineupName[]>;
 
 // Court marker positions

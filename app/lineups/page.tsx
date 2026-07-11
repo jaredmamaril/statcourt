@@ -102,7 +102,7 @@ export default function Lineups() {
 
   // Page state
   const [activeTab, setActiveTab] = useState<LineupTab>("featured");
-  const [players, setPlayers] = useState<Player[]>(fallbackPlayers);
+  const [players, setPlayers] = useState<Player[]>([]);
   const [isLoadingPlayers, setIsLoadingPlayers] = useState(true);
   const [playerLoadError, setPlayerLoadError] = useState("");
 
@@ -579,8 +579,19 @@ export default function Lineups() {
               onSelectCategory={selectFeaturedLineupCategory}
             />
 
-            {selectedLineupCategory && (
+            {selectedLineupCategory && isLoadingPlayers ? (
+              <DatabaseLoadingState
+                title="Loading Featured Players"
+                description="Syncing lineup headshots and profiles..."
+              />
+            ) : selectedLineupCategory && playerLoadError ? (
+              <DatabaseErrorState
+                title="Featured Players Limited"
+                description="Showing fallback player data for featured lineups."
+              />
+            ) : selectedLineupCategory ? (
               <FeaturedLineupDetail
+                players={players}
                 lineupSectionRef={lineupSectionRef}
                 selectedLineupCategory={selectedLineupCategory}
                 selectedLineupName={selectedLineupName}
@@ -593,7 +604,7 @@ export default function Lineups() {
                 onHoverPlayer={setHoveredLineupPlayer}
                 onViewCard={viewPlayerCard}
               />
-            )}
+            ) : null}
           </section>
         )}
 

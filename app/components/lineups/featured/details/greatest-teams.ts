@@ -22,7 +22,7 @@ export const greatestTeamsLineups = {
       result: "NBA Champions",
       playoffs: "15-3",
     },
-    archetype: "Championship Dynasty",
+    archetype: "Two-Way Dynasty",
     description:
       "A defense-first championship lineup built around Jordan's scoring, Pippen's versatility, and Rodman's rebounding pressure.",
     strengths: ["Defense", "Rebounding", "Transition scoring"],
@@ -50,7 +50,7 @@ export const greatestTeamsLineups = {
       result: "NBA Champions",
       playoffs: "16-1",
     },
-    archetype: "Spacing Dynasty",
+    archetype: "Floor Spacing Machine",
     description:
       "A historic shooting and spacing lineup built around Curry's gravity, Durant's scoring, and elite ball movement.",
     strengths: ["Shooting", "Spacing", "Ball movement"],
@@ -78,10 +78,66 @@ export const greatestTeamsLineups = {
       result: "NBA Champions",
       playoffs: "15-3",
     },
-    archetype: "Balanced Dynasty",
+    archetype: "Balanced Core",
     description:
       "A complete championship lineup with elite frontcourt skill, passing, rebounding, and half-court execution.",
     strengths: ["Frontcourt skill", "Passing", "Rebounding"],
     weaknesses: ["Pace", "Guard athleticism"],
+  },
+
+  "2001 Lakers": {
+    players: {
+      PG: "Derek Fisher",
+      SG: "Kobe Bryant",
+      SF: "Rick Fox",
+      PF: "Robert Horry",
+      C: "Shaquille O'Neal",
+    },
+    overall: 96.6,
+    ratings: {
+      scoring: 95,
+      shooting: 74,
+      playmaking: 82,
+      rebounding: 93,
+      defense: 90,
+    },
+    achievements: {
+      record: "56-26",
+      result: "NBA Champions",
+      playoffs: "15-1",
+    },
+    archetype: "Paint Control Unit",
+    description:
+      "A title lineup built around Shaq's paint dominance, Kobe's shot creation, and role players who spaced and defended around them.",
+    strengths: ["Paint dominance", "Star scoring", "Playoff physicality"],
+    weaknesses: ["Three-point volume", "Secondary creation"],
+  },
+
+  "2013 Heat": {
+    players: {
+      PG: "Mario Chalmers",
+      SG: "Dwyane Wade",
+      SF: "LeBron James",
+      PF: "Chris Bosh",
+      C: "Udonis Haslem",
+    },
+    overall: 95.8,
+    ratings: {
+      scoring: 94,
+      shooting: 86,
+      playmaking: 91,
+      rebounding: 82,
+      defense: 88,
+    },
+    achievements: {
+      record: "66-16",
+      result: "NBA Champions",
+      playoffs: "16-7",
+    },
+    archetype: "Transition Attack",
+    description:
+      "A pressure-heavy championship lineup built around LeBron and Wade attacking in transition with Bosh stretching defensive coverage.",
+    strengths: ["Transition pressure", "Star creation", "Speed"],
+    weaknesses: ["Traditional size", "Interior rebounding"],
   },
 } satisfies Record<string, LineupDetail>;

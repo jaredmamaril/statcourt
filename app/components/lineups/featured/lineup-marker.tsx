@@ -1,8 +1,9 @@
-import { players, type Player } from "../../court-data";
+import type { Player } from "../../court-data";
 import PlayerImage from "../../player-image";
 import { getPlayerHeadshot } from "../../player-images";
 
 type LineupMarkerProps = {
+  players: Player[];
   player?: Player;
   position: string;
   name: string;
@@ -18,6 +19,7 @@ type LineupMarkerProps = {
 };
 
 export function LineupMarker({
+  players,
   player: providedPlayer,
   position,
   name,
