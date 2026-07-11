@@ -49,12 +49,14 @@ import { DeleteLineupModal } from "../components/lineups/saved/delete-lineup-mod
 import { LineupDeletedModal } from "../components/lineups/saved/lineup-deleted-modal";
 import { LineupSavedModal } from "../components/lineups/saved/lineup-saved-modal";
 import { RenameLineupModal } from "../components/lineups/saved/rename-lineup-modal";
+import { OverwriteLineupModal } from "../components/lineups/saved/overwrite-lineup-modal";
 import { SavedLineupsEmptyState } from "../components/lineups/saved/saved-lineups-empty-state";
 import {
   createSavedLineup,
   createSavedLineupInput,
 } from "../components/lineups/saved/create-saved-lineup";
 import {
+  getLineupNameConflict,
   getLineupsAfterDelete,
   getLineupsAfterRename,
 } from "../components/lineups/saved/saved-lineup-list-helpers";
@@ -78,6 +80,19 @@ const statProfileLabels: Record<PlayerStatProfileMode | "all", string> = {
   peak: "3-Year Peak",
   current: "Latest Season",
 };
+
+type OverwriteLineupRequest =
+  | {
+      type: "save";
+      existingLineup: SavedLineup;
+      nextName: string;
+    }
+  | {
+      type: "rename";
+      existingLineup: SavedLineup;
+      lineupId: string;
+      nextName: string;
+    };
 
 export default function Lineups() {
   // Refs and routing
@@ -162,6 +177,8 @@ export default function Lineups() {
   const [lineupPendingRename, setLineupPendingRename] =
     useState<SavedLineup | null>(null);
   const [renameLineupInput, setRenameLineupInput] = useState("");
+  const [lineupPendingOverwrite, setLineupPendingOverwrite] =
+    useState<OverwriteLineupRequest | null>(null);
   const [isLineupSavedOpen, setIsLineupSavedOpen] = useState(false);
   const [scoutedSavedLineup, setScoutedSavedLineup] =
     useState<SavedLineup | null>(null);
@@ -369,11 +386,13 @@ export default function Lineups() {
   }
 
   // Saved lineup actions
-  function saveLineup(lineupName: string) {
+  function saveLineup(lineupName: string, overwriteLineupId?: string) {
     if (!builderLineupRating) return;
 
+    const nextLineupName = lineupName.trim() || `Lineup ${savedLineups.length + 1}`;
+
     const newLineupInput = createSavedLineupInput({
-      name: lineupName.trim() || `Lineup ${savedLineups.length + 1}`,
+      name: nextLineupName,
       statProfile: builderStatProfile,
       players: customLineup,
       overall: scoutReport.scores.overall,
@@ -398,9 +417,34 @@ export default function Lineups() {
 
     const newLineup = createSavedLineup(newLineupInput);
 
-    const nextLineups = [newLineup, ...savedLineups];
+    const nextLineups = [
+      newLineup,
+      ...savedLineups.filter((lineup) => lineup.id !== overwriteLineupId),
+    ];
 
     updateSavedLineups(nextLineups);
+  }
+
+  function requestSaveLineup(lineupName: string) {
+    const nextLineupName = lineupName.trim() || `Lineup ${savedLineups.length + 1}`;
+    const existingLineup = getLineupNameConflict(
+      savedLineups,
+      nextLineupName,
+    );
+
+    if (existingLineup) {
+      setLineupPendingOverwrite({
+        type: "save",
+        existingLineup,
+        nextName: nextLineupName,
+      });
+      return;
+    }
+
+    saveLineup(nextLineupName);
+    setIsNamingLineup(false);
+    setIsScoutOpen(false);
+    setIsLineupSavedOpen(true);
   }
 
   function deleteSavedLineup(lineupId: string, onDeleted?: () => void) {
@@ -416,6 +460,56 @@ export default function Lineups() {
         getLineupsAfterRename(savedLineups, lineupId, newName),
       );
     });
+  }
+
+  function requestRenameSavedLineup(lineupId: string, newName: string) {
+    const lineupToRename = savedLineups.find((lineup) => lineup.id === lineupId);
+    const nextLineupName = newName.trim() || lineupToRename?.name;
+
+    if (!nextLineupName) return;
+
+    const existingLineup = getLineupNameConflict(
+      savedLineups,
+      nextLineupName,
+      lineupId,
+    );
+
+    if (existingLineup) {
+      setLineupPendingOverwrite({
+        type: "rename",
+        existingLineup,
+        lineupId,
+        nextName: nextLineupName,
+      });
+      return;
+    }
+
+    renameSavedLineup(lineupId, nextLineupName);
+    setLineupPendingRename(null);
+    setRenameLineupInput("");
+  }
+
+  function confirmLineupOverwrite() {
+    if (!lineupPendingOverwrite) return;
+
+    if (lineupPendingOverwrite.type === "save") {
+      saveLineup(
+        lineupPendingOverwrite.nextName,
+        lineupPendingOverwrite.existingLineup.id,
+      );
+      setIsNamingLineup(false);
+      setIsScoutOpen(false);
+      setIsLineupSavedOpen(true);
+    } else {
+      renameSavedLineup(
+        lineupPendingOverwrite.lineupId,
+        lineupPendingOverwrite.nextName,
+      );
+      setLineupPendingRename(null);
+      setRenameLineupInput("");
+    }
+
+    setLineupPendingOverwrite(null);
   }
 
   function applySavedLineupPlayers(lineup: SavedLineup) {
@@ -669,10 +763,7 @@ export default function Lineups() {
           onChangeName={setLineupNameInput}
           onCancel={() => setIsNamingLineup(false)}
           onSave={() => {
-            saveLineup(lineupNameInput);
-            setIsNamingLineup(false);
-            setIsScoutOpen(false);
-            setIsLineupSavedOpen(true);
+            requestSaveLineup(lineupNameInput);
           }}
         />
       )}
@@ -708,10 +799,22 @@ export default function Lineups() {
             setRenameLineupInput("");
           }}
           onSave={() => {
-            renameSavedLineup(lineupPendingRename.id, renameLineupInput);
-            setLineupPendingRename(null);
-            setRenameLineupInput("");
+            requestRenameSavedLineup(lineupPendingRename.id, renameLineupInput);
           }}
+        />
+      )}
+
+      {lineupPendingOverwrite && (
+        <OverwriteLineupModal
+          existingLineup={lineupPendingOverwrite.existingLineup}
+          nextName={lineupPendingOverwrite.nextName}
+          actionLabel={
+            lineupPendingOverwrite.type === "save"
+              ? "Overwrite Save"
+              : "Overwrite Name"
+          }
+          onCancel={() => setLineupPendingOverwrite(null)}
+          onConfirm={confirmLineupOverwrite}
         />
       )}
 

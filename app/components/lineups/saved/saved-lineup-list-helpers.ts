@@ -7,17 +7,56 @@ export function getLineupsAfterDelete(
   return savedLineups.filter((lineup) => lineup.id !== lineupId);
 }
 
+function normalizeLineupName(lineupName: string) {
+  return lineupName.trim().toLowerCase();
+}
+
+export function getLineupNameConflict(
+  savedLineups: SavedLineup[],
+  lineupName: string,
+  ignoredLineupId?: string,
+) {
+  const normalizedLineupName = normalizeLineupName(lineupName);
+
+  if (!normalizedLineupName) {
+    return null;
+  }
+
+  return (
+    savedLineups.find(
+      (lineup) =>
+        lineup.id !== ignoredLineupId &&
+        normalizeLineupName(lineup.name) === normalizedLineupName,
+    ) ?? null
+  );
+}
+
 export function getLineupsAfterRename(
   savedLineups: SavedLineup[],
   lineupId: string,
   newName: string,
 ) {
-  return savedLineups.map((lineup) =>
-    lineup.id === lineupId
-      ? {
-          ...lineup,
-          name: newName.trim() || lineup.name,
-        }
-      : lineup,
-  );
+  const lineupToRename = savedLineups.find((lineup) => lineup.id === lineupId);
+
+  if (!lineupToRename) {
+    return savedLineups;
+  }
+
+  const nextName = newName.trim() || lineupToRename.name;
+  const normalizedNextName = normalizeLineupName(nextName);
+
+  return savedLineups
+    .filter(
+      (lineup) =>
+        lineup.id === lineupId ||
+        normalizeLineupName(lineup.name) !== normalizedNextName,
+    )
+    .map((lineup) =>
+      lineup.id === lineupId
+        ? {
+            ...lineup,
+            name: nextName,
+          }
+        : lineup,
+    );
 }
