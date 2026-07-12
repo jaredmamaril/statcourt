@@ -51,26 +51,36 @@ export function BuilderPlayerPicker({
       </div>
 
       <div className="statcourt-scroll max-h-50 overflow-y-auto pr-1 lg:max-h-100 lg:pr-2">
-        <div className="grid grid-cols-[repeat(2,75px)] justify-center gap-1.5 lg:grid-cols-3 lg:justify-stretch lg:gap-2">
-          {displayedBuildPlayers.map((player) => {
+        <div
+          key={`${activeBuildPosition}-${builderStatProfile}`}
+          className="grid grid-cols-[repeat(2,75px)] justify-center gap-1.5 lg:grid-cols-3 lg:justify-stretch lg:gap-2"
+        >
+          {displayedBuildPlayers.map((player, index) => {
             const isSelected =
               customLineup[activeBuildPosition] === player.name;
 
             return (
-              <BuilderPlayerCard
+              <div
                 key={player.id}
-                player={player}
-                activeBuildPosition={activeBuildPosition}
-                builderStatProfile={builderStatProfile}
-                isSelected={isSelected}
-                isScoutOpen={openScoutPlayerId === player.id}
-                onToggleScout={() => {
-                  setOpenScoutPlayerId((currentPlayerId) =>
-                    currentPlayerId === player.id ? null : player.id,
-                  );
+                className="animate-[playerListRowIn_160ms_ease-out_both]"
+                style={{
+                  animationDelay: `${Math.min(index, 14) * 24}ms`,
                 }}
-                onPickPlayer={pickPlayer}
-              />
+              >
+                <BuilderPlayerCard
+                  player={player}
+                  activeBuildPosition={activeBuildPosition}
+                  builderStatProfile={builderStatProfile}
+                  isSelected={isSelected}
+                  isScoutOpen={openScoutPlayerId === player.id}
+                  onToggleScout={() => {
+                    setOpenScoutPlayerId((currentPlayerId) =>
+                      currentPlayerId === player.id ? null : player.id,
+                    );
+                  }}
+                  onPickPlayer={pickPlayer}
+                />
+              </div>
             );
           })}
         </div>

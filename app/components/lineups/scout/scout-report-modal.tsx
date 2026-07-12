@@ -7,6 +7,7 @@ import { ScoutTraitsGrid } from "./scout-traits-grid";
 import { ScoutBottomSummary } from "./scout-bottom-summary";
 import { ScoutReportHeader } from "./scout-report-header";
 import { ScoutReportSaveButton } from "./scout-report-save-button";
+import { useAnimatedScoutOverall } from "./use-animated-scout-overall";
 
 type ScoutReportModalProps = {
   players: Player[];
@@ -16,7 +17,7 @@ type ScoutReportModalProps = {
   scoutArchetypeColor: string;
   scoutSummary: string;
   statProfileLabel: string;
-  animatedScoutOverall: number;
+  displayedScoutOverall: number;
   lineupTier: string;
   scoutTierColor: string;
   lineupBadges: string[];
@@ -46,7 +47,7 @@ export function ScoutReportModal({
   scoutArchetypeColor,
   scoutSummary,
   statProfileLabel,
-  animatedScoutOverall,
+  displayedScoutOverall,
   lineupTier,
   scoutTierColor,
   lineupBadges,
@@ -67,13 +68,17 @@ export function ScoutReportModal({
   onClose,
   onSaveLineup,
 }: ScoutReportModalProps) {
+  const animatedScoutOverall = useAnimatedScoutOverall(
+    true,
+    displayedScoutOverall,
+  );
+
   return (
     <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 px-2 lg:px-4">
       <div
         className="relative w-full max-w-85 animate-[modalIn_260ms_ease-out] rounded-md border bg-[#07111f] lg:max-w-xl"
         style={{
           borderColor: `${scoutArchetypeColor}99`,
-          boxShadow: `0 0 35px ${scoutArchetypeColor}40`,
         }}
       >
         <div className="relative max-h-[78vh] overflow-y-auto p-3 scrollbar-none lg:max-h-[68vh] lg:p-5 [&::-webkit-scrollbar]:hidden">

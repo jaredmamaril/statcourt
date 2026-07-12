@@ -36,17 +36,22 @@ export function PlayerList({
           </p>
         ) : (
           <>
-            {players.map((player) => (
-              <PlayerListRow
+            {players.map((player, index) => (
+              <div
                 key={player.id}
-                player={player}
-                isSelected={player.name === currentPlayer}
-                isFavorite={favorites.includes(player.name)}
-                sortBy={sortBy}
-                selectedSkill={selectedSkill}
-                onToggleFavorite={onToggleFavorite}
-                onSelectPlayer={onSelectPlayer}
-              />
+                style={{ animationDelay: `${Math.min(index, 12) * 12}ms` }}
+                className="animate-[playerListRowIn_180ms_ease-out_both]"
+              >
+                <PlayerListRow
+                  player={player}
+                  isSelected={player.name === currentPlayer}
+                  isFavorite={favorites.includes(player.name)}
+                  sortBy={sortBy}
+                  selectedSkill={selectedSkill}
+                  onToggleFavorite={onToggleFavorite}
+                  onSelectPlayer={onSelectPlayer}
+                />
+              </div>
             ))}
 
             {players.length < totalPlayersCount && (

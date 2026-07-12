@@ -16,6 +16,7 @@ const statProfileLabels = {
 
 type SavedLineupCardProps = {
   lineup: SavedLineup;
+  index: number;
   isLoadingPlayers: boolean;
   onLoad: (lineup: SavedLineup) => void;
   onScout: (lineup: SavedLineup) => void;
@@ -25,6 +26,7 @@ type SavedLineupCardProps = {
 
 export function SavedLineupCard({
   lineup,
+  index,
   isLoadingPlayers,
   onLoad,
   onScout,
@@ -38,9 +40,10 @@ export function SavedLineupCard({
 
   return (
     <div
-      className="group rounded-md border border-white/10 bg-black/25 p-2 transition-all duration-200 hover:-translate-y-1 lg:p-4"
+      className="group animate-[playerListRowIn_180ms_ease-out_both] rounded-md border border-white/10 bg-black/25 p-2 transition-all duration-200 hover:-translate-y-1 lg:p-4"
       style={{
         borderColor: `${archetypeColor}33`,
+        animationDelay: `${Math.min(index, 10) * 35}ms`,
       }}
     >
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 lg:flex lg:justify-between lg:gap-4">

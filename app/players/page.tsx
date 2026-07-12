@@ -55,12 +55,21 @@ import type {
 import {
   Suspense,
   useCallback,
+  useDeferredValue,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+
+const archetypeRarityRank = {
+  gold: 5,
+  purple: 4,
+  blue: 3,
+  gray: 2,
+  red: 1,
+};
 
 export default function PlayersPage() {
   return (
@@ -108,6 +117,7 @@ function Players() {
   );
   const [featuredPlayerIndex, setFeaturedPlayerIndex] = useState(0);
   const [isDesktop, setIsDesktop] = useState(false);
+  const deferredPlayerSearch = useDeferredValue(playerSearch);
 
   // Auth
   const [authPromptMessage, setAuthPromptMessage] = useState("");
@@ -127,60 +137,92 @@ function Players() {
         ? "Latest Season"
         : "Career";
 
-  const playerInsights = selectedPlayer
-    ? getPlayerInsights(selectedPlayer, selectedStatMode)
-    : null;
-
-  const similarPlayers = selectedPlayer
-    ? getSimilarPlayers(selectedPlayer, players, 3, selectedStatMode)
-    : [];
-
-  const bestLineupFits = selectedPlayer
-    ? getBestLineupFits(selectedPlayer, selectedStatMode)
-    : [];
-
-  const rarityRank = {
-    gold: 5,
-    purple: 4,
-    blue: 3,
-    gray: 2,
-    red: 1,
-  };
-
-  const archetypeOptions = Array.from(
-    new Map(
-      players
-        .map((player) => getPlayerInsights(player, selectedStatMode).archetype)
-        .filter((archetype) => archetype !== null)
-        .map((archetype) => [archetype.label, archetype]),
-    ).values(),
-  ).sort(
-    (a, b) =>
-      rarityRank[b.rarity] - rarityRank[a.rarity] ||
-      a.label.localeCompare(b.label),
+  const playerInsights = useMemo(
+    () =>
+      selectedPlayer
+        ? getPlayerInsights(selectedPlayer, selectedStatMode)
+        : null,
+    [selectedPlayer, selectedStatMode],
   );
 
-  const hasUnclassifiedPlayers = players.some(
-    (player) => getPlayerInsights(player, selectedStatMode).archetype === null,
+  const similarPlayers = useMemo(
+    () =>
+      selectedPlayer
+        ? getSimilarPlayers(selectedPlayer, players, 3, selectedStatMode)
+        : [],
+    [selectedPlayer, players, selectedStatMode],
   );
 
-  const teamOptions = Array.from(
-    new Set(players.map((player) => normalizeTeamCode(player.team))),
-  ).sort();
+  const bestLineupFits = useMemo(
+    () =>
+      selectedPlayer ? getBestLineupFits(selectedPlayer, selectedStatMode) : [],
+    [selectedPlayer, selectedStatMode],
+  );
+
+  const archetypeOptions = useMemo(
+    () =>
+      Array.from(
+        new Map(
+          players
+            .map(
+              (player) => getPlayerInsights(player, selectedStatMode).archetype,
+            )
+            .filter((archetype) => archetype !== null)
+            .map((archetype) => [archetype.label, archetype]),
+        ).values(),
+      ).sort(
+        (a, b) =>
+          archetypeRarityRank[b.rarity] - archetypeRarityRank[a.rarity] ||
+          a.label.localeCompare(b.label),
+      ),
+    [players, selectedStatMode],
+  );
+
+  const hasUnclassifiedPlayers = useMemo(
+    () =>
+      players.some(
+        (player) =>
+          getPlayerInsights(player, selectedStatMode).archetype === null,
+      ),
+    [players, selectedStatMode],
+  );
+
+  const teamOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(players.map((player) => normalizeTeamCode(player.team))),
+      ).sort(),
+    [players],
+  );
 
   // Filtered list data
-  const filteredPlayers = getFilteredPlayers({
-    players,
-    playerSearch,
-    favorites,
-    showFavorites,
-    filteredTeam,
-    filteredPosition,
-    filteredArchetype,
-    sortBy,
-    sortDirection,
-    selectedRatingView,
-  });
+  const filteredPlayers = useMemo(
+    () =>
+      getFilteredPlayers({
+        players,
+        playerSearch: deferredPlayerSearch,
+        favorites,
+        showFavorites,
+        filteredTeam,
+        filteredPosition,
+        filteredArchetype,
+        sortBy,
+        sortDirection,
+        selectedRatingView,
+      }),
+    [
+      players,
+      deferredPlayerSearch,
+      favorites,
+      showFavorites,
+      filteredTeam,
+      filteredPosition,
+      filteredArchetype,
+      sortBy,
+      sortDirection,
+      selectedRatingView,
+    ],
+  );
 
   const visiblePlayers = filteredPlayers.slice(0, 100);
 
@@ -194,11 +236,14 @@ function Players() {
   );
 
   // Database snapshot data
-  const positionBreakdown = getPositionBreakdown(players);
+  const positionBreakdown = useMemo(
+    () => getPositionBreakdown(players),
+    [players],
+  );
 
-  const topArchetypeDistribution = getTopArchetypeDistribution(
-    players,
-    selectedStatMode,
+  const topArchetypeDistribution = useMemo(
+    () => getTopArchetypeDistribution(players, selectedStatMode),
+    [players, selectedStatMode],
   );
 
   const {
@@ -206,7 +251,7 @@ function Players() {
     mostVersatilePlayer,
     bestShooter,
     bestPlaymaker,
-  } = getPlayerDatabaseLeaders(players);
+  } = useMemo(() => getPlayerDatabaseLeaders(players), [players]);
 
   // Effects
   useEffect(() => {
@@ -640,7 +685,11 @@ function Players() {
 
           <div className="flex w-full items-start justify-center">
             {selectedPlayer && (
-              <div ref={playerCardRef} className="w-full max-w-85 sm:max-w-md">
+              <div
+                key={selectedPlayer.id}
+                ref={playerCardRef}
+                className="w-full max-w-85 sm:max-w-md"
+              >
                 <SelectedPlayerCard
                   player={selectedPlayer}
                   statMode={selectedStatMode}

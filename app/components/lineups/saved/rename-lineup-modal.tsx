@@ -16,8 +16,8 @@ export function RenameLineupModal({
   onSave,
 }: RenameLineupModalProps) {
   return (
-    <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/70 px-3">
-      <div className="w-full max-w-75 rounded-md border border-[#1bc2ec]/50 bg-[#07111f] p-4 lg:max-w-md lg:p-6">
+    <div className="fixed inset-0 z-1000 flex animate-[modalBackdropIn_160ms_ease-out_both] items-center justify-center bg-black/70 px-3">
+      <div className="w-full max-w-75 animate-[modalIn_180ms_ease-out_both] rounded-md border border-[#1bc2ec]/50 bg-[#07111f] p-4 lg:max-w-md lg:p-6">
         <p className="font-michroma text-sm text-white lg:text-lg">
           Rename Lineup
         </p>

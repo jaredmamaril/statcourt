@@ -179,7 +179,10 @@ export function CourtMatchupSummary({
           : `${leftPlayer.name} and ${rightPlayer.name} split the matchup evenly, creating a balanced scouting comparison.`;
 
   return (
-    <div className="mx-auto mt-4 w-full max-w-5xl rounded-lg border border-[#1bc2ec]/25 bg-[#06131d]/88 p-4 shadow-[0_0_20px_rgba(27,194,236,0.12)] sm:mt-5 sm:p-5">
+    <div
+      key={`${leftPlayer.id}-${rightPlayer.id}-${statMode}`}
+      className="mx-auto mt-4 w-full max-w-5xl rounded-lg border border-[#1bc2ec]/25 bg-[#06131d]/88 p-4 shadow-[0_0_20px_rgba(27,194,236,0.12)] animate-[courtSummaryReveal_320ms_ease-out_both] sm:mt-5 sm:p-5"
+    >
       <div className="mb-3 flex items-start justify-between gap-3">
         <p className="font-michroma text-[9px] uppercase tracking-wide text-[#1bc2ec] sm:text-[10px]">
           Matchup Summary

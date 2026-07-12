@@ -50,7 +50,7 @@ export function SavedLineupsSection({
   onDeleteLineup,
 }: SavedLineupsSectionProps) {
   return (
-    <section className="min-h-[calc(100svh-120px)] lg:min-h-[calc(100vh-140px)]">
+    <section className="min-h-[calc(100svh-120px)] animate-[pageEnter_220ms_ease-out_both] lg:min-h-[calc(100vh-140px)]">
       {savedLineups.length === 0 ? (
         <SavedLineupsEmptyState
           onBuildLineup={() => {
@@ -87,10 +87,11 @@ export function SavedLineupsSection({
             </p>
           ) : (
             <div className="mt-2 grid grid-cols-2 gap-2 lg:grid-cols-3 lg:gap-4">
-              {filteredSavedLineups.map((lineup) => (
+              {filteredSavedLineups.map((lineup, index) => (
                 <SavedLineupCard
                   key={lineup.id}
                   lineup={lineup}
+                  index={index}
                   isLoadingPlayers={isLoadingPlayers}
                   onLoad={onLoadLineup}
                   onScout={onScoutLineup}

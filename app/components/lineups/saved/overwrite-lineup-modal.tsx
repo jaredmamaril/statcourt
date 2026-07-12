@@ -16,8 +16,8 @@ export function OverwriteLineupModal({
   onConfirm,
 }: OverwriteLineupModalProps) {
   return (
-    <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/70 px-3">
-      <div className="w-full max-w-75 rounded-md border border-[#f4bb44]/50 bg-[#07111f] p-4 text-center shadow-[0_0_35px_rgba(244,187,68,0.18)] lg:max-w-md lg:p-6">
+    <div className="fixed inset-0 z-1000 flex animate-[modalBackdropIn_160ms_ease-out_both] items-center justify-center bg-black/70 px-3">
+      <div className="w-full max-w-75 animate-[modalIn_180ms_ease-out_both] rounded-md border border-[#f4bb44]/50 bg-[#07111f] p-4 text-center shadow-[0_0_35px_rgba(244,187,68,0.18)] lg:max-w-md lg:p-6">
         <p className="font-michroma text-sm text-white lg:text-lg">
           Overwrite Lineup?
         </p>

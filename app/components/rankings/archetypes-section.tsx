@@ -72,7 +72,7 @@ export function ArchetypesSection({
         <button
           type="button"
           onClick={onToggleArchetypeSort}
-          className="flex h-6 cursor-pointer items-center rounded-md border border-white/20 bg-black/30 px-2 font-michroma text-[9px] text-white/70 transition hover:border-[#1bc2ec]/60 lg:h-auto lg:px-3 lg:py-1 lg:text-xs"
+          className="flex h-6 scale-[1.02] cursor-pointer items-center rounded-md border border-[#1bc2ec]/60 bg-[#1bc2ec]/10 px-2 font-michroma text-[9px] text-[#1bc2ec] ring-1 ring-[#1bc2ec]/30 transition hover:border-[#1bc2ec]/80 lg:h-auto lg:px-3 lg:py-1 lg:text-xs"
         >
           Sort: {archetypeSort === "rarity" ? "Rarity" : "A-Z"}
         </button>

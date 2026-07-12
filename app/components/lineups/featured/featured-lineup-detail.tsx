@@ -1,4 +1,4 @@
-import type { RefObject } from "react";
+import type { CSSProperties, RefObject } from "react";
 import type { Player } from "../../court-data";
 import type { LineupDetail } from "../shared/lineup-types";
 import type { LineupCategory, LineupName } from "./featured-lineups";
@@ -15,6 +15,7 @@ type FeaturedLineupDetailProps = {
   selectedLineupNames: LineupName[];
   selectedLineupAchievements: string[];
   selectedCategoryColor: string;
+  detailPulseKey: number;
   hoveredLineupPlayer: string;
   onSelectLineup: (lineupName: LineupName) => void;
   onHoverPlayer: (playerName: string) => void;
@@ -30,6 +31,7 @@ export function FeaturedLineupDetail({
   selectedLineupNames,
   selectedLineupAchievements,
   selectedCategoryColor,
+  detailPulseKey,
   hoveredLineupPlayer,
   onSelectLineup,
   onHoverPlayer,
@@ -38,7 +40,7 @@ export function FeaturedLineupDetail({
   return (
     <div
       ref={lineupSectionRef}
-      className="scroll-mt-24 mt-4 rounded-md border border-white/10 bg-black/25 p-2 lg:mt-8 lg:p-4"
+      className="scroll-mt-24 mt-4 animate-[pageEnter_220ms_ease-out_both] rounded-md border border-white/10 bg-black/25 p-2 lg:mt-8 lg:p-4"
     >
       <h2
         className="border-b pb-1.5 text-center font-michroma text-[10px] uppercase tracking-wide text-white lg:pb-3 lg:text-sm"
@@ -56,8 +58,14 @@ export function FeaturedLineupDetail({
         />
 
         <div
-          className="relative min-h-0 rounded-md border bg-black/30 p-2 lg:min-h-96 lg:p-5"
-          style={{ borderColor: `${selectedCategoryColor}55` }}
+          key={detailPulseKey}
+          className="relative min-h-0 animate-[playerListRowIn_220ms_ease-out_both] rounded-md border bg-black/30 p-2 outline outline-1 outline-transparent lg:min-h-96 lg:p-5"
+          style={{
+            borderColor: `${selectedCategoryColor}55`,
+            animation:
+              "playerListRowIn 220ms ease-out both, lineupDetailPulse 520ms ease-out 980ms both",
+            "--lineup-pulse-color": `${selectedCategoryColor}44`,
+          } as CSSProperties}
         >
           {selectedLineup ? (
             <div className="grid gap-3 lg:grid-cols-[1fr_1.2fr] lg:gap-6">

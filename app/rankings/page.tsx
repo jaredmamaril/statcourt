@@ -12,14 +12,9 @@ import {
   players as fallbackPlayers,
   getPlayerInsights,
 } from "../components/court-data";
-import type {
-  Player,
-  Team,
-  Position,
-  StatMode,
-} from "../components/court-data";
+import type { Team, Position, StatMode } from "../components/court-data";
 
-import { useEffect, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { getPlayersFromSupabaseWithFallback } from "../components/supabase-players";
@@ -66,6 +61,7 @@ export default function Rankings() {
   const [players, setPlayers] = useState(fallbackPlayers);
   const [isLoadingPlayers, setIsLoadingPlayers] = useState(true);
   const [playerLoadError, setPlayerLoadError] = useState("");
+  const deferredPlayerSearch = useDeferredValue(playerSearch);
   const statMode: StatMode = statProfileFilter;
 
   // Refs and routing
@@ -107,39 +103,53 @@ export default function Rankings() {
   }, []);
 
   // Archetype data
-  const archetypeOptions = Array.from(
-    new Set(
-      players
-        .map((player) => getPlayerInsights(player, statMode).archetype?.label)
-        .filter((label): label is string => Boolean(label)),
-    ),
-  ).sort();
+  const archetypeOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          players
+            .map(
+              (player) => getPlayerInsights(player, statMode).archetype?.label,
+            )
+            .filter((label): label is string => Boolean(label)),
+        ),
+      ).sort(),
+    [players, statMode],
+  );
 
-  const archetypeOptionDetails = archetypeOptions
-    .map((archetypeLabel) => {
-      const matchingPlayer = players.find(
-        (player) =>
-          getPlayerInsights(player, statMode).archetype?.label ===
-          archetypeLabel,
-      );
+  const archetypeOptionDetails = useMemo(
+    () =>
+      archetypeOptions
+        .map((archetypeLabel) => {
+          const matchingPlayer = players.find(
+            (player) =>
+              getPlayerInsights(player, statMode).archetype?.label ===
+              archetypeLabel,
+          );
 
-      return {
-        label: archetypeLabel,
-        archetype: matchingPlayer
-          ? getPlayerInsights(matchingPlayer, statMode).archetype
-          : null,
-      };
-    })
-    .sort((a, b) => {
-      if (archetypeSort === "name") {
-        return a.label.localeCompare(b.label);
-      }
+          return {
+            label: archetypeLabel,
+            archetype: matchingPlayer
+              ? getPlayerInsights(matchingPlayer, statMode).archetype
+              : null,
+          };
+        })
+        .sort((a, b) => {
+          if (archetypeSort === "name") {
+            return a.label.localeCompare(b.label);
+          }
 
-      const aRank = a.archetype ? archetypeRarityRank[a.archetype.rarity] : 99;
-      const bRank = b.archetype ? archetypeRarityRank[b.archetype.rarity] : 99;
+          const aRank = a.archetype
+            ? archetypeRarityRank[a.archetype.rarity]
+            : 99;
+          const bRank = b.archetype
+            ? archetypeRarityRank[b.archetype.rarity]
+            : 99;
 
-      return aRank - bRank || a.label.localeCompare(b.label);
-    });
+          return aRank - bRank || a.label.localeCompare(b.label);
+        }),
+    [archetypeOptions, archetypeSort, players, statMode],
+  );
 
   const selectedArchetypeOption = archetypeOptionDetails.find(
     (option) => option.label === archetypeFilter,
@@ -149,19 +159,23 @@ export default function Rankings() {
     ? getArchetypePillStyle(selectedArchetypeOption.archetype).color
     : undefined;
 
-  const selectedArchetypePlayers = archetypeFilter
-    ? players
-        .filter(
-          (player) =>
-            getPlayerInsights(player, statMode).archetype?.label ===
-            archetypeFilter,
-        )
-        .sort(
-          (a, b) =>
-            getPlayerRating(b, "careerOverall", statProfileFilter) -
-            getPlayerRating(a, "careerOverall", statProfileFilter),
-        )
-    : [];
+  const selectedArchetypePlayers = useMemo(
+    () =>
+      archetypeFilter
+        ? players
+            .filter(
+              (player) =>
+                getPlayerInsights(player, statMode).archetype?.label ===
+                archetypeFilter,
+            )
+            .sort(
+              (a, b) =>
+                getPlayerRating(b, "careerOverall", statProfileFilter) -
+                getPlayerRating(a, "careerOverall", statProfileFilter),
+            )
+        : [],
+    [archetypeFilter, players, statMode, statProfileFilter],
+  );
 
   const selectedArchetypeInfo =
     archetypeFilter in archetypeInfoByLabel
@@ -187,45 +201,64 @@ export default function Rankings() {
         ? overallCategoryByProfile[statProfileFilter]
         : activeTab;
 
-  function shouldShowPlayerInRanking(player: Player) {
-    const rating = getPlayerRating(player, ratingCategory, statProfileFilter);
+  const filteredPlayers = useMemo(
+    () =>
+      players.filter((player) => {
+        const archetype = getPlayerInsights(player, statMode).archetype;
 
-    if (ratingCategory === "shooting" || ratingCategory === "efficiency") {
-      return rating > 0;
-    }
+        const matchesSearch = player.name
+          .toLowerCase()
+          .includes(deferredPlayerSearch.toLowerCase());
 
-    return true;
-  }
+        const matchesPosition = positionFilter
+          ? player.position === positionFilter
+          : true;
 
-  const filteredPlayers = players.filter((player) => {
-    const archetype = getPlayerInsights(player, statMode).archetype;
+        const matchesTeam = teamFilter ? player.team === teamFilter : true;
 
-    const matchesSearch = player.name
-      .toLowerCase()
-      .includes(playerSearch.toLowerCase());
+        const matchesArchetype = archetypeFilter
+          ? archetype?.label === archetypeFilter
+          : true;
 
-    const matchesPosition = positionFilter
-      ? player.position === positionFilter
-      : true;
+        return (
+          matchesSearch && matchesPosition && matchesTeam && matchesArchetype
+        );
+      }),
+    [
+      players,
+      statMode,
+      deferredPlayerSearch,
+      positionFilter,
+      teamFilter,
+      archetypeFilter,
+    ],
+  );
 
-    const matchesTeam = teamFilter ? player.team === teamFilter : true;
+  const rankedPlayers = useMemo(
+    () =>
+      filteredPlayers
+        .filter((player) => {
+          const rating = getPlayerRating(
+            player,
+            ratingCategory,
+            statProfileFilter,
+          );
 
-    const matchesArchetype = archetypeFilter
-      ? archetype?.label === archetypeFilter
-      : true;
+          if (ratingCategory === "shooting" || ratingCategory === "efficiency") {
+            return rating > 0;
+          }
 
-    return matchesSearch && matchesPosition && matchesTeam && matchesArchetype;
-  });
+          return true;
+        })
+        .sort(
+          (a, b) =>
+            getPlayerRating(b, ratingCategory, statProfileFilter) -
+            getPlayerRating(a, ratingCategory, statProfileFilter),
+        ),
+    [filteredPlayers, ratingCategory, statProfileFilter],
+  );
 
-  const rankedPlayers = filteredPlayers
-    .filter(shouldShowPlayerInRanking)
-    .sort(
-      (a, b) =>
-        getPlayerRating(b, ratingCategory, statProfileFilter) -
-        getPlayerRating(a, ratingCategory, statProfileFilter),
-    );
-
-  const topThreePlayers = rankedPlayers.slice(0, 3);
+  const topThreePlayers = useMemo(() => rankedPlayers.slice(0, 3), [rankedPlayers]);
 
   const activeTabLabel =
     rankingTabs.find((tab) => tab.value === activeTab)?.label ?? "Overall";

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import type { LineupSlot, Player } from "../../court-data";
 import {
   EMPTY_LINEUP,
@@ -29,32 +29,48 @@ export function useLineupBuilder({
     useState<BuilderStatProfileMode>("career");
   const [playerRevealMode, setPlayerRevealMode] =
     useState<PlayerRevealMode>("instant");
+  const deferredBuildPlayerSearch = useDeferredValue(buildPlayerSearch);
 
-  const selectedCustomPlayerSlots = getSelectedCustomPlayerSlots(
-    players,
-    customLineup,
-    lineupPositions,
+  const selectedCustomPlayerSlots = useMemo(
+    () => getSelectedCustomPlayerSlots(players, customLineup, lineupPositions),
+    [players, customLineup, lineupPositions],
   );
 
-  const selectedCustomPlayers = selectedCustomPlayerSlots.map(
-    (slot) => slot.player,
+  const selectedCustomPlayers = useMemo(
+    () => selectedCustomPlayerSlots.map((slot) => slot.player),
+    [selectedCustomPlayerSlots],
   );
 
-  const builderLineupRating = getBuilderLineupAverageRating(
-    selectedCustomPlayerSlots,
-    builderStatProfile,
+  const builderLineupRating = useMemo(
+    () =>
+      getBuilderLineupAverageRating(
+        selectedCustomPlayerSlots,
+        builderStatProfile,
+      ),
+    [selectedCustomPlayerSlots, builderStatProfile],
   );
 
   const activePositionPlayerName = customLineup[activeBuildPosition];
 
-  const availableBuildPlayers = getAvailableBuildPlayers({
-    players,
-    buildPlayerSearch,
-    activeBuildPosition,
-    activePositionPlayerName,
-    selectedCustomPlayers,
-    statProfileMode: builderStatProfile,
-  });
+  const availableBuildPlayers = useMemo(
+    () =>
+      getAvailableBuildPlayers({
+        players,
+        buildPlayerSearch: deferredBuildPlayerSearch,
+        activeBuildPosition,
+        activePositionPlayerName,
+        selectedCustomPlayers,
+        statProfileMode: builderStatProfile,
+      }),
+    [
+      players,
+      deferredBuildPlayerSearch,
+      activeBuildPosition,
+      activePositionPlayerName,
+      selectedCustomPlayers,
+      builderStatProfile,
+    ],
+  );
 
   const selectedLineupCount = selectedCustomPlayers.length;
 

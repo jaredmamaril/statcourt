@@ -78,7 +78,7 @@ export function PlayerFilters({
         onClick={onToggleFavorites}
         className={`flex h-6 cursor-pointer items-center gap-1 rounded-md border px-2 font-michroma text-[10px] transition-all duration-200 sm:h-auto sm:gap-1.5 sm:py-1 sm:text-xs ${
           showFavorites
-            ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]/90"
+            ? "scale-[1.02] border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]/90 ring-1 ring-[#1bc2ec]/30"
             : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
         }`}
       >

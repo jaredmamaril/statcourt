@@ -26,7 +26,7 @@ export function CourtPlayerPickerModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/75 px-3 pt-12 pb-4 sm:items-center sm:py-4">
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/75 px-3 pt-12 pb-4 animate-[modalBackdropIn_160ms_ease-out_both] sm:items-center sm:py-4">
       <button
         type="button"
         aria-label="Close player picker"
@@ -34,7 +34,7 @@ export function CourtPlayerPickerModal({
         className="absolute inset-0 cursor-default"
       />
 
-      <div className="relative z-10 flex max-h-[90vh] w-full max-w-4xl flex-col rounded-xl border border-[#1bc2ec]/35 bg-[#06131d]/95 p-4 shadow-[0_0_44px_rgba(27,194,236,0.22)] sm:p-5">
+      <div className="relative z-10 flex max-h-[90vh] w-full max-w-4xl flex-col rounded-xl border border-[#1bc2ec]/35 bg-[#06131d]/95 p-4 shadow-[0_0_44px_rgba(27,194,236,0.22)] animate-[courtPickerModalIn_180ms_ease-out_both] sm:p-5">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="font-michroma text-[8px] uppercase tracking-wide text-[#1bc2ec] sm:text-[9px]">

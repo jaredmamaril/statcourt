@@ -31,10 +31,10 @@ export function CourtComparisonHeader({
             key={option.value}
             type="button"
             onClick={() => onStatModeChange(option.value)}
-            className={`rounded px-2 py-0.5 font-michroma text-[6px] uppercase tracking-wide transition sm:px-2.5 sm:py-1 sm:text-[7px] ${
+            className={`rounded border px-2 py-0.5 font-michroma text-[6px] uppercase tracking-wide transition-all duration-200 sm:px-2.5 sm:py-1 sm:text-[7px] ${
               isActive
-                ? "bg-[#1bc2ec]/20 text-[#1bc2ec] shadow-[0_0_10px_rgba(27,194,236,0.16)]"
-                : "text-white/35 hover:bg-white/5 hover:text-white/70"
+                ? "scale-[1.04] border-[#1bc2ec]/55 bg-[#1bc2ec]/22 text-[#1bc2ec] shadow-[0_0_14px_rgba(27,194,236,0.28)]"
+                : "border-transparent text-white/35 hover:bg-white/5 hover:text-white/70"
             }`}
           >
             {option.label}

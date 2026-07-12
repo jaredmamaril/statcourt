@@ -47,7 +47,9 @@ export function ArchetypePlayerList({
             return (
               <div
                 key={player.id}
-                className="group relative grid w-full grid-cols-[28px_34px_minmax(0,1fr)_42px] items-center rounded-md border border-white/10 bg-black/30 px-2 py-1.5 transition-all duration-200 hover:border-[#1bc2ec]/50 hover:bg-[#1bc2ec]/10 lg:grid-cols-[48px_48px_1fr_72px] lg:px-4 lg:py-3"
+                tabIndex={0}
+                style={{ animationDelay: `${Math.min(index, 12) * 12}ms` }}
+                className="group relative grid w-full grid-cols-[28px_34px_minmax(0,1fr)_42px] items-center rounded-md border border-white/10 bg-black/30 px-2 py-1.5 transition-all duration-200 animate-[playerListRowIn_180ms_ease-out_both] outline-none hover:z-[200] hover:border-[#1bc2ec]/50 hover:bg-[#1bc2ec]/10 focus:z-[200] focus:border-[#1bc2ec]/50 focus:bg-[#1bc2ec]/10 lg:grid-cols-[48px_48px_1fr_72px] lg:px-4 lg:py-3"
               >
                 <span className="font-michroma text-[9px] font-bold text-[#1bc2ec] lg:text-xs">
                   #{index + 1}
@@ -84,6 +86,7 @@ export function ArchetypePlayerList({
                   player={player}
                   ratingLabel="Overall Rating"
                   rating={rating}
+                  statProfileFilter={statProfileFilter}
                   onViewPlayer={onViewPlayer}
                 />
               </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthPrompt } from "../components/auth/auth-prompt";
 import { mockUser as user } from "../lib/mock-auth";
@@ -65,11 +65,11 @@ import { LoadingLineupModal } from "../components/lineups/scout/loading-lineup-m
 import { getScoutReportDisplay } from "../components/lineups/scout/scout-report-display";
 import { ScoutReportModal } from "../components/lineups/scout/scout-report-modal";
 import { runLineupLoadingSequence } from "../components/lineups/scout/run-lineup-loading-sequence";
-import { useAnimatedScoutOverall } from "../components/lineups/scout/use-animated-scout-overall";
 import {
   LOAD_LINEUP_EXIT_DURATION,
   LOAD_LINEUP_PROGRESS_INTERVAL,
   LOAD_LINEUP_TOTAL_DURATION,
+  SCOUT_LINEUP_PROGRESS_INTERVAL,
   loadLineupSteps,
   scoutLineupSteps,
 } from "../components/lineups/scout/lineup-loading-steps";
@@ -166,6 +166,7 @@ export default function Lineups() {
     "",
   );
   const [hoveredLineupPlayer, setHoveredLineupPlayer] = useState("");
+  const [lineupDetailPulseKey, setLineupDetailPulseKey] = useState(0);
 
   // Modal state
   const [isScoutOpen, setIsScoutOpen] = useState(false);
@@ -205,6 +206,7 @@ export default function Lineups() {
   const [openSavedDropdown, setOpenSavedDropdown] = useState<string | null>(
     null,
   );
+  const deferredSavedLineupSearch = useDeferredValue(savedLineupSearch);
 
   // Auth
   const [authPromptMessage, setAuthPromptMessage] = useState("");
@@ -243,6 +245,16 @@ export default function Lineups() {
     scoutedSavedLineup?.statProfile ?? builderStatProfile;
 
   // Scout report data
+  const scoutDisplay = useMemo(
+    () =>
+      getScoutReportDisplay({
+        selectedCustomPlayerSlots,
+        scoutedSavedLineup,
+        statProfileMode: scoutStatProfile,
+      }),
+    [selectedCustomPlayerSlots, scoutedSavedLineup, scoutStatProfile],
+  );
+
   const {
     scoutReport,
     lineupArchetype,
@@ -266,11 +278,7 @@ export default function Lineups() {
     scoutScores,
     scoutReason,
     lineupBadges,
-  } = getScoutReportDisplay({
-    selectedCustomPlayerSlots,
-    scoutedSavedLineup,
-    statProfileMode: scoutStatProfile,
-  });
+  } = scoutDisplay;
 
   // Featured lineup data
   const selectedCategoryColor = getLineupCategoryColor(selectedLineupCategory);
@@ -284,14 +292,25 @@ export default function Lineups() {
   const selectedLineupNames = getLineupNamesForCategory(selectedLineupCategory);
 
   // Saved lineup derived data
-  const filteredSavedLineups = getFilteredSavedLineups({
-    savedLineups,
-    savedLineupSearch,
-    savedLineupSort,
-    savedLineupProfileFilter,
-    savedLineupTierFilter,
-    savedLineupArchetypeFilter,
-  });
+  const filteredSavedLineups = useMemo(
+    () =>
+      getFilteredSavedLineups({
+        savedLineups,
+        savedLineupSearch: deferredSavedLineupSearch,
+        savedLineupSort,
+        savedLineupProfileFilter,
+        savedLineupTierFilter,
+        savedLineupArchetypeFilter,
+      }),
+    [
+      savedLineups,
+      deferredSavedLineupSearch,
+      savedLineupSort,
+      savedLineupProfileFilter,
+      savedLineupTierFilter,
+      savedLineupArchetypeFilter,
+    ],
+  );
 
   // Page display values
   const shouldShowTopText =
@@ -304,12 +323,33 @@ export default function Lineups() {
   // Scout report animation
   const displayedScoutOverall = scoutScores.overall;
 
-  const animatedScoutOverall = useAnimatedScoutOverall(
-    isScoutOpen,
-    displayedScoutOverall,
-  );
-
   // Page actions
+  function smoothScrollTo(targetTop: number, duration = 950) {
+    const startTop = window.scrollY;
+    const distance = targetTop - startTop;
+    const startTime = performance.now();
+
+    function easeInOutCubic(progress: number) {
+      return progress < 0.5
+        ? 4 * progress * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+    }
+
+    function step(currentTime: number) {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easedProgress = easeInOutCubic(progress);
+
+      window.scrollTo(0, startTop + distance * easedProgress);
+
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      }
+    }
+
+    requestAnimationFrame(step);
+  }
+
   function changeTab(tab: LineupTab) {
     setActiveTab(tab);
 
@@ -330,13 +370,20 @@ export default function Lineups() {
   ) {
     setSelectedLineupCategory(category);
     setSelectedLineupName(featuredLineup ?? "");
+    setLineupDetailPulseKey((currentKey) => currentKey + 1);
 
-    setTimeout(() => {
-      lineupSectionRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const detailSection = lineupSectionRef.current;
+
+        if (!detailSection) return;
+
+        const targetTop =
+          detailSection.getBoundingClientRect().top + window.scrollY - 88;
+
+        smoothScrollTo(targetTop);
       });
-    }, 150);
+    });
   }
 
   function viewPlayerCard(playerName: string) {
@@ -353,7 +400,7 @@ export default function Lineups() {
 
     runLineupLoadingSequence({
       totalDuration: 2400,
-      progressInterval: 40,
+      progressInterval: SCOUT_LINEUP_PROGRESS_INTERVAL,
       exitDuration: 300,
       steps: scoutLineupSteps,
       onStepChange: setScoutLineupStep,
@@ -574,8 +621,12 @@ export default function Lineups() {
         />
 
         {activeTab === "featured" && (
-          <section className="min-h-[calc(100vh-140px)]">
+          <section
+            key="featured"
+            className="min-h-[calc(100vh-140px)] animate-[pageEnter_220ms_ease-out_both]"
+          >
             <FeaturedLineupCategoryGrid
+              selectedLineupCategory={selectedLineupCategory}
               onSelectCategory={selectFeaturedLineupCategory}
             />
 
@@ -599,6 +650,7 @@ export default function Lineups() {
                 selectedLineupNames={selectedLineupNames}
                 selectedLineupAchievements={selectedLineupAchievements}
                 selectedCategoryColor={selectedCategoryColor}
+                detailPulseKey={lineupDetailPulseKey}
                 hoveredLineupPlayer={hoveredLineupPlayer}
                 onSelectLineup={setSelectedLineupName}
                 onHoverPlayer={setHoveredLineupPlayer}
@@ -609,7 +661,10 @@ export default function Lineups() {
         )}
 
         {activeTab === "builder" && (
-          <section className="min-h-[calc(100vh-140px)]">
+          <section
+            key="builder"
+            className="min-h-[calc(100vh-140px)] animate-[pageEnter_220ms_ease-out_both]"
+          >
             {!hasStartedBuilder ? (
               <BuilderIntro
                 hasExistingDraft={hasExistingDraft}
@@ -708,7 +763,7 @@ export default function Lineups() {
               />
             )
           ) : (
-            <div className="mx-auto mt-6 max-w-75 rounded-lg border border-[#1bc2ec]/35 bg-[#06131d]/80 p-3.5 text-center shadow-[0_0_22px_rgba(27,194,236,0.14)] lg:mt-16 lg:max-w-md lg:p-6 lg:shadow-[0_0_28px_rgba(27,194,236,0.16)]">
+            <div className="mx-auto mt-6 max-w-75 animate-[pageEnter_220ms_ease-out_both] rounded-lg border border-[#1bc2ec]/35 bg-[#06131d]/80 p-3.5 text-center shadow-[0_0_22px_rgba(27,194,236,0.14)] lg:mt-16 lg:max-w-md lg:p-6 lg:shadow-[0_0_28px_rgba(27,194,236,0.16)]">
               <p className="font-michroma text-[10px] uppercase text-white lg:text-lg">
                 Sign in to view saved lineups
               </p>
@@ -737,7 +792,7 @@ export default function Lineups() {
           scoutArchetypeColor={scoutArchetypeColor}
           scoutSummary={scoutSummary}
           statProfileLabel={scoutStatProfileLabel}
-          animatedScoutOverall={animatedScoutOverall}
+          displayedScoutOverall={displayedScoutOverall}
           lineupTier={lineupTier}
           scoutTierColor={scoutTierColor}
           lineupBadges={lineupBadges}

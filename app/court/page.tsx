@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+import { useDeferredValue, useEffect, useState } from "react";
 
 import { DatabaseLoadingState } from "../components/loading/database-loading-state";
 import { DatabaseErrorState } from "../components/loading/database-error-state";
@@ -27,7 +27,7 @@ import { CourtMatchupSummary } from "../components/court/court-matchup-summary";
 
 import { CourtPlayerPickerModal } from "../components/court/court-player-picker-modal";
 
-const COURT_PLAYER_PICKER_LIMIT = 120;
+const COURT_PLAYER_PICKER_LIMIT = 80;
 
 export default function Court() {
   // Compare state
@@ -51,6 +51,7 @@ export default function Court() {
     "left" | "right" | null
   >(null);
   const [pickerSearch, setPickerSearch] = useState("");
+  const deferredPickerSearch = useDeferredValue(pickerSearch);
 
   // Saved compare slots
   const [hasLoadedSavedPlayers, setHasLoadedSavedPlayers] = useState(false);
@@ -130,7 +131,7 @@ export default function Court() {
 
   // Chosen results
   const filteredPickerPlayers = comparePlayers.filter((player) =>
-    player.name.toLowerCase().includes(pickerSearch.toLowerCase()),
+    player.name.toLowerCase().includes(deferredPickerSearch.toLowerCase()),
   );
   const displayedPickerPlayers = filteredPickerPlayers.slice(
     0,

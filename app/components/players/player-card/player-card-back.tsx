@@ -17,7 +17,7 @@ export function PlayerCardBack({
     <div
       className={`absolute inset-0 h-full rounded-2xl border bg-black/30 lg:min-h-134 lg:rounded-3xl ${
         isCardFlipped ? "pointer-events-auto" : "pointer-events-none"
-      }`}
+      } ${isCardFlipped ? "animate-[cardFaceIn_180ms_ease-out_both]" : ""}`}
       style={{
         backfaceVisibility: "hidden",
         transform: "rotateY(180deg)",

@@ -61,7 +61,7 @@ export function SavedLineupsToolbar({
             onClick={onToggleProfileDropdown}
             className={`flex h-8 min-w-24 cursor-pointer items-center justify-between gap-1 rounded-md border px-2 font-michroma text-[7px] transition lg:h-auto lg:min-w-42 lg:gap-3 lg:px-4 lg:py-3 lg:text-xs ${
               savedLineupProfileFilter !== "all"
-                ? "border-[#ffd700]/70 bg-[#ffd700]/10 text-[#ffd700]"
+                ? "scale-[1.02] border-[#ffd700]/70 bg-[#ffd700]/10 text-[#ffd700] ring-1 ring-[#ffd700]/25"
                 : "border-white/15 bg-black/30 text-white/60 hover:border-white/40"
             }`}
           >
@@ -70,7 +70,7 @@ export function SavedLineupsToolbar({
           </button>
 
           {openSavedDropdown === "profile" && (
-            <div className="absolute right-0 top-full z-100 mt-1 w-32 overflow-hidden rounded-md border border-white/15 bg-[#07111f] shadow-[0_0_20px_rgba(0,0,0,0.45)] lg:mt-2 lg:w-full">
+            <div className="absolute right-0 top-full z-100 mt-1 w-32 animate-[dropdownIn_140ms_ease-out_both] overflow-hidden rounded-md border border-white/15 bg-[#07111f] shadow-[0_0_20px_rgba(0,0,0,0.45)] lg:mt-2 lg:w-full">
               {savedProfileOptions.map((option) => (
                 <button
                   key={option.value}
@@ -95,7 +95,7 @@ export function SavedLineupsToolbar({
             onClick={onToggleSortDropdown}
             className={`flex h-8 min-w-24 cursor-pointer items-center justify-between gap-1 rounded-md border px-2 font-michroma text-[7px] transition lg:h-auto lg:min-w-48 lg:gap-3 lg:px-4 lg:py-3 lg:text-xs ${
               savedLineupSort !== "highestOvr"
-                ? "border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]"
+                ? "scale-[1.02] border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec] ring-1 ring-[#1bc2ec]/25"
                 : "border-white/15 bg-black/30 text-white/60 hover:border-white/40"
             }`}
           >
@@ -104,7 +104,7 @@ export function SavedLineupsToolbar({
           </button>
 
           {openSavedDropdown === "sort" && (
-            <div className="absolute right-0 top-full z-100 mt-1 w-32 overflow-hidden rounded-md border border-white/15 bg-[#07111f] shadow-[0_0_20px_rgba(0,0,0,0.45)] lg:mt-2 lg:w-full">
+            <div className="absolute right-0 top-full z-100 mt-1 w-32 animate-[dropdownIn_140ms_ease-out_both] overflow-hidden rounded-md border border-white/15 bg-[#07111f] shadow-[0_0_20px_rgba(0,0,0,0.45)] lg:mt-2 lg:w-full">
               {savedSortOptions.map((option) => (
                 <button
                   key={option.value}

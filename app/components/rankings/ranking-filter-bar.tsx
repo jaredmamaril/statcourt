@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { CSSProperties } from "react";
 import {
   positions,
   teams,
@@ -74,7 +75,7 @@ export function RankingFilterBar({
           }
           className={`flex h-6 cursor-pointer items-center gap-1 rounded-md border px-2 font-michroma text-[9px] transition sm:h-auto sm:gap-3 sm:py-1 sm:text-xs ${
             positionFilter
-              ? "w-14 border-[#1bc2ec] bg-[#1bc2ec]/10 text-[#1bc2ec] sm:w-18 sm:px-3"
+              ? "w-14 scale-[1.02] border-[#1bc2ec] bg-[#1bc2ec]/10 text-[#1bc2ec] ring-1 ring-[#1bc2ec]/30 sm:w-18 sm:px-3"
               : "w-32 border-white/20 bg-black/30 text-white/70 hover:border-white/60 sm:w-40 sm:px-3"
           }`}
         >
@@ -85,7 +86,7 @@ export function RankingFilterBar({
         </button>
 
         {openFilter === "position" && (
-          <div className="absolute left-0 top-full z-80 mt-2 max-h-80 w-34 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1">
+          <div className="absolute left-0 top-full z-80 mt-2 max-h-80 w-34 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 animate-[dropdownIn_140ms_ease-out_both]">
             <button
               type="button"
               onClick={() => {
@@ -127,11 +128,18 @@ export function RankingFilterBar({
         <button
           type="button"
           onClick={() => onOpenFilter(openFilter === "team" ? null : "team")}
-          className="flex h-6 min-w-28 cursor-pointer items-center justify-between rounded-md border border-white/20 bg-black/30 px-2 font-michroma text-[9px] text-white/70 transition hover:border-[#1bc2ec]/60 sm:h-auto sm:min-w-32 sm:px-3 sm:py-1 sm:text-xs"
+          className={`flex h-6 min-w-28 cursor-pointer items-center justify-between rounded-md border px-2 font-michroma text-[9px] transition sm:h-auto sm:min-w-32 sm:px-3 sm:py-1 sm:text-xs ${
+            teamFilter
+              ? "scale-[1.02] bg-black/30 ring-1"
+              : "border-white/20 bg-black/30 text-white/70 hover:border-[#1bc2ec]/60"
+          }`}
           style={{
             color: teamFilter ? teamColors[teamFilter] : undefined,
             borderColor: teamFilter ? teamColors[teamFilter] : undefined,
-          }}
+            "--tw-ring-color": teamFilter
+              ? `${teamColors[teamFilter]}4D`
+              : undefined,
+          } as CSSProperties}
         >
           <span className="flex items-center gap-2">
             {teamFilter && (
@@ -149,7 +157,7 @@ export function RankingFilterBar({
         </button>
 
         {openFilter === "team" && (
-          <div className="absolute left-0 top-full z-80 mt-2 max-h-52 w-full overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1">
+          <div className="absolute left-0 top-full z-80 mt-2 max-h-52 w-full overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 animate-[dropdownIn_140ms_ease-out_both]">
             <button
               type="button"
               onClick={() => {
@@ -200,10 +208,17 @@ export function RankingFilterBar({
           onClick={() =>
             onOpenFilter(openFilter === "archetype" ? null : "archetype")
           }
-          className="flex h-6 min-w-36 cursor-pointer items-center justify-between rounded-md border border-white/20 bg-black/30 px-2 font-michroma text-[9px] text-white/70 transition hover:border-[#1bc2ec]/60 sm:h-auto sm:min-w-40 sm:px-3 sm:py-1 sm:text-xs"
+          className={`flex h-6 min-w-36 cursor-pointer items-center justify-between rounded-md border px-2 font-michroma text-[9px] transition sm:h-auto sm:min-w-40 sm:px-3 sm:py-1 sm:text-xs ${
+            archetypeFilter
+              ? "scale-[1.02] bg-black/30 ring-1"
+              : "border-white/20 bg-black/30 text-white/70 hover:border-[#1bc2ec]/60"
+          }`}
           style={{
             borderColor: selectedArchetypeColor,
-          }}
+            "--tw-ring-color": selectedArchetypeColor
+              ? `${selectedArchetypeColor}4D`
+              : undefined,
+          } as CSSProperties}
         >
           <span
             className="truncate"
@@ -219,7 +234,7 @@ export function RankingFilterBar({
         </button>
 
         {openFilter === "archetype" && (
-          <div className="absolute left-0 top-full z-80 mt-2 max-h-52 w-full overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1">
+          <div className="absolute left-0 top-full z-80 mt-2 max-h-52 w-full overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 animate-[dropdownIn_140ms_ease-out_both]">
             <button
               type="button"
               onClick={() => {
