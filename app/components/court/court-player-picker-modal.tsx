@@ -7,6 +7,8 @@ type CourtPlayerPickerModalProps = {
   side: "left" | "right" | null;
   players: Player[];
   search: string;
+  isLoadingPlayers?: boolean;
+  playerLoadError?: string;
   setSearch: (value: string) => void;
   onSelectPlayer: (playerName: string) => void;
   onClose: () => void;
@@ -17,6 +19,8 @@ export function CourtPlayerPickerModal({
   side,
   players,
   search,
+  isLoadingPlayers = false,
+  playerLoadError = "",
   setSearch,
   onSelectPlayer,
   onClose,
@@ -59,13 +63,30 @@ export function CourtPlayerPickerModal({
         <input
           value={search}
           onChange={(event) => setSearch(event.target.value)}
+          disabled={isLoadingPlayers}
           placeholder="Search player..."
-          className="mt-4 w-full rounded-md border border-white/15 bg-black/35 px-3 py-2.5 font-michroma text-xs text-white outline-none transition placeholder:text-white/25 focus:border-[#1bc2ec]/70 focus:bg-black/50 sm:mt-5 sm:px-4 sm:py-3 sm:text-sm"
+          className="mt-4 w-full rounded-md border border-white/15 bg-black/35 px-3 py-2.5 font-michroma text-xs text-white outline-none transition placeholder:text-white/25 focus:border-[#1bc2ec]/70 focus:bg-black/50 disabled:cursor-wait disabled:border-white/10 disabled:text-white/25 sm:mt-5 sm:px-4 sm:py-3 sm:text-sm"
         />
 
+        {playerLoadError && (
+          <p className="mt-2 rounded border border-red-500/25 bg-red-500/10 px-2 py-1.5 font-michroma text-[7px] leading-relaxed text-red-200/75 sm:text-[8px]">
+            Showing fallback player data.
+          </p>
+        )}
+
         <div className="statcourt-scroll mt-4 min-h-0 flex-1 overflow-y-auto pr-1 sm:pr-2">
-          <div className="grid gap-2 sm:grid-cols-2">
-            {players.map((player) => {
+          {isLoadingPlayers ? (
+            <div className="rounded-lg border border-[#1bc2ec]/25 bg-black/20 p-6 text-center sm:p-8">
+              <p className="font-michroma text-[8px] uppercase text-[#1bc2ec] sm:text-xs">
+                Loading Players
+              </p>
+              <p className="mt-2 font-michroma text-[6px] text-white/35 sm:text-[8px]">
+                Syncing comparison profiles...
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-2 sm:grid-cols-2">
+              {players.map((player) => {
               const teamColor = getReadableTeamColor(player.team);
 
               return (
@@ -115,10 +136,11 @@ export function CourtPlayerPickerModal({
                   </div>
                 </button>
               );
-            })}
-          </div>
+              })}
+            </div>
+          )}
 
-          {players.length === 0 && (
+          {!isLoadingPlayers && players.length === 0 && (
             <div className="rounded-lg border border-white/10 bg-black/20 p-6 text-center sm:p-8">
               <p className="font-michroma text-xs text-white/50 sm:text-sm">
                 No players found.

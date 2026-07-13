@@ -837,6 +837,18 @@ export default function Lineups() {
         <OverwriteLineupModal
           existingLineup={lineupPendingOverwrite.existingLineup}
           nextName={lineupPendingOverwrite.nextName}
+          existingProfileLabel={
+            statProfileLabels[
+              lineupPendingOverwrite.existingLineup.statProfile ?? "career"
+            ]
+          }
+          nextProfileLabel={
+            statProfileLabels[
+              lineupPendingOverwrite.type === "save"
+                ? builderStatProfile
+                : (lineupPendingRename?.statProfile ?? "career")
+            ]
+          }
           actionLabel={
             lineupPendingOverwrite.type === "save"
               ? "Overwrite Save"
@@ -853,6 +865,7 @@ export default function Lineups() {
 
       {isLineupSavedOpen && (
         <LineupSavedModal
+          statProfileLabel={statProfileLabels[builderStatProfile]}
           onViewSaved={() => {
             setIsLineupSavedOpen(false);
             setActiveTab("saved");

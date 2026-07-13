@@ -1,11 +1,13 @@
 import { useState } from "react";
 
 type LineupSavedModalProps = {
+  statProfileLabel: string;
   onViewSaved: () => void;
   onBuildAnother: () => void;
 };
 
 export function LineupSavedModal({
+  statProfileLabel,
   onViewSaved,
   onBuildAnother,
 }: LineupSavedModalProps) {
@@ -37,7 +39,11 @@ export function LineupSavedModal({
           Lineup Saved
         </h2>
 
-        <p className="mt-2 font-michroma text-[8px] text-white/50 lg:mt-3 lg:text-xs">
+        <p className="mt-2 font-michroma text-[8px] text-emerald-300 lg:mt-3 lg:text-xs">
+          Saved as {statProfileLabel}
+        </p>
+
+        <p className="mt-1.5 font-michroma text-[8px] text-white/50 lg:mt-2 lg:text-xs">
           What would you like to do next?
         </p>
 

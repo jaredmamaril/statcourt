@@ -241,6 +241,8 @@ export default function Court() {
         side={activePickerSide}
         players={displayedPickerPlayers}
         search={pickerSearch}
+        isLoadingPlayers={isLoadingPlayers}
+        playerLoadError={playerLoadError}
         setSearch={setPickerSearch}
         onSelectPlayer={selectModalPlayer}
         onClose={() => {

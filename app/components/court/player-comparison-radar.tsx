@@ -56,14 +56,14 @@ export function PlayerComparisonRadar({
   }
 
   return (
-    <div className="relative z-10 mx-auto h-70 w-full max-w-70 sm:h-85 sm:max-w-85 lg:h-110 lg:max-w-130">
+    <div className="relative z-10 mx-auto h-62 w-full max-w-62 sm:h-78 sm:max-w-78 lg:h-108 lg:max-w-125">
       <div className="flex h-full w-full items-center justify-center rounded-full bg-black/40 animate-[courtRadarIn_700ms_ease-out_150ms_both]">
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart data={radarData}>
             <PolarGrid stroke="rgba(255,255,255,0.25)" />
             <PolarAngleAxis
               dataKey="stat"
-              tick={{ fill: "white", fontSize: 8, fontFamily: "Michroma" }}
+              tick={{ fill: "white", fontSize: 7, fontFamily: "Michroma" }}
             />
             <PolarRadiusAxis
               angle={90}

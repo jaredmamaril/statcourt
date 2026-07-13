@@ -181,30 +181,30 @@ export function CourtMatchupSummary({
   return (
     <div
       key={`${leftPlayer.id}-${rightPlayer.id}-${statMode}`}
-      className="relative z-10 mx-auto mt-4 w-full max-w-5xl rounded-lg border border-[#1bc2ec]/25 bg-[#06131d]/88 p-4 shadow-[0_0_20px_rgba(27,194,236,0.12)] animate-[courtSummaryReveal_320ms_ease-out_both] sm:mt-5 sm:p-5"
+      className="relative z-10 mx-auto mt-3 w-full max-w-5xl rounded-lg border border-[#1bc2ec]/25 bg-[#06131d]/88 p-3 shadow-[0_0_16px_rgba(27,194,236,0.1)] animate-[courtSummaryReveal_320ms_ease-out_both] sm:mt-4 sm:p-4"
     >
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <p className="font-michroma text-[9px] uppercase tracking-wide text-[#1bc2ec] sm:text-[10px]">
+      <div className="mb-2 flex items-start justify-between gap-3 sm:mb-3">
+        <p className="font-michroma text-[8px] uppercase tracking-wide text-[#1bc2ec] sm:text-[10px]">
           Matchup Summary
         </p>
 
-        <p className="font-michroma text-[8px] uppercase text-white/35">
+        <p className="font-michroma text-[7px] uppercase text-white/35 sm:text-[8px]">
           {getStatModeLabel(statMode)}
         </p>
       </div>
 
-      <p className="font-michroma text-[9px] leading-relaxed text-white/55 sm:text-[10px]">
+      <p className="font-michroma text-[8px] leading-relaxed text-white/55 sm:text-[10px]">
         {summary}
       </p>
 
-      <div className="mt-3 grid gap-2 sm:mt-4 sm:grid-cols-2 sm:gap-3">
+      <div className="mt-2 grid gap-2 sm:mt-3 sm:grid-cols-2 sm:gap-3">
         {isBalancedMatchup ? (
-          <div className="flex h-full flex-col justify-center rounded-md border border-[#1bc2ec]/35 bg-black/20 p-3 text-center shadow-[0_0_16px_rgba(27,194,236,0.14)] sm:col-span-2">
-            <p className="font-michroma text-[8px] uppercase text-white/70">
+          <div className="flex h-full flex-col justify-center rounded-md border border-[#1bc2ec]/35 bg-black/20 p-2.5 text-center shadow-[0_0_12px_rgba(27,194,236,0.12)] sm:col-span-2 sm:p-3">
+            <p className="font-michroma text-[7px] uppercase text-white/70 sm:text-[8px]">
               Balanced Matchup
             </p>
 
-            <p className="mt-2 font-michroma text-sm text-[#1bc2ec]">
+            <p className="mt-1.5 font-michroma text-xs text-[#1bc2ec] sm:mt-2 sm:text-sm">
               Split Profile
             </p>
           </div>
@@ -213,18 +213,18 @@ export function CourtMatchupSummary({
           supportPlayer && (
             <>
               <div
-                className="rounded-md border bg-black/20 p-2.5 sm:p-3"
+                className="rounded-md border bg-black/20 p-2 sm:p-3"
                 style={{
                   borderColor: `${leadColor}55`,
                   boxShadow: `0 0 16px ${leadColor}22`,
                 }}
               >
-                <p className="font-michroma text-[8px] uppercase text-white/70">
+                <p className="font-michroma text-[7px] uppercase text-white/70 sm:text-[8px]">
                   {isBalancedMatchup ? "Balanced Profile" : "Overall Edge"}
                 </p>
 
                 <p
-                  className="mt-1.5 truncate font-michroma text-[12px] sm:mt-2 sm:text-sm"
+                  className="mt-1 truncate font-michroma text-[10px] sm:mt-2 sm:text-sm"
                   style={{
                     color: leadColor,
                     textShadow: `0 0 12px ${leadColor}66`,
@@ -235,18 +235,18 @@ export function CourtMatchupSummary({
               </div>
 
               <div
-                className="rounded-md border bg-black/20 p-2.5 sm:p-3"
+                className="rounded-md border bg-black/20 p-2 sm:p-3"
                 style={{
                   borderColor: `${supportColor}55`,
                   boxShadow: `0 0 16px ${supportColor}22`,
                 }}
               >
-                <p className="font-michroma text-[8px] uppercase text-white/70">
+                <p className="font-michroma text-[7px] uppercase text-white/70 sm:text-[8px]">
                   {isBalancedMatchup ? "Split Matchup" : "Counter Strength"}
                 </p>
 
                 <p
-                  className="mt-1.5 truncate font-michroma text-[12px] sm:mt-2 sm:text-sm"
+                  className="mt-1 truncate font-michroma text-[10px] sm:mt-2 sm:text-sm"
                   style={{
                     color: supportColor,
                     textShadow: `0 0 12px ${supportColor}66`,

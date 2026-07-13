@@ -3,6 +3,8 @@ import type { SavedLineup } from "../shared/lineup-types";
 type OverwriteLineupModalProps = {
   existingLineup: SavedLineup;
   nextName: string;
+  existingProfileLabel: string;
+  nextProfileLabel: string;
   actionLabel: string;
   onCancel: () => void;
   onConfirm: () => void;
@@ -11,6 +13,8 @@ type OverwriteLineupModalProps = {
 export function OverwriteLineupModal({
   existingLineup,
   nextName,
+  existingProfileLabel,
+  nextProfileLabel,
   actionLabel,
   onCancel,
   onConfirm,
@@ -26,6 +30,18 @@ export function OverwriteLineupModal({
           A lineup named &quot;{existingLineup.name}&quot; already exists.
           Saving &quot;{nextName}&quot; will replace the previous version.
         </p>
+
+        <div className="mt-3 grid grid-cols-2 gap-2 rounded border border-white/10 bg-black/20 p-2 font-michroma text-[7px] uppercase lg:mt-4 lg:text-[9px]">
+          <div>
+            <p className="text-white/30">Existing</p>
+            <p className="mt-1 text-[#f4bb44]">{existingProfileLabel}</p>
+          </div>
+
+          <div>
+            <p className="text-white/30">New</p>
+            <p className="mt-1 text-[#1bc2ec]">{nextProfileLabel}</p>
+          </div>
+        </div>
 
         <div className="mt-4 flex justify-center gap-2 lg:mt-6 lg:gap-3">
           <button
