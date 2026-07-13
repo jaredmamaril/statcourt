@@ -4,7 +4,7 @@ import { Mail, Shield, Sparkles } from "lucide-react";
 
 export default function SignInPage() {
   return (
-    <main className="relative min-h-svh overflow-hidden bg-background px-3 py-4 text-white lg:px-6 lg:pt-12">
+    <main className="page-enter relative min-h-svh overflow-hidden bg-background px-3 py-4 text-white lg:px-6 lg:pt-12">
       <Image
         src="/court-pattern.svg"
         alt="Court background"

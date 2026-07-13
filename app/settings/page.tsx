@@ -24,7 +24,7 @@ const statPreferences = [
 
 export default function SettingsPage() {
   return (
-    <main className="relative min-h-svh bg-background px-3 py-3 text-white lg:px-6 lg:pt-12">
+    <main className="page-enter relative min-h-svh bg-background px-3 py-3 text-white lg:px-6 lg:pt-12">
       <div
         className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-100"
         style={{

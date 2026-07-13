@@ -26,7 +26,7 @@ export default function Home() {
       {/*Background video with overlay */}
       <video
         ref={videoRef}
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover object-center"
         src="/court-background.mp4"
         autoPlay
         loop

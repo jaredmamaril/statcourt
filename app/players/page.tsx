@@ -579,7 +579,7 @@ function Players() {
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden text-white">
+    <main className="page-enter min-h-screen overflow-x-hidden text-white">
       <section className="relative mx-auto w-full max-w-6xl px-4 pt-3 pb-12 lg:px-6">
         <div
           className={
