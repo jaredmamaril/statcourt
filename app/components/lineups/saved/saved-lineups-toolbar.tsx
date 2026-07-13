@@ -8,6 +8,7 @@ type SavedLineupsToolbarProps = {
   savedProfileLabel: string;
   openSavedDropdown: string | null;
   savedLineupCount: number;
+  savedProfileCounts: Record<PlayerStatProfileMode, number>;
   onSearchChange: (value: string) => void;
   onToggleSortDropdown: () => void;
   onToggleProfileDropdown: () => void;
@@ -38,6 +39,7 @@ export function SavedLineupsToolbar({
   savedProfileLabel,
   openSavedDropdown,
   savedLineupCount,
+  savedProfileCounts,
   onSearchChange,
   onToggleSortDropdown,
   onToggleProfileDropdown,
@@ -128,6 +130,11 @@ export function SavedLineupsToolbar({
         <p className="mb-2 text-center font-michroma text-[7px] text-white/40 lg:mb-4 lg:text-xs">
           {savedLineupCount} Saved{" "}
           {savedLineupCount === 1 ? "Lineup" : "Lineups"}
+        </p>
+
+        <p className="text-center font-michroma text-[5.5px] uppercase text-white/30 lg:text-[8px]">
+          Career {savedProfileCounts.career} · Peak {savedProfileCounts.peak} ·
+          Latest {savedProfileCounts.current}
         </p>
       </div>
     </>

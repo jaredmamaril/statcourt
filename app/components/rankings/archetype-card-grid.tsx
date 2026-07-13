@@ -69,7 +69,7 @@ export function ArchetypeCardGrid({
             type="button"
             onClick={() => onSelectArchetype(label)}
             className={`cursor-pointer rounded-md border bg-black/30 px-2.5 py-2 text-left font-michroma transition-all duration-200 hover:bg-white/10 lg:px-4 lg:py-4 ${
-              isSelected ? "scale-[1.02]" : ""
+              isSelected ? "scale-[1.01]" : ""
             }`}
             style={{
               color: archetypeColor,

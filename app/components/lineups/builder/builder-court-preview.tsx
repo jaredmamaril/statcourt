@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useMemo, useState } from "react";
 import type { LineupSlot, Player } from "../../court-data";
 import { builderCourtMarkerPositions } from "../featured/featured-lineups";
 import { LineupMarker } from "../featured/lineup-marker";
@@ -16,7 +16,7 @@ type BuilderCourtPreviewProps = {
   onViewCard: (playerName: string) => void;
 };
 
-export function BuilderCourtPreview({
+function BuilderCourtPreviewComponent({
   players,
   lineupPositions,
   customLineup,
@@ -26,6 +26,10 @@ export function BuilderCourtPreview({
 }: BuilderCourtPreviewProps) {
   const [openTooltipPlayer, setOpenTooltipPlayer] = useState<string | null>(
     null,
+  );
+  const playersByName = useMemo(
+    () => new Map(players.map((player) => [player.name, player])),
+    [players],
   );
 
   return (
@@ -46,7 +50,7 @@ export function BuilderCourtPreview({
 
         {lineupPositions.map((position) => {
           const playerName = customLineup[position];
-          const player = players.find((player) => player.name === playerName);
+          const player = playersByName.get(playerName);
           const positionIndex = lineupPositions.indexOf(position);
 
           return (
@@ -85,3 +89,5 @@ export function BuilderCourtPreview({
     </div>
   );
 }
+
+export const BuilderCourtPreview = memo(BuilderCourtPreviewComponent);

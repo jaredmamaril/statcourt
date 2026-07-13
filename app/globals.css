@@ -157,20 +157,6 @@
   }
 }
 
-@keyframes lineupDetailPulse {
-  0% {
-    outline-color: transparent;
-  }
-
-  35% {
-    outline-color: var(--lineup-pulse-color, rgba(27, 194, 236, 0.5));
-  }
-
-  100% {
-    outline-color: transparent;
-  }
-}
-
 @keyframes cardFaceIn {
   from {
     opacity: 0.35;

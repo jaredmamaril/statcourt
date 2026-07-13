@@ -18,15 +18,13 @@ export type SelectedCustomPlayerSlot = {
 };
 
 export function getSelectedCustomPlayerSlots(
-  players: Player[],
+  playersByName: Map<string, Player>,
   customLineup: Record<LineupSlot, string>,
   lineupPositions: LineupSlot[],
 ): SelectedCustomPlayerSlot[] {
   return lineupPositions
     .map((position) => {
-      const player = players.find(
-        (player) => player.name === customLineup[position],
-      );
+      const player = playersByName.get(customLineup[position]);
 
       return player ? { position, player } : null;
     })
@@ -75,12 +73,13 @@ export function getAvailableBuildPlayers({
   const selectedBuildPlayerNames = new Set(
     selectedCustomPlayers.map((player) => player.name),
   );
+  const normalizedSearch = buildPlayerSearch.trim().toLowerCase();
 
   return players
     .filter((player) => {
-      const matchesSearch = player.name
-        .toLowerCase()
-        .includes(buildPlayerSearch.toLowerCase());
+      const matchesSearch =
+        normalizedSearch.length === 0 ||
+        player.name.toLowerCase().includes(normalizedSearch);
 
       const isAlreadySelectedSomewhere = selectedBuildPlayerNames.has(
         player.name,
@@ -93,19 +92,16 @@ export function getAvailableBuildPlayers({
         (!isAlreadySelectedSomewhere || isSelectedInThisPosition)
       );
     })
-    .sort(
-      (a, b) =>
-        getBuilderPlayerRatingForPosition(
-          b,
-          activeBuildPosition,
-          statProfileMode,
-        ) -
-        getBuilderPlayerRatingForPosition(
-          a,
-          activeBuildPosition,
-          statProfileMode,
-        ),
-    );
+    .map((player) => ({
+      player,
+      rating: getBuilderPlayerRatingForPosition(
+        player,
+        activeBuildPosition,
+        statProfileMode,
+      ),
+    }))
+    .sort((a, b) => b.rating - a.rating)
+    .map((item) => item.player);
 }
 
 export type PlayerRevealMode = "instant" | "draftStart" | "savedLoad";

@@ -1,16 +1,65 @@
+import { useEffect, useState } from "react";
+
 type LoadingLineupModalProps = {
-  isExiting: boolean;
   steps: string[];
-  currentStep: number;
-  progress: number;
+  totalDuration: number;
+  progressInterval: number;
+  exitDuration: number;
+  onComplete: () => void;
 };
 
 export function LoadingLineupModal({
-  isExiting,
   steps,
-  currentStep,
-  progress,
+  totalDuration,
+  progressInterval,
+  exitDuration,
+  onComplete,
 }: LoadingLineupModalProps) {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [isExiting, setIsExiting] = useState(false);
+
+  useEffect(() => {
+    const timers: number[] = [];
+    const stepDuration = totalDuration / steps.length;
+
+    steps.forEach((_, index) => {
+      timers.push(
+        window.setTimeout(() => {
+          setCurrentStep(index);
+        }, index * stepDuration),
+      );
+    });
+
+    const progressTimer = window.setInterval(() => {
+      setProgress((currentProgress) =>
+        Math.min(
+          currentProgress + 100 / (totalDuration / progressInterval),
+          100,
+        ),
+      );
+    }, progressInterval);
+
+    timers.push(
+      window.setTimeout(() => {
+        window.clearInterval(progressTimer);
+        setProgress(100);
+        setIsExiting(true);
+
+        timers.push(
+          window.setTimeout(() => {
+            onComplete();
+          }, exitDuration),
+        );
+      }, totalDuration),
+    );
+
+    return () => {
+      window.clearInterval(progressTimer);
+      timers.forEach((timer) => window.clearTimeout(timer));
+    };
+  }, [exitDuration, onComplete, progressInterval, steps, totalDuration]);
+
   return (
     <div
       className={`fixed inset-0 z-1000 flex items-center justify-center bg-black/75 px-3 transition-opacity duration-300 ${

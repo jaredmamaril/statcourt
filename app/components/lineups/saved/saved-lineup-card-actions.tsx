@@ -19,6 +19,13 @@ export function SavedLineupCardActions({
   onRename,
   onDelete,
 }: SavedLineupCardActionsProps) {
+  const profileActionLabel =
+    lineup.statProfile === "peak"
+      ? "Peak"
+      : lineup.statProfile === "current"
+        ? "Latest"
+        : "Career";
+
   return (
     <div className="mt-2 grid grid-cols-2 gap-1.5 lg:mt-5 lg:flex lg:gap-2">
       <button
@@ -32,7 +39,7 @@ export function SavedLineupCardActions({
           backgroundColor: `${archetypeColor}28`,
         }}
       >
-        Load
+        Load {profileActionLabel}
       </button>
 
       <button
@@ -46,7 +53,7 @@ export function SavedLineupCardActions({
           backgroundColor: `${archetypeColor}10`,
         }}
       >
-        Scout
+        Scout {profileActionLabel}
       </button>
 
       <button

@@ -58,6 +58,10 @@ export default function Rankings() {
   const [archetypeFilter, setArchetypeFilter] = useState("");
   const [archetypeSort, setArchetypeSort] =
     useState<ArchetypeSort>("rarity");
+  const [
+    shouldScrollToArchetypeDescription,
+    setShouldScrollToArchetypeDescription,
+  ] = useState(false);
   const [players, setPlayers] = useState(fallbackPlayers);
   const [isLoadingPlayers, setIsLoadingPlayers] = useState(true);
   const [playerLoadError, setPlayerLoadError] = useState("");
@@ -275,15 +279,66 @@ export default function Rankings() {
     router.push(`/players?player=${encodeURIComponent(playerName)}`);
   }
 
+  useEffect(() => {
+    if (!shouldScrollToArchetypeDescription || !archetypeFilter) return;
+
+    let animationFrameId = 0;
+    let isCancelled = false;
+
+    const scrollTimer = window.setTimeout(() => {
+      animationFrameId = window.requestAnimationFrame(() => {
+        const archetypeDescription = archetypeDescriptionRef.current;
+
+        if (!archetypeDescription) return;
+
+        const targetTop =
+          archetypeDescription.getBoundingClientRect().top +
+          window.scrollY -
+          78;
+
+        const startTop = window.scrollY;
+        const endTop = Math.max(targetTop, 0);
+        const distance = endTop - startTop;
+        const duration = 850;
+        const startTime = performance.now();
+
+        function easeInOutCubic(progress: number) {
+          return progress < 0.5
+            ? 4 * progress * progress * progress
+            : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+        }
+
+        function scrollStep(currentTime: number) {
+          if (isCancelled) return;
+
+          const elapsed = currentTime - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const easedProgress = easeInOutCubic(progress);
+
+          window.scrollTo(0, startTop + distance * easedProgress);
+
+          if (progress < 1) {
+            animationFrameId = window.requestAnimationFrame(scrollStep);
+            return;
+          }
+
+          setShouldScrollToArchetypeDescription(false);
+        }
+
+        animationFrameId = window.requestAnimationFrame(scrollStep);
+      });
+    }, 80);
+
+    return () => {
+      isCancelled = true;
+      window.clearTimeout(scrollTimer);
+      window.cancelAnimationFrame(animationFrameId);
+    };
+  }, [archetypeFilter, shouldScrollToArchetypeDescription]);
+
   function selectArchetypeCard(label: string) {
     setArchetypeFilter(label);
-
-    setTimeout(() => {
-      archetypeDescriptionRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }, 150);
+    setShouldScrollToArchetypeDescription(true);
   }
 
   return (

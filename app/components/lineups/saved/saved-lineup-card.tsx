@@ -61,7 +61,7 @@ export function SavedLineupCard({
             })}
           </p>
 
-          <p className="mt-1 w-fit rounded border border-[#1bc2ec]/35 bg-[#1bc2ec]/10 px-1.5 py-0.5 font-michroma text-[5px] uppercase text-[#1bc2ec] lg:px-2 lg:text-[8px]">
+          <p className="mt-1 w-fit rounded-md border border-[#1bc2ec]/55 bg-[#1bc2ec]/15 px-1.5 py-0.5 font-michroma text-[5.5px] uppercase text-[#1bc2ec] shadow-[0_0_10px_rgba(27,194,236,0.14)] lg:px-2.5 lg:text-[8.5px]">
             {statProfileLabel}
           </p>
         </div>

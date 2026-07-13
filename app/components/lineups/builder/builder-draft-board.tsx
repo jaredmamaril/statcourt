@@ -1,3 +1,4 @@
+import { memo, useMemo } from "react";
 import type { LineupSlot, Player } from "../../court-data";
 import {
   getPlayerRevealDelay,
@@ -18,7 +19,7 @@ type BuilderDraftBoardProps = {
   onScoutLineup: () => void;
 };
 
-export function BuilderDraftBoard({
+function BuilderDraftBoardComponent({
   players,
   lineupPositions,
   hoveredBuildPlayer,
@@ -31,6 +32,11 @@ export function BuilderDraftBoard({
   onRemovePlayer,
   onScoutLineup,
 }: BuilderDraftBoardProps) {
+  const playersByName = useMemo(
+    () => new Map(players.map((player) => [player.name, player])),
+    [players],
+  );
+
   return (
     <div className="rounded-md border border-white/10 bg-black/20 p-1 lg:p-4">
       <div className="flex items-center justify-between">
@@ -61,7 +67,7 @@ export function BuilderDraftBoard({
       <div className="mt-1.5 grid gap-1 lg:mt-4 lg:gap-2">
         {lineupPositions.map((position) => {
           const playerName = customLineup[position];
-          const player = players.find((player) => player.name === playerName);
+          const player = playersByName.get(playerName);
           const positionIndex = lineupPositions.indexOf(position);
           const isHighlighted = player && player.name === hoveredBuildPlayer;
 
@@ -150,3 +156,5 @@ export function BuilderDraftBoard({
     </div>
   );
 }
+
+export const BuilderDraftBoard = memo(BuilderDraftBoardComponent);

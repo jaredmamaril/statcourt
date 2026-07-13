@@ -99,6 +99,7 @@ export function mapSupabasePlayerToPlayer(
     name: row.name,
     heightInches: row.height_inches,
     weightPounds: row.weight_pounds,
+    apiPosition: row.api_position,
     fallbackImage: row.fallback_image ?? undefined,
     team: row.team as Team,
     position: row.position as Position,

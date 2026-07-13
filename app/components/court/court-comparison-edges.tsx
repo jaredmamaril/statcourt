@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getTeamColor, type Player, type StatMode } from "../court-data";
 
 type CourtComparisonEdgesProps = {
@@ -85,6 +85,22 @@ export function CourtComparisonEdges({
   statMode,
 }: CourtComparisonEdgesProps) {
   const [openEdge, setOpenEdge] = useState<string | null>(null);
+  const edgesRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    function closeOpenEdge(event: PointerEvent) {
+      if (!edgesRef.current?.contains(event.target as Node)) {
+        setOpenEdge(null);
+      }
+    }
+
+    document.addEventListener("pointerdown", closeOpenEdge);
+
+    return () => {
+      document.removeEventListener("pointerdown", closeOpenEdge);
+    };
+  }, []);
+
   if (!leftPlayer || !rightPlayer) {
     return null;
   }
@@ -146,8 +162,9 @@ export function CourtComparisonEdges({
 
   return (
     <div
+      ref={edgesRef}
       key={`${leftPlayer.id}-${rightPlayer.id}-${statMode}`}
-      className="mx-auto mt-4 grid w-full max-w-6xl grid-cols-2 gap-2 px-3 sm:grid-cols-2 sm:gap-3 sm:px-0 lg:grid-cols-5"
+      className="relative z-100 mx-auto mt-4 grid w-full max-w-6xl grid-cols-2 gap-2 px-3 sm:grid-cols-2 sm:gap-3 sm:px-0 lg:grid-cols-5"
     >
       {edges.map((edge, index) => (
         <div
@@ -168,7 +185,7 @@ export function CourtComparisonEdges({
               );
             }
           }}
-          className={`group relative cursor-help rounded-lg border border-white/15 bg-[#06131d]/90 px-2.5 py-2 text-center shadow-[0_0_14px_rgba(0,0,0,0.3)] transition hover:-translate-y-0.5 hover:border-[#1bc2ec]/50 hover:bg-[#071827] hover:shadow-[0_0_20px_rgba(27,194,236,0.14)] sm:px-4 sm:py-3 ${
+          className={`group relative cursor-help rounded-lg border border-white/15 bg-[#06131d]/90 px-2.5 py-2 text-center shadow-[0_0_14px_rgba(0,0,0,0.3)] transition hover:z-200 hover:-translate-y-0.5 hover:border-[#1bc2ec]/50 hover:bg-[#071827] hover:shadow-[0_0_20px_rgba(27,194,236,0.14)] focus:z-200 sm:px-4 sm:py-3 ${
             edge.label === "Efficiency Edge" ? "col-span-2 lg:col-span-1" : ""
           } animate-[courtEdgeReveal_220ms_ease-out_both]`}
         >
@@ -187,7 +204,7 @@ export function CourtComparisonEdges({
           </p>
 
           <div
-            className={`absolute top-[calc(100%+6px)] left-1/2 z-50 w-[min(180px,90vw)] -translate-x-1/2 rounded-md border border-[#1bc2ec]/35 bg-[#030910]/95 p-1.5 text-left shadow-[0_0_24px_rgba(27,194,236,0.18)] transition duration-150 lg:w-72 lg:p-3 ${
+            className={`absolute top-[calc(100%+6px)] left-1/2 z-999 w-[min(180px,90vw)] -translate-x-1/2 rounded-md border border-[#1bc2ec]/35 bg-[#030910]/95 p-1.5 text-left shadow-[0_0_24px_rgba(27,194,236,0.18)] transition duration-150 lg:w-72 lg:p-3 ${
               openEdge === edge.label
                 ? "pointer-events-auto opacity-100"
                 : "pointer-events-none opacity-0 group-hover:opacity-100"

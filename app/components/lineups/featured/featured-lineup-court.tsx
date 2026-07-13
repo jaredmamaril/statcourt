@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { LineupSlot, Player } from "../../court-data";
 import type { LineupDetail } from "../shared/lineup-types";
 import { featuredCourtMarkerPositions } from "./featured-lineups";
@@ -24,6 +24,11 @@ export function FeaturedLineupCourt({
   const [openTooltipPlayer, setOpenTooltipPlayer] = useState<string | null>(
     null,
   );
+  const playersByName = useMemo(
+    () => new Map(players.map((player) => [player.name, player])),
+    [players],
+  );
+
   return (
     <div
       className="relative min-h-72 overflow-visible rounded-md bg-transparent lg:min-h-96"
@@ -80,6 +85,7 @@ export function FeaturedLineupCourt({
           >
             <LineupMarker
               players={players}
+              player={playersByName.get(playerName)}
               position={lineupPosition}
               name={playerName || "Select Player"}
               color={selectedCategoryColor}

@@ -1,4 +1,4 @@
-import { useDeferredValue, useMemo, useState } from "react";
+import { useCallback, useDeferredValue, useMemo, useState } from "react";
 import type { LineupSlot, Player } from "../../court-data";
 import {
   EMPTY_LINEUP,
@@ -23,7 +23,6 @@ export function useLineupBuilder({
     useState<Record<LineupSlot, string>>(EMPTY_LINEUP);
   const [activeBuildPosition, setActiveBuildPosition] =
     useState<LineupSlot>("PG");
-  const [hoveredBuildPlayer, setHoveredBuildPlayer] = useState("");
   const [buildPlayerSearch, setBuildPlayerSearch] = useState("");
   const [builderStatProfile, setBuilderStatProfile] =
     useState<BuilderStatProfileMode>("career");
@@ -31,9 +30,19 @@ export function useLineupBuilder({
     useState<PlayerRevealMode>("instant");
   const deferredBuildPlayerSearch = useDeferredValue(buildPlayerSearch);
 
+  const playersByName = useMemo(
+    () => new Map(players.map((player) => [player.name, player])),
+    [players],
+  );
+
   const selectedCustomPlayerSlots = useMemo(
-    () => getSelectedCustomPlayerSlots(players, customLineup, lineupPositions),
-    [players, customLineup, lineupPositions],
+    () =>
+      getSelectedCustomPlayerSlots(
+        playersByName,
+        customLineup,
+        lineupPositions,
+      ),
+    [playersByName, customLineup, lineupPositions],
   );
 
   const selectedCustomPlayers = useMemo(
@@ -80,37 +89,37 @@ export function useLineupBuilder({
     (position) => customLineup[position] !== "",
   );
 
-  function pickBuildPlayer(playerName: string) {
+  const pickBuildPlayer = useCallback((playerName: string) => {
     setPlayerRevealMode("instant");
 
     setCustomLineup((prev) => ({
       ...prev,
       [activeBuildPosition]: playerName,
     }));
-  }
+  }, [activeBuildPosition]);
 
-  function removeBuildPlayer(position: LineupSlot) {
+  const removeBuildPlayer = useCallback((position: LineupSlot) => {
     setCustomLineup((prev) => ({
       ...prev,
       [position]: "",
     }));
-  }
+  }, []);
 
-  function resetDraft() {
+  const resetDraft = useCallback(() => {
     setCustomLineup(EMPTY_LINEUP);
     setActiveBuildPosition("PG");
     setBuildPlayerSearch("");
-  }
+  }, []);
 
-  function startNewDraft() {
+  const startNewDraft = useCallback(() => {
     resetDraft();
     setHasStartedBuilder(true);
-  }
+  }, [resetDraft]);
 
-  function continueDraft() {
+  const continueDraft = useCallback(() => {
     setBuildPlayerSearch("");
     setHasStartedBuilder(true);
-  }
+  }, []);
 
   return {
     hasStartedBuilder,
@@ -119,8 +128,6 @@ export function useLineupBuilder({
     setCustomLineup,
     activeBuildPosition,
     setActiveBuildPosition,
-    hoveredBuildPlayer,
-    setHoveredBuildPlayer,
     buildPlayerSearch,
     setBuildPlayerSearch,
     builderStatProfile,

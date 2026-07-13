@@ -314,6 +314,7 @@ export type Player = {
   name: string;
   heightInches?: number | null;
   weightPounds?: number | null;
+  apiPosition?: string | null;
   team: Team;
   position: Position;
   jerseyNumber: number;

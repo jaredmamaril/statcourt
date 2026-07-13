@@ -31,6 +31,23 @@ export function getLineupNameConflict(
   );
 }
 
+export function getLineupsAfterSave(
+  savedLineups: SavedLineup[],
+  lineupToSave: SavedLineup,
+  overwriteLineupId?: string,
+) {
+  const normalizedLineupName = normalizeLineupName(lineupToSave.name);
+
+  return [
+    lineupToSave,
+    ...savedLineups.filter(
+      (lineup) =>
+        lineup.id !== overwriteLineupId &&
+        normalizeLineupName(lineup.name) !== normalizedLineupName,
+    ),
+  ];
+}
+
 export function getLineupsAfterRename(
   savedLineups: SavedLineup[],
   lineupId: string,

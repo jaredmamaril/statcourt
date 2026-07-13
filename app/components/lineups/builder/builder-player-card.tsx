@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { normalizeStat, type LineupSlot, type PlayerStats } from "../../court-data";
 import PlayerImage from "../../player-image";
 import { getPlayerHeadshot } from "../../player-images";
@@ -42,11 +43,11 @@ type BuilderPlayerCardProps = {
   builderStatProfile: BuilderStatProfileMode;
   isSelected: boolean;
   isScoutOpen: boolean;
-  onToggleScout: () => void;
+  onToggleScout: (playerId: number) => void;
   onPickPlayer: (playerName: string) => void;
 };
 
-export function BuilderPlayerCard({
+function BuilderPlayerCardComponent({
   player,
   activeBuildPosition,
   builderStatProfile,
@@ -104,7 +105,7 @@ export function BuilderPlayerCard({
         const isTouchDevice = window.matchMedia("(hover: none)").matches;
 
         if (isTouchDevice) {
-          onToggleScout();
+          onToggleScout(player.id);
           return;
         }
 
@@ -117,7 +118,7 @@ export function BuilderPlayerCard({
           const isTouchDevice = window.matchMedia("(hover: none)").matches;
 
           if (isTouchDevice) {
-            onToggleScout();
+            onToggleScout(player.id);
             return;
           }
 
@@ -183,3 +184,5 @@ export function BuilderPlayerCard({
     </div>
   );
 }
+
+export const BuilderPlayerCard = memo(BuilderPlayerCardComponent);

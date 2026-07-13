@@ -45,12 +45,46 @@ function downgradeFit(fit: PositionFit): PositionFit {
   return "mismatch";
 }
 
+function getBuilderPrimaryPosition(player: Player): Player["position"] {
+  const height = player.heightInches ?? 0;
+  const weight = player.weightPounds ?? 0;
+  const apiPosition = player.apiPosition?.toLowerCase() ?? "";
+  const apg = player.stats.apg ?? 0;
+  const isApiForward = apiPosition.includes("forward");
+  const isApiCenter = apiPosition.includes("center");
+  const isMixedForwardCenter = isApiForward && isApiCenter;
+
+  const isCenterProfile =
+    (isApiCenter && !isApiForward) ||
+    (isMixedForwardCenter && (height >= 86 || weight >= 260)) ||
+    (!isApiForward && height >= 84) ||
+    (height >= 82 && weight >= 260);
+
+  const isForwardProfile =
+    isApiForward || (height >= 79 && weight >= 200);
+
+  if (player.position === "F" && isCenterProfile) {
+    return "C";
+  }
+
+  if (player.position === "C" && isMixedForwardCenter && !isCenterProfile) {
+    return "F";
+  }
+
+  if (player.position === "G" && isForwardProfile && apg < 6.5) {
+    return "F";
+  }
+
+  return player.position;
+}
+
 function applyStatBasedFitAdjustment(
   player: Player,
   slot: LineupSlot,
   fit: PositionFit,
   statProfileMode: BuilderStatProfileMode,
 ): PositionFit {
+  const builderPosition = getBuilderPrimaryPosition(player);
   const stats = getStatsByMode(player, statProfileMode);
   const ppg = stats.ppg ?? 0;
   const rpg = stats.rpg ?? 0;
@@ -71,7 +105,7 @@ function applyStatBasedFitAdjustment(
 
   let adjustedFit = fit;
 
-  if (player.position === "G" && slot === "SF") {
+  if (builderPosition === "G" && slot === "SF") {
     if (fit === "reach" && isGoodDefender && isGoodShooter) {
       adjustedFit = upgradeFit(adjustedFit);
     }
@@ -81,13 +115,13 @@ function applyStatBasedFitAdjustment(
     }
   }
 
-  if (player.position === "G" && slot === "PF") {
+  if (builderPosition === "G" && slot === "PF") {
     if (fit === "reach" && isStrongDefender && rpg >= 5) {
       adjustedFit = upgradeFit(adjustedFit);
     }
   }
 
-  if (player.position === "F" && slot === "SG") {
+  if (builderPosition === "F" && slot === "SG") {
     if (fit === "reach" && isStrongShooter && (isPlaymaker || ppg >= 24)) {
       adjustedFit = upgradeFit(adjustedFit);
     }
@@ -97,7 +131,7 @@ function applyStatBasedFitAdjustment(
     }
   }
 
-  if (player.position === "F" && slot === "C") {
+  if (builderPosition === "F" && slot === "C") {
     if (
       fit === "reach" &&
       isStrongRebounder &&
@@ -112,8 +146,13 @@ function applyStatBasedFitAdjustment(
     }
   }
 
-  if (player.position === "C" && slot === "PF") {
-    if (fit === "reach" && (isGoodShooter || isPlaymaker)) {
+  if (builderPosition === "C" && slot === "PF") {
+    if (
+      fit === "reach" &&
+      (isGoodShooter ||
+        isPlaymaker ||
+        (isStrongRebounder && (isGoodDefender || hasRimProtection)))
+    ) {
       adjustedFit = upgradeFit(adjustedFit);
     }
 
@@ -122,7 +161,7 @@ function applyStatBasedFitAdjustment(
     }
   }
 
-  if (slot === "PG" && player.position === "F") {
+  if (slot === "PG" && builderPosition === "F") {
     if (isElitePlaymaker && ppg >= 18) {
       adjustedFit = "flex";
     }
@@ -155,6 +194,7 @@ export function getPositionFit(
   slot: LineupSlot,
   statProfileMode: BuilderStatProfileMode = "career",
 ): PositionFit {
+  const builderPosition = getBuilderPrimaryPosition(player);
   const height = player.heightInches ?? 0;
   const weight = player.weightPounds ?? 0;
 
@@ -163,7 +203,7 @@ export function getPositionFit(
 
   let baseFit: PositionFit = "mismatch";
 
-  if (player.position === "G") {
+  if (builderPosition === "G") {
     if (slot === "PG" || slot === "SG") baseFit = "natural";
     else if (slot === "SF") {
       baseFit = hasHeight && height >= 77 ? "flex" : "reach";
@@ -175,7 +215,7 @@ export function getPositionFit(
     }
   }
 
-  if (player.position === "F") {
+  if (builderPosition === "F") {
     if (slot === "SF" || slot === "PF") baseFit = "natural";
     else if (slot === "SG") {
       baseFit =
@@ -183,7 +223,7 @@ export function getPositionFit(
           ? "flex"
           : "reach";
     } else if (slot === "C") {
-      if (hasHeight && height >= 80 && (!hasWeight || weight >= 230)) {
+      if (hasHeight && height >= 82 && (!hasWeight || weight >= 245)) {
         baseFit = "flex";
       } else if (hasHeight && height >= 80) {
         baseFit = "reach";
@@ -195,7 +235,7 @@ export function getPositionFit(
     }
   }
 
-  if (player.position === "C") {
+  if (builderPosition === "C") {
     if (slot === "C") baseFit = "natural";
     else if (slot === "PF") {
       baseFit =
