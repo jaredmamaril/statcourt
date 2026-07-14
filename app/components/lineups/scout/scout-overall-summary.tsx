@@ -29,12 +29,17 @@ export function ScoutOverallSummary({
         </p>
 
         <p className="font-michroma text-[7px] uppercase text-white/40 lg:text-[10px]">
-          Overall
+          Scout OVR
         </p>
       </div>
 
+      <p className="mt-0.5 max-w-64 font-michroma text-[5.5px] leading-relaxed text-white/35 lg:text-[7px]">
+        Final team rating from player average, position fit, category balance,
+        chemistry, and stat profile.
+      </p>
+
       <p
-        className="font-michroma text-[9px] lg:text-xs"
+        className="mt-1 font-michroma text-[9px] lg:text-xs"
         style={{ color: scoutTierColor }}
       >
         {lineupTier}

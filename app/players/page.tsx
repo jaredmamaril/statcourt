@@ -34,8 +34,10 @@ import { getFilteredPlayers } from "../components/players/player-filtering";
 import {
   addRecentPlayer,
   getSavedCompareSlots,
+  getSavedFavoritePlayers,
   getSavedRecentPlayers,
   saveCompareSlots,
+  saveFavoritePlayers,
   saveRecentPlayers,
 } from "../components/players/player-storage";
 import {
@@ -257,6 +259,7 @@ function Players() {
   useEffect(() => {
     const frameId = requestAnimationFrame(() => {
       setRecentlyViewedPlayers(getSavedRecentPlayers());
+      setFavorites(getSavedFavoritePlayers());
     });
 
     return () => cancelAnimationFrame(frameId);
@@ -380,7 +383,6 @@ function Players() {
     [addRecentlyViewedPlayer],
   );
 
-  // Open a player card when coming from rankings with /players?player=name
   useEffect(() => {
     const playerFromUrl = searchParams.get("player");
 
@@ -444,11 +446,15 @@ function Players() {
   // Event handlers
 
   const updateFavorite = (playerName: string) => {
-    setFavorites((prev) =>
-      prev.includes(playerName)
+    setFavorites((prev) => {
+      const nextFavorites = prev.includes(playerName)
         ? prev.filter((name) => name !== playerName)
-        : [...prev, playerName],
-    );
+        : [...prev, playerName];
+
+      saveFavoritePlayers(nextFavorites);
+
+      return nextFavorites;
+    });
   };
 
   function toggleFavorite(playerName: string) {

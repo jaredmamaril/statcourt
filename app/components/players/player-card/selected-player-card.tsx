@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { CSSProperties } from "react";
 import { useState } from "react";
 import type { Player, PlayerInsightDisplay, StatMode } from "../../court-data";
@@ -76,13 +77,22 @@ export function SelectedPlayerCard({
 
   return (
     <div className="mx-auto flex w-full max-w-75 flex-col items-start gap-2 sm:max-w-md">
-      <button
-        type="button"
-        onClick={onBack}
-        className="flex cursor-pointer items-center gap-1 font-michroma text-xs text-white/50 transition-colors duration-200 hover:text-white"
-      >
-        Back
-      </button>
+      <div className="flex w-full items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={onBack}
+          className="flex cursor-pointer items-center gap-1 font-michroma text-xs text-white/50 transition-colors duration-200 hover:text-white"
+        >
+          Back
+        </button>
+
+        <Link
+          href={`/players/${encodeURIComponent(player.name)}`}
+          className="rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/16 px-2.5 py-1.5 font-michroma text-[7px] uppercase text-[#1bc2ec] shadow-[0_0_14px_rgba(27,194,236,0.16)] transition hover:scale-[1.03] hover:bg-[#1bc2ec]/24 sm:px-3 sm:text-[8px]"
+        >
+          Full Profile
+        </Link>
+      </div>
 
       <PlayerCardShell
         player={player}

@@ -1,4 +1,13 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import {
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
 import type { LineupSlot } from "../../court-data";
 import type { PlayerRevealMode } from "./builder-lineup-helpers";
 import type { BuilderStatProfileMode } from "./builder-position-helpers";
@@ -19,7 +28,8 @@ type BuilderWorkspaceProps = {
   buildPlayerSearch: string;
   builderStatProfile: BuilderStatProfileMode;
   availableBuildPlayers: Player[];
-  builderLineupRating: number | null;
+  averageLineupRating: number | null;
+  scoutLineupRating: number | null;
   isLineupComplete: boolean;
   selectedLineupCount: number;
   playerRevealMode: PlayerRevealMode;
@@ -27,6 +37,8 @@ type BuilderWorkspaceProps = {
   onSearchChange: (value: string) => void;
   onStatProfileChange: (profile: BuilderStatProfileMode) => void;
   onPickPlayer: (playerName: string) => void;
+  onPlacePlayer: (playerName: string, position: LineupSlot) => void;
+  onMovePlayer: (fromPosition: LineupSlot, toPosition: LineupSlot) => void;
   onRemovePlayer: (position: LineupSlot) => void;
   onScoutLineup: () => void;
   onViewCard: (playerName: string) => void;
@@ -112,7 +124,7 @@ function PositionFitLegend() {
               >
                 {item.label}
               </p>
-              <p className="mt-0.25 font-michroma text-[4.8px] leading-snug text-white/55 lg:text-[6px]">
+              <p className="mt-px font-michroma text-[4.8px] leading-snug text-white/55 lg:text-[6px]">
                 {item.description}
               </p>
             </div>
@@ -123,6 +135,28 @@ function PositionFitLegend() {
   );
 }
 
+function getEventPoint(event: Event) {
+  if ("clientX" in event && "clientY" in event) {
+    const pointerEvent = event as MouseEvent | PointerEvent;
+
+    return {
+      x: pointerEvent.clientX,
+      y: pointerEvent.clientY,
+    };
+  }
+
+  if (event instanceof TouchEvent && event.touches.length > 0) {
+    const touch = event.touches[0];
+
+    return {
+      x: touch.clientX,
+      y: touch.clientY,
+    };
+  }
+
+  return null;
+}
+
 export function BuilderWorkspace({
   players,
   lineupPositions,
@@ -131,7 +165,8 @@ export function BuilderWorkspace({
   buildPlayerSearch,
   builderStatProfile,
   availableBuildPlayers,
-  builderLineupRating,
+  averageLineupRating,
+  scoutLineupRating,
   isLineupComplete,
   selectedLineupCount,
   playerRevealMode,
@@ -139,83 +174,210 @@ export function BuilderWorkspace({
   onSearchChange,
   onStatProfileChange,
   onPickPlayer,
+  onPlacePlayer,
+  onMovePlayer,
   onRemovePlayer,
   onScoutLineup,
   onViewCard,
 }: BuilderWorkspaceProps) {
   const [hoveredBuildPlayer, setHoveredBuildPlayer] = useState("");
+  const [activeDraftPlayerName, setActiveDraftPlayerName] = useState("");
+  const [dragPreviewLabel, setDragPreviewLabel] = useState("");
+  const [dragPreviewPosition, setDragPreviewPosition] = useState({
+    x: 0,
+    y: 0,
+  });
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 6,
+      },
+    }),
+  );
+
+  useEffect(() => {
+    if (!dragPreviewLabel) return;
+
+    function handlePointerMove(event: PointerEvent) {
+      setDragPreviewPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+    }
+
+    function handleTouchMove(event: TouchEvent) {
+      const touch = event.touches[0];
+
+      if (!touch) return;
+
+      setDragPreviewPosition({
+        x: touch.clientX,
+        y: touch.clientY,
+      });
+    }
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
+
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("touchmove", handleTouchMove);
+    };
+  }, [dragPreviewLabel]);
+
+  const visibleActiveDraftPlayerName = lineupPositions.some(
+    (position) => customLineup[position] === activeDraftPlayerName,
+  )
+    ? activeDraftPlayerName
+    : "";
+  const pinnedPickerPlayerName =
+    visibleActiveDraftPlayerName || customLineup[activeBuildPosition];
+
+  function handleDragStart(event: DragStartEvent) {
+    const activeData = event.active.data.current as
+      | {
+          playerName?: string;
+        }
+      | undefined;
+    const eventPoint = getEventPoint(event.activatorEvent);
+
+    if (eventPoint) {
+      setDragPreviewPosition(eventPoint);
+    }
+
+    setDragPreviewLabel(activeData?.playerName ?? "");
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    setDragPreviewLabel("");
+
+    const overData = event.over?.data.current as
+      | {
+          type?: string;
+          slot?: LineupSlot;
+        }
+      | undefined;
+    const activeData = event.active.data.current as
+      | {
+          type?: string;
+          slot?: LineupSlot;
+          playerName?: string;
+        }
+      | undefined;
+
+    if (overData?.type !== "builder-slot" || !overData.slot) return;
+
+    if (activeData?.type === "picker-player" && activeData.playerName) {
+      onPlacePlayer(activeData.playerName, overData.slot);
+      onSelectPosition(overData.slot);
+      return;
+    }
+
+    if (activeData?.type === "slot-player" && activeData.slot) {
+      onMovePlayer(activeData.slot, overData.slot);
+      onSelectPosition(overData.slot);
+    }
+  }
 
   return (
-    <div className="mt-3 animate-[pageEnter_220ms_ease-out_both]">
-      <div className="grid grid-cols-[minmax(0,1fr)_122px] items-start gap-1 lg:grid-cols-[400px_300px_1fr] lg:gap-5">
-        <div className="min-w-0">
-          <div className="mb-3 flex flex-col items-center justify-center gap-1 lg:mb-2 lg:flex-row lg:gap-2">
-            <div className="inline-flex rounded-md border border-white/10 bg-black/25 p-0.5">
-              {(["career", "peak", "current"] as const).map((profile) => {
-                const isActive = builderStatProfile === profile;
-                const label =
-                  profile === "career"
-                    ? "Career"
-                    : profile === "peak"
-                      ? "Peak"
-                      : "Current";
+    <DndContext
+      sensors={sensors}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragCancel={() => setDragPreviewLabel("")}
+    >
+      <div className="mt-3 animate-[pageEnter_220ms_ease-out_both]">
+        <div className="grid grid-cols-[minmax(0,1fr)_122px] items-start gap-1 lg:grid-cols-[400px_300px_1fr] lg:gap-5">
+          <div className="min-w-0">
+            <div className="mb-3 flex flex-col items-center justify-center gap-1 lg:mb-2 lg:flex-row lg:gap-2">
+              <div className="inline-flex rounded-md border border-white/10 bg-black/25 p-0.5">
+                {(["career", "peak", "current"] as const).map((profile) => {
+                  const isActive = builderStatProfile === profile;
+                  const label =
+                    profile === "career"
+                      ? "Career"
+                      : profile === "peak"
+                        ? "Peak"
+                        : "Current";
 
-                return (
-                  <button
-                    key={profile}
-                    type="button"
-                    onClick={() => onStatProfileChange(profile)}
-                    className={`rounded px-1.5 py-0.5 font-michroma text-[5.5px] uppercase transition lg:px-2.5 lg:py-1 lg:text-[8px] ${
-                      isActive
-                        ? "bg-[#1bc2ec]/20 text-[#1bc2ec]"
-                        : "text-white/35 hover:bg-white/5 hover:text-white/70"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
+                  return (
+                    <button
+                      key={profile}
+                      type="button"
+                      onClick={() => onStatProfileChange(profile)}
+                      className={`rounded px-1.5 py-0.5 font-michroma text-[5.5px] uppercase transition lg:px-2.5 lg:py-1 lg:text-[8px] ${
+                        isActive
+                          ? "bg-[#1bc2ec]/20 text-[#1bc2ec]"
+                          : "text-white/35 hover:bg-white/5 hover:text-white/70"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <PositionFitLegend />
             </div>
 
-            <PositionFitLegend />
-          </div>
-
-          <BuilderPositionTabs
-            lineupPositions={lineupPositions}
-            activeBuildPosition={activeBuildPosition}
-            customLineup={customLineup}
-            onSelectPosition={onSelectPosition}
-          />
-
-          <div className="mt-2">
-            <BuilderPlayerPicker
+            <BuilderPositionTabs
+              lineupPositions={lineupPositions}
               activeBuildPosition={activeBuildPosition}
               customLineup={customLineup}
-              buildPlayerSearch={buildPlayerSearch}
-              builderStatProfile={builderStatProfile}
-              availableBuildPlayers={availableBuildPlayers}
-              onSearchChange={onSearchChange}
-              onPickPlayer={onPickPlayer}
+              onSelectPosition={onSelectPosition}
+            />
+
+            <div className="mt-2">
+              <BuilderPlayerPicker
+                activeBuildPosition={activeBuildPosition}
+                customLineup={customLineup}
+                buildPlayerSearch={buildPlayerSearch}
+                builderStatProfile={builderStatProfile}
+                availableBuildPlayers={availableBuildPlayers}
+                allBuildPlayers={players}
+                activeDraftPlayerName={pinnedPickerPlayerName}
+                onSearchChange={onSearchChange}
+                onPickPlayer={onPickPlayer}
+              />
+            </div>
+          </div>
+
+          <BuilderDraftBoard
+            players={players}
+            lineupPositions={lineupPositions}
+            hoveredBuildPlayer={hoveredBuildPlayer}
+            activeDraftPlayerName={visibleActiveDraftPlayerName}
+            customLineup={customLineup}
+            averageLineupRating={averageLineupRating}
+            scoutLineupRating={scoutLineupRating}
+            isLineupComplete={isLineupComplete}
+            selectedLineupCount={selectedLineupCount}
+            playerRevealMode={playerRevealMode}
+            onHoverPlayer={setHoveredBuildPlayer}
+            onSelectDraftPlayer={(playerName) => {
+              setActiveDraftPlayerName((currentPlayerName) =>
+                currentPlayerName === playerName ? "" : playerName,
+              );
+            }}
+            onRemovePlayer={onRemovePlayer}
+            onScoutLineup={onScoutLineup}
+          />
+
+          {/* Desktop court */}
+          <div className="hidden lg:block">
+            <BuilderCourtPreview
+              players={players}
+              lineupPositions={lineupPositions}
+              customLineup={customLineup}
+              hoveredBuildPlayer={hoveredBuildPlayer}
+              playerRevealMode={playerRevealMode}
+              onViewCard={onViewCard}
             />
           </div>
         </div>
 
-        <BuilderDraftBoard
-          players={players}
-          lineupPositions={lineupPositions}
-          hoveredBuildPlayer={hoveredBuildPlayer}
-          customLineup={customLineup}
-          builderLineupRating={builderLineupRating}
-          isLineupComplete={isLineupComplete}
-          selectedLineupCount={selectedLineupCount}
-          playerRevealMode={playerRevealMode}
-          onHoverPlayer={setHoveredBuildPlayer}
-          onRemovePlayer={onRemovePlayer}
-          onScoutLineup={onScoutLineup}
-        />
-
-        {/* Desktop court */}
-        <div className="hidden lg:block">
+        {/* Mobile court below picker + draft board */}
+        <div className="mt-4 lg:hidden">
           <BuilderCourtPreview
             players={players}
             lineupPositions={lineupPositions}
@@ -226,18 +388,21 @@ export function BuilderWorkspace({
           />
         </div>
       </div>
-
-      {/* Mobile court below picker + draft board */}
-      <div className="mt-4 lg:hidden">
-        <BuilderCourtPreview
-          players={players}
-          lineupPositions={lineupPositions}
-          customLineup={customLineup}
-          hoveredBuildPlayer={hoveredBuildPlayer}
-          playerRevealMode={playerRevealMode}
-          onViewCard={onViewCard}
-        />
-      </div>
-    </div>
+      {dragPreviewLabel &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="pointer-events-none fixed z-9999 rounded-md border border-[#1bc2ec]/80 bg-[#06131d]/95 px-2 py-1.5 font-michroma text-[5px] uppercase text-[#1bc2ec] shadow-[0_0_22px_rgba(27,194,236,0.35)] lg:px-3 lg:py-2 lg:text-xs"
+            style={{
+              left: dragPreviewPosition.x - 55,
+              top: dragPreviewPosition.y + 15,
+              transform: "translateY(-100%)",
+            }}
+          >
+            {dragPreviewLabel}
+          </div>,
+          document.body,
+        )}
+    </DndContext>
   );
 }

@@ -48,7 +48,7 @@ export function RankingPlayerTooltip({
         onClick={() => onViewPlayer(player.name)}
         className="mt-2 w-full cursor-pointer rounded border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-2 py-1.5 font-michroma text-[8px] font-bold uppercase tracking-wide text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 sm:mt-3 sm:px-3 sm:py-2 sm:text-[12px]"
       >
-        View Full Card
+        Full Profile
       </button>
     </div>
   );

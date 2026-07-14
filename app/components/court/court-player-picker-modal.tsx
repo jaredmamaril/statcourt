@@ -87,55 +87,55 @@ export function CourtPlayerPickerModal({
           ) : (
             <div className="grid gap-2 sm:grid-cols-2">
               {players.map((player) => {
-              const teamColor = getReadableTeamColor(player.team);
+                const teamColor = getReadableTeamColor(player.team);
 
-              return (
-                <button
-                  key={player.id}
-                  type="button"
-                  onClick={() => onSelectPlayer(player.name)}
-                  className="flex min-w-0 items-center gap-2 rounded-lg border border-white/10 bg-black/25 p-2.5 text-left transition hover:border-[#1bc2ec]/50 hover:bg-[#071827] hover:shadow-[0_0_18px_rgba(27,194,236,0.12)] active:scale-[0.99] sm:gap-3 sm:p-3"
-                >
-                  <div
-                    className="h-12 w-12 shrink-0 overflow-hidden rounded-md border bg-black/30 sm:h-14 sm:w-14"
-                    style={{ borderColor: `${teamColor}99` }}
+                return (
+                  <button
+                    key={player.id}
+                    type="button"
+                    onClick={() => onSelectPlayer(player.name)}
+                    className="flex min-w-0 items-center gap-2 rounded-lg border border-white/10 bg-black/25 p-2.5 text-left transition hover:border-[#1bc2ec]/50 hover:bg-[#071827] hover:shadow-[0_0_18px_rgba(27,194,236,0.12)] active:scale-[0.99] sm:gap-3 sm:p-3"
                   >
-                    <PlayerImage
-                      src={getPlayerHeadshot(player)}
-                      alt={player.name}
-                      width={240}
-                      height={240}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-michroma text-xs text-white sm:text-sm">
-                      {player.name}
-                    </p>
-
-                    <div className="mt-2 flex flex-wrap items-center gap-1.5 font-michroma text-[7px] uppercase sm:gap-2 sm:text-[8px]">
-                      <span
-                        className="rounded border px-1.5 py-0.5 text-white sm:px-2 sm:py-1"
-                        style={{
-                          backgroundColor: teamColor,
-                          borderColor: teamColor,
-                        }}
-                      >
-                        {player.team}
-                      </span>
-
-                      <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-white/55 sm:px-2 sm:py-1">
-                        {player.position}
-                      </span>
-
-                      <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-white/55 sm:px-2 sm:py-1">
-                        #{player.jerseyNumber}
-                      </span>
+                    <div
+                      className="h-12 w-12 shrink-0 overflow-hidden rounded-md border bg-black/30 sm:h-14 sm:w-14"
+                      style={{ borderColor: `${teamColor}99` }}
+                    >
+                      <PlayerImage
+                        src={getPlayerHeadshot(player)}
+                        alt={player.name}
+                        width={240}
+                        height={240}
+                        className="h-full w-full object-cover"
+                      />
                     </div>
-                  </div>
-                </button>
-              );
+
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-michroma text-xs text-white sm:text-sm">
+                        {player.name}
+                      </p>
+
+                      <div className="mt-2 flex flex-wrap items-center gap-1.5 font-michroma text-[7px] uppercase sm:gap-2 sm:text-[8px]">
+                        <span
+                          className="rounded border px-1.5 py-0.5 text-white sm:px-2 sm:py-1"
+                          style={{
+                            backgroundColor: teamColor,
+                            borderColor: teamColor,
+                          }}
+                        >
+                          {player.team}
+                        </span>
+
+                        <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-white/55 sm:px-2 sm:py-1">
+                          {player.position}
+                        </span>
+
+                        <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-white/55 sm:px-2 sm:py-1">
+                          #{player.jerseyNumber}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                );
               })}
             </div>
           )}

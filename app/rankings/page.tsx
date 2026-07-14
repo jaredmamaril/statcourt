@@ -276,7 +276,7 @@ export default function Rankings() {
 
   // Event handlers
   function viewPlayerCard(playerName: string) {
-    router.push(`/players?player=${encodeURIComponent(playerName)}`);
+    router.push(`/players/${encodeURIComponent(playerName)}`);
   }
 
   useEffect(() => {

@@ -3,8 +3,8 @@ import type { LineupSlot, Player } from "../../court-data";
 import type { BuilderStatProfileMode } from "./builder-position-helpers";
 import { BuilderPlayerCard } from "./builder-player-card";
 
-const DISPLAYED_BUILD_PLAYER_LIMIT = 36;
-const SEARCH_BUILD_PLAYER_LIMIT = 80;
+const DISPLAYED_BUILD_PLAYER_LIMIT = 20;
+const SEARCH_BUILD_PLAYER_LIMIT = 20;
 
 type BuilderPlayerPickerProps = {
   activeBuildPosition: LineupSlot;
@@ -12,6 +12,8 @@ type BuilderPlayerPickerProps = {
   buildPlayerSearch: string;
   builderStatProfile: BuilderStatProfileMode;
   availableBuildPlayers: Player[];
+  allBuildPlayers: Player[];
+  activeDraftPlayerName: string;
   onSearchChange: (value: string) => void;
   onPickPlayer: (playerName: string) => void;
 };
@@ -22,6 +24,8 @@ export function BuilderPlayerPicker({
   buildPlayerSearch,
   builderStatProfile,
   availableBuildPlayers,
+  allBuildPlayers,
+  activeDraftPlayerName,
   onSearchChange,
   onPickPlayer,
 }: BuilderPlayerPickerProps) {
@@ -35,10 +39,13 @@ export function BuilderPlayerPicker({
       ? openScoutPlayer.playerId
       : null;
 
-  const pickPlayer = useCallback((playerName: string) => {
-    setOpenScoutPlayer(null);
-    onPickPlayer(playerName);
-  }, [onPickPlayer]);
+  const pickPlayer = useCallback(
+    (playerName: string) => {
+      setOpenScoutPlayer(null);
+      onPickPlayer(playerName);
+    },
+    [onPickPlayer],
+  );
 
   const toggleScoutPlayer = useCallback(
     (playerId: number) => {
@@ -60,8 +67,30 @@ export function BuilderPlayerPicker({
       ? SEARCH_BUILD_PLAYER_LIMIT
       : DISPLAYED_BUILD_PLAYER_LIMIT;
 
-    return availableBuildPlayers.slice(0, displayLimit);
-  }, [availableBuildPlayers, buildPlayerSearch]);
+    if (!activeDraftPlayerName) {
+      return availableBuildPlayers.slice(0, displayLimit);
+    }
+
+    const activePlayer = allBuildPlayers.find(
+      (player) => player.name === activeDraftPlayerName,
+    );
+
+    if (!activePlayer) {
+      return availableBuildPlayers.slice(0, displayLimit);
+    }
+
+    return [
+      activePlayer,
+      ...availableBuildPlayers.filter(
+        (player) => player.name !== activeDraftPlayerName,
+      ),
+    ].slice(0, displayLimit);
+  }, [
+    activeDraftPlayerName,
+    allBuildPlayers,
+    availableBuildPlayers,
+    buildPlayerSearch,
+  ]);
 
   return (
     <div className="flex min-w-0 flex-col gap-2">
@@ -86,7 +115,7 @@ export function BuilderPlayerPicker({
         )}
       </p>
 
-      <div className="statcourt-scroll max-h-50 overflow-y-auto pr-1 lg:max-h-100 lg:pr-2">
+      <div className="statcourt-scroll max-h-38 overflow-y-auto pr-1 lg:max-h-92 lg:pr-2">
         <div
           key={`${activeBuildPosition}-${builderStatProfile}`}
           className="grid grid-cols-[repeat(2,75px)] justify-center gap-1.5 lg:grid-cols-3 lg:justify-stretch lg:gap-2"

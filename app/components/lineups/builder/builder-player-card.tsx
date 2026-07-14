@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { useDraggable } from "@dnd-kit/core";
 import { normalizeStat, type LineupSlot, type PlayerStats } from "../../court-data";
 import PlayerImage from "../../player-image";
 import { getPlayerHeadshot } from "../../player-images";
@@ -56,6 +57,14 @@ function BuilderPlayerCardComponent({
   onToggleScout,
   onPickPlayer,
 }: BuilderPlayerCardProps) {
+  const { attributes, listeners, setNodeRef, isDragging } =
+    useDraggable({
+      id: `builder-player-${player.id}`,
+      data: {
+        type: "picker-player",
+        playerName: player.name,
+      },
+    });
   const positionFit = getPositionFit(
     player,
     activeBuildPosition,
@@ -99,8 +108,9 @@ function BuilderPlayerCardComponent({
 
   return (
     <div
-      role="button"
-      tabIndex={0}
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
       onClick={() => {
         const isTouchDevice = window.matchMedia("(hover: none)").matches;
 
@@ -125,9 +135,11 @@ function BuilderPlayerCardComponent({
           onPickPlayer(player.name);
         }
       }}
-      className={`group relative h-21 overflow-hidden rounded-md border bg-black/30 p-0.75 text-center transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/10 lg:h-52 lg:p-3 ${
+      className={`group relative h-21 touch-none overflow-hidden rounded-md border bg-black/30 p-0.75 text-center transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/10 lg:h-52 lg:p-3 ${
         isSelected
           ? "border-[#1bc2ec] bg-[#1bc2ec]/15 shadow-[0_0_18px_rgba(27,194,236,0.35)]"
+          : isDragging
+            ? "border-[#1bc2ec] bg-[#1bc2ec]/15 opacity-45 shadow-[0_0_22px_rgba(27,194,236,0.35)]"
           : "border-white/15"
       }`}
     >

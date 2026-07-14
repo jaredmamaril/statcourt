@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Player } from "../court-data";
 import { CourtPlayerPreview } from "./court-player-preview";
 
@@ -45,6 +46,15 @@ export function CourtPlayerPanel({
             {"\u25BE"}
           </span>
         </button>
+
+        {selectedPlayer && (
+          <Link
+            href={`/players/${encodeURIComponent(selectedPlayer.name)}`}
+            className="mt-2 rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/16 px-2.5 py-1.5 font-michroma text-[7px] uppercase text-[#1bc2ec] shadow-[0_0_14px_rgba(27,194,236,0.16)] transition hover:scale-[1.03] hover:bg-[#1bc2ec]/24 sm:px-3 sm:text-[8px]"
+          >
+            Full Profile
+          </Link>
+        )}
       </div>
     </div>
   );

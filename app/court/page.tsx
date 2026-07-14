@@ -27,7 +27,7 @@ import { CourtMatchupSummary } from "../components/court/court-matchup-summary";
 
 import { CourtPlayerPickerModal } from "../components/court/court-player-picker-modal";
 
-const COURT_PLAYER_PICKER_LIMIT = 80;
+const COURT_PLAYER_PICKER_LIMIT = 20;
 
 export default function Court() {
   // Compare state

@@ -1,4 +1,14 @@
-import { useCallback, useDeferredValue, useMemo, useState } from "react";
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import {
+  getSavedBuilderDraft,
+  saveBuilderDraft,
+} from "../../players/player-storage";
 import type { LineupSlot, Player } from "../../court-data";
 import {
   EMPTY_LINEUP,
@@ -8,6 +18,7 @@ import {
   type PlayerRevealMode,
 } from "./builder-lineup-helpers";
 import type { BuilderStatProfileMode } from "./builder-position-helpers";
+import { getLineupScoutReport } from "../../lineup-scouting";
 
 type UseLineupBuilderProps = {
   players: Player[];
@@ -20,7 +31,7 @@ export function useLineupBuilder({
 }: UseLineupBuilderProps) {
   const [hasStartedBuilder, setHasStartedBuilder] = useState(false);
   const [customLineup, setCustomLineup] =
-    useState<Record<LineupSlot, string>>(EMPTY_LINEUP);
+    useState<Record<LineupSlot, string>>(getSavedBuilderDraft);
   const [activeBuildPosition, setActiveBuildPosition] =
     useState<LineupSlot>("PG");
   const [buildPlayerSearch, setBuildPlayerSearch] = useState("");
@@ -29,6 +40,10 @@ export function useLineupBuilder({
   const [playerRevealMode, setPlayerRevealMode] =
     useState<PlayerRevealMode>("instant");
   const deferredBuildPlayerSearch = useDeferredValue(buildPlayerSearch);
+
+  useEffect(() => {
+    saveBuilderDraft(customLineup);
+  }, [customLineup]);
 
   const playersByName = useMemo(
     () => new Map(players.map((player) => [player.name, player])),
@@ -50,14 +65,35 @@ export function useLineupBuilder({
     [selectedCustomPlayerSlots],
   );
 
-  const builderLineupRating = useMemo(
-    () =>
-      getBuilderLineupAverageRating(
+  const averageLineupRating = useMemo(
+    () => {
+      if (selectedCustomPlayerSlots.length === 0) {
+        return null;
+      }
+
+      return getBuilderLineupAverageRating(
         selectedCustomPlayerSlots,
         builderStatProfile,
-      ),
+      );
+    },
     [selectedCustomPlayerSlots, builderStatProfile],
   );
+
+  const scoutLineupRating = useMemo(
+    () => {
+      if (selectedCustomPlayerSlots.length !== lineupPositions.length) {
+        return null;
+      }
+
+      return getLineupScoutReport(
+        selectedCustomPlayerSlots,
+        builderStatProfile,
+      ).scores.overall;
+    },
+    [selectedCustomPlayerSlots, builderStatProfile, lineupPositions.length],
+  );
+
+  const builderLineupRating = scoutLineupRating ?? averageLineupRating;
 
   const activePositionPlayerName = customLineup[activeBuildPosition];
 
@@ -98,6 +134,33 @@ export function useLineupBuilder({
     }));
   }, [activeBuildPosition]);
 
+  const placeBuildPlayer = useCallback(
+    (playerName: string, position: LineupSlot) => {
+      setPlayerRevealMode("instant");
+
+      setCustomLineup((prev) => ({
+        ...prev,
+        [position]: playerName,
+      }));
+    },
+    [],
+  );
+
+  const moveBuildPlayer = useCallback(
+    (fromPosition: LineupSlot, toPosition: LineupSlot) => {
+      if (fromPosition === toPosition) return;
+
+      setPlayerRevealMode("instant");
+
+      setCustomLineup((prev) => ({
+        ...prev,
+        [fromPosition]: prev[toPosition],
+        [toPosition]: prev[fromPosition],
+      }));
+    },
+    [],
+  );
+
   const removeBuildPlayer = useCallback((position: LineupSlot) => {
     setCustomLineup((prev) => ({
       ...prev,
@@ -136,12 +199,16 @@ export function useLineupBuilder({
     setPlayerRevealMode,
     selectedCustomPlayerSlots,
     selectedCustomPlayers,
+    averageLineupRating,
+    scoutLineupRating,
     builderLineupRating,
     availableBuildPlayers,
     selectedLineupCount,
     isLineupComplete,
     hasExistingDraft,
     pickBuildPlayer,
+    placeBuildPlayer,
+    moveBuildPlayer,
     removeBuildPlayer,
     resetDraft,
     startNewDraft,

@@ -8,6 +8,7 @@ import { DatabaseErrorState } from "../components/loading/database-error-state";
 import { DatabaseLoadingState } from "../components/loading/database-loading-state";
 import {
   players as fallbackPlayers,
+  type LineupSlot,
   type Player,
 } from "../components/court-data";
 import type { PlayerStatProfileMode } from "../components/player-ratings";
@@ -81,6 +82,13 @@ const statProfileLabels: Record<PlayerStatProfileMode | "all", string> = {
   current: "Latest Season",
 };
 
+function getPreferredBuilderSlots(player: Player): LineupSlot[] {
+  if (player.position === "G") return ["PG", "SG"];
+  if (player.position === "F") return ["SF", "PF"];
+
+  return ["C", "PF"];
+}
+
 type OverwriteLineupRequest =
   | {
       type: "save";
@@ -99,6 +107,7 @@ export default function Lineups() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const lineupSectionRef = useRef<HTMLDivElement>(null);
+  const builderStartPlayerConsumedRef = useRef("");
 
   // Page state
   const [activeTab, setActiveTab] = useState<LineupTab>("featured");
@@ -222,17 +231,77 @@ export default function Lineups() {
     playerRevealMode,
     setPlayerRevealMode,
     selectedCustomPlayerSlots,
+    averageLineupRating,
+    scoutLineupRating,
     builderLineupRating,
     availableBuildPlayers,
     selectedLineupCount,
     isLineupComplete,
     hasExistingDraft,
     pickBuildPlayer,
+    placeBuildPlayer,
+    moveBuildPlayer,
     removeBuildPlayer,
     resetDraft,
     startNewDraft,
     continueDraft,
   } = useLineupBuilder({ players, lineupPositions });
+
+  useEffect(() => {
+    const builderPlayerName = searchParams.get("player");
+    const requestedSlot = searchParams.get("slot") as LineupSlot | null;
+
+    if (!builderPlayerName || players.length === 0) return;
+    if (builderStartPlayerConsumedRef.current === builderPlayerName) return;
+
+    const builderPlayer = players.find(
+      (player) => player.name === builderPlayerName,
+    );
+
+    if (!builderPlayer) return;
+
+    builderStartPlayerConsumedRef.current = builderPlayerName;
+
+    const preferredSlots = getPreferredBuilderSlots(builderPlayer);
+    const openPreferredSlot = preferredSlots.find(
+      (slot) => customLineup[slot] === "",
+    );
+    const openAnySlot = lineupPositions.find(
+      (slot) => customLineup[slot] === "",
+    );
+    const requestedTargetSlot =
+      requestedSlot && lineupPositions.includes(requestedSlot)
+        ? requestedSlot
+        : null;
+    const targetSlot =
+      requestedTargetSlot ?? openPreferredSlot ?? openAnySlot ?? preferredSlots[0];
+
+    const frameId = requestAnimationFrame(() => {
+      setActiveTab("builder");
+      setHasStartedBuilder(true);
+      setActiveBuildPosition(targetSlot);
+      setBuildPlayerSearch("");
+      setPlayerRevealMode("instant");
+      setCustomLineup((currentLineup) => ({
+        ...currentLineup,
+        [targetSlot]: builderPlayer.name,
+      }));
+
+      router.replace("/lineups?tab=builder", { scroll: false });
+    });
+
+    return () => cancelAnimationFrame(frameId);
+  }, [
+    customLineup,
+    players,
+    router,
+    searchParams,
+    setActiveBuildPosition,
+    setBuildPlayerSearch,
+    setCustomLineup,
+    setHasStartedBuilder,
+    setPlayerRevealMode,
+  ]);
 
   const scoutStatProfile =
     scoutedSavedLineup?.statProfile ?? builderStatProfile;
@@ -396,7 +465,7 @@ export default function Lineups() {
   }
 
   function viewPlayerCard(playerName: string) {
-    router.push(`/players?player=${encodeURIComponent(playerName)}`);
+    router.push(`/players/${encodeURIComponent(playerName)}`);
   }
 
   // Builder actions
@@ -658,7 +727,8 @@ export default function Lineups() {
                   buildPlayerSearch={buildPlayerSearch}
                   builderStatProfile={builderStatProfile}
                   availableBuildPlayers={availableBuildPlayers}
-                  builderLineupRating={builderLineupRating}
+                  averageLineupRating={averageLineupRating}
+                  scoutLineupRating={scoutLineupRating}
                   isLineupComplete={isLineupComplete}
                   selectedLineupCount={selectedLineupCount}
                   playerRevealMode={playerRevealMode}
@@ -666,6 +736,8 @@ export default function Lineups() {
                   onSearchChange={setBuildPlayerSearch}
                   onStatProfileChange={setBuilderStatProfile}
                   onPickPlayer={pickBuildPlayer}
+                  onPlacePlayer={placeBuildPlayer}
+                  onMovePlayer={moveBuildPlayer}
                   onRemovePlayer={removeBuildPlayer}
                   onScoutLineup={scoutDraftLineup}
                   onViewCard={viewPlayerCard}
