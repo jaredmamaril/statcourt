@@ -1,7 +1,7 @@
 "use client";
 
 import { AuthPrompt } from "../components/auth/auth-prompt";
-import { mockUser as user } from "../lib/mock-auth";
+import { useAuthUser } from "../lib/use-auth-user";
 import { DatabaseLoadingState } from "../components/loading/database-loading-state";
 import { DatabaseErrorState } from "../components/loading/database-error-state";
 import {
@@ -31,15 +31,9 @@ import {
 } from "../components/players/player-page-stats";
 import { getBestLineupFits } from "../components/players/player-lineup-fits";
 import { getFilteredPlayers } from "../components/players/player-filtering";
-import {
-  addRecentPlayer,
-  getSavedCompareSlots,
-  getSavedFavoritePlayers,
-  getSavedRecentPlayers,
-  saveCompareSlots,
-  saveFavoritePlayers,
-  saveRecentPlayers,
-} from "../components/players/player-storage";
+import { useCompareSlots } from "../components/players/use-compare-slots";
+import { useFavoritePlayers } from "../components/players/use-favorite-players";
+import { useRecentPlayers } from "../components/players/use-recent-players";
 import {
   getInsightRarityLabel,
   getInsightRarityStyles,
@@ -52,7 +46,6 @@ import type {
   Team,
   Position,
   SortDirection,
-  CompareSlots,
 } from "../components/court-data";
 import {
   Suspense,
@@ -82,6 +75,11 @@ export default function PlayersPage() {
 }
 
 function Players() {
+  const { user } = useAuthUser();
+  const { favorites, toggleFavorite } = useFavoritePlayers(user);
+  const { compareSlots, updateCompareSlots } = useCompareSlots(user);
+  const { recentPlayers, addViewedPlayer } = useRecentPlayers(user);
+
   // URL/navigation
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -96,7 +94,6 @@ function Players() {
   const [playerLoadError, setPlayerLoadError] = useState("");
   const [currentPlayer, setCurrentPlayer] = useState("");
   const [playerSearch, setPlayerSearch] = useState("");
-  const [favorites, setFavorites] = useState<string[]>([]);
   const [showFavorites, setShowFavorites] = useState(false);
   const [filteredTeam, setFilteredTeam] = useState<Team | "">("");
   const [filteredPosition, setFilteredPosition] = useState<Position | "">("");
@@ -110,13 +107,6 @@ function Players() {
   >(null);
   const [isCardFlipped, setIsCardFlipped] = useState(false);
   const [isGoingToCourt, setIsGoingToCourt] = useState(false);
-  const [compareSlots, setCompareSlots] = useState<CompareSlots>({
-    left: "",
-    right: "",
-  });
-  const [recentlyViewedPlayers, setRecentlyViewedPlayers] = useState<string[]>(
-    [],
-  );
   const [featuredPlayerIndex, setFeaturedPlayerIndex] = useState(0);
   const [isDesktop, setIsDesktop] = useState(false);
   const deferredPlayerSearch = useDeferredValue(playerSearch);
@@ -257,23 +247,6 @@ function Players() {
 
   // Effects
   useEffect(() => {
-    const frameId = requestAnimationFrame(() => {
-      setRecentlyViewedPlayers(getSavedRecentPlayers());
-      setFavorites(getSavedFavoritePlayers());
-    });
-
-    return () => cancelAnimationFrame(frameId);
-  }, []);
-
-  useEffect(() => {
-    const frameId = requestAnimationFrame(() => {
-      setCompareSlots(getSavedCompareSlots());
-    });
-
-    return () => cancelAnimationFrame(frameId);
-  }, []);
-
-  useEffect(() => {
     let isActive = true;
 
     async function loadPlayers() {
@@ -361,26 +334,13 @@ function Players() {
     ? getPlayerInsights(featuredPlayer, selectedStatMode)
     : null;
 
-  const addRecentlyViewedPlayer = useCallback((playerName: string) => {
-    setRecentlyViewedPlayers((currentRecentPlayers) => {
-      const nextRecentPlayers = addRecentPlayer(
-        currentRecentPlayers,
-        playerName,
-      );
-
-      saveRecentPlayers(nextRecentPlayers);
-
-      return nextRecentPlayers;
-    });
-  }, []);
-
   const openPlayerCard = useCallback(
     (playerName: string) => {
       setCurrentPlayer(playerName);
-      addRecentlyViewedPlayer(playerName);
+      void addViewedPlayer(playerName);
       setIsCardFlipped(false);
     },
-    [addRecentlyViewedPlayer],
+    [addViewedPlayer],
   );
 
   useEffect(() => {
@@ -445,24 +405,6 @@ function Players() {
 
   // Event handlers
 
-  const updateFavorite = (playerName: string) => {
-    setFavorites((prev) => {
-      const nextFavorites = prev.includes(playerName)
-        ? prev.filter((name) => name !== playerName)
-        : [...prev, playerName];
-
-      saveFavoritePlayers(nextFavorites);
-
-      return nextFavorites;
-    });
-  };
-
-  function toggleFavorite(playerName: string) {
-    requireAuth("Create an account to track your favorite players", () => {
-      updateFavorite(playerName);
-    });
-  }
-
   function handleSortClick(sortValue: SortValue) {
     if (sortValue === "") {
       setSortBy("");
@@ -511,8 +453,7 @@ function Players() {
         [slot]: selectedPlayer.name,
       };
 
-      setCompareSlots(nextSlots);
-      saveCompareSlots(nextSlots);
+      void updateCompareSlots(nextSlots);
 
       setIsGoingToCourt(true);
 
@@ -616,7 +557,7 @@ function Players() {
                 >
                   <RecentlyScouted
                     players={players}
-                    recentlyViewedPlayers={recentlyViewedPlayers}
+                    recentlyViewedPlayers={recentPlayers}
                     onViewPlayer={openPlayerCard}
                   />
                 </FeaturedPlayerPanel>

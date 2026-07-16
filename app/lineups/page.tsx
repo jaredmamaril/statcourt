@@ -3,7 +3,7 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthPrompt } from "../components/auth/auth-prompt";
-import { mockUser as user } from "../lib/mock-auth";
+import { useAuthUser } from "../lib/use-auth-user";
 import { DatabaseErrorState } from "../components/loading/database-error-state";
 import { DatabaseLoadingState } from "../components/loading/database-loading-state";
 import {
@@ -62,6 +62,7 @@ import {
   getLineupsAfterRename,
   getLineupsAfterSave,
 } from "../components/lineups/saved/saved-lineup-list-helpers";
+import { clearSavedBuilderDraft } from "../components/players/player-storage";
 
 import { LoadingLineupModal } from "../components/lineups/scout/loading-lineup-modal";
 import { getScoutReportDisplay } from "../components/lineups/scout/scout-report-display";
@@ -103,6 +104,8 @@ type OverwriteLineupRequest =
     };
 
 export default function Lineups() {
+  const { user } = useAuthUser();
+
   // Refs and routing
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -521,6 +524,8 @@ export default function Lineups() {
     updateSavedLineups(
       getLineupsAfterSave(savedLineups, newLineup, overwriteLineupId),
     );
+    clearSavedBuilderDraft();
+    resetDraft();
   }
 
   function requestSaveLineup(lineupName: string) {

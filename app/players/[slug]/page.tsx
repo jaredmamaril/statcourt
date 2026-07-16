@@ -3,15 +3,14 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { useAuthUser } from "../../lib/use-auth-user";
 import { DatabaseErrorState } from "../../components/loading/database-error-state";
 import { DatabaseLoadingState } from "../../components/loading/database-loading-state";
 import {
-  getSavedCompareSlots,
   getSavedBuilderDraft,
-  getSavedFavoritePlayers,
-  saveCompareSlots,
-  saveFavoritePlayers,
 } from "../../components/players/player-storage";
+import { useCompareSlots } from "../../components/players/use-compare-slots";
+import { useFavoritePlayers } from "../../components/players/use-favorite-players";
 import { getBestLineupFits } from "../../components/players/player-lineup-fits";
 import { lineupFitDescriptions } from "../../components/players/player-card/player-card-similar-panel";
 import {
@@ -89,11 +88,14 @@ function formatNumber(value: number | null | undefined, fallback = "--") {
 export default function PlayerProfilePage() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
+  const { user } = useAuthUser();
+  const { compareSlots, updateCompareSlots } = useCompareSlots(user);
+  const { favorites: favoritePlayers, toggleFavorite } =
+    useFavoritePlayers(user);
   const [players, setPlayers] = useState<Player[]>(fallbackPlayers);
   const [isLoadingPlayers, setIsLoadingPlayers] = useState(true);
   const [playerLoadError, setPlayerLoadError] = useState("");
   const [statMode, setStatMode] = useState<StatMode>("career");
-  const [favoritePlayers, setFavoritePlayers] = useState<string[]>([]);
   const [isBuildSlotModalOpen, setIsBuildSlotModalOpen] = useState(false);
   const [builderDraft, setBuilderDraft] = useState<Record<LineupSlot, string>>(
     getSavedBuilderDraft,
@@ -146,7 +148,6 @@ export default function PlayerProfilePage() {
 
   useEffect(() => {
     const frameId = requestAnimationFrame(() => {
-      setFavoritePlayers(getSavedFavoritePlayers());
       setBuilderDraft(getSavedBuilderDraft());
     });
 
@@ -265,8 +266,8 @@ export default function PlayerProfilePage() {
   function comparePlayer(slot: "left" | "right") {
     if (!player) return;
 
-    saveCompareSlots({
-      ...getSavedCompareSlots(),
+    void updateCompareSlots({
+      ...compareSlots,
       [slot]: player.name,
     });
 
@@ -276,12 +277,7 @@ export default function PlayerProfilePage() {
   function toggleFavoritePlayer() {
     if (!player) return;
 
-    const nextFavoritePlayers = isFavorite
-      ? favoritePlayers.filter((playerName) => playerName !== player.name)
-      : [...favoritePlayers, player.name];
-
-    setFavoritePlayers(nextFavoritePlayers);
-    saveFavoritePlayers(nextFavoritePlayers);
+    void toggleFavorite(player.name);
   }
 
   function openBuildSlotModal() {

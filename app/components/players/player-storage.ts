@@ -70,6 +70,10 @@ export function saveBuilderDraft(
   localStorage.setItem(BUILDER_DRAFT_KEY, JSON.stringify(builderDraft));
 }
 
+export function clearSavedBuilderDraft(): void {
+  localStorage.removeItem(BUILDER_DRAFT_KEY);
+}
+
 export function saveCompareSlots(compareSlots: CompareSlots): void {
   localStorage.setItem(COMPARE_SLOTS_KEY, JSON.stringify(compareSlots));
 }

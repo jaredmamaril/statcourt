@@ -2,6 +2,7 @@
 
 import { useDeferredValue, useEffect, useState } from "react";
 
+import { useAuthUser } from "../lib/use-auth-user";
 import { DatabaseLoadingState } from "../components/loading/database-loading-state";
 import { DatabaseErrorState } from "../components/loading/database-error-state";
 
@@ -12,10 +13,7 @@ import {
   type StatMode,
 } from "../components/court-data";
 
-import {
-  getSavedCompareSlots,
-  saveCompareSlots,
-} from "../components/players/player-storage";
+import { useCompareSlots } from "../components/players/use-compare-slots";
 
 import { PlayerComparisonRadar } from "../components/court/player-comparison-radar";
 import { CourtPlayerPanel } from "../components/court/court-player-panel";
@@ -30,6 +28,9 @@ import { CourtPlayerPickerModal } from "../components/court/court-player-picker-
 const COURT_PLAYER_PICKER_LIMIT = 20;
 
 export default function Court() {
+  const { user } = useAuthUser();
+  const { compareSlots, updateCompareSlots } = useCompareSlots(user);
+
   // Compare state
   const [comparePlayers, setComparePlayers] =
     useState<Player[]>(fallbackPlayers);
@@ -52,9 +53,6 @@ export default function Court() {
   >(null);
   const [pickerSearch, setPickerSearch] = useState("");
   const deferredPickerSearch = useDeferredValue(pickerSearch);
-
-  // Saved compare slots
-  const [hasLoadedSavedPlayers, setHasLoadedSavedPlayers] = useState(false);
 
   // Load full player data, including stat profiles
   useEffect(() => {
@@ -101,26 +99,13 @@ export default function Court() {
 
   // Load saved comparison players
   useEffect(() => {
-    const savedSlots = getSavedCompareSlots();
-
-    const timer = window.setTimeout(() => {
-      setLeftPlayer(savedSlots.left);
-      setRightPlayer(savedSlots.right);
-      setHasLoadedSavedPlayers(true);
-    }, 0);
-
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  // Save comparison players after initial load
-  useEffect(() => {
-    if (!hasLoadedSavedPlayers) return;
-
-    saveCompareSlots({
-      left: leftPlayer,
-      right: rightPlayer,
+    const frameId = requestAnimationFrame(() => {
+      setLeftPlayer(compareSlots.left);
+      setRightPlayer(compareSlots.right);
     });
-  }, [leftPlayer, rightPlayer, hasLoadedSavedPlayers]);
+
+    return () => cancelAnimationFrame(frameId);
+  }, [compareSlots.left, compareSlots.right]);
 
   // Radar chart data
   const radarData = getRadarData(
@@ -141,10 +126,18 @@ export default function Court() {
   function selectModalPlayer(playerName: string) {
     if (activePickerSide === "left") {
       setLeftPlayer(playerName);
+      void updateCompareSlots({
+        ...compareSlots,
+        left: playerName,
+      });
     }
 
     if (activePickerSide === "right") {
       setRightPlayer(playerName);
+      void updateCompareSlots({
+        ...compareSlots,
+        right: playerName,
+      });
     }
 
     setActivePickerSide(null);

@@ -1,8 +1,53 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { FormEvent, useState } from "react";
 import { Mail, Shield, Sparkles } from "lucide-react";
+import { supabase } from "../components/supabase-client";
 
 export default function SignInPage() {
+  const router = useRouter();
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [authMessage, setAuthMessage] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleEmailAuth(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setAuthMessage("");
+    setAuthError("");
+    setIsSubmitting(true);
+
+    const authResponse =
+      authMode === "signin"
+        ? await supabase.auth.signInWithPassword({
+            email,
+            password,
+          })
+        : await supabase.auth.signUp({
+            email,
+            password,
+          });
+
+    setIsSubmitting(false);
+
+    if (authResponse.error) {
+      setAuthError(authResponse.error.message);
+      return;
+    }
+
+    if (authMode === "signup" && !authResponse.data.session) {
+      setAuthMessage("Check your email to confirm your StatCourt account.");
+      return;
+    }
+
+    router.push("/profile");
+  }
+
   return (
     <main className="page-enter relative min-h-svh overflow-hidden bg-background px-3 py-4 text-white lg:px-6 lg:pt-12">
       <Image
@@ -52,13 +97,58 @@ export default function SignInPage() {
             </p>
           </div>
 
-          <div className="grid gap-2 lg:gap-3">
+          <form onSubmit={handleEmailAuth} className="grid gap-2 lg:gap-3">
+            <div className="grid grid-cols-2 rounded-md border border-white/10 bg-black/25 p-0.5">
+              {(["signin", "signup"] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => {
+                    setAuthMode(mode);
+                    setAuthError("");
+                    setAuthMessage("");
+                  }}
+                  className={`rounded px-2 py-1.5 font-michroma text-[6px] uppercase transition lg:text-[8px] ${
+                    authMode === mode
+                      ? "bg-[#1bc2ec]/20 text-[#1bc2ec]"
+                      : "text-white/35 hover:bg-white/5 hover:text-white/70"
+                  }`}
+                >
+                  {mode === "signin" ? "Sign In" : "Create Account"}
+                </button>
+              ))}
+            </div>
+
+            <input
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+              placeholder="Email"
+              className="rounded-md border border-white/15 bg-black/25 px-3 py-2 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/30 focus:border-[#1bc2ec] lg:px-4 lg:py-3 lg:text-[10px]"
+            />
+
+            <input
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              required
+              minLength={6}
+              placeholder="Password"
+              className="rounded-md border border-white/15 bg-black/25 px-3 py-2 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/30 focus:border-[#1bc2ec] lg:px-4 lg:py-3 lg:text-[10px]"
+            />
+
             <button
-              type="button"
+              type="submit"
+              disabled={isSubmitting}
               className="group flex items-center justify-center gap-2 rounded-md border border-[#1bc2ec]/55 bg-[#1bc2ec]/10 px-3 py-2 font-michroma text-[7px] uppercase text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.14)] transition hover:bg-[#1bc2ec]/20 hover:text-white hover:shadow-[0_0_24px_rgba(27,194,236,0.28)] lg:px-4 lg:py-3 lg:text-[10px]"
             >
               <Mail className="h-3 w-3 transition group-hover:brightness-125 lg:h-4 lg:w-4" />
-              Continue with Email
+              {isSubmitting
+                ? "Checking Access..."
+                : authMode === "signin"
+                  ? "Continue with Email"
+                  : "Create Account"}
             </button>
 
             <button
@@ -66,12 +156,23 @@ export default function SignInPage() {
               className="group flex items-center justify-center gap-2 rounded-md border border-white/15 bg-white/5 px-3 py-2 font-michroma text-[7px] uppercase text-white/65 transition hover:border-white/30 hover:bg-white/10 hover:text-white lg:px-4 lg:py-3 lg:text-[10px]"
             >
               <Sparkles className="h-3 w-3 text-white/55 transition group-hover:text-white lg:h-4 lg:w-4" />{" "}
-              Continue with Google
+              Google Later
             </button>
-          </div>
+          </form>
+
+          {(authError || authMessage) && (
+            <p
+              className={`mt-2 text-center font-michroma text-[6px] leading-relaxed lg:text-[8px] ${
+                authError ? "text-red-300" : "text-[#1bc2ec]"
+              }`}
+            >
+              {authError || authMessage}
+            </p>
+          )}
 
           <p className="mt-2.5 text-center font-michroma text-[6px] leading-relaxed text-white/30 lg:mt-4 lg:text-[8px]">
-            Authentication preview only. Real sign-in will connect later.
+            Your account keeps saved lineups, favorites, and scouting activity
+            connected.
           </p>
 
           <Link

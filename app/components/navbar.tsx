@@ -1,10 +1,11 @@
 "use client";
 
-import { mockUser as user } from "../lib/mock-auth";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { supabase } from "./supabase-client";
+import { useAuthUser } from "../lib/use-auth-user";
 import {
   Activity,
   Bookmark,
@@ -47,9 +48,18 @@ const navItems: NavItem[] = [
 export default function Navbar() {
   // Path to desired page
   const pathname = usePathname();
+  const { user, isLoadingUser } = useAuthUser();
+  const userDisplayName =
+    user?.user_metadata?.name ?? user?.email?.split("@")[0] ?? "Player";
+  const userInitial = userDisplayName.charAt(0).toUpperCase();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    setIsUserMenuOpen(false);
+  }
 
   // Scrolling to the top when new page is clicked
   useEffect(() => {
@@ -134,7 +144,9 @@ export default function Navbar() {
               )}
             </button>
 
-            {user ? (
+            {isLoadingUser ? (
+              <div className="h-9 w-9 rounded-md border border-white/10 bg-white/5 lg:h-10 lg:w-44" />
+            ) : user ? (
               <>
                 <div className="relative">
                   <button
@@ -148,11 +160,11 @@ export default function Navbar() {
                     aria-label="Open account menu"
                   >
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-[#06131d] text-[10px] uppercase text-[#1bc2ec]">
-                      T
+                      {userInitial}
                     </span>
 
                     <span className="hidden min-w-0 flex-1 truncate text-left lg:block">
-                      Tyler
+                      {userDisplayName}
                     </span>
                   </button>
 
@@ -192,7 +204,7 @@ export default function Navbar() {
 
                     <button
                       type="button"
-                      onClick={() => setIsUserMenuOpen(false)}
+                      onClick={signOut}
                       className="mt-1 flex w-full cursor-pointer items-center gap-1.5 rounded border-t border-white/10 px-2 py-1.5 text-left font-michroma text-[7px] uppercase text-red-600/80 transition hover:bg-white/5 hover:text-red-600 lg:gap-2 lg:px-3 lg:py-2 lg:text-[10px]"
                     >
                       <LogOut className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
