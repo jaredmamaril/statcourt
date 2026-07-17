@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "../supabase-client";
+import { logUserActivity } from "../user-activity";
 import {
   addRecentPlayer,
   getSavedRecentPlayers,
@@ -89,9 +90,31 @@ export function useRecentPlayers(user: User | null) {
       console.error("Failed to update recent players", error);
       setRecentPlayers(recentPlayers);
       saveRecentPlayers(recentPlayers);
+      return;
     },
     [recentPlayers, user],
   );
 
-  return { recentPlayers, isLoadingRecentPlayers, addViewedPlayer };
+  const addViewedPlayerWithActivity = useCallback(
+    async (playerName: string) => {
+      await addViewedPlayer(playerName);
+
+      await logUserActivity({
+        user,
+        activityType: "view_player",
+        label: `Viewed ${playerName}`,
+        href: `/players/${encodeURIComponent(playerName)}`,
+        metadata: {
+          playerName,
+        },
+      });
+    },
+    [addViewedPlayer, user],
+  );
+
+  return {
+    recentPlayers,
+    isLoadingRecentPlayers,
+    addViewedPlayer: addViewedPlayerWithActivity,
+  };
 }

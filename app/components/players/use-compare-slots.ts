@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import type { CompareSlots } from "../court-data";
 import { supabase } from "../supabase-client";
+import { logUserActivity } from "../user-activity";
 import { getSavedCompareSlots, saveCompareSlots } from "./player-storage";
 
 const emptyCompareSlots: CompareSlots = {
@@ -73,6 +74,19 @@ export function useCompareSlots(user: User | null) {
 
   const updateCompareSlots = useCallback(
     async (nextSlots: CompareSlots) => {
+      const changedSlot =
+        nextSlots.left !== compareSlots.left
+          ? "left"
+          : nextSlots.right !== compareSlots.right
+            ? "right"
+            : null;
+      const comparedPlayer =
+        changedSlot === "left"
+          ? nextSlots.left
+          : changedSlot === "right"
+            ? nextSlots.right
+            : "";
+
       setCompareSlots(nextSlots);
       saveCompareSlots(nextSlots);
 
@@ -85,12 +99,27 @@ export function useCompareSlots(user: User | null) {
         updated_at: new Date().toISOString(),
       });
 
-      if (!error) return;
+      if (!error) {
+        if (comparedPlayer) {
+          await logUserActivity({
+            user,
+            activityType: "compare_players",
+            label: `Added ${comparedPlayer} to comparison`,
+            href: "/court",
+            metadata: {
+              slot: changedSlot,
+              playerName: comparedPlayer,
+            },
+          });
+        }
+
+        return;
+      }
 
       console.error("Failed to update compare slots", error);
       setCompareSlots(getSavedCompareSlots());
     },
-    [user],
+    [compareSlots.left, compareSlots.right, user],
   );
 
   return { compareSlots, isLoadingCompareSlots, updateCompareSlots };

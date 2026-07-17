@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "../supabase-client";
+import { logUserActivity } from "../user-activity";
 import {
   getSavedFavoritePlayers,
   saveFavoritePlayers,
@@ -88,13 +89,30 @@ export function useFavoritePlayers(user: User | null) {
             { onConflict: "user_id,player_name" },
           );
 
-      if (!error) return;
+      if (!error) {
+        await logUserActivity({
+          user,
+          activityType: wasFavorite ? "unfavorite_player" : "favorite_player",
+          label: `${wasFavorite ? "Removed" : "Favorited"} ${playerName}`,
+          href: `/players/${encodeURIComponent(playerName)}`,
+          metadata: {
+            playerName,
+          },
+        });
+
+        return;
+      }
 
       console.error("Failed to update favorite player", error);
       setFavorites(favorites);
+      return;
     },
     [favorites, user],
   );
 
-  return { favorites, isLoadingFavorites, toggleFavorite };
+  return {
+    favorites,
+    isLoadingFavorites,
+    toggleFavorite,
+  };
 }

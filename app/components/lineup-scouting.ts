@@ -163,7 +163,7 @@ export type LineupScoutReport = {
 export function getLineupTierColor(tier: string) {
   if (tier === "Championship Favorite") return "#EFBF04";
   if (tier === "Championship Contender") return "#1bc2ec";
-  if (tier === "Playoff-Caliber") return "#FFFFFF";
+  if (tier === "Playoff Caliber") return "#FFFFFF";
   if (tier === "Developmental Lineup") return "#94A3B8";
 
   return "#94A3B8";
@@ -623,17 +623,15 @@ export function getLineupScoutReport(
     (item) => item.traits.highStarPower,
   ).length;
 
-  const pointCenterBigs = selectedPlayerTraits.filter(
-    (item) => {
-      const stats = getStatsByMode(item.player, statProfileMode);
+  const pointCenterBigs = selectedPlayerTraits.filter((item) => {
+    const stats = getStatsByMode(item.player, statProfileMode);
 
-      return (
-        (item.position === "PF" || item.position === "C") &&
-        (stats.apg ?? 0) >= 6 &&
-        (stats.rpg ?? 0) >= 8
-      );
-    },
-  ).length;
+    return (
+      (item.position === "PF" || item.position === "C") &&
+      (stats.apg ?? 0) >= 6 &&
+      (stats.rpg ?? 0) >= 8
+    );
+  }).length;
 
   const versatileForwards = selectedPlayerTraits.filter(
     (item) => item.traits.versatileForward,
@@ -884,7 +882,7 @@ export function getLineupScoutReport(
       : finalOverall >= 90
         ? "Championship Contender"
         : finalOverall >= 86
-          ? "Playoff-Caliber"
+          ? "Playoff Caliber"
           : "Developmental Lineup";
 
   let archetype = "Balanced Core";

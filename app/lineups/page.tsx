@@ -4,6 +4,7 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthPrompt } from "../components/auth/auth-prompt";
 import { useAuthUser } from "../lib/use-auth-user";
+import { logUserActivity } from "../components/user-activity";
 import { DatabaseErrorState } from "../components/loading/database-error-state";
 import { DatabaseLoadingState } from "../components/loading/database-loading-state";
 import {
@@ -524,6 +525,18 @@ export default function Lineups() {
     updateSavedLineups(
       getLineupsAfterSave(savedLineups, newLineup, overwriteLineupId),
     );
+    void logUserActivity({
+      user,
+      activityType: "save_lineup",
+      label: `${overwriteLineupId ? "Updated" : "Saved"} lineup ${newLineup.name}`,
+      href: "/lineups?tab=saved",
+      metadata: {
+        lineupId: overwriteLineupId ?? newLineup.id,
+        lineupName: newLineup.name,
+        statProfile: newLineup.statProfile,
+        overall: newLineup.overall,
+      },
+    });
     clearSavedBuilderDraft();
     resetDraft();
   }
@@ -550,16 +563,45 @@ export default function Lineups() {
 
   function deleteSavedLineup(lineupId: string, onDeleted?: () => void) {
     requireAuth("Sign in to delete saved lineups", () => {
+      const deletedLineup = savedLineups.find((lineup) => lineup.id === lineupId);
+
       updateSavedLineups(getLineupsAfterDelete(savedLineups, lineupId));
+      if (deletedLineup) {
+        void logUserActivity({
+          user,
+          activityType: "delete_lineup",
+          label: `Deleted lineup ${deletedLineup.name}`,
+          href: "/lineups?tab=saved",
+          metadata: {
+            lineupId,
+            lineupName: deletedLineup.name,
+          },
+        });
+      }
       onDeleted?.();
     });
   }
 
   function renameSavedLineup(lineupId: string, newName: string) {
     requireAuth("Sign in to rename saved lineups", () => {
+      const renamedLineup = savedLineups.find((lineup) => lineup.id === lineupId);
+
       updateSavedLineups(
         getLineupsAfterRename(savedLineups, lineupId, newName),
       );
+      if (renamedLineup) {
+        void logUserActivity({
+          user,
+          activityType: "save_lineup",
+          label: `Renamed lineup ${renamedLineup.name} to ${newName}`,
+          href: "/lineups?tab=saved",
+          metadata: {
+            lineupId,
+            previousName: renamedLineup.name,
+            nextName: newName,
+          },
+        });
+      }
     });
   }
 
