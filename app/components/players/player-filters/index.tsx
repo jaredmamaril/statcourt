@@ -11,13 +11,22 @@ import { PositionFilterDropdown } from "./position-filter-dropdown";
 import { SortFilterDropdown } from "./sort-filter-dropdown";
 import { ArchetypeFilterDropdown } from "./archetype-filter-dropdown";
 import { SkillFilterDropdown } from "./skill-filter-dropdown";
+import { ViewFilterDropdown } from "./view-filter-dropdown";
 import type { PlayerRatingCategory } from "../../player-ratings";
+import type { DefaultPlayerView } from "../../../lib/use-user-settings";
 
 type ArchetypeOption = NonNullable<
   ReturnType<typeof getPlayerInsights>["archetype"]
 >;
 
-type OpenDropdown = "team" | "position" | "sort" | "archetype" | "skill" | null;
+type OpenDropdown =
+  | "team"
+  | "position"
+  | "sort"
+  | "archetype"
+  | "skill"
+  | "view"
+  | null;
 
 type PlayerFiltersProps = {
   filtersRef: React.RefObject<HTMLDivElement | null>;
@@ -42,6 +51,8 @@ type PlayerFiltersProps = {
   onResetFilters: () => void;
   selectedSkill: PlayerRatingCategory;
   onSelectSkill: (skill: PlayerRatingCategory) => void;
+  selectedView: DefaultPlayerView;
+  onSelectView: (view: DefaultPlayerView) => void;
 };
 
 export function PlayerFilters({
@@ -67,6 +78,8 @@ export function PlayerFilters({
   onResetFilters,
   selectedSkill,
   onSelectSkill,
+  selectedView,
+  onSelectView,
 }: PlayerFiltersProps) {
   return (
     <div
@@ -139,6 +152,15 @@ export function PlayerFilters({
           onOpenDropdown(openDropdown === "skill" ? null : "skill")
         }
         onSelectSkill={onSelectSkill}
+      />
+
+      <ViewFilterDropdown
+        selectedView={selectedView}
+        isOpen={openDropdown === "view"}
+        onOpenDropdown={() =>
+          onOpenDropdown(openDropdown === "view" ? null : "view")
+        }
+        onSelectView={onSelectView}
       />
 
       {hasActiveFilters && (

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { LoadingSpinner } from "../../loading/loading-spinner";
 
 type LoadingLineupModalProps = {
   steps: string[];
@@ -80,6 +81,8 @@ export function LoadingLineupModal({
         <p className="mt-2 min-h-4 font-michroma text-[10px] text-[#1bc2ec] sm:mt-3 sm:min-h-5 sm:text-sm">
           {steps[currentStep]}
         </p>
+
+        <LoadingSpinner className="mt-4 h-6 w-6 sm:h-7 sm:w-7" />
 
         <div className="mt-4 h-1 overflow-hidden rounded-full bg-white/10 sm:mt-5 sm:h-1.5">
           <div

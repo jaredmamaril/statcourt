@@ -2,7 +2,10 @@
 
 import { AuthPrompt } from "../components/auth/auth-prompt";
 import { useAuthUser } from "../lib/use-auth-user";
-import { useUserSettings } from "../lib/use-user-settings";
+import {
+  type DefaultPlayerView,
+  useUserSettings,
+} from "../lib/use-user-settings";
 import { DatabaseLoadingState } from "../components/loading/database-loading-state";
 import { DatabaseErrorState } from "../components/loading/database-error-state";
 import {
@@ -90,6 +93,7 @@ function Players() {
   const filtersRef = useRef<HTMLDivElement>(null);
   const playerCardRef = useRef<HTMLDivElement>(null);
   const hasAppliedDefaultRatingViewRef = useRef(false);
+  const hasAppliedDefaultPlayerViewRef = useRef(false);
 
   // Page state
   const [players, setPlayers] = useState<Player[]>(fallbackPlayers);
@@ -103,10 +107,18 @@ function Players() {
   const [filteredArchetype, setFilteredArchetype] = useState("");
   const [selectedRatingView, setSelectedRatingView] =
     useState<PlayerRatingCategory>("careerOverall");
+  const [playerDisplayView, setPlayerDisplayView] =
+    useState<DefaultPlayerView>("cards");
   const [sortBy, setSortBy] = useState<SortValue>("");
   const [sortDirection, setSortDirection] = useState<SortDirection>("primary");
   const [openDropdown, setOpenDropdown] = useState<
-    "team" | "position" | "sort" | "archetype" | "skill" | null
+    | "team"
+    | "position"
+    | "sort"
+    | "archetype"
+    | "skill"
+    | "view"
+    | null
   >(null);
   const [isCardFlipped, setIsCardFlipped] = useState(false);
   const [isGoingToCourt, setIsGoingToCourt] = useState(false);
@@ -265,6 +277,17 @@ function Players() {
 
     return () => window.clearTimeout(timeoutId);
   }, [isLoadingSettings, settings.defaultStatMode]);
+
+  useEffect(() => {
+    if (isLoadingSettings || hasAppliedDefaultPlayerViewRef.current) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setPlayerDisplayView(settings.defaultPlayerView);
+      hasAppliedDefaultPlayerViewRef.current = true;
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [isLoadingSettings, settings.defaultPlayerView]);
 
   useEffect(() => {
     let isActive = true;
@@ -507,6 +530,11 @@ function Players() {
     setOpenDropdown(null);
   }
 
+  function selectPlayerDisplayView(view: DefaultPlayerView) {
+    setPlayerDisplayView(view);
+    setOpenDropdown(null);
+  }
+
   function selectSortFilter(sort: SortValue) {
     handleSortClick(sort);
     setOpenDropdown(null);
@@ -624,6 +652,8 @@ function Players() {
               onResetFilters={resetAllFilters}
               selectedSkill={selectedRatingView}
               onSelectSkill={selectSkillFilter}
+              selectedView={playerDisplayView}
+              onSelectView={selectPlayerDisplayView}
             />
 
             {isLoadingPlayers ? (
@@ -643,6 +673,7 @@ function Players() {
                   showFavorites={showFavorites}
                   selectedSkill={selectedRatingView}
                   sortBy={sortBy}
+                  displayView={playerDisplayView}
                   onToggleFavorite={toggleFavorite}
                   onSelectPlayer={selectPlayerFromList}
                 />

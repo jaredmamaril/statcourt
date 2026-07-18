@@ -4,7 +4,10 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthPrompt } from "../components/auth/auth-prompt";
 import { useAuthUser } from "../lib/use-auth-user";
-import { useUserSettings } from "../lib/use-user-settings";
+import {
+  type DefaultPlayerView,
+  useUserSettings,
+} from "../lib/use-user-settings";
 import { logUserActivity } from "../components/user-activity";
 import { DatabaseErrorState } from "../components/loading/database-error-state";
 import { DatabaseLoadingState } from "../components/loading/database-loading-state";
@@ -114,12 +117,26 @@ export default function Lineups() {
   const searchParams = useSearchParams();
   const lineupSectionRef = useRef<HTMLDivElement>(null);
   const builderStartPlayerConsumedRef = useRef("");
+  const hasAppliedDefaultBuilderViewRef = useRef(false);
 
   // Page state
   const [activeTab, setActiveTab] = useState<LineupTab>("featured");
   const [players, setPlayers] = useState<Player[]>([]);
   const [isLoadingPlayers, setIsLoadingPlayers] = useState(true);
   const [playerLoadError, setPlayerLoadError] = useState("");
+  const [builderDisplayView, setBuilderDisplayView] =
+    useState<DefaultPlayerView>("cards");
+
+  useEffect(() => {
+    if (isLoadingSettings || hasAppliedDefaultBuilderViewRef.current) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setBuilderDisplayView(settings.defaultPlayerView);
+      hasAppliedDefaultBuilderViewRef.current = true;
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [isLoadingSettings, settings.defaultPlayerView]);
 
   useEffect(() => {
     const tab = searchParams.get("tab");
@@ -780,6 +797,7 @@ export default function Lineups() {
                   customLineup={customLineup}
                   buildPlayerSearch={buildPlayerSearch}
                   builderStatProfile={builderStatProfile}
+                  displayView={builderDisplayView}
                   availableBuildPlayers={availableBuildPlayers}
                   averageLineupRating={averageLineupRating}
                   scoutLineupRating={scoutLineupRating}
@@ -789,6 +807,7 @@ export default function Lineups() {
                   onSelectPosition={setActiveBuildPosition}
                   onSearchChange={setBuildPlayerSearch}
                   onStatProfileChange={setBuilderStatProfile}
+                  onDisplayViewChange={setBuilderDisplayView}
                   onPickPlayer={pickBuildPlayer}
                   onPlacePlayer={placeBuildPlayer}
                   onMovePlayer={moveBuildPlayer}

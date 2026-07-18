@@ -15,6 +15,7 @@ import { BuilderPlayerPicker } from "./builder-player-picker";
 import { BuilderDraftBoard } from "./builder-draft-board";
 import { BuilderCourtPreview } from "./builder-court-preview";
 import { BuilderPositionTabs } from "./builder-position-tabs";
+import type { DefaultPlayerView } from "../../../lib/use-user-settings";
 
 type Player = Parameters<
   typeof BuilderPlayerPicker
@@ -27,6 +28,7 @@ type BuilderWorkspaceProps = {
   customLineup: Record<LineupSlot, string>;
   buildPlayerSearch: string;
   builderStatProfile: BuilderStatProfileMode;
+  displayView: DefaultPlayerView;
   availableBuildPlayers: Player[];
   averageLineupRating: number | null;
   scoutLineupRating: number | null;
@@ -36,6 +38,7 @@ type BuilderWorkspaceProps = {
   onSelectPosition: (position: LineupSlot) => void;
   onSearchChange: (value: string) => void;
   onStatProfileChange: (profile: BuilderStatProfileMode) => void;
+  onDisplayViewChange: (view: DefaultPlayerView) => void;
   onPickPlayer: (playerName: string) => void;
   onPlacePlayer: (playerName: string, position: LineupSlot) => void;
   onMovePlayer: (fromPosition: LineupSlot, toPosition: LineupSlot) => void;
@@ -164,6 +167,7 @@ export function BuilderWorkspace({
   customLineup,
   buildPlayerSearch,
   builderStatProfile,
+  displayView,
   availableBuildPlayers,
   averageLineupRating,
   scoutLineupRating,
@@ -173,6 +177,7 @@ export function BuilderWorkspace({
   onSelectPosition,
   onSearchChange,
   onStatProfileChange,
+  onDisplayViewChange,
   onPickPlayer,
   onPlacePlayer,
   onMovePlayer,
@@ -317,6 +322,27 @@ export function BuilderWorkspace({
                 })}
               </div>
 
+              <div className="inline-flex rounded-md border border-white/10 bg-black/25 p-0.5">
+                {(["cards", "list"] as const).map((view) => {
+                  const isActive = displayView === view;
+
+                  return (
+                    <button
+                      key={view}
+                      type="button"
+                      onClick={() => onDisplayViewChange(view)}
+                      className={`rounded px-1.5 py-0.5 font-michroma text-[5.5px] uppercase transition lg:px-2.5 lg:py-1 lg:text-[8px] ${
+                        isActive
+                          ? "bg-[#1bc2ec]/20 text-[#1bc2ec]"
+                          : "text-white/35 hover:bg-white/5 hover:text-white/70"
+                      }`}
+                    >
+                      {view}
+                    </button>
+                  );
+                })}
+              </div>
+
               <PositionFitLegend />
             </div>
 
@@ -333,6 +359,7 @@ export function BuilderWorkspace({
                 customLineup={customLineup}
                 buildPlayerSearch={buildPlayerSearch}
                 builderStatProfile={builderStatProfile}
+                displayView={displayView}
                 availableBuildPlayers={availableBuildPlayers}
                 allBuildPlayers={players}
                 activeDraftPlayerName={pinnedPickerPlayerName}

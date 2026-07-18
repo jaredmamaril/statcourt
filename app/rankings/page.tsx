@@ -16,7 +16,10 @@ import type { Team, Position, StatMode } from "../components/court-data";
 
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useUserSettings } from "../lib/use-user-settings";
+import {
+  type DefaultPlayerView,
+  useUserSettings,
+} from "../lib/use-user-settings";
 
 import { getPlayersFromSupabaseWithFallback } from "../components/supabase-players";
 
@@ -51,7 +54,7 @@ export default function Rankings() {
   // Page state
   const [activeTab, setActiveTab] = useState<RankingTab>("careerOverall");
   const [openFilter, setOpenFilter] = useState<
-    "profile" | "position" | "team" | "archetype" | null
+    "profile" | "position" | "team" | "archetype" | "view" | null
   >(null);
   const [statProfileFilter, setStatProfileFilter] =
     useState<RankingStatProfile>("career");
@@ -59,6 +62,7 @@ export default function Rankings() {
   const [teamFilter, setTeamFilter] = useState<Team | "">("");
   const [playerSearch, setPlayerSearch] = useState("");
   const [archetypeFilter, setArchetypeFilter] = useState("");
+  const [displayView, setDisplayView] = useState<DefaultPlayerView>("cards");
   const [archetypeSort, setArchetypeSort] =
     useState<ArchetypeSort>("rarity");
   const [
@@ -75,6 +79,7 @@ export default function Rankings() {
   const archetypeDescriptionRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const hasAppliedDefaultStatProfileRef = useRef(false);
+  const hasAppliedDefaultPlayerViewRef = useRef(false);
 
   useEffect(() => {
     if (isLoadingSettings || hasAppliedDefaultStatProfileRef.current) return;
@@ -93,6 +98,17 @@ export default function Rankings() {
 
     return () => window.clearTimeout(timeoutId);
   }, [isLoadingSettings, settings.defaultStatMode]);
+
+  useEffect(() => {
+    if (isLoadingSettings || hasAppliedDefaultPlayerViewRef.current) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setDisplayView(settings.defaultPlayerView);
+      hasAppliedDefaultPlayerViewRef.current = true;
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [isLoadingSettings, settings.defaultPlayerView]);
 
   useEffect(() => {
     let isMounted = true;
@@ -440,6 +456,7 @@ export default function Rankings() {
                 teamFilter={teamFilter}
                 playerSearch={playerSearch}
                 archetypeFilter={archetypeFilter}
+                displayView={displayView}
                 selectedArchetypeColor={selectedArchetypeColor}
                 selectedArchetypeOption={selectedArchetypeOption}
                 archetypeOptionDetails={archetypeOptionDetails}
@@ -448,6 +465,7 @@ export default function Rankings() {
                 onPositionFilterChange={setPositionFilter}
                 onTeamFilterChange={setTeamFilter}
                 onArchetypeFilterChange={setArchetypeFilter}
+                onDisplayViewChange={setDisplayView}
                 onPlayerSearchChange={setPlayerSearch}
                 onViewPlayer={viewPlayerCard}
               />
@@ -468,6 +486,7 @@ export default function Rankings() {
                 ratingCategory={ratingCategory}
                 ratingLabel={ratingLabel}
                 statProfileFilter={statProfileFilter}
+                displayView={displayView}
                 onViewPlayer={viewPlayerCard}
               />
             </>

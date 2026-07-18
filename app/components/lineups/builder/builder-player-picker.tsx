@@ -1,7 +1,16 @@
 import { useCallback, useMemo, useState } from "react";
+import { useDraggable } from "@dnd-kit/core";
 import type { LineupSlot, Player } from "../../court-data";
 import type { BuilderStatProfileMode } from "./builder-position-helpers";
+import {
+  getBuilderPlayerRatingForPosition,
+  getPositionFit,
+  getPositionPenalty,
+} from "./builder-position-helpers";
+import PlayerImage from "../../player-image";
+import { getPlayerHeadshot } from "../../player-images";
 import { BuilderPlayerCard } from "./builder-player-card";
+import type { DefaultPlayerView } from "../../../lib/use-user-settings";
 
 const DISPLAYED_BUILD_PLAYER_LIMIT = 20;
 const SEARCH_BUILD_PLAYER_LIMIT = 20;
@@ -11,6 +20,7 @@ type BuilderPlayerPickerProps = {
   customLineup: Record<LineupSlot, string>;
   buildPlayerSearch: string;
   builderStatProfile: BuilderStatProfileMode;
+  displayView: DefaultPlayerView;
   availableBuildPlayers: Player[];
   allBuildPlayers: Player[];
   activeDraftPlayerName: string;
@@ -23,6 +33,7 @@ export function BuilderPlayerPicker({
   customLineup,
   buildPlayerSearch,
   builderStatProfile,
+  displayView,
   availableBuildPlayers,
   allBuildPlayers,
   activeDraftPlayerName,
@@ -38,6 +49,7 @@ export function BuilderPlayerPicker({
     openScoutPlayer?.contextKey === scoutContextKey
       ? openScoutPlayer.playerId
       : null;
+  const isCardView = displayView === "cards";
 
   const pickPlayer = useCallback(
     (playerName: string) => {
@@ -115,10 +127,14 @@ export function BuilderPlayerPicker({
         )}
       </p>
 
-      <div className="statcourt-scroll max-h-38 overflow-y-auto pr-1 lg:max-h-92 lg:pr-2">
+      <div className="statcourt-scroll max-h-26 w-full overflow-y-auto pr-1 lg:max-h-84 lg:pr-2">
         <div
-          key={`${activeBuildPosition}-${builderStatProfile}`}
-          className="grid grid-cols-[repeat(2,75px)] justify-center gap-1.5 lg:grid-cols-3 lg:justify-stretch lg:gap-2"
+          key={`${activeBuildPosition}-${builderStatProfile}-${displayView}`}
+          className={
+            isCardView
+              ? "grid grid-cols-[repeat(2,75px)] justify-center gap-1.5 lg:grid-cols-3 lg:justify-stretch lg:gap-2"
+              : "grid w-full grid-cols-1 gap-1.5"
+          }
         >
           {displayedBuildPlayers.map((player, index) => {
             const isSelected =
@@ -127,25 +143,131 @@ export function BuilderPlayerPicker({
             return (
               <div
                 key={player.id}
-                className="animate-[playerListRowIn_160ms_ease-out_both]"
+                className="w-full animate-[playerListRowIn_160ms_ease-out_both]"
                 style={{
                   animationDelay: `${Math.min(index, 14) * 24}ms`,
                 }}
               >
-                <BuilderPlayerCard
-                  player={player}
-                  activeBuildPosition={activeBuildPosition}
-                  builderStatProfile={builderStatProfile}
-                  isSelected={isSelected}
-                  isScoutOpen={openScoutPlayerId === player.id}
-                  onToggleScout={toggleScoutPlayer}
-                  onPickPlayer={pickPlayer}
-                />
+                {isCardView ? (
+                  <BuilderPlayerCard
+                    player={player}
+                    activeBuildPosition={activeBuildPosition}
+                    builderStatProfile={builderStatProfile}
+                    isSelected={isSelected}
+                    isScoutOpen={openScoutPlayerId === player.id}
+                    onToggleScout={toggleScoutPlayer}
+                    onPickPlayer={pickPlayer}
+                  />
+                ) : (
+                  <BuilderPlayerListRow
+                    player={player}
+                    activeBuildPosition={activeBuildPosition}
+                    builderStatProfile={builderStatProfile}
+                    isSelected={isSelected}
+                    onPickPlayer={pickPlayer}
+                  />
+                )}
               </div>
             );
           })}
         </div>
       </div>
     </div>
+  );
+}
+
+type BuilderPlayerListRowProps = {
+  player: Player;
+  activeBuildPosition: LineupSlot;
+  builderStatProfile: BuilderStatProfileMode;
+  isSelected: boolean;
+  onPickPlayer: (playerName: string) => void;
+};
+
+function BuilderPlayerListRow({
+  player,
+  activeBuildPosition,
+  builderStatProfile,
+  isSelected,
+  onPickPlayer,
+}: BuilderPlayerListRowProps) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `builder-player-${player.id}`,
+    data: {
+      type: "picker-player",
+      playerName: player.name,
+    },
+  });
+  const positionFit = getPositionFit(
+    player,
+    activeBuildPosition,
+    builderStatProfile,
+  );
+  const positionPenalty = getPositionPenalty(positionFit);
+  const positionRating = getBuilderPlayerRatingForPosition(
+    player,
+    activeBuildPosition,
+    builderStatProfile,
+  );
+  const fitLabel =
+    positionFit === "natural"
+      ? "Natural"
+      : positionFit === "flex"
+        ? `Flex -${positionPenalty}`
+        : positionFit === "reach"
+          ? `Reach -${positionPenalty}`
+          : `Mismatch -${positionPenalty}`;
+
+  return (
+    <button
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      type="button"
+      onClick={() => onPickPlayer(player.name)}
+      className={`grid w-full min-w-0 touch-none grid-cols-[34px_minmax(0,1fr)_52px] items-center gap-2 rounded-md border bg-black/30 px-2 py-1.5 text-left transition lg:grid-cols-[46px_minmax(0,1fr)_70px] lg:px-3 lg:py-2 ${
+        isSelected
+          ? "border-[#1bc2ec] bg-[#1bc2ec]/15 shadow-[0_0_18px_rgba(27,194,236,0.35)]"
+          : isDragging
+            ? "border-[#1bc2ec] bg-[#1bc2ec]/15 opacity-45 shadow-[0_0_22px_rgba(27,194,236,0.35)]"
+            : "border-white/15 hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/10"
+      }`}
+    >
+      <PlayerImage
+        src={getPlayerHeadshot(player)}
+        alt={player.name}
+        width={120}
+        height={120}
+        className="h-8.5 w-8.5 rounded-full object-cover lg:h-11 lg:w-11"
+      />
+
+      <span className="min-w-0">
+        <span className="block  font-michroma text-[6px] text-white lg:text-[10px]">
+          {player.name}
+        </span>
+        <span className="mt-0.5 block font-michroma text-[5px] text-white/40 lg:text-[8px]">
+          {player.team} · {player.position}
+        </span>
+      </span>
+
+      <span className="text-right">
+        <span className="block font-michroma text-[7px] text-[#1bc2ec] lg:text-[10px]">
+          {positionRating.toFixed(1)}
+        </span>
+        <span
+          className={`mt-0.5 block font-michroma text-[4.8px] uppercase lg:text-[7px] ${
+            positionFit === "natural"
+              ? "text-emerald-400"
+              : positionFit === "flex"
+                ? "text-[#1bc2ec]"
+                : positionFit === "reach"
+                  ? "text-yellow-400"
+                  : "text-red-400"
+          }`}
+        >
+          {fitLabel}
+        </span>
+      </span>
+    </button>
   );
 }

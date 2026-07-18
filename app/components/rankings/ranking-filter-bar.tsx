@@ -10,8 +10,15 @@ import {
 } from "../court-data";
 import { getArchetypePillStyle } from "./ranking-style-helpers";
 import { RankingStatProfileFilter } from "./ranking-stat-profile-filter";
+import type { DefaultPlayerView } from "../../lib/use-user-settings";
 
-type OpenFilter = "profile" | "position" | "team" | "archetype" | null;
+type OpenFilter =
+  | "profile"
+  | "position"
+  | "team"
+  | "archetype"
+  | "view"
+  | null;
 
 type ArchetypeOptionDetail = {
   label: string;
@@ -25,6 +32,7 @@ type RankingFilterBarProps = {
   teamFilter: Team | "";
   playerSearch: string;
   archetypeFilter: string;
+  displayView: DefaultPlayerView;
   selectedArchetypeColor: string | undefined;
   selectedArchetypeOption: ArchetypeOptionDetail | undefined;
   archetypeOptionDetails: ArchetypeOptionDetail[];
@@ -33,6 +41,7 @@ type RankingFilterBarProps = {
   onPositionFilterChange: (value: Position | "") => void;
   onTeamFilterChange: (value: Team | "") => void;
   onArchetypeFilterChange: (value: string) => void;
+  onDisplayViewChange: (value: DefaultPlayerView) => void;
   onPlayerSearchChange: (value: string) => void;
 };
 
@@ -43,6 +52,7 @@ export function RankingFilterBar({
   teamFilter,
   playerSearch,
   archetypeFilter,
+  displayView,
   selectedArchetypeColor,
   selectedArchetypeOption,
   archetypeOptionDetails,
@@ -51,6 +61,7 @@ export function RankingFilterBar({
   onPositionFilterChange,
   onTeamFilterChange,
   onArchetypeFilterChange,
+  onDisplayViewChange,
   onPlayerSearchChange,
 }: RankingFilterBarProps) {
   return (
@@ -276,6 +287,39 @@ export function RankingFilterBar({
                 </button>
               );
             })}
+          </div>
+        )}
+      </div>
+
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => onOpenFilter(openFilter === "view" ? null : "view")}
+          className="flex h-6 min-w-20 cursor-pointer items-center justify-between rounded-md border border-white/20 bg-black/30 px-2 font-michroma text-[9px] text-white/70 transition hover:border-[#1bc2ec]/60 hover:text-[#1bc2ec] sm:h-auto sm:min-w-24 sm:px-3 sm:py-1 sm:text-xs"
+        >
+          <span>{displayView === "cards" ? "Cards" : "List"}</span>
+          <span className="text-[#1bc2ec]">▾</span>
+        </button>
+
+        {openFilter === "view" && (
+          <div className="absolute left-0 top-full z-80 mt-2 w-full overflow-hidden rounded-md border border-white/20 bg-[#07111f] py-1 animate-[dropdownIn_140ms_ease-out_both]">
+            {(["cards", "list"] as const).map((view) => (
+              <button
+                key={view}
+                type="button"
+                onClick={() => {
+                  onDisplayViewChange(view);
+                  onOpenFilter(null);
+                }}
+                className={`block w-full cursor-pointer px-2 py-1.5 text-left font-michroma text-[9px] capitalize transition sm:px-3 sm:py-2 sm:text-xs ${
+                  displayView === view
+                    ? "bg-[#1bc2ec]/20 text-[#1bc2ec]"
+                    : "text-white/70 hover:bg-white/10"
+                }`}
+              >
+                {view}
+              </button>
+            ))}
           </div>
         )}
       </div>

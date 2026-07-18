@@ -1,3 +1,5 @@
+import { LoadingSpinner } from "./loading-spinner";
+
 type DatabaseLoadingStateProps = {
   title?: string;
   description?: string;
@@ -16,6 +18,8 @@ export function DatabaseLoadingState({
       <p className="mt-1 font-michroma text-[5.5px] text-white/35 lg:mt-2 lg:text-[9px]">
         {description}
       </p>
+
+      <LoadingSpinner className="mt-2 h-4 w-4 lg:mt-4 lg:h-6 lg:w-6" />
     </div>
   );
 }

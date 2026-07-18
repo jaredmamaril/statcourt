@@ -1,6 +1,7 @@
 import PlayerImage from "../player-image";
 import { getPlayerHeadshot } from "../player-images";
 import { getReadableTeamColor, type Player } from "../court-data";
+import { LoadingSpinner } from "../loading/loading-spinner";
 
 type CourtPlayerPickerModalProps = {
   isOpen: boolean;
@@ -83,6 +84,8 @@ export function CourtPlayerPickerModal({
               <p className="mt-2 font-michroma text-[6px] text-white/35 sm:text-[8px]">
                 Syncing comparison profiles...
               </p>
+
+              <LoadingSpinner className="mt-3 h-5 w-5 sm:h-6 sm:w-6" />
             </div>
           ) : (
             <div className="grid gap-2 sm:grid-cols-2">

@@ -3,6 +3,7 @@ import type { PlayerStatProfileMode } from "../../player-ratings";
 import { SavedLineupsEmptyState } from "./saved-lineups-empty-state";
 import { SavedLineupsToolbar } from "./saved-lineups-toolbar";
 import { SavedLineupCard } from "./saved-lineup-card";
+import { LoadingSpinner } from "../../loading/loading-spinner";
 
 type SavedLineupsSectionProps = {
   savedLineups: SavedLineup[];
@@ -97,9 +98,13 @@ export function SavedLineupsSection({
           />
 
           {isLoadingPlayers && (
-            <p className="mt-2 text-center font-michroma text-[7px] uppercase text-[#1bc2ec]/70 lg:text-[10px]">
-              Loading lineup player profiles...
-            </p>
+            <div className="mt-2 text-center">
+              <p className="font-michroma text-[7px] uppercase text-[#1bc2ec]/70 lg:text-[10px]">
+                Loading lineup player profiles...
+              </p>
+
+              <LoadingSpinner className="mt-2 h-4 w-4 lg:h-5 lg:w-5" />
+            </div>
           )}
 
           {filteredSavedLineups.length === 0 ? (
