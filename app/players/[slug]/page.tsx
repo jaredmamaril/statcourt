@@ -305,7 +305,7 @@ export default function PlayerProfilePage() {
     if (!player) return;
 
     router.push(
-      `/lineups?tab=builder&player=${encodeURIComponent(player.name)}&slot=${slot}`,
+      `/lineups?tab=builder&player=${encodeURIComponent(player.name)}&slot=${slot}&profile=${statMode}`,
     );
   }
 
@@ -776,6 +776,7 @@ export default function PlayerProfilePage() {
           </div>
         </div>
       )}
+
     </main>
   );
 }

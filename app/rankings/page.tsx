@@ -340,6 +340,12 @@ export default function Rankings() {
         const duration = 850;
         const startTime = performance.now();
 
+        if (settings.reducedMotion) {
+          window.scrollTo(0, endTop);
+          setShouldScrollToArchetypeDescription(false);
+          return;
+        }
+
         function easeInOutCubic(progress: number) {
           return progress < 0.5
             ? 4 * progress * progress * progress
@@ -372,7 +378,11 @@ export default function Rankings() {
       window.clearTimeout(scrollTimer);
       window.cancelAnimationFrame(animationFrameId);
     };
-  }, [archetypeFilter, shouldScrollToArchetypeDescription]);
+  }, [
+    archetypeFilter,
+    settings.reducedMotion,
+    shouldScrollToArchetypeDescription,
+  ]);
 
   function selectArchetypeCard(label: string) {
     setArchetypeFilter(label);

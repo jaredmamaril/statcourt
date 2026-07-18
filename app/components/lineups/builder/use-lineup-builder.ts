@@ -26,6 +26,7 @@ type UseLineupBuilderProps = {
   lineupPositions: LineupSlot[];
   defaultStatProfile?: BuilderStatProfileMode;
   isDefaultStatProfileReady?: boolean;
+  initialHasStartedBuilder?: boolean;
 };
 
 export function useLineupBuilder({
@@ -33,8 +34,11 @@ export function useLineupBuilder({
   lineupPositions,
   defaultStatProfile = "career",
   isDefaultStatProfileReady = true,
+  initialHasStartedBuilder = false,
 }: UseLineupBuilderProps) {
-  const [hasStartedBuilder, setHasStartedBuilder] = useState(false);
+  const [hasStartedBuilder, setHasStartedBuilder] = useState(
+    initialHasStartedBuilder,
+  );
   const [customLineup, setCustomLineup] =
     useState<Record<LineupSlot, string>>(getSavedBuilderDraft);
   const [activeBuildPosition, setActiveBuildPosition] =

@@ -95,6 +95,16 @@ function getPreferredBuilderSlots(player: Player): LineupSlot[] {
   return ["C", "PF"];
 }
 
+function getRequestedBuilderProfile(
+  value: string | null,
+): PlayerStatProfileMode | null {
+  if (value === "career" || value === "peak" || value === "current") {
+    return value;
+  }
+
+  return null;
+}
+
 type OverwriteLineupRequest =
   | {
       type: "save";
@@ -115,12 +125,16 @@ export default function Lineups() {
   // Refs and routing
   const router = useRouter();
   const searchParams = useSearchParams();
+  const initialTab = searchParams.get("tab");
+  const initialBuilderPlayer = searchParams.get("player");
   const lineupSectionRef = useRef<HTMLDivElement>(null);
   const builderStartPlayerConsumedRef = useRef("");
   const hasAppliedDefaultBuilderViewRef = useRef(false);
 
   // Page state
-  const [activeTab, setActiveTab] = useState<LineupTab>("featured");
+  const [activeTab, setActiveTab] = useState<LineupTab>(
+    initialTab === "builder" || initialTab === "saved" ? initialTab : "featured",
+  );
   const [players, setPlayers] = useState<Player[]>([]);
   const [isLoadingPlayers, setIsLoadingPlayers] = useState(true);
   const [playerLoadError, setPlayerLoadError] = useState("");
@@ -273,14 +287,27 @@ export default function Lineups() {
     lineupPositions,
     defaultStatProfile: settings.defaultStatMode,
     isDefaultStatProfileReady: !isLoadingSettings,
+    initialHasStartedBuilder:
+      initialTab === "builder" && Boolean(initialBuilderPlayer),
   });
 
-  useEffect(() => {
-    const builderPlayerName = searchParams.get("player");
-    const requestedSlot = searchParams.get("slot") as LineupSlot | null;
+  const builderPlayerName = searchParams.get("player");
+  const requestedBuilderSlot = searchParams.get("slot") as LineupSlot | null;
+  const requestedBuilderProfile = getRequestedBuilderProfile(
+    searchParams.get("profile"),
+  );
+  const customLineupRef = useRef(customLineup);
 
+  useEffect(() => {
+    customLineupRef.current = customLineup;
+  }, [customLineup]);
+
+  useEffect(() => {
     if (!builderPlayerName || players.length === 0) return;
-    if (builderStartPlayerConsumedRef.current === builderPlayerName) return;
+
+    const builderStartKey = `${builderPlayerName}:${requestedBuilderSlot ?? ""}:${requestedBuilderProfile ?? ""}`;
+
+    if (builderStartPlayerConsumedRef.current === builderStartKey) return;
 
     const builderPlayer = players.find(
       (player) => player.name === builderPlayerName,
@@ -288,18 +315,19 @@ export default function Lineups() {
 
     if (!builderPlayer) return;
 
-    builderStartPlayerConsumedRef.current = builderPlayerName;
+    builderStartPlayerConsumedRef.current = builderStartKey;
 
     const preferredSlots = getPreferredBuilderSlots(builderPlayer);
+    const currentLineup = customLineupRef.current;
     const openPreferredSlot = preferredSlots.find(
-      (slot) => customLineup[slot] === "",
+      (slot) => currentLineup[slot] === "",
     );
     const openAnySlot = lineupPositions.find(
-      (slot) => customLineup[slot] === "",
+      (slot) => currentLineup[slot] === "",
     );
     const requestedTargetSlot =
-      requestedSlot && lineupPositions.includes(requestedSlot)
-        ? requestedSlot
+      requestedBuilderSlot && lineupPositions.includes(requestedBuilderSlot)
+        ? requestedBuilderSlot
         : null;
     const targetSlot =
       requestedTargetSlot ?? openPreferredSlot ?? openAnySlot ?? preferredSlots[0];
@@ -309,6 +337,9 @@ export default function Lineups() {
       setHasStartedBuilder(true);
       setActiveBuildPosition(targetSlot);
       setBuildPlayerSearch("");
+      if (requestedBuilderProfile) {
+        setBuilderStatProfile(requestedBuilderProfile);
+      }
       setPlayerRevealMode("instant");
       setCustomLineup((currentLineup) => ({
         ...currentLineup,
@@ -320,12 +351,14 @@ export default function Lineups() {
 
     return () => cancelAnimationFrame(frameId);
   }, [
-    customLineup,
+    builderPlayerName,
     players,
+    requestedBuilderProfile,
+    requestedBuilderSlot,
     router,
-    searchParams,
     setActiveBuildPosition,
     setBuildPlayerSearch,
+    setBuilderStatProfile,
     setCustomLineup,
     setHasStartedBuilder,
     setPlayerRevealMode,
@@ -435,6 +468,12 @@ export default function Lineups() {
         const duration = 850;
         const startTime = performance.now();
 
+        if (settings.reducedMotion) {
+          window.scrollTo(0, endTop);
+          setShouldScrollToFeaturedDetail(false);
+          return;
+        }
+
         function easeInOutCubic(progress: number) {
           return progress < 0.5
             ? 4 * progress * progress * progress
@@ -467,7 +506,11 @@ export default function Lineups() {
       window.clearTimeout(scrollTimer);
       window.cancelAnimationFrame(animationFrameId);
     };
-  }, [selectedLineupCategory, shouldScrollToFeaturedDetail]);
+  }, [
+    selectedLineupCategory,
+    settings.reducedMotion,
+    shouldScrollToFeaturedDetail,
+  ]);
 
   function changeTab(tab: LineupTab) {
     setActiveTab(tab);

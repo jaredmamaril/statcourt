@@ -277,6 +277,27 @@ a {
   text-decoration: none;
 }
 
+html.statcourt-reduced-motion {
+  scroll-behavior: auto !important;
+}
+
+.statcourt-reduced-motion *,
+.statcourt-reduced-motion *::before,
+.statcourt-reduced-motion *::after {
+  animation: none !important;
+  scroll-behavior: auto !important;
+  transition: none !important;
+}
+
+.statcourt-reduced-motion .statcourt-loading-spinner {
+  animation: spin 1s linear infinite !important;
+}
+
+.statcourt-reduced-motion .scout-section-reveal {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
 /* Dropdowns/Lists */
 .statcourt-scroll {
   scrollbar-width: thin;

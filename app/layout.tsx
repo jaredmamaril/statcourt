@@ -4,6 +4,7 @@ import { Michroma } from "next/font/google";
 import { Habibi } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/navbar";
+import { ReducedMotionSync } from "./components/settings/reduced-motion-sync";
 
 const michroma = Michroma({
   variable: "--font-michroma",
@@ -44,6 +45,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         {/* Future: consider implementing a theme provider to allow users to switch between light and dark modes, and to manage other global styles or settings across the app */}
+        <ReducedMotionSync />
         <Navbar />
         {children}
       </body>

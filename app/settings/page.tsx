@@ -126,6 +126,10 @@ export default function SettingsPage() {
 
   async function saveSettings(nextSettings: UserSettings) {
     setSettings(nextSettings);
+    document.documentElement.classList.toggle(
+      "statcourt-reduced-motion",
+      nextSettings.reducedMotion,
+    );
 
     if (!user) {
       setSettingsStatus("Sign in to sync settings.");

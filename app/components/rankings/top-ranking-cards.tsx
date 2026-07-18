@@ -29,7 +29,10 @@ export function TopRankingCards({
     <div className="mt-3 grid grid-cols-3 gap-2 lg:gap-5">
       {players.map((player, index) => {
         const rankLabel = index === 0 ? "1ST" : index === 1 ? "2ND" : "3RD";
-        const archetype = getPlayerInsights(player, statProfileFilter).archetype;
+        const archetype = getPlayerInsights(
+          player,
+          statProfileFilter,
+        ).archetype;
         const rating = getPlayerRating(
           player,
           ratingCategory,
@@ -44,7 +47,7 @@ export function TopRankingCards({
             key={player.id}
             tabIndex={0}
             style={{ animationDelay: `${index * 45}ms` }}
-            className="group relative min-w-0 rounded-md border border-[#1bc2ec]/30 bg-black/40 px-1.5 py-2 transition-all duration-200 animate-[playerListRowIn_180ms_ease-out_both] outline-none hover:z-[200] hover:border-[#1bc2ec]/70 hover:bg-[#1bc2ec]/10 focus:z-[200] focus:border-[#1bc2ec]/70 focus:bg-[#1bc2ec]/10 lg:px-4 lg:py-3"
+            className="group relative min-w-0 rounded-md border border-[#1bc2ec]/30 bg-black/40 px-1.5 py-2 transition-all duration-200 animate-[playerListRowIn_180ms_ease-out_both] outline-none hover:z-200 hover:border-[#1bc2ec]/70 hover:bg-[#1bc2ec]/10 focus:z-200 focus:border-[#1bc2ec]/70 focus:bg-[#1bc2ec]/10 lg:px-4 lg:py-3"
           >
             <div className="flex min-w-0 flex-col gap-1">
               <div>
