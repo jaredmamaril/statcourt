@@ -3,6 +3,7 @@ import {
   useDeferredValue,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -23,11 +24,15 @@ import { getLineupScoutReport } from "../../lineup-scouting";
 type UseLineupBuilderProps = {
   players: Player[];
   lineupPositions: LineupSlot[];
+  defaultStatProfile?: BuilderStatProfileMode;
+  isDefaultStatProfileReady?: boolean;
 };
 
 export function useLineupBuilder({
   players,
   lineupPositions,
+  defaultStatProfile = "career",
+  isDefaultStatProfileReady = true,
 }: UseLineupBuilderProps) {
   const [hasStartedBuilder, setHasStartedBuilder] = useState(false);
   const [customLineup, setCustomLineup] =
@@ -40,10 +45,23 @@ export function useLineupBuilder({
   const [playerRevealMode, setPlayerRevealMode] =
     useState<PlayerRevealMode>("instant");
   const deferredBuildPlayerSearch = useDeferredValue(buildPlayerSearch);
+  const hasAppliedDefaultStatProfileRef = useRef(false);
 
   useEffect(() => {
     saveBuilderDraft(customLineup);
   }, [customLineup]);
+
+  useEffect(() => {
+    if (
+      !isDefaultStatProfileReady ||
+      hasAppliedDefaultStatProfileRef.current
+    ) {
+      return;
+    }
+
+    setBuilderStatProfile(defaultStatProfile);
+    hasAppliedDefaultStatProfileRef.current = true;
+  }, [defaultStatProfile, isDefaultStatProfileReady]);
 
   const playersByName = useMemo(
     () => new Map(players.map((player) => [player.name, player])),

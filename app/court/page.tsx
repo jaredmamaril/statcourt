@@ -1,8 +1,9 @@
 ﻿"use client";
 
-import { useDeferredValue, useEffect, useState } from "react";
+import { useDeferredValue, useEffect, useRef, useState } from "react";
 
 import { useAuthUser } from "../lib/use-auth-user";
+import { useUserSettings } from "../lib/use-user-settings";
 import { DatabaseLoadingState } from "../components/loading/database-loading-state";
 import { DatabaseErrorState } from "../components/loading/database-error-state";
 
@@ -29,6 +30,7 @@ const COURT_PLAYER_PICKER_LIMIT = 20;
 
 export default function Court() {
   const { user } = useAuthUser();
+  const { settings, isLoadingSettings } = useUserSettings();
   const { compareSlots, updateCompareSlots } = useCompareSlots(user);
 
   // Compare state
@@ -39,6 +41,7 @@ export default function Court() {
   const [leftPlayer, setLeftPlayer] = useState("");
   const [rightPlayer, setRightPlayer] = useState("");
   const [statMode, setStatMode] = useState<StatMode>("career");
+  const hasAppliedDefaultStatModeRef = useRef(false);
 
   const selectedLeftPlayer = comparePlayers.find(
     (player) => player.name === leftPlayer,
@@ -55,6 +58,17 @@ export default function Court() {
   const deferredPickerSearch = useDeferredValue(pickerSearch);
 
   // Load full player data, including stat profiles
+  useEffect(() => {
+    if (isLoadingSettings || hasAppliedDefaultStatModeRef.current) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setStatMode(settings.defaultStatMode);
+      hasAppliedDefaultStatModeRef.current = true;
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [isLoadingSettings, settings.defaultStatMode]);
+
   useEffect(() => {
     let isActive = true;
 

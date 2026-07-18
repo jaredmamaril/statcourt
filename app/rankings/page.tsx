@@ -16,6 +16,7 @@ import type { Team, Position, StatMode } from "../components/court-data";
 
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUserSettings } from "../lib/use-user-settings";
 
 import { getPlayersFromSupabaseWithFallback } from "../components/supabase-players";
 
@@ -45,6 +46,8 @@ const archetypeRarityRank = {
 } as const;
 
 export default function Rankings() {
+  const { settings, isLoadingSettings } = useUserSettings();
+
   // Page state
   const [activeTab, setActiveTab] = useState<RankingTab>("careerOverall");
   const [openFilter, setOpenFilter] = useState<
@@ -71,6 +74,25 @@ export default function Rankings() {
   // Refs and routing
   const archetypeDescriptionRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const hasAppliedDefaultStatProfileRef = useRef(false);
+
+  useEffect(() => {
+    if (isLoadingSettings || hasAppliedDefaultStatProfileRef.current) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setStatProfileFilter(settings.defaultStatMode);
+      setActiveTab(
+        settings.defaultStatMode === "peak"
+          ? "peakOverall"
+          : settings.defaultStatMode === "current"
+            ? "currentOverall"
+            : "careerOverall",
+      );
+      hasAppliedDefaultStatProfileRef.current = true;
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [isLoadingSettings, settings.defaultStatMode]);
 
   useEffect(() => {
     let isMounted = true;

@@ -2,6 +2,7 @@
 
 import { AuthPrompt } from "../components/auth/auth-prompt";
 import { useAuthUser } from "../lib/use-auth-user";
+import { useUserSettings } from "../lib/use-user-settings";
 import { DatabaseLoadingState } from "../components/loading/database-loading-state";
 import { DatabaseErrorState } from "../components/loading/database-error-state";
 import {
@@ -76,6 +77,7 @@ export default function PlayersPage() {
 
 function Players() {
   const { user } = useAuthUser();
+  const { settings, isLoadingSettings } = useUserSettings();
   const { favorites, toggleFavorite } = useFavoritePlayers(user);
   const { compareSlots, updateCompareSlots } = useCompareSlots(user);
   const { recentPlayers, addViewedPlayer } = useRecentPlayers(user);
@@ -87,6 +89,7 @@ function Players() {
   // Refs
   const filtersRef = useRef<HTMLDivElement>(null);
   const playerCardRef = useRef<HTMLDivElement>(null);
+  const hasAppliedDefaultRatingViewRef = useRef(false);
 
   // Page state
   const [players, setPlayers] = useState<Player[]>(fallbackPlayers);
@@ -246,6 +249,23 @@ function Players() {
   } = useMemo(() => getPlayerDatabaseLeaders(players), [players]);
 
   // Effects
+  useEffect(() => {
+    if (isLoadingSettings || hasAppliedDefaultRatingViewRef.current) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setSelectedRatingView(
+        settings.defaultStatMode === "peak"
+          ? "peakOverall"
+          : settings.defaultStatMode === "current"
+            ? "currentOverall"
+            : "careerOverall",
+      );
+      hasAppliedDefaultRatingViewRef.current = true;
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [isLoadingSettings, settings.defaultStatMode]);
+
   useEffect(() => {
     let isActive = true;
 

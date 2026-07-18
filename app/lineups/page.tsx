@@ -4,6 +4,7 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthPrompt } from "../components/auth/auth-prompt";
 import { useAuthUser } from "../lib/use-auth-user";
+import { useUserSettings } from "../lib/use-user-settings";
 import { logUserActivity } from "../components/user-activity";
 import { DatabaseErrorState } from "../components/loading/database-error-state";
 import { DatabaseLoadingState } from "../components/loading/database-loading-state";
@@ -106,6 +107,7 @@ type OverwriteLineupRequest =
 
 export default function Lineups() {
   const { user } = useAuthUser();
+  const { settings, isLoadingSettings } = useUserSettings();
 
   // Refs and routing
   const router = useRouter();
@@ -249,7 +251,12 @@ export default function Lineups() {
     resetDraft,
     startNewDraft,
     continueDraft,
-  } = useLineupBuilder({ players, lineupPositions });
+  } = useLineupBuilder({
+    players,
+    lineupPositions,
+    defaultStatProfile: settings.defaultStatMode,
+    isDefaultStatProfileReady: !isLoadingSettings,
+  });
 
   useEffect(() => {
     const builderPlayerName = searchParams.get("player");

@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuthUser } from "../../lib/use-auth-user";
+import { useUserSettings } from "../../lib/use-user-settings";
 import { DatabaseErrorState } from "../../components/loading/database-error-state";
 import { DatabaseLoadingState } from "../../components/loading/database-loading-state";
 import {
@@ -89,6 +90,7 @@ export default function PlayerProfilePage() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
   const { user } = useAuthUser();
+  const { settings, isLoadingSettings } = useUserSettings();
   const { compareSlots, updateCompareSlots } = useCompareSlots(user);
   const { favorites: favoritePlayers, toggleFavorite } =
     useFavoritePlayers(user);
@@ -103,6 +105,18 @@ export default function PlayerProfilePage() {
   const [openLineupFitTooltip, setOpenLineupFitTooltip] = useState<
     string | null
   >(null);
+  const hasAppliedDefaultStatModeRef = useRef(false);
+
+  useEffect(() => {
+    if (isLoadingSettings || hasAppliedDefaultStatModeRef.current) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setStatMode(settings.defaultStatMode);
+      hasAppliedDefaultStatModeRef.current = true;
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [isLoadingSettings, settings.defaultStatMode]);
 
   useEffect(() => {
     let isActive = true;
