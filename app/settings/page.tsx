@@ -126,10 +126,6 @@ export default function SettingsPage() {
 
   async function saveSettings(nextSettings: UserSettings) {
     setSettings(nextSettings);
-    document.documentElement.classList.toggle(
-      "statcourt-reduced-motion",
-      nextSettings.reducedMotion,
-    );
 
     if (!user) {
       setSettingsStatus("Sign in to sync settings.");
@@ -164,9 +160,10 @@ export default function SettingsPage() {
   return (
     <main className="page-enter relative min-h-svh bg-background px-3 py-3 text-white lg:px-6 lg:pt-12">
       <div
-        className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-100"
+        className="pointer-events-none fixed inset-0 z-0 bg-center bg-repeat opacity-100"
         style={{
           backgroundImage: "url('/court-pattern.svg')",
+          backgroundSize: "900px auto",
         }}
       />
 
@@ -226,7 +223,10 @@ export default function SettingsPage() {
                   Theme
                 </p>
                 <p className="mt-1 font-michroma text-[9px] text-white lg:mt-2 lg:text-sm">
-                  Dark
+                  Dark Court
+                </p>
+                <p className="mt-1 font-michroma text-[5px] uppercase text-white/25 lg:text-[7px]">
+                  More themes later
                 </p>
               </div>
 
@@ -236,6 +236,9 @@ export default function SettingsPage() {
                 </p>
                 <p className="mt-1 font-michroma text-[9px] text-[#1bc2ec] lg:mt-2 lg:text-sm">
                   Standard
+                </p>
+                <p className="mt-1 font-michroma text-[5px] uppercase text-white/25 lg:text-[7px]">
+                  Compact mode later
                 </p>
               </div>
 
@@ -302,7 +305,8 @@ export default function SettingsPage() {
               />
 
               <PreferenceButtonGroup
-                label="Compare Mode"
+                label="Default Compare Lens"
+                helper="Court preference later"
                 options={compareModeOptions}
                 value={settings.defaultCompareMode}
                 onSelect={(value) =>
@@ -354,14 +358,25 @@ export default function SettingsPage() {
               </div>
 
               <p className="font-michroma text-[9px] uppercase text-white lg:text-sm">
-                Sync Status
+                Court Connection
+              </p>
+            </div>
+
+            <div className="mb-2 flex w-fit items-center gap-2 rounded-md border border-[#1bc2ec]/25 bg-[#1bc2ec]/8 px-2 py-1 lg:mb-3 lg:px-3 lg:py-1.5">
+              <span
+                className={`h-1.5 w-1.5 rounded-full lg:h-2 lg:w-2 ${
+                  user ? "bg-[#22C55E]" : "bg-[#EFBF04]"
+                }`}
+              />
+              <p className="font-michroma text-[6px] uppercase text-[#1bc2ec] lg:text-[8px]">
+                {user ? "Account Synced" : "Local Session"}
               </p>
             </div>
 
             <p className="font-michroma text-[6px] leading-relaxed text-white/40 lg:text-[9px]">
               {user
-                ? "Settings are saved to your StatCourt account and can be used as defaults across player, ranking, court, and lineup pages."
-                : "Sign in to save settings across sessions. Local browsing still works without synced preferences."}
+                ? "Your preferences are connected to this StatCourt account and follow you across players, rankings, court, and lineup tools."
+                : "You can keep browsing locally, but sign in to carry preferences, saved lineups, favorites, and recent activity across sessions."}
             </p>
           </section>
 
@@ -401,6 +416,7 @@ type PreferenceOption<TValue extends string> = {
 
 type PreferenceButtonGroupProps<TValue extends string> = {
   label: string;
+  helper?: string;
   options: PreferenceOption<TValue>[];
   value: TValue;
   onSelect: (value: TValue) => void;
@@ -408,6 +424,7 @@ type PreferenceButtonGroupProps<TValue extends string> = {
 
 function PreferenceButtonGroup<TValue extends string>({
   label,
+  helper,
   options,
   value,
   onSelect,
@@ -438,6 +455,12 @@ function PreferenceButtonGroup<TValue extends string>({
           );
         })}
       </div>
+
+      {helper && (
+        <p className="mt-1.5 font-michroma text-[5px] uppercase text-white/25 lg:text-[7px]">
+          {helper}
+        </p>
+      )}
     </div>
   );
 }

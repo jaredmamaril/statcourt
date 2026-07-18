@@ -302,9 +302,10 @@ export default function ProfilePage() {
   return (
     <main className="page-enter relative min-h-svh bg-background px-3 py-3 text-white lg:px-6 lg:pt-12">
       <div
-        className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-100"
+        className="pointer-events-none fixed inset-0 z-0 bg-center bg-repeat opacity-100"
         style={{
           backgroundImage: "url('/court-pattern.svg')",
+          backgroundSize: "900px auto",
         }}
       />
 

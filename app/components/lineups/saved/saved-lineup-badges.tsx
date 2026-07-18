@@ -14,7 +14,7 @@ export function SavedLineupBadges({
       {badges.slice(0, 3).map((badge) => (
         <span
           key={badge}
-          className="flex items-center gap-1 rounded border px-2 py-1 font-michroma text-[7.5px]"
+          className="flex items-center gap-0.75 rounded border px-1.5 py-0.75 font-michroma text-[6.8px]"
           style={{
             color: archetypeColor,
             borderColor: `${archetypeColor}50`,

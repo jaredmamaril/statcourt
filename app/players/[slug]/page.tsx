@@ -312,9 +312,10 @@ export default function PlayerProfilePage() {
   return (
     <main className="page-enter relative min-h-screen overflow-x-hidden bg-background px-3 pb-10 pt-3 text-white lg:px-6 lg:pt-10">
       <div
-        className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-100"
+        className="pointer-events-none fixed inset-0 z-0 bg-center bg-repeat opacity-100"
         style={{
           backgroundImage: "url('/court-pattern.svg')",
+          backgroundSize: "900px auto",
         }}
       />
 
