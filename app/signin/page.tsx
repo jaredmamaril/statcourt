@@ -10,6 +10,7 @@ import {
   getPasswordValidationMessage,
   PasswordRequirements,
 } from "../components/auth/password-requirements";
+import { trackUserSignin } from "../lib/user-signins";
 
 function GoogleMark() {
   return (
@@ -89,6 +90,8 @@ export default function SignInPage() {
       setAuthMessage("Check your email to confirm your StatCourt account.");
       return;
     }
+
+    await trackUserSignin(authResponse.data.user);
 
     router.push("/profile");
   }

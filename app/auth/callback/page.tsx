@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../components/supabase-client";
+import { trackUserSignin } from "../../lib/user-signins";
 
 function getSafeRedirectPath(nextPath: string | null) {
   if (!nextPath || !nextPath.startsWith("/") || nextPath.startsWith("//")) {
@@ -38,13 +39,15 @@ export default function AuthCallbackPage() {
         return;
       }
 
-      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
       if (error) {
         setStatus(error.message);
         router.replace(`/signin?error=${encodeURIComponent(error.message)}`);
         return;
       }
+
+      await trackUserSignin(data.user);
 
       router.replace(nextPath);
     }

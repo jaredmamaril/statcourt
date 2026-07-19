@@ -25,11 +25,13 @@ import {
 import { supabase } from "../components/supabase-client";
 import { getAuthProviderLabel } from "../lib/auth-display";
 import { useUserProfile } from "../lib/use-user-profile";
+import { LoadingSpinner } from "../components/loading/loading-spinner";
 
 type ProfileStats = {
   savedLineups: number;
   favoritePlayers: number;
   playersViewed: number;
+  recentActivity: number;
   favoriteArchetype: PlayerInsightDisplay | null;
 };
 
@@ -48,6 +50,7 @@ const initialProfileStats: ProfileStats = {
   savedLineups: 0,
   favoritePlayers: 0,
   playersViewed: 0,
+  recentActivity: 0,
   favoriteArchetype: null,
 };
 
@@ -172,6 +175,8 @@ export default function ProfilePage() {
   const [avatarStatus, setAvatarStatus] = useState("");
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isLoadingProfileStats, setIsLoadingProfileStats] = useState(true);
+  const [activityStatus, setActivityStatus] = useState("");
+  const [isClearingActivity, setIsClearingActivity] = useState(false);
   const statCardsRef = useRef<HTMLDivElement>(null);
 
   async function sharePublicProfile() {
@@ -262,6 +267,33 @@ export default function ProfilePage() {
     setIsUploadingAvatar(false);
   }
 
+  async function clearRecentActivity() {
+    if (!user) return;
+
+    setIsClearingActivity(true);
+    setActivityStatus("Clearing...");
+
+    const { error } = await supabase
+      .from("user_activity")
+      .delete()
+      .eq("user_id", user.id);
+
+    if (error) {
+      console.error("Failed to clear recent activity", error);
+      setActivityStatus("Could not clear activity.");
+      setIsClearingActivity(false);
+      return;
+    }
+
+    setRecentActivity([]);
+    setProfileStats((currentStats) => ({
+      ...currentStats,
+      recentActivity: 0,
+    }));
+    setActivityStatus("Activity cleared.");
+    setIsClearingActivity(false);
+  }
+
   useEffect(() => {
     let isActive = true;
 
@@ -295,7 +327,9 @@ export default function ProfilePage() {
           .select("id", { count: "exact", head: true }),
         supabase
           .from("user_activity")
-          .select("id, activity_type, label, href, created_at")
+          .select("id, activity_type, label, href, created_at", {
+            count: "exact",
+          })
           .order("created_at", { ascending: false })
           .limit(20),
         fetch("/api/players"),
@@ -330,6 +364,7 @@ export default function ProfilePage() {
         savedLineups: savedLineupsResponse.count ?? 0,
         favoritePlayers: favoritePlayersResponse.count ?? 0,
         playersViewed: recentPlayersResponse.count ?? 0,
+        recentActivity: activityResponse.count ?? 0,
         favoriteArchetype: getFavoriteArchetype(
           playersData.players ?? [],
           favoritePlayerNames,
@@ -391,6 +426,13 @@ export default function ProfilePage() {
         color: "#A855F7",
       },
       {
+        label: "Recent Activity",
+        value: String(displayedProfileStats.recentActivity),
+        tooltip: "Recent signed-in actions tracked in your account activity feed.",
+        icon: Activity,
+        color: "#22C55E",
+      },
+      {
         label: "Favorite Archetype",
         value:
           displayedProfileStats.favoriteArchetype?.label ??
@@ -404,7 +446,7 @@ export default function ProfilePage() {
               ? "#A855F7"
               : displayedProfileStats.favoriteArchetype?.rarity === "blue"
                 ? "#1bc2ec"
-                : "#22C55E",
+                : "#1bc2ec",
       },
     ],
     [displayedProfileStats],
@@ -497,7 +539,7 @@ export default function ProfilePage() {
 
         <div
           ref={statCardsRef}
-          className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-4"
+          className="grid grid-cols-2 gap-2 lg:grid-cols-5 lg:gap-4"
         >
           {accountStats.map((stat) => {
             const Icon = stat.icon;
@@ -548,15 +590,19 @@ export default function ProfilePage() {
                   {stat.label}
                 </p>
 
-                <p
+                <div
                   className="mt-1 font-michroma text-[10px] text-white lg:mt-2 lg:text-xl"
                   style={{
                     color: stat.color,
                     textShadow: `0 0 14px ${stat.color}55`,
                   }}
                 >
-                  {isLoadingProfileStats ? "--" : stat.value}
-                </p>
+                  {isLoadingProfileStats ? (
+                    <LoadingSpinner className="h-4 w-4 lg:h-5 lg:w-5" />
+                  ) : (
+                    stat.value
+                  )}
+                </div>
               </div>
             );
           })}
@@ -566,13 +612,40 @@ export default function ProfilePage() {
           <section className="flex rounded-lg border border-white/10 bg-[#06131d]/80 p-3 lg:min-h-80 lg:p-5">
             <div className="flex min-h-0 w-full flex-col">
               <div className="mb-2.5 flex items-center gap-2 lg:mb-4 lg:gap-3">
-                <Activity className="h-3.5 w-3.5 text-[#1bc2ec] lg:h-5 lg:w-5" />
-                <p className="font-michroma text-[9px] uppercase text-white lg:text-sm">
-                  Recent Activity
-                </p>
+                <div className="flex min-w-0 flex-1 items-center gap-2 lg:gap-3">
+                  <Activity className="h-3.5 w-3.5 text-[#1bc2ec] lg:h-5 lg:w-5" />
+                  <p className="font-michroma text-[9px] uppercase text-white lg:text-sm">
+                    Recent Activity
+                  </p>
+                </div>
+
+                {user && displayedRecentActivity.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearRecentActivity}
+                    disabled={isClearingActivity}
+                    className="rounded-md border border-white/10 bg-white/5 px-2 py-1 font-michroma text-[5px] uppercase text-white/35 transition hover:border-[#1bc2ec]/35 hover:text-[#1bc2ec] disabled:cursor-not-allowed disabled:opacity-50 lg:text-[7px]"
+                  >
+                    Clear
+                  </button>
+                )}
               </div>
 
-              {displayedRecentActivity.length > 0 ? (
+              {activityStatus && (
+                <p className="mb-2 font-michroma text-[5px] uppercase text-[#1bc2ec]/70 lg:text-[7px]">
+                  {activityStatus}
+                </p>
+              )}
+
+              {isLoadingProfileStats ? (
+                <div className="flex min-h-36 flex-col items-center justify-center rounded-md border border-white/10 bg-black/20 p-3 text-center lg:min-h-44 lg:p-5">
+                  <LoadingSpinner className="h-6 w-6 lg:h-8 lg:w-8" />
+
+                  <p className="mt-3 font-michroma text-[7px] uppercase text-white/45 lg:text-[9px]">
+                    Loading activity
+                  </p>
+                </div>
+              ) : displayedRecentActivity.length > 0 ? (
                 <>
                   <div className="statcourt-scroll grid max-h-54 gap-2 overflow-y-auto pr-1 lg:max-h-56">
                     {displayedRecentActivity.map((activity) => {
