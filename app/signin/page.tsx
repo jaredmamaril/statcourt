@@ -2,19 +2,49 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
-import { Mail, Shield, Sparkles } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
+import { Mail, Shield } from "lucide-react";
 import { supabase } from "../components/supabase-client";
+
+function GoogleMark() {
+  return (
+    <span className="grid h-4 w-4 place-items-center rounded-full bg-white shadow-[0_0_12px_rgba(66,133,244,0.34)] lg:h-5 lg:w-5">
+      <Image
+        src="/google.svg"
+        alt=""
+        width={14}
+        height={14}
+        className="h-3 w-3 lg:h-3.5 lg:w-3.5"
+      />
+    </span>
+  );
+}
 
 export default function SignInPage() {
   const router = useRouter();
-  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+  const searchParams = useSearchParams();
+  const [authMode, setAuthMode] = useState<
+    "signin" | "signup" | "forgot-password"
+  >("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authMessage, setAuthMessage] = useState("");
   const [authError, setAuthError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const callbackError = searchParams.get("error");
+
+    if (callbackError) {
+      const timeoutId = window.setTimeout(() => {
+        setAuthError(callbackError);
+        setAuthMessage("");
+      }, 0);
+
+      return () => window.clearTimeout(timeoutId);
+    }
+  }, [searchParams]);
 
   async function handleEmailAuth(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -48,12 +78,51 @@ export default function SignInPage() {
     router.push("/profile");
   }
 
+  async function handlePasswordReset(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setAuthMessage("");
+    setAuthError("");
+    setIsSubmitting(true);
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    setIsSubmitting(false);
+
+    if (error) {
+      setAuthError(error.message);
+      return;
+    }
+
+    setAuthMessage("Check your email for the reset link.");
+  }
+
+  async function signInWithGoogle() {
+    setAuthMessage("");
+    setAuthError("");
+    setIsSubmitting(true);
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=/profile`,
+      },
+    });
+
+    if (error) {
+      setIsSubmitting(false);
+      setAuthError(error.message);
+    }
+  }
+
   return (
     <main className="page-enter relative min-h-svh overflow-hidden bg-background px-3 py-4 text-white lg:px-6 lg:pt-12">
       <div
-        className="pointer-events-none fixed inset-0 z-0 bg-center bg-repeat opacity-100"
+        className="pointer-events-none fixed inset-0 z-0 bg-repeat opacity-100"
         style={{
           backgroundImage: "url('/court-pattern.svg')",
+          backgroundPosition: "top left",
           backgroundSize: "900px auto",
         }}
       />
@@ -97,68 +166,136 @@ export default function SignInPage() {
             </p>
           </div>
 
-          <form onSubmit={handleEmailAuth} className="grid gap-2 lg:gap-3">
-            <div className="grid grid-cols-2 rounded-md border border-white/10 bg-black/25 p-0.5">
-              {(["signin", "signup"] as const).map((mode) => (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={() => {
-                    setAuthMode(mode);
-                    setAuthError("");
-                    setAuthMessage("");
-                  }}
-                  className={`rounded px-2 py-1.5 font-michroma text-[6px] uppercase transition lg:text-[8px] ${
-                    authMode === mode
-                      ? "bg-[#1bc2ec]/20 text-[#1bc2ec]"
-                      : "text-white/35 hover:bg-white/5 hover:text-white/70"
-                  }`}
-                >
-                  {mode === "signin" ? "Sign In" : "Create Account"}
-                </button>
-              ))}
-            </div>
-
-            <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              required
-              placeholder="Email"
-              className="rounded-md border border-white/15 bg-black/25 px-3 py-2 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/30 focus:border-[#1bc2ec] lg:px-4 lg:py-3 lg:text-[10px]"
-            />
-
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-              minLength={6}
-              placeholder="Password"
-              className="rounded-md border border-white/15 bg-black/25 px-3 py-2 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/30 focus:border-[#1bc2ec] lg:px-4 lg:py-3 lg:text-[10px]"
-            />
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="group flex items-center justify-center gap-2 rounded-md border border-[#1bc2ec]/55 bg-[#1bc2ec]/10 px-3 py-2 font-michroma text-[7px] uppercase text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.14)] transition hover:bg-[#1bc2ec]/20 hover:text-white hover:shadow-[0_0_24px_rgba(27,194,236,0.28)] lg:px-4 lg:py-3 lg:text-[10px]"
+          {authMode === "forgot-password" ? (
+            <form
+              onSubmit={handlePasswordReset}
+              className="grid gap-2 lg:gap-3"
             >
-              <Mail className="h-3 w-3 transition group-hover:brightness-125 lg:h-4 lg:w-4" />
-              {isSubmitting
-                ? "Checking Access..."
-                : authMode === "signin"
-                  ? "Continue with Email"
-                  : "Create Account"}
-            </button>
+              <input
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                required
+                placeholder="Email"
+                className="rounded-md border border-white/15 bg-black/25 px-3 py-2 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/30 focus:border-[#1bc2ec] lg:px-4 lg:py-3 lg:text-[10px]"
+              />
 
-            <button
-              type="button"
-              className="group flex items-center justify-center gap-2 rounded-md border border-white/15 bg-white/5 px-3 py-2 font-michroma text-[7px] uppercase text-white/65 transition hover:border-white/30 hover:bg-white/10 hover:text-white lg:px-4 lg:py-3 lg:text-[10px]"
-            >
-              <Sparkles className="h-3 w-3 text-white/55 transition group-hover:text-white lg:h-4 lg:w-4" />{" "}
-              Google Later
-            </button>
-          </form>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="group flex items-center justify-center gap-2 rounded-md border border-[#1bc2ec]/55 bg-[#1bc2ec]/10 px-3 py-2 font-michroma text-[7px] uppercase text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.14)] transition hover:bg-[#1bc2ec]/20 hover:text-white hover:shadow-[0_0_24px_rgba(27,194,236,0.28)] disabled:cursor-not-allowed disabled:opacity-60 lg:px-4 lg:py-3 lg:text-[10px]"
+              >
+                <Mail className="h-3 w-3 transition group-hover:brightness-125 lg:h-4 lg:w-4" />
+                {isSubmitting ? "Sending Link..." : "Send Reset Link"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode("signin");
+                  setAuthError("");
+                  setAuthMessage("");
+                }}
+                className="rounded-md border border-white/10 bg-white/5 px-3 py-2 font-michroma text-[7px] uppercase text-white/45 transition hover:border-white/25 hover:text-white lg:px-4 lg:py-3 lg:text-[10px]"
+              >
+                Back to Sign In
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleEmailAuth} className="grid gap-2 lg:gap-3">
+              <div className="grid grid-cols-2 rounded-md border border-white/10 bg-black/25 p-0.5">
+                {(["signin", "signup"] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => {
+                      setAuthMode(mode);
+                      setAuthError("");
+                      setAuthMessage("");
+                    }}
+                    className={`rounded px-2 py-1.5 font-michroma text-[6px] uppercase transition lg:text-[8px] ${
+                      authMode === mode
+                        ? "bg-[#1bc2ec]/20 text-[#1bc2ec]"
+                        : "text-white/35 hover:bg-white/5 hover:text-white/70"
+                    }`}
+                  >
+                    {mode === "signin" ? "Sign In" : "Create Account"}
+                  </button>
+                ))}
+              </div>
+
+              <input
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                required
+                placeholder="Email"
+                className="rounded-md border border-white/15 bg-black/25 px-3 py-2 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/30 focus:border-[#1bc2ec] lg:px-4 lg:py-3 lg:text-[10px]"
+              />
+
+              <input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                required
+                minLength={6}
+                placeholder="Password"
+                className="rounded-md border border-white/15 bg-black/25 px-3 py-2 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/30 focus:border-[#1bc2ec] lg:px-4 lg:py-3 lg:text-[10px]"
+              />
+
+              {authMode === "signin" && (
+                <div className="flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthError("");
+                      setAuthMessage(
+                        "Email recovery is not available yet. Try the email you used when creating your account.",
+                      );
+                    }}
+                    className="font-michroma text-[6px] uppercase text-white/35 transition hover:text-[#1bc2ec] lg:text-[8px]"
+                  >
+                    Forgot Email?
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthMode("forgot-password");
+                      setAuthError("");
+                      setAuthMessage("");
+                    }}
+                    className="font-michroma text-[6px] uppercase text-white/35 transition hover:text-[#1bc2ec] lg:text-[8px]"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="group flex items-center justify-center gap-2 rounded-md border border-[#1bc2ec]/55 bg-[#1bc2ec]/10 px-3 py-2 font-michroma text-[7px] uppercase text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.14)] transition hover:bg-[#1bc2ec]/20 hover:text-white hover:shadow-[0_0_24px_rgba(27,194,236,0.28)] disabled:cursor-not-allowed disabled:opacity-60 lg:px-4 lg:py-3 lg:text-[10px]"
+              >
+                <Mail className="h-3 w-3 transition group-hover:brightness-125 lg:h-4 lg:w-4" />
+                {isSubmitting
+                  ? "Checking Access..."
+                  : authMode === "signin"
+                    ? "Continue with Email"
+                    : "Create Account"}
+              </button>
+
+              <button
+                type="button"
+                onClick={signInWithGoogle}
+                disabled={isSubmitting}
+                className="group flex items-center justify-center gap-2 rounded-md border border-[#4285F4]/45 bg-[#08234f]/70 px-3 py-2 font-michroma text-[7px] uppercase text-[#8ab4f8] shadow-[0_0_16px_rgba(66,133,244,0.12)] transition hover:border-[#1bc2ec]/70 hover:bg-[#0b2f69]/80 hover:text-white hover:shadow-[0_0_22px_rgba(66,133,244,0.24)] disabled:cursor-not-allowed disabled:opacity-60 lg:px-4 lg:py-3 lg:text-[10px]"
+              >
+                <GoogleMark />
+                {isSubmitting ? "Opening Google..." : "Continue with Google"}
+              </button>
+            </form>
+          )}
 
           {(authError || authMessage) && (
             <p

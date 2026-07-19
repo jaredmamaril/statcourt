@@ -1,0 +1,228 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { FormEvent, useState } from "react";
+import { Eye, KeyRound } from "lucide-react";
+import { supabase } from "../components/supabase-client";
+
+function getPasswordValidationMessage(password: string) {
+  if (password.length < 8) return "Use at least 8 characters.";
+  if (!/[a-z]/.test(password)) return "Add a lowercase letter.";
+  if (!/[A-Z]/.test(password)) return "Add an uppercase letter.";
+  if (!/[0-9]/.test(password)) return "Add a number.";
+  if (!/[!@#$%^&*()_+\-=[\]{};'\\:"|<>?,./`~]/.test(password)) {
+    return "Add a special character.";
+  }
+
+  return "";
+}
+
+export default function ResetPasswordPage() {
+  const router = useRouter();
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [visiblePasswordFields, setVisiblePasswordFields] = useState({
+    new: false,
+    confirm: false,
+  });
+
+  async function updatePassword(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setStatus("");
+    setError("");
+
+    const passwordValidationMessage =
+      getPasswordValidationMessage(newPassword);
+
+    if (passwordValidationMessage) {
+      setError(passwordValidationMessage);
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    setIsSubmitting(false);
+
+    if (updateError) {
+      const updateErrorMessage = updateError.message.toLowerCase();
+
+      if (
+        updateError.name === "AuthWeakPasswordError" ||
+        updateErrorMessage.includes("password should contain")
+      ) {
+        setError("Use upper, lower, number, and symbol.");
+      } else if (
+        updateError.code === "same_password" ||
+        updateErrorMessage.includes("same password") ||
+        updateErrorMessage.includes("different from the old password")
+      ) {
+        setError("Choose a password different from your current one.");
+      } else {
+        setError("Could not update password. Open the reset link again.");
+      }
+      return;
+    }
+
+    setNewPassword("");
+    setConfirmPassword("");
+    setVisiblePasswordFields({
+      new: false,
+      confirm: false,
+    });
+    setStatus("Password updated. Sending you to sign in...");
+    window.setTimeout(() => router.push("/signin"), 1200);
+  }
+
+  return (
+    <main className="page-enter relative min-h-svh overflow-hidden bg-background px-3 py-4 text-white lg:px-6 lg:pt-12">
+      <div
+        className="pointer-events-none fixed inset-0 z-0 bg-repeat opacity-100"
+        style={{
+          backgroundImage: "url('/court-pattern.svg')",
+          backgroundPosition: "top left",
+          backgroundSize: "900px auto",
+        }}
+      />
+
+      <section className="relative z-10 mx-auto flex min-h-[calc(100svh-32px)] max-w-[320px] items-center justify-center lg:min-h-[calc(100vh-120px)] lg:max-w-md">
+        <div className="w-full rounded-lg border border-[#1bc2ec]/40 bg-[#06131d]/85 p-3.5 shadow-[0_0_24px_rgba(27,194,236,0.16)] lg:p-6 lg:shadow-[0_0_36px_rgba(27,194,236,0.2)]">
+          <div className="mb-3.5 flex flex-col items-center text-center lg:mb-6">
+            <div className="mb-2.5 flex h-14 w-14 items-center justify-center rounded-lg border border-[#1bc2ec]/45 bg-[#1bc2ec]/10 shadow-[0_0_18px_rgba(27,194,236,0.18)] lg:mb-4 lg:h-20 lg:w-20 lg:shadow-[0_0_24px_rgba(27,194,236,0.22)]">
+              <Image
+                src="/statcourt-logo.svg"
+                alt="StatCourt"
+                width={44}
+                height={44}
+                priority
+                className="lg:h-16 lg:w-16"
+              />
+            </div>
+
+            <p className="font-michroma text-[9px] font-bold uppercase tracking-wide text-[#1bc2ec] lg:text-[12px]">
+              StatCourt
+            </p>
+
+            <h1 className="mt-2.5 font-michroma text-sm uppercase leading-snug text-white lg:mt-3 lg:text-2xl">
+              Reset Password
+            </h1>
+
+            <p className="mt-2 font-michroma text-[7px] uppercase tracking-wide text-white/45 lg:mt-3 lg:text-[10px]">
+              Choose a new account key.
+            </p>
+          </div>
+
+          <div className="mb-3 rounded-md border border-white/10 bg-black/20 p-2.5 lg:mb-5 lg:p-3">
+            <div className="flex items-center justify-center gap-1.5 font-michroma text-[6px] uppercase text-white/35 lg:gap-2 lg:text-[8px]">
+              <KeyRound className="h-3 w-3 text-[#1bc2ec] lg:h-3.5 lg:w-3.5" />
+              Password Recovery
+            </div>
+
+            <p className="mt-1.5 text-center font-michroma text-[7px] leading-relaxed text-white/45 lg:mt-2 lg:text-[9px]">
+              Use the reset link from your email, then set a stronger password.
+            </p>
+          </div>
+
+          <form onSubmit={updatePassword} className="grid gap-2 lg:gap-3">
+            <div className="relative min-w-0">
+              <input
+                type={visiblePasswordFields.new ? "text" : "password"}
+                value={newPassword}
+                onChange={(event) => {
+                  setNewPassword(event.target.value);
+                  setError("");
+                  setStatus("");
+                }}
+                required
+                placeholder="New password"
+                className="w-full rounded-md border border-white/15 bg-black/25 px-3 py-2 pr-8 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/30 focus:border-[#1bc2ec] lg:px-4 lg:py-3 lg:pr-10 lg:text-[10px]"
+              />
+
+              <button
+                type="button"
+                onClick={() =>
+                  setVisiblePasswordFields((current) => ({
+                    ...current,
+                    new: !current.new,
+                  }))
+                }
+                aria-label="Toggle new password visibility"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-white/35 transition hover:text-[#1bc2ec] lg:right-3"
+              >
+                <Eye className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
+              </button>
+            </div>
+
+            <div className="relative min-w-0">
+              <input
+                type={visiblePasswordFields.confirm ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(event) => {
+                  setConfirmPassword(event.target.value);
+                  setError("");
+                  setStatus("");
+                }}
+                required
+                placeholder="Confirm password"
+                className="w-full rounded-md border border-white/15 bg-black/25 px-3 py-2 pr-8 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/30 focus:border-[#1bc2ec] lg:px-4 lg:py-3 lg:pr-10 lg:text-[10px]"
+              />
+
+              <button
+                type="button"
+                onClick={() =>
+                  setVisiblePasswordFields((current) => ({
+                    ...current,
+                    confirm: !current.confirm,
+                  }))
+                }
+                aria-label="Toggle confirm password visibility"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-white/35 transition hover:text-[#1bc2ec] lg:right-3"
+              >
+                <Eye className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
+              </button>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="group flex items-center justify-center gap-2 rounded-md border border-[#1bc2ec]/55 bg-[#1bc2ec]/10 px-3 py-2 font-michroma text-[7px] uppercase text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.14)] transition hover:bg-[#1bc2ec]/20 hover:text-white hover:shadow-[0_0_24px_rgba(27,194,236,0.28)] disabled:cursor-not-allowed disabled:opacity-60 lg:px-4 lg:py-3 lg:text-[10px]"
+            >
+              <KeyRound className="h-3 w-3 transition group-hover:brightness-125 lg:h-4 lg:w-4" />
+              {isSubmitting ? "Updating..." : "Update Password"}
+            </button>
+          </form>
+
+          {(error || status) && (
+            <p
+              className={`mt-2 text-center font-michroma text-[6px] leading-relaxed lg:text-[8px] ${
+                error ? "text-red-300" : "text-[#1bc2ec]"
+              }`}
+            >
+              {error || status}
+            </p>
+          )}
+
+          <Link
+            href="/signin"
+            className="mt-2.5 block text-center font-michroma text-[7px] uppercase tracking-[0.2em] text-white/35 transition hover:text-[#1bc2ec] lg:mt-3 lg:text-[9px] lg:tracking-[0.25em]"
+          >
+            Back to Sign In
+          </Link>
+        </div>
+      </section>
+    </main>
+  );
+}

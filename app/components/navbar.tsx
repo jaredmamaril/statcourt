@@ -7,6 +7,11 @@ import { useEffect, useState } from "react";
 import { supabase } from "./supabase-client";
 import { useAuthUser } from "../lib/use-auth-user";
 import {
+  getUserAvatarUrl,
+  getUserDisplayName,
+  getUserInitial,
+} from "../lib/auth-display";
+import {
   Activity,
   Bookmark,
   LayoutDashboard,
@@ -49,9 +54,9 @@ export default function Navbar() {
   // Path to desired page
   const pathname = usePathname();
   const { user, isLoadingUser } = useAuthUser();
-  const userDisplayName =
-    user?.user_metadata?.name ?? user?.email?.split("@")[0] ?? "Player";
-  const userInitial = userDisplayName.charAt(0).toUpperCase();
+  const userDisplayName = getUserDisplayName(user);
+  const userInitial = getUserInitial(user);
+  const userAvatarUrl = getUserAvatarUrl(user);
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -159,8 +164,18 @@ export default function Navbar() {
                     aria-expanded={isUserMenuOpen}
                     aria-label="Open account menu"
                   >
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-[#06131d] text-[10px] uppercase text-[#1bc2ec]">
-                      {userInitial}
+                    <span className="relative flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded bg-[#06131d] text-[10px] uppercase text-[#1bc2ec]">
+                      {userAvatarUrl ? (
+                        <Image
+                          src={userAvatarUrl}
+                          alt=""
+                          fill
+                          sizes="28px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        userInitial
+                      )}
                     </span>
 
                     <span className="hidden min-w-0 flex-1 truncate text-left lg:block">

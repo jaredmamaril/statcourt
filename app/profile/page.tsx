@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   getPlayerInsights,
@@ -21,6 +22,12 @@ import {
 } from "lucide-react";
 import { useAuthUser } from "../lib/use-auth-user";
 import { supabase } from "../components/supabase-client";
+import {
+  getAuthProviderLabel,
+  getUserAvatarUrl,
+  getUserDisplayName,
+  getUserInitial,
+} from "../lib/auth-display";
 
 type ProfileStats = {
   savedLineups: number;
@@ -248,10 +255,10 @@ export default function ProfilePage() {
     };
   }, [openStatTooltip]);
 
-  const displayName =
-    user?.user_metadata?.name ?? user?.email?.split("@")[0] ?? "StatCourt User";
-
-  const accountInitial = displayName.charAt(0).toUpperCase();
+  const displayName = user ? getUserDisplayName(user) : "StatCourt User";
+  const accountInitial = getUserInitial(user);
+  const accountAvatarUrl = getUserAvatarUrl(user);
+  const authProviderLabel = getAuthProviderLabel(user);
   const displayedProfileStats = user ? profileStats : initialProfileStats;
   const displayedRecentActivity = user ? recentActivity : [];
 
@@ -302,9 +309,10 @@ export default function ProfilePage() {
   return (
     <main className="page-enter relative min-h-svh bg-background px-3 py-3 text-white lg:px-6 lg:pt-12">
       <div
-        className="pointer-events-none fixed inset-0 z-0 bg-center bg-repeat opacity-100"
+        className="pointer-events-none fixed inset-0 z-0 bg-repeat opacity-100"
         style={{
           backgroundImage: "url('/court-pattern.svg')",
+          backgroundPosition: "top left",
           backgroundSize: "900px auto",
         }}
       />
@@ -326,8 +334,18 @@ export default function ProfilePage() {
               </p>
             </div>
 
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 font-michroma text-xs text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.18)] lg:h-16 lg:w-16 lg:text-xl lg:shadow-[0_0_24px_rgba(27,194,236,0.22)]">
-              {accountInitial}
+            <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 font-michroma text-xs text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.18)] lg:h-16 lg:w-16 lg:text-xl lg:shadow-[0_0_24px_rgba(27,194,236,0.22)]">
+              {accountAvatarUrl ? (
+                <Image
+                  src={accountAvatarUrl}
+                  alt=""
+                  fill
+                  sizes="64px"
+                  className="object-cover"
+                />
+              ) : (
+                accountInitial
+              )}
             </div>
           </div>
         </div>
@@ -575,6 +593,10 @@ export default function ProfilePage() {
 
               <p className="mt-1 truncate font-michroma text-[8px] text-[#1bc2ec] lg:text-[10px]">
                 {user?.email ?? "No active account"}
+              </p>
+
+              <p className="mt-1 font-michroma text-[5px] uppercase text-white/30 lg:text-[7px]">
+                {authProviderLabel}
               </p>
             </div>
 
