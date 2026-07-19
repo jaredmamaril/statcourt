@@ -21,6 +21,7 @@ type SavedLineupCardProps = {
   onLoad: (lineup: SavedLineup) => void;
   onScout: (lineup: SavedLineup) => void;
   onRename: (lineup: SavedLineup) => void;
+  onTogglePublic: (lineup: SavedLineup) => void;
   onDelete: (lineup: SavedLineup) => void;
 };
 
@@ -31,6 +32,7 @@ export function SavedLineupCard({
   onLoad,
   onScout,
   onRename,
+  onTogglePublic,
   onDelete,
 }: SavedLineupCardProps) {
   const archetypeColor = getSavedLineupArchetypeColor(lineup.archetype);
@@ -61,9 +63,28 @@ export function SavedLineupCard({
             })}
           </p>
 
-          <p className="mt-1 w-fit rounded border border-white/10 bg-white/4 px-1.5 py-0.5 font-michroma text-[4.5px] uppercase text-white/35 lg:px-2 lg:text-[7px]">
-            {statProfileLabel}
-          </p>
+          <div className="mt-1 flex flex-wrap items-center gap-1">
+            <p className="w-fit rounded border border-white/10 bg-white/4 px-1.5 py-0.5 font-michroma text-[4.5px] uppercase text-white/35 lg:px-2 lg:text-[7px]">
+              {statProfileLabel}
+            </p>
+
+            <button
+              type="button"
+              onClick={() => onTogglePublic(lineup)}
+              className="w-fit cursor-pointer rounded-md border px-2 py-1 font-michroma text-[5.5px] uppercase shadow-[0_0_10px_rgba(27,194,236,0.08)] transition hover:scale-105 hover:text-white lg:px-2.5 lg:py-1.5 lg:text-[8px]"
+              style={{
+                color: lineup.isPublic ? "#22C55E" : "rgba(255,255,255,0.45)",
+                borderColor: lineup.isPublic
+                  ? "#22C55E99"
+                  : `${archetypeColor}66`,
+                backgroundColor: lineup.isPublic
+                  ? "#22C55E22"
+                  : `${archetypeColor}12`,
+              }}
+            >
+              {lineup.isPublic ? "Public" : "Private"}
+            </button>
+          </div>
         </div>
 
         <SavedLineupOverallBox

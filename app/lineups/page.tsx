@@ -584,6 +584,7 @@ export default function Lineups() {
       similarLineupMatches,
       courtBalance,
       courtBalanceDescription,
+      isPublic: false,
       badges: scoutReport.badges,
     });
 
@@ -669,6 +670,35 @@ export default function Lineups() {
           },
         });
       }
+    });
+  }
+
+  function toggleSavedLineupPublic(lineup: SavedLineup) {
+    requireAuth("Sign in to update lineup visibility", () => {
+      const nextIsPublic = !lineup.isPublic;
+
+      updateSavedLineups(
+        savedLineups.map((savedLineup) =>
+          savedLineup.id === lineup.id
+            ? {
+                ...savedLineup,
+                isPublic: nextIsPublic,
+              }
+            : savedLineup,
+        ),
+      );
+
+      void logUserActivity({
+        user,
+        activityType: "save_lineup",
+        label: `${nextIsPublic ? "Published" : "Privatized"} lineup ${lineup.name}`,
+        href: "/lineups?tab=saved",
+        metadata: {
+          lineupId: lineup.id,
+          lineupName: lineup.name,
+          isPublic: nextIsPublic,
+        },
+      });
     });
   }
 
@@ -903,6 +933,7 @@ export default function Lineups() {
                   setLineupPendingRename(lineup);
                   setRenameLineupInput(lineup.name);
                 }}
+                onTogglePublicLineup={toggleSavedLineupPublic}
                 onDeleteLineup={setLineupPendingDelete}
               />
             ) : (

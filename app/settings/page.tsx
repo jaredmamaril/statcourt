@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import {
   Database,
   Eye,
@@ -9,6 +10,7 @@ import {
   Settings2,
   UserCircle,
 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -24,6 +26,10 @@ import {
   getAuthProviderLabel,
   hasConnectedProvider,
 } from "../lib/auth-display";
+import {
+  getPasswordValidationMessage,
+  PasswordRequirements,
+} from "../components/auth/password-requirements";
 
 type UserDataCounts = {
   savedLineups: number;
@@ -31,11 +37,25 @@ type UserDataCounts = {
   playersViewed: number;
 };
 
+type UserProfileRow = {
+  display_name: string | null;
+  username: string | null;
+  username_updated_at: string | null;
+  avatar_url: string | null;
+  public_profile_enabled: boolean | null;
+};
+
 const defaultCounts: UserDataCounts = {
   savedLineups: 0,
   favoritePlayers: 0,
   playersViewed: 0,
 };
+
+const USERNAME_CHANGE_COOLDOWN_DAYS = 3;
+const USERNAME_CHANGE_COOLDOWN_MS =
+  USERNAME_CHANGE_COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
+const MAX_AVATAR_FILE_SIZE = 1 * 1024 * 1024;
+const ALLOWED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 const statModeOptions: { label: string; value: DefaultStatMode }[] = [
   { label: "Career", value: "career" },
@@ -73,16 +93,63 @@ function formatMemberSince(createdAt?: string) {
   });
 }
 
-function getPasswordValidationMessage(password: string) {
-  if (password.length < 8) return "Use at least 8 characters.";
-  if (!/[a-z]/.test(password)) return "Add a lowercase letter.";
-  if (!/[A-Z]/.test(password)) return "Add an uppercase letter.";
-  if (!/[0-9]/.test(password)) return "Add a number.";
-  if (!/[!@#$%^&*()_+\-=[\]{};'\\:"|<>?,./`~]/.test(password)) {
-    return "Add a special character.";
-  }
+function normalizeUsername(value: string) {
+  return value.trim().toLowerCase().replace(/^@+/, "");
+}
 
-  return "";
+function getUsernameCooldownUntil(
+  usernameUpdatedAt: string | null | undefined,
+) {
+  if (!usernameUpdatedAt) return null;
+
+  const updatedAtTime = new Date(usernameUpdatedAt).getTime();
+
+  if (!Number.isFinite(updatedAtTime)) return null;
+
+  const cooldownUntil = new Date(updatedAtTime + USERNAME_CHANGE_COOLDOWN_MS);
+
+  return cooldownUntil.getTime() > Date.now() ? cooldownUntil : null;
+}
+
+function formatCooldownDate(date: Date) {
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function getMetadataDisplayName(
+  user: NonNullable<ReturnType<typeof useUserSettings>["user"]>,
+) {
+  return user.user_metadata?.name ?? user.email?.split("@")[0] ?? "";
+}
+
+function getMetadataUsername(
+  user: NonNullable<ReturnType<typeof useUserSettings>["user"]>,
+) {
+  const value = user.user_metadata?.username;
+
+  return typeof value === "string" ? value : "";
+}
+
+function getMetadataAvatarUrl(
+  user: NonNullable<ReturnType<typeof useUserSettings>["user"]>,
+) {
+  const avatarUrl = user.user_metadata?.avatar_url;
+  const picture = user.user_metadata?.picture;
+
+  if (typeof avatarUrl === "string" && avatarUrl.trim()) return avatarUrl;
+  if (typeof picture === "string" && picture.trim()) return picture;
+
+  return null;
+}
+
+function getAvatarFileExtension(file: File) {
+  if (file.type === "image/jpeg") return "jpg";
+  if (file.type === "image/png") return "png";
+  if (file.type === "image/webp") return "webp";
+
+  return "png";
 }
 
 export default function SettingsPage() {
@@ -94,12 +161,19 @@ export default function SettingsPage() {
     isLoadingSettings: isLoadingUserSettings,
   } = useUserSettings();
   const [settings, setSettings] = useState<UserSettings>(defaultUserSettings);
+  const [userProfile, setUserProfile] = useState<UserProfileRow | null>(null);
   const [dataCounts, setDataCounts] = useState<UserDataCounts>(defaultCounts);
   const [settingsStatus, setSettingsStatus] = useState("");
   const [displayNameInput, setDisplayNameInput] = useState("");
+  const [usernameInput, setUsernameInput] = useState("");
   const [profileStatus, setProfileStatus] = useState("");
+  const [usernameStatus, setUsernameStatus] = useState("");
   const [accountActionStatus, setAccountActionStatus] = useState("");
+  const [shareProfileStatus, setShareProfileStatus] = useState("");
+  const [avatarStatus, setAvatarStatus] = useState("");
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isEditingDisplayName, setIsEditingDisplayName] = useState(false);
+  const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [isChangingEmail, setIsChangingEmail] = useState(false);
   const [newEmailInput, setNewEmailInput] = useState("");
   const [pendingEmailAddress, setPendingEmailAddress] = useState("");
@@ -125,16 +199,123 @@ export default function SettingsPage() {
   }, [loadedSettings]);
 
   useEffect(() => {
-    const nextDisplayName =
-      user?.user_metadata?.name ?? user?.email?.split("@")[0] ?? "";
+    let isActive = true;
 
-    const timeoutId = window.setTimeout(() => {
-      setDisplayNameInput(nextDisplayName);
-      setProfileStatus("");
-    }, 0);
+    async function loadUserProfile() {
+      if (isLoadingUser) return;
 
-    return () => window.clearTimeout(timeoutId);
-  }, [user]);
+      if (!user) {
+        const timeoutId = window.setTimeout(() => {
+          if (!isActive) return;
+
+          setUserProfile(null);
+          setDisplayNameInput("");
+          setUsernameInput("");
+          setProfileStatus("");
+          setUsernameStatus("");
+        }, 0);
+
+        return () => window.clearTimeout(timeoutId);
+      }
+
+      const metadataDisplayName = getMetadataDisplayName(user);
+      const metadataUsername = getMetadataUsername(user);
+      const metadataAvatarUrl = getMetadataAvatarUrl(user);
+
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select(
+          "display_name, username, username_updated_at, avatar_url, public_profile_enabled",
+        )
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!isActive) return;
+
+      if (error) {
+        console.warn("Failed to load user profile", error);
+
+        const timeoutId = window.setTimeout(() => {
+          if (!isActive) return;
+
+          setUserProfile(null);
+          setDisplayNameInput(metadataDisplayName);
+          setUsernameInput(metadataUsername);
+          setProfileStatus("");
+          setUsernameStatus("");
+        }, 0);
+
+        return () => window.clearTimeout(timeoutId);
+      }
+
+      if (data) {
+        const profile = data as UserProfileRow;
+
+        const timeoutId = window.setTimeout(() => {
+          if (!isActive) return;
+
+          setUserProfile(profile);
+          setDisplayNameInput(profile.display_name ?? metadataDisplayName);
+          setUsernameInput(profile.username ?? metadataUsername);
+          setProfileStatus("");
+          setUsernameStatus("");
+        }, 0);
+
+        return () => window.clearTimeout(timeoutId);
+      }
+
+      const profileSeed = {
+        id: user.id,
+        display_name: metadataDisplayName || null,
+        username: metadataUsername || null,
+        username_updated_at: null,
+        avatar_url: metadataAvatarUrl,
+        public_profile_enabled: false,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { data: insertedProfile, error: insertError } = await supabase
+        .from("user_profiles")
+        .upsert(profileSeed, { onConflict: "id" })
+        .select(
+          "display_name, username, username_updated_at, avatar_url, public_profile_enabled",
+        )
+        .single();
+
+      if (!isActive) return;
+
+      if (insertError) {
+        console.warn("Failed to create user profile", insertError);
+      }
+
+      const nextProfile = (insertedProfile as UserProfileRow | null) ?? {
+        display_name: metadataDisplayName || null,
+        username: metadataUsername || null,
+        username_updated_at: null,
+        avatar_url: metadataAvatarUrl,
+        public_profile_enabled: false,
+      };
+
+      const timeoutId = window.setTimeout(() => {
+        if (!isActive) return;
+
+        setUserProfile(nextProfile);
+        setDisplayNameInput(nextProfile.display_name ?? metadataDisplayName);
+        setUsernameInput(nextProfile.username ?? metadataUsername);
+        setProfileStatus("");
+        setUsernameStatus("");
+      }, 0);
+
+      return () => window.clearTimeout(timeoutId);
+    }
+
+    const cleanupPromise = loadUserProfile();
+
+    return () => {
+      isActive = false;
+      cleanupPromise.then((cleanup) => cleanup?.());
+    };
+  }, [isLoadingUser, user]);
 
   useEffect(() => {
     let isActive = true;
@@ -211,12 +392,26 @@ export default function SettingsPage() {
     router.push("/signin");
   }
 
-  const displayName =
-    user?.user_metadata?.name ?? user?.email?.split("@")[0] ?? "Signed Out";
+  const displayName = user
+    ? (userProfile?.display_name ?? getMetadataDisplayName(user))
+    : "Signed Out";
+  const avatarUrl = user
+    ? (userProfile?.avatar_url ?? getMetadataAvatarUrl(user))
+    : null;
+  const username = userProfile?.username
+    ? `@${userProfile.username}`
+    : "Not set";
+  const usernameCooldownUntil = getUsernameCooldownUntil(
+    userProfile?.username_updated_at,
+  );
   const emailAddress = user?.email ?? "Not signed in";
   const memberSince = formatMemberSince(user?.created_at);
   const hasGoogleProvider = hasConnectedProvider(user, "google");
   const signInMethodLabel = getAuthProviderLabel(user);
+  const isPublicProfileEnabled = userProfile?.public_profile_enabled ?? false;
+  const publicProfileStatusLabel = isPublicProfileEnabled
+    ? "Visible"
+    : "Private";
 
   async function saveDisplayName() {
     const nextDisplayName = displayNameInput.trim();
@@ -238,6 +433,21 @@ export default function SettingsPage() {
 
     setProfileStatus("Saving...");
 
+    const { error: profileError } = await supabase.from("user_profiles").upsert(
+      {
+        id: user.id,
+        display_name: nextDisplayName,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" },
+    );
+
+    if (profileError) {
+      console.warn("Failed to update profile display name", profileError);
+      setProfileStatus("Could not save name.");
+      return;
+    }
+
     const { error } = await supabase.auth.updateUser({
       data: {
         name: nextDisplayName,
@@ -250,8 +460,257 @@ export default function SettingsPage() {
       return;
     }
 
+    setUserProfile((currentProfile) => ({
+      display_name: nextDisplayName,
+      username: currentProfile?.username ?? null,
+      username_updated_at: currentProfile?.username_updated_at ?? null,
+      avatar_url: currentProfile?.avatar_url ?? getMetadataAvatarUrl(user),
+      public_profile_enabled: currentProfile?.public_profile_enabled ?? false,
+    }));
     setProfileStatus("Saved");
     setIsEditingDisplayName(false);
+  }
+
+  async function saveUsername() {
+    const nextUsername = normalizeUsername(usernameInput);
+
+    if (!user) {
+      setUsernameStatus("Sign in to edit username.");
+      return;
+    }
+
+    if (nextUsername.length < 3) {
+      setUsernameStatus("Use at least 3 characters.");
+      return;
+    }
+
+    if (nextUsername.length > 24) {
+      setUsernameStatus("Keep it under 24 characters.");
+      return;
+    }
+
+    if (!/^[a-z0-9_]+$/.test(nextUsername)) {
+      setUsernameStatus("Use letters, numbers, or underscores.");
+      return;
+    }
+
+    if (nextUsername === userProfile?.username) {
+      setUsernameStatus("Username already saved.");
+      setIsEditingUsername(false);
+      return;
+    }
+
+    if (userProfile?.username && usernameCooldownUntil) {
+      setUsernameStatus(
+        `You can change username again ${formatCooldownDate(
+          usernameCooldownUntil,
+        )}.`,
+      );
+      return;
+    }
+
+    setUsernameStatus("Saving...");
+    const usernameUpdatedAt = new Date().toISOString();
+
+    const { error: profileError } = await supabase.from("user_profiles").upsert(
+      {
+        id: user.id,
+        username: nextUsername,
+        username_updated_at: usernameUpdatedAt,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" },
+    );
+
+    if (profileError) {
+      const errorMessage = profileError.message?.toLowerCase() ?? "";
+      const isDuplicateUsername =
+        profileError.code === "23505" ||
+        errorMessage.includes("duplicate") ||
+        errorMessage.includes("unique");
+
+      if (isDuplicateUsername) {
+        setUsernameStatus("Username is already taken.");
+      } else {
+        console.warn("Failed to update profile username", profileError);
+        setUsernameStatus("Could not save username.");
+      }
+
+      return;
+    }
+
+    const { error } = await supabase.auth.updateUser({
+      data: {
+        username: nextUsername,
+      },
+    });
+
+    if (error) {
+      console.error("Failed to update username", error);
+      setUsernameStatus("Could not save username.");
+      return;
+    }
+
+    setUserProfile((currentProfile) => ({
+      display_name:
+        currentProfile?.display_name ?? getMetadataDisplayName(user) ?? null,
+      username: nextUsername,
+      username_updated_at: usernameUpdatedAt,
+      avatar_url: currentProfile?.avatar_url ?? getMetadataAvatarUrl(user),
+      public_profile_enabled: currentProfile?.public_profile_enabled ?? false,
+    }));
+    setUsernameInput(nextUsername);
+    setUsernameStatus("Saved");
+    setIsEditingUsername(false);
+  }
+
+  async function togglePublicProfile() {
+    if (!user) {
+      setAccountActionStatus("Sign in to edit profile.");
+      return;
+    }
+
+    const nextEnabled = !isPublicProfileEnabled;
+
+    setAccountActionStatus(
+      nextEnabled ? "Making profile public..." : "Making profile private...",
+    );
+
+    const { error } = await supabase.from("user_profiles").upsert(
+      {
+        id: user.id,
+        public_profile_enabled: nextEnabled,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" },
+    );
+
+    if (error) {
+      console.warn("Failed to update public profile visibility", error);
+      setAccountActionStatus("Could not update profile visibility.");
+      return;
+    }
+
+    setUserProfile((currentProfile) => ({
+      display_name:
+        currentProfile?.display_name ?? getMetadataDisplayName(user),
+      username: currentProfile?.username ?? null,
+      username_updated_at: currentProfile?.username_updated_at ?? null,
+      avatar_url: currentProfile?.avatar_url ?? getMetadataAvatarUrl(user),
+      public_profile_enabled: nextEnabled,
+    }));
+    setAccountActionStatus(
+      nextEnabled ? "Profile is public." : "Profile is private.",
+    );
+  }
+
+  async function sharePublicProfile() {
+    if (!userProfile?.username || !isPublicProfileEnabled) return;
+
+    const profileUrl = `${window.location.origin}/u/${userProfile.username}`;
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(profileUrl);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = profileUrl;
+        textArea.setAttribute("readonly", "");
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
+
+      setShareProfileStatus("Copied");
+      window.setTimeout(() => setShareProfileStatus(""), 1800);
+    } catch {
+      setShareProfileStatus("Copy failed");
+      window.setTimeout(() => setShareProfileStatus(""), 1800);
+    }
+  }
+
+  async function uploadAvatar(file: File | undefined) {
+    if (!user) {
+      setAvatarStatus("Sign in to upload avatar.");
+      return;
+    }
+
+    if (!file) return;
+
+    if (!ALLOWED_AVATAR_TYPES.includes(file.type)) {
+      setAvatarStatus("Use JPG, PNG, or WEBP.");
+      return;
+    }
+
+    if (file.size > MAX_AVATAR_FILE_SIZE) {
+      setAvatarStatus("Avatar must be under 1MB.");
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    setAvatarStatus("Uploading...");
+
+    const extension = getAvatarFileExtension(file);
+    const filePath = `${user.id}/avatar.${extension}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      console.warn("Failed to upload avatar", uploadError);
+      setAvatarStatus(uploadError.message || "Could not upload avatar.");
+      setIsUploadingAvatar(false);
+      return;
+    }
+
+    const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
+    const publicAvatarUrl = `${data.publicUrl}?v=${Date.now()}`;
+
+    const { error: profileError } = await supabase.from("user_profiles").upsert(
+      {
+        id: user.id,
+        avatar_url: publicAvatarUrl,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" },
+    );
+
+    if (profileError) {
+      console.warn("Failed to save avatar URL", profileError);
+      setAvatarStatus("Uploaded, but could not save avatar.");
+      setIsUploadingAvatar(false);
+      return;
+    }
+
+    const { error: authError } = await supabase.auth.updateUser({
+      data: {
+        avatar_url: publicAvatarUrl,
+        picture: publicAvatarUrl,
+      },
+    });
+
+    if (authError) {
+      console.warn("Failed to update auth avatar metadata", authError);
+    }
+
+    setUserProfile((currentProfile) => ({
+      display_name:
+        currentProfile?.display_name ?? getMetadataDisplayName(user),
+      username: currentProfile?.username ?? null,
+      username_updated_at: currentProfile?.username_updated_at ?? null,
+      avatar_url: publicAvatarUrl,
+      public_profile_enabled: currentProfile?.public_profile_enabled ?? false,
+    }));
+    window.dispatchEvent(new Event("statcourt-profile-updated"));
+    setAvatarStatus("Avatar updated.");
+    setIsUploadingAvatar(false);
   }
 
   async function updateEmail() {
@@ -510,6 +969,60 @@ export default function SettingsPage() {
             <div className="grid gap-1.5 lg:gap-3">
               <div className="rounded-md border border-white/10 bg-black/20 p-2 transition duration-200 hover:-translate-y-0.5 hover:border-[#1bc2ec]/35 hover:bg-[#071827]/80 hover:shadow-[0_0_18px_rgba(27,194,236,0.12)] lg:p-3">
                 <div className="flex items-center justify-between gap-2">
+                  <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border border-[#1bc2ec]/40 bg-[#1bc2ec]/10 font-michroma text-sm text-[#1bc2ec] lg:h-14 lg:w-14 lg:text-lg">
+                    {avatarUrl ? (
+                      <Image
+                        src={avatarUrl}
+                        alt=""
+                        fill
+                        sizes="128px"
+                        className="object-cover"
+                      />
+                    ) : (
+                      displayName.charAt(0).toUpperCase() || "S"
+                    )}
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                      Avatar
+                    </p>
+
+                    <p className="mt-1 truncate font-michroma text-[7px] text-white/45 lg:text-[9px]">
+                      JPG, PNG, or WEBP under 1MB.
+                    </p>
+                  </div>
+
+                  <label
+                    className={`shrink-0 rounded-md border px-2.5 py-1.5 font-michroma text-[6px] uppercase transition lg:px-3 lg:text-[8px] ${
+                      user && !isUploadingAvatar
+                        ? "cursor-pointer border-[#1bc2ec]/50 bg-[#1bc2ec]/10 text-[#1bc2ec] hover:bg-[#1bc2ec]/20 hover:text-white"
+                        : "cursor-not-allowed border-white/10 bg-white/5 text-white/25"
+                    }`}
+                  >
+                    {isUploadingAvatar ? "Uploading" : "Upload"}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      disabled={!user || isUploadingAvatar}
+                      className="hidden"
+                      onChange={(event) => {
+                        void uploadAvatar(event.target.files?.[0]);
+                        event.target.value = "";
+                      }}
+                    />
+                  </label>
+                </div>
+
+                {avatarStatus && (
+                  <p className="mt-1.5 font-michroma text-[5px] uppercase text-[#1bc2ec]/70 lg:text-[7px]">
+                    {avatarStatus}
+                  </p>
+                )}
+              </div>
+
+              <div className="rounded-md border border-white/10 bg-black/20 p-2 transition duration-200 hover:-translate-y-0.5 hover:border-[#1bc2ec]/35 hover:bg-[#071827]/80 hover:shadow-[0_0_18px_rgba(27,194,236,0.12)] lg:p-3">
+                <div className="flex items-center justify-between gap-2">
                   <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
                     Display Name
                   </p>
@@ -558,7 +1071,9 @@ export default function SettingsPage() {
                     <button
                       type="button"
                       onClick={() => {
-                        setDisplayNameInput(displayName);
+                        setDisplayNameInput(
+                          displayName === "Signed Out" ? "" : displayName,
+                        );
                         setProfileStatus("");
                         setIsEditingDisplayName(false);
                       }}
@@ -576,7 +1091,137 @@ export default function SettingsPage() {
                 )}
               </div>
 
+              <div className="rounded-md border border-white/10 bg-black/20 p-2 transition duration-200 hover:-translate-y-0.5 hover:border-[#1bc2ec]/35 hover:bg-[#071827]/80 hover:shadow-[0_0_18px_rgba(27,194,236,0.12)] lg:p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                    Username
+                  </p>
+
+                  <p className="min-w-0 flex-1 truncate font-michroma text-[8px] text-white lg:text-[10px]">
+                    {username}
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEditingUsername((current) => !current);
+                      setUsernameStatus("");
+                    }}
+                    disabled={!user}
+                    className="shrink-0 rounded-md border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-2.5 py-1.5 font-michroma text-[6px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-3 lg:text-[8px]"
+                  >
+                    {isEditingUsername ? "Close" : "Edit Username"}
+                  </button>
+                </div>
+
+                {isEditingUsername && (
+                  <div className="mt-2 grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto_auto]">
+                    <input
+                      type="text"
+                      value={usernameInput}
+                      onChange={(event) => {
+                        setUsernameInput(event.target.value);
+                        setUsernameStatus("");
+                      }}
+                      disabled={!user}
+                      maxLength={24}
+                      placeholder="statcourt_user"
+                      className="min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-2 font-michroma text-[8px] text-white outline-none transition placeholder:text-white/25 focus:border-[#1bc2ec]/60 disabled:cursor-not-allowed disabled:text-white/30 lg:px-3 lg:text-[10px]"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={saveUsername}
+                      disabled={!user}
+                      className="rounded-md border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-3 py-2 font-michroma text-[7px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-4 lg:text-[9px]"
+                    >
+                      Save
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUsernameInput(userProfile?.username ?? "");
+                        setUsernameStatus("");
+                        setIsEditingUsername(false);
+                      }}
+                      className="rounded-md border border-white/10 bg-white/5 px-3 py-2 font-michroma text-[7px] uppercase text-white/45 transition hover:border-white/25 hover:text-white lg:px-4 lg:text-[9px]"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+
+                {usernameStatus && (
+                  <p className="mt-1.5 font-michroma text-[5px] uppercase text-[#1bc2ec]/70 lg:text-[7px]">
+                    {usernameStatus}
+                  </p>
+                )}
+
+                {!usernameStatus && userProfile?.username && (
+                  <p className="mt-1.5 font-michroma text-[5px] uppercase text-white/25 lg:text-[7px]">
+                    Username changes are limited to once every{" "}
+                    {USERNAME_CHANGE_COOLDOWN_DAYS} days.
+                  </p>
+                )}
+              </div>
+
               <div className="grid gap-1.5 lg:gap-3">
+                <div className="rounded-md border border-white/10 bg-black/20 p-2 transition duration-200 hover:-translate-y-0.5 hover:border-[#1bc2ec]/35 hover:bg-[#071827]/80 hover:shadow-[0_0_18px_rgba(27,194,236,0.12)] lg:p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                      Public Profile
+                    </p>
+
+                    <p
+                      className={`min-w-0 flex-1 truncate font-michroma text-[8px] lg:text-[10px] ${
+                        isPublicProfileEnabled
+                          ? "text-[#22C55E]"
+                          : "text-white/55"
+                      }`}
+                    >
+                      {publicProfileStatusLabel}
+                    </p>
+
+                    <button
+                      type="button"
+                      onClick={togglePublicProfile}
+                      disabled={!user}
+                      className={`shrink-0 rounded-md border px-2.5 py-1.5 font-michroma text-[6px] uppercase transition disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/20 lg:px-3 lg:text-[8px] ${
+                        isPublicProfileEnabled
+                          ? "border-red-500/35 bg-red-500/10 text-red-300 hover:bg-red-500/20 hover:text-white"
+                          : "border-[#1bc2ec]/35 bg-[#1bc2ec]/10 text-[#1bc2ec] hover:bg-[#1bc2ec]/20 hover:text-white"
+                      }`}
+                    >
+                      {isPublicProfileEnabled ? "Make Private" : "Make Public"}
+                    </button>
+                  </div>
+
+                  <p className="mt-1.5 font-michroma text-[5px] uppercase text-white/25 lg:text-[7px]">
+                    Controls whether your future username profile can be viewed
+                    publicly.
+                  </p>
+
+                  {isPublicProfileEnabled && userProfile?.username && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      <Link
+                        href={`/u/${userProfile.username}`}
+                        className="inline-flex rounded-md border border-[#22C55E]/30 bg-[#22C55E]/10 px-2.5 py-1.5 font-michroma text-[6px] uppercase text-[#22C55E] transition hover:bg-[#22C55E]/20 hover:text-white lg:px-3 lg:text-[8px]"
+                      >
+                        View Public Profile
+                      </Link>
+
+                      <button
+                        type="button"
+                        onClick={sharePublicProfile}
+                        className="rounded-md border border-[#1bc2ec]/35 bg-[#1bc2ec]/10 px-2.5 py-1.5 font-michroma text-[6px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white lg:px-3 lg:text-[8px]"
+                      >
+                        {shareProfileStatus || "Share Profile"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 <div className="rounded-md border border-white/10 bg-black/20 p-2 transition duration-200 hover:-translate-y-0.5 hover:border-[#1bc2ec]/35 hover:bg-[#071827]/80 hover:shadow-[0_0_18px_rgba(27,194,236,0.12)] lg:p-3">
                   <div className="flex items-center justify-between gap-2">
                     <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
@@ -857,6 +1502,13 @@ export default function SettingsPage() {
                     >
                       <Eye className="h-2.5 w-2.5 lg:h-3.5 lg:w-3.5" />
                     </button>
+                  </div>
+
+                  <div className="lg:col-span-3">
+                    <PasswordRequirements
+                      password={newPasswordInput}
+                      compact
+                    />
                   </div>
 
                   <button

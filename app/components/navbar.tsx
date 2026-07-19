@@ -3,14 +3,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "./supabase-client";
-import { useAuthUser } from "../lib/use-auth-user";
-import {
-  getUserAvatarUrl,
-  getUserDisplayName,
-  getUserInitial,
-} from "../lib/auth-display";
+import { useUserProfile } from "../lib/use-user-profile";
 import {
   Activity,
   Bookmark,
@@ -53,13 +48,20 @@ const navItems: NavItem[] = [
 export default function Navbar() {
   // Path to desired page
   const pathname = usePathname();
-  const { user, isLoadingUser } = useAuthUser();
-  const userDisplayName = getUserDisplayName(user);
-  const userInitial = getUserInitial(user);
-  const userAvatarUrl = getUserAvatarUrl(user);
+  const {
+    user,
+    isLoadingUser,
+    isLoadingProfile,
+    displayName: userDisplayName,
+    initial: userInitial,
+    avatarUrl: userAvatarUrl,
+  } = useUserProfile();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const mobileMenuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const mobileMenuPanelRef = useRef<HTMLDivElement | null>(null);
+  const userMenuRef = useRef<HTMLDivElement | null>(null);
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -73,6 +75,50 @@ export default function Navbar() {
       behavior: "auto",
     });
   }, [pathname]);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen && !isUserMenuOpen) {
+      return;
+    }
+
+    function closeOpenMenus(event: PointerEvent) {
+      const target = event.target;
+
+      if (!(target instanceof Node)) {
+        return;
+      }
+
+      const clickedMobileMenu =
+        mobileMenuButtonRef.current?.contains(target) ||
+        mobileMenuPanelRef.current?.contains(target);
+      const clickedUserMenu = userMenuRef.current?.contains(target);
+
+      if (isMobileMenuOpen && !clickedMobileMenu) {
+        setIsMobileMenuOpen(false);
+      }
+
+      if (isUserMenuOpen && !clickedUserMenu) {
+        setIsUserMenuOpen(false);
+      }
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      setIsMobileMenuOpen(false);
+      setIsUserMenuOpen(false);
+    }
+
+    document.addEventListener("pointerdown", closeOpenMenus);
+    document.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.removeEventListener("pointerdown", closeOpenMenus);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [isMobileMenuOpen, isUserMenuOpen]);
 
   if (pathname === "/") {
     return null; // Don't render the navbar on the homepage
@@ -134,6 +180,7 @@ export default function Navbar() {
           </nav>
           <div className="flex items-center justify-end justify-self-end gap-2">
             <button
+              ref={mobileMenuButtonRef}
               type="button"
               onClick={() => {
                 setIsMobileMenuOpen((current) => !current);
@@ -149,11 +196,11 @@ export default function Navbar() {
               )}
             </button>
 
-            {isLoadingUser ? (
+            {isLoadingUser || isLoadingProfile ? (
               <div className="h-9 w-9 rounded-md border border-white/10 bg-white/5 lg:h-10 lg:w-44" />
             ) : user ? (
               <>
-                <div className="relative">
+                <div ref={userMenuRef} className="relative">
                   <button
                     type="button"
                     onClick={() => {
@@ -252,7 +299,10 @@ export default function Navbar() {
       </header>
 
       {isMobileMenuOpen && (
-        <div className="fixed left-0 right-0 top-12 z-999998 border-b border-[#1bc2ec]/20 bg-[#06131d]/95 px-3 py-2 shadow-[0_0_24px_rgba(0,0,0,0.45)] lg:hidden">
+        <div
+          ref={mobileMenuPanelRef}
+          className="fixed left-0 right-0 top-12 z-999998 border-b border-[#1bc2ec]/20 bg-[#06131d]/95 px-3 py-2 shadow-[0_0_24px_rgba(0,0,0,0.45)] lg:hidden"
+        >
           <div className="grid gap-1.5">
             {navItems.map((item) => {
               const isActive = pathname === item.href;

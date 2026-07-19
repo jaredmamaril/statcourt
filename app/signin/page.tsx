@@ -4,8 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
-import { Mail, Shield } from "lucide-react";
+import { Eye, EyeOff, Mail, Shield } from "lucide-react";
 import { supabase } from "../components/supabase-client";
+import {
+  getPasswordValidationMessage,
+  PasswordRequirements,
+} from "../components/auth/password-requirements";
 
 function GoogleMark() {
   return (
@@ -32,6 +36,7 @@ export default function SignInPage() {
   const [authMessage, setAuthMessage] = useState("");
   const [authError, setAuthError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   useEffect(() => {
     const callbackError = searchParams.get("error");
@@ -51,6 +56,16 @@ export default function SignInPage() {
     setAuthMessage("");
     setAuthError("");
     setIsSubmitting(true);
+
+    if (authMode === "signup") {
+      const passwordValidationMessage = getPasswordValidationMessage(password);
+
+      if (passwordValidationMessage) {
+        setIsSubmitting(false);
+        setAuthError(passwordValidationMessage);
+        return;
+      }
+    }
 
     const authResponse =
       authMode === "signin"
@@ -233,15 +248,40 @@ export default function SignInPage() {
                 className="rounded-md border border-white/15 bg-black/25 px-3 py-2 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/30 focus:border-[#1bc2ec] lg:px-4 lg:py-3 lg:text-[10px]"
               />
 
-              <input
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-                minLength={6}
-                placeholder="Password"
-                className="rounded-md border border-white/15 bg-black/25 px-3 py-2 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/30 focus:border-[#1bc2ec] lg:px-4 lg:py-3 lg:text-[10px]"
-              />
+              <div className="relative">
+                <input
+                  type={isPasswordVisible ? "text" : "password"}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
+                  minLength={6}
+                  placeholder="Password"
+                  className="w-full rounded-md border border-white/15 bg-black/25 px-3 py-2 pr-9 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/30 focus:border-[#1bc2ec] lg:px-4 lg:py-3 lg:pr-11 lg:text-[10px]"
+                />
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setIsPasswordVisible(
+                      (currentVisibility) => !currentVisibility,
+                    )
+                  }
+                  aria-label={
+                    isPasswordVisible ? "Hide password" : "Show password"
+                  }
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-white/35 transition hover:text-[#1bc2ec] lg:right-3"
+                >
+                  {isPasswordVisible ? (
+                    <EyeOff className="h-3 w-3 lg:h-4 lg:w-4" />
+                  ) : (
+                    <Eye className="h-3 w-3 lg:h-4 lg:w-4" />
+                  )}
+                </button>
+              </div>
+
+              {authMode === "signup" && (
+                <PasswordRequirements password={password} compact />
+              )}
 
               {authMode === "signin" && (
                 <div className="flex items-center justify-end gap-3">

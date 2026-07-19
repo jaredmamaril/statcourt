@@ -25,6 +25,7 @@ type SavedLineupsSectionProps = {
   onLoadLineup: (lineup: SavedLineup) => void;
   onScoutLineup: (lineup: SavedLineup) => void;
   onRenameLineup: (lineup: SavedLineup) => void;
+  onTogglePublicLineup: (lineup: SavedLineup) => void;
   onDeleteLineup: (lineup: SavedLineup) => void;
 };
 
@@ -48,6 +49,7 @@ export function SavedLineupsSection({
   onLoadLineup,
   onScoutLineup,
   onRenameLineup,
+  onTogglePublicLineup,
   onDeleteLineup,
 }: SavedLineupsSectionProps) {
   const emptyFilteredMessage =
@@ -122,6 +124,7 @@ export function SavedLineupsSection({
                   onLoad={onLoadLineup}
                   onScout={onScoutLineup}
                   onRename={onRenameLineup}
+                  onTogglePublic={onTogglePublicLineup}
                   onDelete={onDeleteLineup}
                 />
               ))}

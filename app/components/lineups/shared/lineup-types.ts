@@ -57,6 +57,7 @@ export type SavedLineup = {
   courtBalance: string;
   courtBalanceDescription: string;
   createdAt: string;
+  isPublic: boolean;
   badges: string[];
 };
 

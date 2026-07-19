@@ -11,23 +11,20 @@ import {
 import {
   Activity,
   Bookmark,
+  Camera,
   Clock,
   Info,
   LayoutDashboard,
   Search,
+  Share2,
   Shield,
   Star,
   Trophy,
   Users,
 } from "lucide-react";
-import { useAuthUser } from "../lib/use-auth-user";
 import { supabase } from "../components/supabase-client";
-import {
-  getAuthProviderLabel,
-  getUserAvatarUrl,
-  getUserDisplayName,
-  getUserInitial,
-} from "../lib/auth-display";
+import { getAuthProviderLabel } from "../lib/auth-display";
+import { useUserProfile } from "../lib/use-user-profile";
 
 type ProfileStats = {
   savedLineups: number;
@@ -44,12 +41,23 @@ type ActivityRow = {
   created_at: string;
 };
 
+const MAX_AVATAR_FILE_SIZE = 1 * 1024 * 1024;
+const ALLOWED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
 const initialProfileStats: ProfileStats = {
   savedLineups: 0,
   favoritePlayers: 0,
   playersViewed: 0,
   favoriteArchetype: null,
 };
+
+function getAvatarFileExtension(file: File) {
+  if (file.type === "image/jpeg") return "jpg";
+  if (file.type === "image/png") return "png";
+  if (file.type === "image/webp") return "webp";
+
+  return "png";
+}
 
 function getFavoriteArchetype(
   players: Player[],
@@ -147,13 +155,112 @@ const quickActions = [
 ];
 
 export default function ProfilePage() {
-  const { user, isLoadingUser } = useAuthUser();
+  const {
+    user,
+    isLoadingUser,
+    displayName,
+    username,
+    profile,
+    initial: accountInitial,
+    avatarUrl: accountAvatarUrl,
+  } = useUserProfile();
   const [profileStats, setProfileStats] =
     useState<ProfileStats>(initialProfileStats);
   const [recentActivity, setRecentActivity] = useState<ActivityRow[]>([]);
   const [openStatTooltip, setOpenStatTooltip] = useState<string | null>(null);
+  const [shareProfileStatus, setShareProfileStatus] = useState("");
+  const [avatarStatus, setAvatarStatus] = useState("");
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isLoadingProfileStats, setIsLoadingProfileStats] = useState(true);
   const statCardsRef = useRef<HTMLDivElement>(null);
+
+  async function sharePublicProfile() {
+    if (!username || !profile?.publicProfileEnabled) return;
+
+    const profileUrl = `${window.location.origin}/u/${username}`;
+
+    try {
+      await navigator.clipboard.writeText(profileUrl);
+      setShareProfileStatus("Copied");
+      window.setTimeout(() => setShareProfileStatus(""), 1800);
+    } catch {
+      setShareProfileStatus("Copy failed");
+      window.setTimeout(() => setShareProfileStatus(""), 1800);
+    }
+  }
+
+  async function uploadAvatar(file: File | undefined) {
+    if (!user) {
+      setAvatarStatus("Sign in to upload avatar.");
+      return;
+    }
+
+    if (!file) return;
+
+    if (!ALLOWED_AVATAR_TYPES.includes(file.type)) {
+      setAvatarStatus("Use JPG, PNG, or WEBP.");
+      return;
+    }
+
+    if (file.size > MAX_AVATAR_FILE_SIZE) {
+      setAvatarStatus("Avatar must be under 1MB.");
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    setAvatarStatus("Uploading...");
+
+    const extension = getAvatarFileExtension(file);
+    const filePath = `${user.id}/avatar.${extension}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      console.warn("Failed to upload avatar", uploadError);
+      setAvatarStatus(uploadError.message || "Could not upload avatar.");
+      setIsUploadingAvatar(false);
+      return;
+    }
+
+    const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
+    const publicAvatarUrl = `${data.publicUrl}?v=${Date.now()}`;
+
+    const { error: profileError } = await supabase.from("user_profiles").upsert(
+      {
+        id: user.id,
+        avatar_url: publicAvatarUrl,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" },
+    );
+
+    if (profileError) {
+      console.warn("Failed to save avatar URL", profileError);
+      setAvatarStatus("Uploaded, but could not save avatar.");
+      setIsUploadingAvatar(false);
+      return;
+    }
+
+    const { error: authError } = await supabase.auth.updateUser({
+      data: {
+        avatar_url: publicAvatarUrl,
+        picture: publicAvatarUrl,
+      },
+    });
+
+    if (authError) {
+      console.warn("Failed to update auth avatar metadata", authError);
+    }
+
+    window.dispatchEvent(new Event("statcourt-profile-updated"));
+    setAvatarStatus("Avatar updated.");
+    setIsUploadingAvatar(false);
+  }
 
   useEffect(() => {
     let isActive = true;
@@ -255,9 +362,6 @@ export default function ProfilePage() {
     };
   }, [openStatTooltip]);
 
-  const displayName = user ? getUserDisplayName(user) : "StatCourt User";
-  const accountInitial = getUserInitial(user);
-  const accountAvatarUrl = getUserAvatarUrl(user);
   const authProviderLabel = getAuthProviderLabel(user);
   const displayedProfileStats = user ? profileStats : initialProfileStats;
   const displayedRecentActivity = user ? recentActivity : [];
@@ -332,19 +436,60 @@ export default function ProfilePage() {
               <p className="mt-1.5 font-michroma text-[6px] uppercase tracking-wide text-white/45 lg:mt-3 lg:text-[11px]">
                 Your Court is ready.
               </p>
+
+              {profile?.publicProfileEnabled && username && (
+                <button
+                  type="button"
+                  onClick={sharePublicProfile}
+                  className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-[#1bc2ec]/40 bg-[#1bc2ec]/10 px-2.5 py-1.5 font-michroma text-[6px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white lg:mt-4 lg:px-3 lg:text-[8px]"
+                >
+                  <Share2 className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
+                  {shareProfileStatus || "Share Profile"}
+                </button>
+              )}
             </div>
 
-            <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 font-michroma text-xs text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.18)] lg:h-16 lg:w-16 lg:text-xl lg:shadow-[0_0_24px_rgba(27,194,236,0.22)]">
-              {accountAvatarUrl ? (
-                <Image
-                  src={accountAvatarUrl}
-                  alt=""
-                  fill
-                  sizes="64px"
-                  className="object-cover"
+            <div className="shrink-0">
+              <label
+                className={`group relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 font-michroma text-xs text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.18)] transition hover:border-[#1bc2ec] hover:text-white lg:h-24 lg:w-24 lg:text-xl lg:shadow-[0_0_24px_rgba(27,194,236,0.22)] ${
+                  user && !isUploadingAvatar
+                    ? "cursor-pointer"
+                    : "cursor-not-allowed opacity-70"
+                }`}
+                aria-label="Change profile picture"
+              >
+                {accountAvatarUrl ? (
+                  <Image
+                    src={accountAvatarUrl}
+                    alt=""
+                    fill
+                    sizes="(min-width: 1024px) 96px, 48px"
+                    className="object-cover"
+                  />
+                ) : (
+                  accountInitial
+                )}
+
+                <span className="absolute inset-0 flex items-center justify-center bg-black/55 opacity-0 transition group-hover:opacity-100">
+                  <Camera className="h-4 w-4 text-[#1bc2ec] lg:h-6 lg:w-6" />
+                </span>
+
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  disabled={!user || isUploadingAvatar}
+                  className="hidden"
+                  onChange={(event) => {
+                    void uploadAvatar(event.target.files?.[0]);
+                    event.target.value = "";
+                  }}
                 />
-              ) : (
-                accountInitial
+              </label>
+
+              {avatarStatus && (
+                <p className="mt-1 max-w-24 text-center font-michroma text-[5px] uppercase text-[#1bc2ec]/70 lg:text-[7px]">
+                  {avatarStatus}
+                </p>
               )}
             </div>
           </div>
@@ -621,7 +766,11 @@ export default function ProfilePage() {
                       : "border-white/10 bg-black/20 text-white/35"
                   }`}
                 >
-                  <span className={user ? "mr-1 text-[#22C55E]" : "mr-1 text-white/25"}>
+                  <span
+                    className={
+                      user ? "mr-1 text-[#22C55E]" : "mr-1 text-white/25"
+                    }
+                  >
                     {user ? "✓" : "•"}
                   </span>
                   {status}

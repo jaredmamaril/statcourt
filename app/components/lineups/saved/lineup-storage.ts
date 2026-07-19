@@ -15,6 +15,7 @@ export function getSavedLineups() {
     return lineups.map((lineup) => ({
       ...lineup,
       statProfile: lineup.statProfile ?? "career",
+      isPublic: lineup.isPublic ?? false,
     }));
   } catch {
     return [];

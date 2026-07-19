@@ -26,6 +26,7 @@ type SavedLineupRow = {
   similar_lineup_matches: SavedLineup["similarLineupMatches"];
   court_balance: string;
   court_balance_description: string;
+  is_public: boolean;
   badges: string[];
   created_at: string;
 };
@@ -54,6 +55,7 @@ function rowToSavedLineup(row: SavedLineupRow): SavedLineup {
     courtBalance: row.court_balance ?? "",
     courtBalanceDescription: row.court_balance_description ?? "",
     createdAt: row.created_at,
+    isPublic: row.is_public ?? false,
     badges: row.badges ?? [],
   };
 }
@@ -82,6 +84,7 @@ function savedLineupToRow(lineup: SavedLineup, userId: string) {
     similar_lineup_matches: lineup.similarLineupMatches,
     court_balance: lineup.courtBalance,
     court_balance_description: lineup.courtBalanceDescription,
+    is_public: lineup.isPublic,
     badges: lineup.badges,
     created_at: lineup.createdAt,
     updated_at: new Date().toISOString(),
