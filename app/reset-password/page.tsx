@@ -88,16 +88,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <main className="page-enter relative min-h-svh overflow-hidden bg-background px-3 py-4 text-white lg:px-6 lg:pt-12">
-      <div
-        className="pointer-events-none fixed inset-0 z-0 bg-repeat opacity-100"
-        style={{
-          backgroundImage: "url('/court-pattern.svg')",
-          backgroundPosition: "top left",
-          backgroundSize: "900px auto",
-        }}
-      />
-
+    <main className="page-enter relative min-h-svh overflow-hidden px-3 py-4 text-white lg:px-6 lg:pt-12">
       <section className="relative z-10 mx-auto flex min-h-[calc(100svh-32px)] max-w-[320px] items-center justify-center lg:min-h-[calc(100vh-120px)] lg:max-w-md">
         <div className="w-full rounded-lg border border-[#1bc2ec]/40 bg-[#06131d]/85 p-3.5 shadow-[0_0_24px_rgba(27,194,236,0.16)] lg:p-6 lg:shadow-[0_0_36px_rgba(27,194,236,0.2)]">
           <div className="mb-3.5 flex flex-col items-center text-center lg:mb-6">

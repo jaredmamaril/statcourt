@@ -36,7 +36,7 @@ export function PlayerList({
 
   return (
     <div
-      className={`statcourt-scroll mx-auto max-h-112.5 w-full overflow-y-auto pr-1 ${
+      className={`panel-reveal statcourt-scroll mx-auto max-h-112.5 w-full overflow-y-auto pr-1 ${
         isCardView ? "max-w-120" : "max-w-100"
       }`}
     >

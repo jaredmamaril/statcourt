@@ -16,7 +16,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   defaultUserSettings,
-  type DefaultCompareMode,
+  notifyUserSettingsChanged,
   type DefaultPlayerView,
   type DefaultStatMode,
   type UserSettings,
@@ -92,11 +92,6 @@ const statModeOptions: { label: string; value: DefaultStatMode }[] = [
 const playerViewOptions: { label: string; value: DefaultPlayerView }[] = [
   { label: "Cards", value: "cards" },
   { label: "List", value: "list" },
-];
-
-const compareModeOptions: { label: string; value: DefaultCompareMode }[] = [
-  { label: "Career Playstyle", value: "career_playstyle" },
-  { label: "Stat Edges", value: "stat_edges" },
 ];
 
 function settingToRow(settings: UserSettings, userId: string) {
@@ -486,6 +481,7 @@ export default function SettingsPage() {
 
   async function saveSettings(nextSettings: UserSettings) {
     setSettings(nextSettings);
+    notifyUserSettingsChanged(nextSettings);
 
     if (!user) {
       setSettingsStatus("Sign in to sync settings.");
@@ -532,6 +528,10 @@ export default function SettingsPage() {
     latestTrackedSignInAt ?? user?.last_sign_in_at,
   );
   const hasGoogleProvider = hasConnectedProvider(user, "google");
+  const hasEmailProvider = hasConnectedProvider(user, "email");
+  const needsPasswordSetup = Boolean(
+    user && hasGoogleProvider && !hasEmailProvider,
+  );
   const signInMethodLabel = getAuthProviderLabel(user);
   const isPublicProfileEnabled = userProfile?.public_profile_enabled ?? false;
   const publicProfileStatusLabel = isPublicProfileEnabled
@@ -1196,16 +1196,7 @@ export default function SettingsPage() {
 
   return (
     <>
-      <main className="page-enter relative min-h-svh bg-background px-3 py-3 text-white lg:px-6 lg:pt-12">
-        <div
-          className="pointer-events-none fixed inset-0 z-0 bg-repeat opacity-100"
-          style={{
-            backgroundImage: "url('/court-pattern.svg')",
-            backgroundPosition: "top left",
-            backgroundSize: "900px auto",
-          }}
-        />
-
+      <main className="page-enter relative min-h-svh px-3 py-3 text-white lg:px-6 lg:pt-12">
         <section className="relative z-10 mx-auto max-w-4xl py-3 lg:py-10">
           <div className="mb-3 lg:mb-8">
             <p className="font-michroma text-[7px] uppercase tracking-wide text-[#1bc2ec] lg:text-[10px]">
@@ -1821,13 +1812,13 @@ export default function SettingsPage() {
               <div className="rounded-md border border-white/10 bg-black/20 p-2 lg:p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
-                      Password
-                    </p>
-                    <p className="mt-1 font-michroma text-[8px] text-white lg:text-[10px]">
-                      Change Password
-                    </p>
-                  </div>
+                  <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                    Password
+                  </p>
+                  <p className="mt-1 font-michroma text-[8px] text-white lg:text-[10px]">
+                    {needsPasswordSetup ? "Create Password" : "Change Password"}
+                  </p>
+                </div>
 
                   <button
                     type="button"
@@ -1837,19 +1828,53 @@ export default function SettingsPage() {
                     }}
                     disabled={!user}
                     className="rounded-md border border-[#EFBF04]/50 bg-[#EFBF04]/10 px-3 py-2 font-michroma text-[7px] uppercase text-[#EFBF04] transition hover:bg-[#EFBF04]/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-4 lg:text-[9px]"
-                  >
-                    {isChangingPassword ? "Close" : "Change Password"}
-                  </button>
-                </div>
+                >
+                  {isChangingPassword
+                    ? "Close"
+                    : needsPasswordSetup
+                      ? "Create Password"
+                      : "Change Password"}
+                </button>
+              </div>
 
-                <p className="mt-1.5 hidden font-michroma text-[5px] leading-relaxed text-white/30 lg:block lg:text-[7px]">
-                  Use a new password with at least 8 characters. You may need to
-                  sign in again on other devices.
-                </p>
+              <p className="mt-1.5 hidden font-michroma text-[5px] leading-relaxed text-white/30 lg:block lg:text-[7px]">
+                {needsPasswordSetup
+                  ? "Create a password to sign in with this email without Google."
+                  : "Use a new password with at least 8 characters. You may need to sign in again on other devices."}
+              </p>
 
-                {isChangingPassword && (
-                  <div className="mt-1.5 grid gap-1.5 lg:mt-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto_auto] lg:gap-2">
-                    <div className="relative min-w-0">
+              {isChangingPassword && (
+                <div className="mt-1.5 grid gap-1.5 lg:mt-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto_auto] lg:gap-2">
+                  {needsPasswordSetup ? (
+                    <>
+                      <p className="font-michroma text-[6px] leading-relaxed text-white/40 lg:col-span-3 lg:text-[8px]">
+                        We will email you a secure setup link so you can add an
+                        email/password login to this Google account.
+                      </p>
+
+                      <button
+                        type="button"
+                        onClick={sendPasswordResetFromSettings}
+                        disabled={!user?.email}
+                        className="rounded-md border border-[#EFBF04]/50 bg-[#EFBF04]/10 px-2 py-1.5 font-michroma text-[6px] uppercase text-[#EFBF04] transition hover:bg-[#EFBF04]/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-4 lg:py-2 lg:text-[9px]"
+                      >
+                        Send Setup Link
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPasswordStatus("");
+                          setIsChangingPassword(false);
+                        }}
+                        className="rounded-md border border-white/10 bg-white/5 px-2 py-1.5 font-michroma text-[6px] uppercase text-white/45 transition hover:border-white/25 hover:text-white lg:px-4 lg:py-2 lg:text-[9px]"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="relative min-w-0">
                       <input
                         type={
                           visiblePasswordFields.current ? "text" : "password"
@@ -1983,8 +2008,21 @@ export default function SettingsPage() {
                     >
                       Forgot Password?
                     </button>
+                    </>
+                  )}
                   </div>
                 )}
+              </div>
+
+              <div className="mt-2 rounded-md border border-[#1bc2ec]/20 bg-black/20 p-2 lg:mt-3 lg:p-4">
+                <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                  Privacy
+                </p>
+
+                <p className="mt-1 font-michroma text-[6px] leading-relaxed text-white/40 lg:text-[9px]">
+                  Your saved lineups, favorite players, and activity are
+                  protected by your signed-in account.
+                </p>
               </div>
             </section>
 
@@ -1999,28 +2037,18 @@ export default function SettingsPage() {
                 </p>
               </div>
 
-              <div className="grid gap-1.5 lg:grid-cols-3 lg:gap-3">
-                <div className="rounded-md border border-white/10 bg-black/20 p-2 transition duration-200 hover:-translate-y-0.5 hover:border-[#1bc2ec]/35 hover:bg-[#071827]/80 hover:shadow-[0_0_18px_rgba(27,194,236,0.12)] lg:p-4">
+              <div className="grid gap-1.5 lg:grid-cols-2 lg:gap-3">
+                <div className="rounded-md border border-white/10 bg-black/20 p-2 lg:p-4">
                   <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
                     Theme
                   </p>
+
                   <p className="mt-1 font-michroma text-[9px] text-white lg:mt-2 lg:text-sm">
                     Dark Court
                   </p>
+
                   <p className="mt-1 font-michroma text-[5px] uppercase text-white/25 lg:text-[7px]">
                     More themes later
-                  </p>
-                </div>
-
-                <div className="rounded-md border border-white/10 bg-black/20 p-2 transition duration-200 hover:-translate-y-0.5 hover:border-[#1bc2ec]/35 hover:bg-[#071827]/80 hover:shadow-[0_0_18px_rgba(27,194,236,0.12)] lg:p-4">
-                  <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
-                    Interface Density
-                  </p>
-                  <p className="mt-1 font-michroma text-[9px] text-[#1bc2ec] lg:mt-2 lg:text-sm">
-                    Standard
-                  </p>
-                  <p className="mt-1 font-michroma text-[5px] uppercase text-white/25 lg:text-[7px]">
-                    Compact mode later
                   </p>
                 </div>
 
@@ -2061,7 +2089,7 @@ export default function SettingsPage() {
                 </p>
               </div>
 
-              <div className="grid gap-2 lg:grid-cols-3 lg:gap-3">
+              <div className="grid gap-2 lg:grid-cols-2 lg:gap-3">
                 <PreferenceButtonGroup
                   label="Default Stat Mode"
                   options={statModeOptions}
@@ -2082,19 +2110,6 @@ export default function SettingsPage() {
                     saveSettings({
                       ...settings,
                       defaultPlayerView: value,
-                    })
-                  }
-                />
-
-                <PreferenceButtonGroup
-                  label="Default Compare Lens"
-                  helper="Court preference later"
-                  options={compareModeOptions}
-                  value={settings.defaultCompareMode}
-                  onSelect={(value) =>
-                    saveSettings({
-                      ...settings,
-                      defaultCompareMode: value,
                     })
                   }
                 />
@@ -2295,6 +2310,7 @@ export default function SettingsPage() {
                 </div>
               </div>
             </section>
+
           </div>
         </section>
       </main>

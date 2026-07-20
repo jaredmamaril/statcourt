@@ -157,6 +157,22 @@
   }
 }
 
+@keyframes panelReveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.panel-reveal {
+  animation: panelReveal 220ms ease-out both;
+}
+
 @keyframes cardFaceIn {
   from {
     opacity: 0.35;
@@ -264,6 +280,12 @@ body {
   margin: 0;
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  background-color: var(--background);
+  background-image: url("/court-pattern.svg");
+  background-attachment: fixed;
+  background-position: top left;
+  background-repeat: repeat;
+  background-size: 900px auto;
 }
 
 .screen-center {
@@ -299,6 +321,11 @@ html.statcourt-reduced-motion {
 }
 
 .statcourt-reduced-motion .scout-section-reveal {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.statcourt-reduced-motion .panel-reveal {
   opacity: 1 !important;
   transform: none !important;
 }

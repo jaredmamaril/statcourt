@@ -453,16 +453,7 @@ export default function ProfilePage() {
   );
 
   return (
-    <main className="page-enter relative min-h-svh bg-background px-3 py-3 text-white lg:px-6 lg:pt-12">
-      <div
-        className="pointer-events-none fixed inset-0 z-0 bg-repeat opacity-100"
-        style={{
-          backgroundImage: "url('/court-pattern.svg')",
-          backgroundPosition: "top left",
-          backgroundSize: "900px auto",
-        }}
-      />
-
+    <main className="page-enter relative min-h-svh px-3 py-3 text-white lg:px-6 lg:pt-12">
       <section className="relative z-10 mx-auto max-w-5xl py-3 lg:py-10">
         <div className="mb-3 rounded-lg border border-[#1bc2ec]/30 bg-[#06131d]/80 p-3 shadow-[0_0_22px_rgba(27,194,236,0.12)] lg:mb-8 lg:p-6 lg:shadow-[0_0_30px_rgba(27,194,236,0.14)]">
           <div className="flex items-center justify-between gap-3 lg:gap-5">

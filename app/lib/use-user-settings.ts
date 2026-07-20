@@ -29,6 +29,16 @@ export const defaultUserSettings: UserSettings = {
   reducedMotion: false,
 };
 
+export const userSettingsChangedEvent = "statcourt:user-settings-changed";
+
+export function notifyUserSettingsChanged(settings: UserSettings) {
+  window.dispatchEvent(
+    new CustomEvent<UserSettings>(userSettingsChangedEvent, {
+      detail: settings,
+    }),
+  );
+}
+
 function rowToSettings(row: UserSettingsRow | null): UserSettings {
   if (!row) return defaultUserSettings;
 
@@ -48,6 +58,22 @@ export function useUserSettings() {
   const [settings, setSettings] =
     useState<UserSettings>(defaultUserSettings);
   const [isLoadingSettings, setIsLoadingSettings] = useState(true);
+
+  useEffect(() => {
+    function updateSettings(event: Event) {
+      const settingsEvent = event as CustomEvent<UserSettings>;
+
+      if (!settingsEvent.detail) return;
+
+      setSettings(settingsEvent.detail);
+    }
+
+    window.addEventListener(userSettingsChangedEvent, updateSettings);
+
+    return () => {
+      window.removeEventListener(userSettingsChangedEvent, updateSettings);
+    };
+  }, []);
 
   useEffect(() => {
     let isActive = true;

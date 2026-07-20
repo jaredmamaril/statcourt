@@ -56,7 +56,7 @@ export function DatabaseSnapshot({
   getRarityColor,
 }: DatabaseSnapshotProps) {
   return (
-    <div className="absolute -left-58 top-4 z-500 hidden w-64 font-michroma uppercase text-center xl:block">
+    <div className="panel-reveal absolute -left-58 top-4 z-500 hidden w-64 font-michroma uppercase text-center xl:block">
       <div className="group/database relative inline-block">
         <p className="flex cursor-help items-center justify-center gap-1 text-[8px] tracking-wide text-white/25 transition group-hover/database:text-white/50">
           Database Snapshot

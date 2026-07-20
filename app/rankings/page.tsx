@@ -390,8 +390,8 @@ export default function Rankings() {
   }
 
   return (
-    <main className="page-enter scrollbar-none min-h-screen overflow-x-hidden text-white">
-      <section className="mx-auto w-full max-w-7xl px-6 pb-12">
+    <main className="page-enter scrollbar-none relative min-h-screen overflow-x-hidden text-white">
+      <section className="relative z-10 mx-auto w-full max-w-7xl px-6 pb-12">
         <RankingTabs
           activeTab={activeTab}
           onSelectTab={(tab) => {
