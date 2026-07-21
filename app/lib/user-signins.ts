@@ -4,9 +4,18 @@ import { supabase } from "../components/supabase-client";
 const DEVICE_ID_STORAGE_KEY = "statcourt_device_id";
 const SIGNIN_TRACKING_STORAGE_KEY = "statcourt_last_tracked_signin";
 const SIGNIN_CLEAR_STORAGE_KEY = "statcourt_cleared_signin";
+const PENDING_AUTH_PROVIDER_STORAGE_KEY = "statcourt_pending_auth_provider";
 const pendingTrackedSignins = new Set<string>();
 
-function getSigninProvider(user: User) {
+function getSigninProvider(
+  user: User,
+  providerOverride?: string | null,
+  pendingProvider?: string | null,
+) {
+  if (providerOverride) return providerOverride;
+
+  if (pendingProvider) return pendingProvider;
+
   const provider = user.app_metadata?.provider;
 
   return typeof provider === "string" ? provider : null;
@@ -44,14 +53,28 @@ function getBrowserLabel(userAgent: string) {
   return "Unknown browser";
 }
 
-export async function trackUserSignin(user: User | null) {
+export async function trackUserSignin(
+  user: User | null,
+  providerOverride?: string | null,
+) {
   if (!user) return;
 
-  const signInKey = `${user.id}:${user.last_sign_in_at ?? "unknown"}`;
+  const baseSignInKey = `${user.id}:${user.last_sign_in_at ?? "unknown"}`;
   const lastTrackedSignIn = window.localStorage.getItem(
     SIGNIN_TRACKING_STORAGE_KEY,
   );
   const clearedSignIn = window.localStorage.getItem(SIGNIN_CLEAR_STORAGE_KEY);
+  const pendingProvider = providerOverride ? null : consumePendingAuthProvider();
+  const signinProvider = getSigninProvider(
+    user,
+    providerOverride,
+    pendingProvider,
+  );
+  const signInKey = `${baseSignInKey}:${signinProvider ?? "unknown"}`;
+
+  if (!providerOverride && lastTrackedSignIn?.startsWith(`${baseSignInKey}:`)) {
+    return;
+  }
 
   if (
     clearedSignIn === signInKey ||
@@ -66,7 +89,7 @@ export async function trackUserSignin(user: User | null) {
 
   const { error } = await supabase.from("user_signins").insert({
     user_id: user.id,
-    provider: getSigninProvider(user),
+    provider: signinProvider,
     user_agent: window.navigator.userAgent,
   });
 
@@ -83,11 +106,30 @@ export async function trackUserSignin(user: User | null) {
 export function suppressCurrentSigninTracking(user: User | null) {
   if (!user) return;
 
-  const signInKey = `${user.id}:${user.last_sign_in_at ?? "unknown"}`;
+  const signinProvider = getSigninProvider(user);
+  const signInKey = `${user.id}:${user.last_sign_in_at ?? "unknown"}:${signinProvider ?? "unknown"}`;
 
   window.localStorage.setItem(SIGNIN_CLEAR_STORAGE_KEY, signInKey);
   window.localStorage.setItem(SIGNIN_TRACKING_STORAGE_KEY, signInKey);
   pendingTrackedSignins.delete(signInKey);
+}
+
+export function setPendingAuthProvider(provider: string) {
+  window.sessionStorage.setItem(PENDING_AUTH_PROVIDER_STORAGE_KEY, provider);
+}
+
+export function consumePendingAuthProvider() {
+  const provider = window.sessionStorage.getItem(
+    PENDING_AUTH_PROVIDER_STORAGE_KEY,
+  );
+
+  window.sessionStorage.removeItem(PENDING_AUTH_PROVIDER_STORAGE_KEY);
+
+  return provider;
+}
+
+export function clearPendingAuthProvider() {
+  window.sessionStorage.removeItem(PENDING_AUTH_PROVIDER_STORAGE_KEY);
 }
 
 export async function upsertCurrentUserDevice(user: User | null) {

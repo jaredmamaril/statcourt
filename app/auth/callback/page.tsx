@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../components/supabase-client";
-import { trackUserSignin } from "../../lib/user-signins";
+import {
+  consumePendingAuthProvider,
+  trackUserSignin,
+} from "../../lib/user-signins";
 
 function getSafeRedirectPath(nextPath: string | null) {
   if (!nextPath || !nextPath.startsWith("/") || nextPath.startsWith("//")) {
@@ -23,6 +26,7 @@ export default function AuthCallbackPage() {
       const hashParams = new URLSearchParams(window.location.hash.slice(1));
       const code = params.get("code");
       const nextPath = getSafeRedirectPath(params.get("next"));
+      const provider = params.get("provider") ?? consumePendingAuthProvider();
       const authError =
         params.get("error_description") ??
         params.get("error") ??
@@ -47,7 +51,7 @@ export default function AuthCallbackPage() {
         return;
       }
 
-      await trackUserSignin(data.user);
+      await trackUserSignin(data.user, provider);
 
       router.replace(nextPath);
     }

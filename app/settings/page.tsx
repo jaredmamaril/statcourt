@@ -23,17 +23,16 @@ import {
   useUserSettings,
 } from "../lib/use-user-settings";
 import { supabase } from "../components/supabase-client";
-import {
-  getAuthProviderLabel,
-  hasConnectedProvider,
-} from "../lib/auth-display";
+import { hasConnectedProvider } from "../lib/auth-display";
 import {
   getPasswordValidationMessage,
   PasswordRequirements,
 } from "../components/auth/password-requirements";
 import { LoadingSpinner } from "../components/loading/loading-spinner";
 import {
+  clearPendingAuthProvider,
   getCurrentDeviceId,
+  setPendingAuthProvider,
   suppressCurrentSigninTracking,
 } from "../lib/user-signins";
 
@@ -157,6 +156,14 @@ function formatProviderLabel(provider: string | null) {
   return provider.charAt(0).toUpperCase() + provider.slice(1);
 }
 
+function getAuthEmailErrorMessage(errorMessage: string) {
+  if (errorMessage.toLowerCase().includes("rate limit")) {
+    return "Too many setup emails sent. This project can send 2 auth emails per hour. Try again later.";
+  }
+
+  return errorMessage;
+}
+
 function normalizeUsername(value: string) {
   return value.trim().toLowerCase().replace(/^@+/, "");
 }
@@ -254,6 +261,7 @@ export default function SettingsPage() {
   const [confirmPasswordInput, setConfirmPasswordInput] = useState("");
   const [passwordStatus, setPasswordStatus] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [isSendingPasswordLink, setIsSendingPasswordLink] = useState(false);
   const [isConfirmingDeleteAccount, setIsConfirmingDeleteAccount] =
     useState(false);
   const [deleteAccountInput, setDeleteAccountInput] = useState("");
@@ -532,7 +540,6 @@ export default function SettingsPage() {
   const needsPasswordSetup = Boolean(
     user && hasGoogleProvider && !hasEmailProvider,
   );
-  const signInMethodLabel = getAuthProviderLabel(user);
   const isPublicProfileEnabled = userProfile?.public_profile_enabled ?? false;
   const publicProfileStatusLabel = isPublicProfileEnabled
     ? "Visible"
@@ -1015,18 +1022,34 @@ export default function SettingsPage() {
       return;
     }
 
-    setPasswordStatus("Sending reset link...");
+    const isPasswordSetup = needsPasswordSetup;
 
-    const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
+    setPasswordStatus(
+      isPasswordSetup ? "Sending setup link..." : "Sending reset link...",
+    );
+    setIsSendingPasswordLink(true);
+
+    const { error } = await supabase.auth.resetPasswordForEmail(
+      user.email,
+      {
+        redirectTo: `${window.location.origin}/reset-password?mode=${
+          isPasswordSetup ? "setup" : "reset"
+        }`,
+      },
+    );
+
+    setIsSendingPasswordLink(false);
 
     if (error) {
-      setPasswordStatus(error.message);
+      setPasswordStatus(getAuthEmailErrorMessage(error.message));
       return;
     }
 
-    setPasswordStatus("Reset link sent to your email.");
+    setPasswordStatus(
+      isPasswordSetup
+        ? "Setup link sent to your email."
+        : "Reset link sent to your email.",
+    );
   }
 
   async function connectGoogleProvider() {
@@ -1035,16 +1058,18 @@ export default function SettingsPage() {
       return;
     }
 
-    setPasswordStatus("Opening Google...");
+    setPasswordStatus("Opening Google linking...");
+    setPendingAuthProvider("google");
 
-    const { error } = await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.linkIdentity({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/settings`,
+        redirectTo: `${window.location.origin}/auth/callback?next=/settings&provider=google`,
       },
     });
 
     if (error) {
+      clearPendingAuthProvider();
       setPasswordStatus(error.message);
     }
   }
@@ -1629,23 +1654,32 @@ export default function SettingsPage() {
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="min-w-0">
                     <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
-                      Sign-in Method
+                      Sign-in Methods
                     </p>
 
-                    <p className="mt-1 truncate font-michroma text-[8px] text-white lg:text-[10px]">
-                      {signInMethodLabel}
-                    </p>
+                    <div className="mt-1 grid gap-1 font-michroma text-[5px] uppercase text-white/30 lg:text-[7px]">
+                      <div className="flex items-center gap-2">
+                        <span>Email/password</span>
+                        <span
+                          className={
+                            hasEmailProvider ? "text-[#22C55E]" : "text-white/40"
+                          }
+                        >
+                          {hasEmailProvider ? "Connected" : "Not connected"}
+                        </span>
+                      </div>
 
-                    <p className="mt-1 font-michroma text-[5px] uppercase text-white/30 lg:text-[7px]">
-                      Google sign-in:{" "}
-                      <span
-                        className={
-                          hasGoogleProvider ? "text-[#22C55E]" : "text-white/40"
-                        }
-                      >
-                        {hasGoogleProvider ? "Connected" : "Not connected"}
-                      </span>
-                    </p>
+                      <div className="flex items-center gap-2">
+                        <span>Google</span>
+                        <span
+                          className={
+                            hasGoogleProvider ? "text-[#22C55E]" : "text-white/40"
+                          }
+                        >
+                          {hasGoogleProvider ? "Connected" : "Not connected"}
+                        </span>
+                      </div>
+                    </div>
                   </div>
 
                   {!hasGoogleProvider && (
@@ -1663,9 +1697,15 @@ export default function SettingsPage() {
 
               <div className="mb-2 rounded-md border border-white/10 bg-black/20 p-2 lg:mb-3 lg:p-4">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
-                    Recent Sign-ins
-                  </p>
+                  <div>
+                    <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                      Recent Sign-ins
+                    </p>
+
+                    <p className="mt-1 hidden font-michroma text-[5px] uppercase text-white/25 lg:block lg:text-[7px]">
+                      Shows successful sign-ins tracked by StatCourt.
+                    </p>
+                  </div>
 
                   <div className="min-w-0 text-right">
                     <p className="truncate font-michroma text-[7px] text-white lg:text-[10px]">
@@ -1839,7 +1879,7 @@ export default function SettingsPage() {
 
               <p className="mt-1.5 hidden font-michroma text-[5px] leading-relaxed text-white/30 lg:block lg:text-[7px]">
                 {needsPasswordSetup
-                  ? "Create a password to sign in with this email without Google."
+                  ? "We will send a secure setup link. This project can send 2 auth emails per hour."
                   : "Use a new password with at least 8 characters. You may need to sign in again on other devices."}
               </p>
 
@@ -1849,16 +1889,17 @@ export default function SettingsPage() {
                     <>
                       <p className="font-michroma text-[6px] leading-relaxed text-white/40 lg:col-span-3 lg:text-[8px]">
                         We will email you a secure setup link so you can add an
-                        email/password login to this Google account.
+                        email/password login to this Google account. Supabase
+                        allows 2 auth emails per hour on this project.
                       </p>
 
                       <button
                         type="button"
                         onClick={sendPasswordResetFromSettings}
-                        disabled={!user?.email}
+                        disabled={!user?.email || isSendingPasswordLink}
                         className="rounded-md border border-[#EFBF04]/50 bg-[#EFBF04]/10 px-2 py-1.5 font-michroma text-[6px] uppercase text-[#EFBF04] transition hover:bg-[#EFBF04]/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-4 lg:py-2 lg:text-[9px]"
                       >
-                        Send Setup Link
+                        {isSendingPasswordLink ? "Sending..." : "Send Setup Link"}
                       </button>
 
                       <button
@@ -1871,6 +1912,12 @@ export default function SettingsPage() {
                       >
                         Cancel
                       </button>
+
+                      {passwordStatus && (
+                        <p className="font-michroma text-[6px] leading-relaxed text-[#1bc2ec]/80 lg:col-span-5 lg:text-[8px]">
+                          {passwordStatus}
+                        </p>
+                      )}
                     </>
                   ) : (
                     <>
@@ -2003,11 +2050,17 @@ export default function SettingsPage() {
                     <button
                       type="button"
                       onClick={sendPasswordResetFromSettings}
-                      disabled={!user?.email}
+                      disabled={!user?.email || isSendingPasswordLink}
                       className="justify-self-start font-michroma text-[6px] uppercase text-white/35 transition hover:text-[#1bc2ec] disabled:cursor-not-allowed disabled:text-white/15 lg:col-span-5 lg:text-[8px]"
                     >
-                      Forgot Password?
+                      {isSendingPasswordLink ? "Sending..." : "Forgot Password?"}
                     </button>
+
+                    {passwordStatus && (
+                      <p className="font-michroma text-[6px] leading-relaxed text-[#1bc2ec]/80 lg:col-span-5 lg:text-[8px]">
+                        {passwordStatus}
+                      </p>
+                    )}
                     </>
                   )}
                   </div>

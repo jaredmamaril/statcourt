@@ -10,7 +10,11 @@ import {
   getPasswordValidationMessage,
   PasswordRequirements,
 } from "../components/auth/password-requirements";
-import { trackUserSignin } from "../lib/user-signins";
+import {
+  clearPendingAuthProvider,
+  setPendingAuthProvider,
+  trackUserSignin,
+} from "../lib/user-signins";
 
 function GoogleMark() {
   return (
@@ -24,6 +28,14 @@ function GoogleMark() {
       />
     </span>
   );
+}
+
+function getAuthEmailErrorMessage(errorMessage: string) {
+  if (errorMessage.toLowerCase().includes("rate limit")) {
+    return "Too many auth emails sent. This project can send 2 auth emails per hour. Try again later.";
+  }
+
+  return errorMessage;
 }
 
 export default function SignInPage() {
@@ -57,6 +69,7 @@ export default function SignInPage() {
     setAuthMessage("");
     setAuthError("");
     setIsSubmitting(true);
+    clearPendingAuthProvider();
 
     if (authMode === "signup") {
       const passwordValidationMessage = getPasswordValidationMessage(password);
@@ -91,7 +104,7 @@ export default function SignInPage() {
       return;
     }
 
-    await trackUserSignin(authResponse.data.user);
+    await trackUserSignin(authResponse.data.user, "email");
 
     router.push("/profile");
   }
@@ -109,7 +122,7 @@ export default function SignInPage() {
     setIsSubmitting(false);
 
     if (error) {
-      setAuthError(error.message);
+      setAuthError(getAuthEmailErrorMessage(error.message));
       return;
     }
 
@@ -120,15 +133,17 @@ export default function SignInPage() {
     setAuthMessage("");
     setAuthError("");
     setIsSubmitting(true);
+    setPendingAuthProvider("google");
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/profile`,
+        redirectTo: `${window.location.origin}/auth/callback?next=/profile&provider=google`,
       },
     });
 
     if (error) {
+      clearPendingAuthProvider();
       setIsSubmitting(false);
       setAuthError(error.message);
     }

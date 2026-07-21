@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Eye, KeyRound } from "lucide-react";
 import { supabase } from "../components/supabase-client";
 
@@ -26,13 +26,75 @@ export default function ResetPasswordPage() {
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPreparingSession, setIsPreparingSession] = useState(true);
+  const [recoveryMode, setRecoveryMode] = useState<"reset" | "setup">("reset");
   const [visiblePasswordFields, setVisiblePasswordFields] = useState({
     new: false,
     confirm: false,
   });
 
+  useEffect(() => {
+    let isActive = true;
+
+    async function prepareRecoverySession() {
+      const params = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.slice(1));
+      const code = params.get("code");
+      const mode = params.get("mode");
+      const authError =
+        params.get("error_description") ??
+        params.get("error") ??
+        hashParams.get("error_description") ??
+        hashParams.get("error");
+
+      if (mode === "setup") {
+        setRecoveryMode("setup");
+      }
+
+      if (authError) {
+        if (!isActive) return;
+
+        setError(authError);
+        setIsPreparingSession(false);
+        return;
+      }
+
+      if (!code) {
+        const { data } = await supabase.auth.getSession();
+
+        if (!isActive) return;
+
+        if (!data.session) {
+          setError("Open the password setup link from your email.");
+        }
+
+        setIsPreparingSession(false);
+        return;
+      }
+
+      const { error: exchangeError } =
+        await supabase.auth.exchangeCodeForSession(code);
+
+      if (!isActive) return;
+
+      if (exchangeError) {
+        setError(exchangeError.message);
+      }
+
+      setIsPreparingSession(false);
+    }
+
+    prepareRecoverySession();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
   async function updatePassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isPreparingSession) return;
+
     setStatus("");
     setError("");
 
@@ -83,7 +145,11 @@ export default function ResetPasswordPage() {
       new: false,
       confirm: false,
     });
-    setStatus("Password updated. Sending you to sign in...");
+    setStatus(
+      recoveryMode === "setup"
+        ? "Password created. You can now sign in with email/password."
+        : "Password updated. Sending you to sign in...",
+    );
     window.setTimeout(() => router.push("/signin"), 1200);
   }
 
@@ -108,7 +174,7 @@ export default function ResetPasswordPage() {
             </p>
 
             <h1 className="mt-2.5 font-michroma text-sm uppercase leading-snug text-white lg:mt-3 lg:text-2xl">
-              Reset Password
+              {recoveryMode === "setup" ? "Create Password" : "Reset Password"}
             </h1>
 
             <p className="mt-2 font-michroma text-[7px] uppercase tracking-wide text-white/45 lg:mt-3 lg:text-[10px]">
@@ -119,11 +185,13 @@ export default function ResetPasswordPage() {
           <div className="mb-3 rounded-md border border-white/10 bg-black/20 p-2.5 lg:mb-5 lg:p-3">
             <div className="flex items-center justify-center gap-1.5 font-michroma text-[6px] uppercase text-white/35 lg:gap-2 lg:text-[8px]">
               <KeyRound className="h-3 w-3 text-[#1bc2ec] lg:h-3.5 lg:w-3.5" />
-              Password Recovery
+              {recoveryMode === "setup" ? "Password Setup" : "Password Recovery"}
             </div>
 
             <p className="mt-1.5 text-center font-michroma text-[7px] leading-relaxed text-white/45 lg:mt-2 lg:text-[9px]">
-              Use the reset link from your email, then set a stronger password.
+              {recoveryMode === "setup"
+                ? "Create an email/password login for this StatCourt account."
+                : "Use the secure email link, then set a stronger password."}
             </p>
           </div>
 
@@ -137,9 +205,12 @@ export default function ResetPasswordPage() {
                   setError("");
                   setStatus("");
                 }}
+                disabled={isPreparingSession}
                 required
-                placeholder="New password"
-                className="w-full rounded-md border border-white/15 bg-black/25 px-3 py-2 pr-8 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/30 focus:border-[#1bc2ec] lg:px-4 lg:py-3 lg:pr-10 lg:text-[10px]"
+                placeholder={
+                  recoveryMode === "setup" ? "Create password" : "New password"
+                }
+                className="w-full rounded-md border border-white/15 bg-black/25 px-3 py-2 pr-8 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/30 focus:border-[#1bc2ec] disabled:cursor-not-allowed disabled:text-white/25 lg:px-4 lg:py-3 lg:pr-10 lg:text-[10px]"
               />
 
               <button
@@ -166,9 +237,10 @@ export default function ResetPasswordPage() {
                   setError("");
                   setStatus("");
                 }}
+                disabled={isPreparingSession}
                 required
                 placeholder="Confirm password"
-                className="w-full rounded-md border border-white/15 bg-black/25 px-3 py-2 pr-8 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/30 focus:border-[#1bc2ec] lg:px-4 lg:py-3 lg:pr-10 lg:text-[10px]"
+                className="w-full rounded-md border border-white/15 bg-black/25 px-3 py-2 pr-8 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/30 focus:border-[#1bc2ec] disabled:cursor-not-allowed disabled:text-white/25 lg:px-4 lg:py-3 lg:pr-10 lg:text-[10px]"
               />
 
               <button
@@ -188,11 +260,17 @@ export default function ResetPasswordPage() {
 
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isPreparingSession}
               className="group flex items-center justify-center gap-2 rounded-md border border-[#1bc2ec]/55 bg-[#1bc2ec]/10 px-3 py-2 font-michroma text-[7px] uppercase text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.14)] transition hover:bg-[#1bc2ec]/20 hover:text-white hover:shadow-[0_0_24px_rgba(27,194,236,0.28)] disabled:cursor-not-allowed disabled:opacity-60 lg:px-4 lg:py-3 lg:text-[10px]"
             >
               <KeyRound className="h-3 w-3 transition group-hover:brightness-125 lg:h-4 lg:w-4" />
-              {isSubmitting ? "Updating..." : "Update Password"}
+              {isPreparingSession
+                ? "Preparing..."
+                : isSubmitting
+                  ? "Updating..."
+                  : recoveryMode === "setup"
+                    ? "Create Password"
+                    : "Update Password"}
             </button>
           </form>
 
