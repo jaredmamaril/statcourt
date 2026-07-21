@@ -98,8 +98,11 @@ export async function POST(request: Request) {
     adminClient.from("saved_lineups").delete().eq("user_id", user.id),
     adminClient.from("favorite_players").delete().eq("user_id", user.id),
     adminClient.from("recent_players").delete().eq("user_id", user.id),
+    adminClient.from("user_compare_slots").delete().eq("user_id", user.id),
     adminClient.from("user_activity").delete().eq("user_id", user.id),
     adminClient.from("user_settings").delete().eq("user_id", user.id),
+    adminClient.from("user_signins").delete().eq("user_id", user.id),
+    adminClient.from("user_devices").delete().eq("user_id", user.id),
     adminClient.from("user_profiles").delete().eq("id", user.id),
     avatarFilesToRemove.length
       ? adminClient.storage.from("avatars").remove(avatarFilesToRemove)
