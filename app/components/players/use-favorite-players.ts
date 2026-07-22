@@ -4,10 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "../supabase-client";
 import { logUserActivity } from "../user-activity";
-import {
-  getSavedFavoritePlayers,
-  saveFavoritePlayers,
-} from "./player-storage";
 
 type FavoritePlayerRow = {
   player_name: string;
@@ -27,7 +23,7 @@ export function useFavoritePlayers(user: User | null) {
         const frameId = requestAnimationFrame(() => {
           if (!isActive) return;
 
-          setFavorites(getSavedFavoritePlayers());
+          setFavorites([]);
           setIsLoadingFavorites(false);
         });
 
@@ -72,7 +68,6 @@ export function useFavoritePlayers(user: User | null) {
       setFavorites(nextFavorites);
 
       if (!user) {
-        saveFavoritePlayers(nextFavorites);
         return;
       }
 

@@ -541,7 +541,9 @@ function Players() {
   }
 
   function toggleFavoritesFilter() {
-    setShowFavorites((currentShowFavorites) => !currentShowFavorites);
+    requireAuth("Sign in to view favorite players", () => {
+      setShowFavorites((currentShowFavorites) => !currentShowFavorites);
+    });
   }
 
   function selectPlayerFromList(playerName: string) {
@@ -674,7 +676,11 @@ function Players() {
                   selectedSkill={selectedRatingView}
                   sortBy={sortBy}
                   displayView={playerDisplayView}
-                  onToggleFavorite={toggleFavorite}
+                  onToggleFavorite={(playerName) =>
+                    requireAuth("Sign in to save favorite players", () => {
+                      void toggleFavorite(playerName);
+                    })
+                  }
                   onSelectPlayer={selectPlayerFromList}
                 />
               </>

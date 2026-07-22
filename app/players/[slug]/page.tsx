@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuthUser } from "../../lib/use-auth-user";
 import { useUserSettings } from "../../lib/use-user-settings";
+import { AuthPrompt } from "../../components/auth/auth-prompt";
 import { DatabaseErrorState } from "../../components/loading/database-error-state";
 import { DatabaseLoadingState } from "../../components/loading/database-loading-state";
 import {
@@ -105,6 +106,8 @@ export default function PlayerProfilePage() {
   const [openLineupFitTooltip, setOpenLineupFitTooltip] = useState<
     string | null
   >(null);
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const [authPromptMessage, setAuthPromptMessage] = useState("");
   const hasAppliedDefaultStatModeRef = useRef(false);
 
   useEffect(() => {
@@ -277,21 +280,35 @@ export default function PlayerProfilePage() {
     : [];
   const isFavorite = player ? favoritePlayers.includes(player.name) : false;
 
+  function requireAuth(message: string, action: () => void) {
+    if (!user) {
+      setAuthPromptMessage(message);
+      setShowAuthPrompt(true);
+      return;
+    }
+
+    action();
+  }
+
   function comparePlayer(slot: "left" | "right") {
-    if (!player) return;
+    requireAuth("Sign in to save player comparisons", () => {
+      if (!player) return;
 
-    void updateCompareSlots({
-      ...compareSlots,
-      [slot]: player.name,
+      void updateCompareSlots({
+        ...compareSlots,
+        [slot]: player.name,
+      });
+
+      router.push("/court");
     });
-
-    router.push("/court");
   }
 
   function toggleFavoritePlayer() {
-    if (!player) return;
+    requireAuth("Sign in to save favorite players", () => {
+      if (!player) return;
 
-    void toggleFavorite(player.name);
+      void toggleFavorite(player.name);
+    });
   }
 
   function openBuildSlotModal() {
@@ -778,6 +795,13 @@ export default function PlayerProfilePage() {
         </div>
       )}
 
+      {showAuthPrompt && (
+        <AuthPrompt
+          title={authPromptMessage}
+          description="Sign in to sync favorites, saved comparisons, and player history."
+          onClose={() => setShowAuthPrompt(false)}
+        />
+      )}
     </main>
   );
 }

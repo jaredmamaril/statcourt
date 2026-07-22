@@ -64,6 +64,11 @@ export default function ResetPasswordPage() {
 
         if (!isActive) return;
 
+        if (data.session) {
+          router.replace("/settings");
+          return;
+        }
+
         if (!data.session) {
           setError("Open the password setup link from your email.");
         }
@@ -89,7 +94,7 @@ export default function ResetPasswordPage() {
     return () => {
       isActive = false;
     };
-  }, []);
+  }, [router]);
 
   async function updatePassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

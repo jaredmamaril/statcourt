@@ -52,17 +52,39 @@ export default function SignInPage() {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   useEffect(() => {
+    let isActive = true;
     const callbackError = searchParams.get("error");
 
     if (callbackError) {
       const timeoutId = window.setTimeout(() => {
+        if (!isActive) return;
+
         setAuthError(callbackError);
         setAuthMessage("");
       }, 0);
 
-      return () => window.clearTimeout(timeoutId);
+      return () => {
+        isActive = false;
+        window.clearTimeout(timeoutId);
+      };
     }
-  }, [searchParams]);
+
+    async function redirectSignedInUser() {
+      const { data } = await supabase.auth.getUser();
+
+      if (!isActive) return;
+
+      if (data.user) {
+        router.replace("/profile");
+      }
+    }
+
+    redirectSignedInUser();
+
+    return () => {
+      isActive = false;
+    };
+  }, [router, searchParams]);
 
   async function handleEmailAuth(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

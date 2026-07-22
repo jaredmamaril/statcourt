@@ -290,6 +290,14 @@ export default function SettingsPage() {
   }, [loadedSettings]);
 
   useEffect(() => {
+    if (isLoadingUser) return;
+
+    if (!user) {
+      router.replace("/signin");
+    }
+  }, [isLoadingUser, router, user]);
+
+  useEffect(() => {
     let isActive = true;
 
     async function loadUserProfile() {

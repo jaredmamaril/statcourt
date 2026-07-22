@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   getPlayerInsights,
@@ -158,6 +159,7 @@ const quickActions = [
 ];
 
 export default function ProfilePage() {
+  const router = useRouter();
   const {
     user,
     isLoadingUser,
@@ -178,6 +180,14 @@ export default function ProfilePage() {
   const [activityStatus, setActivityStatus] = useState("");
   const [isClearingActivity, setIsClearingActivity] = useState(false);
   const statCardsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isLoadingUser) return;
+
+    if (!user) {
+      router.replace("/signin");
+    }
+  }, [isLoadingUser, router, user]);
 
   async function sharePublicProfile() {
     if (!username || !profile?.publicProfileEnabled) return;
