@@ -272,7 +272,7 @@ export const archetypeInfoByLabel = {
     statBars: { scoring: 7, rebounding: 7, playmaking: 6, shooting: 5 },
   },
 
-  "Craft Scoring Guard": {
+  "Crafty Scoring Guard": {
     description:
       "Scores efficiently from the guard spot through skill, control, touch, and ball-handling craft.",
     coreTraits: ["Scoring Craft", "Ball Control", "Efficient Guard Play"],

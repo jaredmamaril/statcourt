@@ -1,5 +1,9 @@
 ﻿import { getPlayerInsights, type Player, type StatMode } from "../court-data";
-import { getPlayerRating, type PlayerStatProfileMode } from "../player-ratings";
+import {
+  getPlayerRating,
+  type PlayerRatingCategory,
+  type PlayerStatProfileMode,
+} from "../player-ratings";
 import { getArchetypePillStyle } from "./ranking-style-helpers";
 
 type ArchetypeOptionDetail = {
@@ -24,6 +28,17 @@ export function ArchetypeCardGrid({
   selectedArchetype,
   onSelectArchetype,
 }: ArchetypeCardGridProps) {
+  const overallCategoryByProfile: Record<
+    PlayerStatProfileMode,
+    PlayerRatingCategory
+  > = {
+    career: "careerOverall",
+    peak: "peakOverall",
+    current: "currentOverall",
+  };
+
+  const overallCategory = overallCategoryByProfile[statProfileFilter];
+
   return (
     <div className="statcourt-scroll mt-3 grid max-h-72 gap-1.5 overflow-y-auto pr-1 lg:mt-4 lg:max-h-105 lg:grid-cols-3 lg:gap-2">
       {archetypeOptionDetails.map(({ label, archetype }) => {
@@ -45,7 +60,7 @@ export function ArchetypeCardGrid({
             ? archetypePlayers.reduce(
                 (total, player) =>
                   total +
-                  getPlayerRating(player, "careerOverall", statProfileFilter),
+                  getPlayerRating(player, overallCategory, statProfileFilter),
                 0,
               ) / archetypePlayers.length
             : null;
@@ -58,8 +73,8 @@ export function ArchetypeCardGrid({
           )
           .sort(
             (a, b) =>
-              getPlayerRating(b, "careerOverall", statProfileFilter) -
-              getPlayerRating(a, "careerOverall", statProfileFilter),
+              getPlayerRating(b, overallCategory, statProfileFilter) -
+              getPlayerRating(a, overallCategory, statProfileFilter),
           )[0];
 
         return (

@@ -16,6 +16,13 @@ type PlayerListProps = {
   selectedSkill: PlayerRatingCategory;
   sortBy: SortValue;
   displayView: DefaultPlayerView;
+  baseDisplayCount: number;
+  loadMoreAmount: number;
+  displayCountOptions: number[];
+  loadMoreOptions: number[];
+  onSelectBaseDisplayCount: (limit: number) => void;
+  onSelectLoadMoreAmount: (amount: number) => void;
+  onLoadMore: () => void;
   onToggleFavorite: (playerName: string) => void;
   onSelectPlayer: (playerName: string) => void;
 };
@@ -29,10 +36,18 @@ export function PlayerList({
   selectedSkill,
   sortBy,
   displayView,
+  baseDisplayCount,
+  loadMoreAmount,
+  displayCountOptions,
+  loadMoreOptions,
+  onSelectBaseDisplayCount,
+  onSelectLoadMoreAmount,
+  onLoadMore,
   onToggleFavorite,
   onSelectPlayer,
 }: PlayerListProps) {
   const isCardView = displayView === "cards";
+  const hasMorePlayers = players.length < totalPlayersCount;
 
   return (
     <div
@@ -84,11 +99,59 @@ export function PlayerList({
               </div>
             ))}
 
-            {players.length < totalPlayersCount && (
-              <p className="col-span-full py-3 text-center font-michroma text-[10px] text-white/35">
-                Showing {players.length} of {totalPlayersCount}. Use search or
-                filters to narrow results.
-              </p>
+            {totalPlayersCount > 0 && (
+              <div className="col-span-full mt-2 rounded-md border border-white/10 bg-black/20 p-1.5 font-michroma lg:p-3">
+                <div className="flex flex-col gap-1.5 lg:flex-row lg:items-center lg:justify-between lg:gap-2">
+                  <p className="text-center text-[5.5px] uppercase text-white/35 lg:text-left lg:text-[9px]">
+                    Showing {players.length} of {totalPlayersCount}
+                  </p>
+
+                  <div className="flex flex-wrap items-center justify-center gap-1.5 lg:gap-2">
+                    <label className="flex items-center gap-1 text-[5px] uppercase text-white/35 lg:gap-1.5 lg:text-[8px]">
+                      Display
+                      <select
+                        value={baseDisplayCount}
+                        onChange={(event) =>
+                          onSelectBaseDisplayCount(Number(event.target.value))
+                        }
+                        className="h-6 rounded border border-white/15 bg-[#06131d] px-1.5 text-[6px] text-white outline-none transition focus:border-[#1bc2ec] lg:h-8 lg:px-2 lg:text-[9px]"
+                      >
+                        {displayCountOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label className="flex items-center gap-1 text-[5px] uppercase text-white/35 lg:gap-1.5 lg:text-[8px]">
+                      Load
+                      <select
+                        value={loadMoreAmount}
+                        onChange={(event) =>
+                          onSelectLoadMoreAmount(Number(event.target.value))
+                        }
+                        className="h-6 rounded border border-white/15 bg-[#06131d] px-1.5 text-[6px] text-white outline-none transition focus:border-[#1bc2ec] lg:h-8 lg:px-2 lg:text-[9px]"
+                      >
+                        {loadMoreOptions.map((option) => (
+                          <option key={option} value={option}>
+                            +{option}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={onLoadMore}
+                      disabled={!hasMorePlayers}
+                      className="h-6 rounded border border-[#1bc2ec]/45 bg-[#1bc2ec]/10 px-2 text-[6px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:h-8 lg:px-3 lg:text-[9px]"
+                    >
+                      {hasMorePlayers ? "Load More" : "All Shown"}
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
           </>
         )}

@@ -1,6 +1,10 @@
 ﻿import PlayerImage from "../player-image";
 import { getPlayerHeadshot } from "../player-images";
-import { getPlayerRating, type PlayerStatProfileMode } from "../player-ratings";
+import {
+  getPlayerRating,
+  type PlayerRatingCategory,
+  type PlayerStatProfileMode,
+} from "../player-ratings";
 import { getTeamColor, type Player } from "../court-data";
 import { RankingPlayerTooltip } from "./ranking-player-tooltip";
 
@@ -21,6 +25,17 @@ export function ArchetypePlayerList({
     current: "Latest Season",
   };
 
+  const overallCategoryByProfile: Record<
+    PlayerStatProfileMode,
+    PlayerRatingCategory
+  > = {
+    career: "careerOverall",
+    peak: "peakOverall",
+    current: "currentOverall",
+  };
+
+  const overallCategory = overallCategoryByProfile[statProfileFilter];
+
   return (
     <>
       <div className="mt-4">
@@ -39,7 +54,7 @@ export function ArchetypePlayerList({
           players.map((player, index) => {
             const rating = getPlayerRating(
               player,
-              "careerOverall",
+              overallCategory,
               statProfileFilter,
             ).toFixed(1);
             const teamColor = getTeamColor(player.team);

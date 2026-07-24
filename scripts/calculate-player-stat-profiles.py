@@ -148,6 +148,9 @@ def build_career_profile_from_player(player):
         "fg_percent": safe_round(player.get("fg_percent")),
         "three_percent": safe_round(player.get("three_percent")),
         "ft_percent": safe_round(player.get("ft_percent")),
+        "three_made_per_game": None,
+        "three_attempts_per_game": None,
+        "free_throw_attempts_per_game": None,
     }
 
 
@@ -170,6 +173,15 @@ def build_profile_from_rows(player, rows, profile_type, season_label):
         "fg_percent": weighted_average(rows, "fg_percent"),
         "three_percent": weighted_average(rows, "three_percent"),
         "ft_percent": weighted_average(rows, "ft_percent"),
+        "three_made_per_game": weighted_average(rows, "three_made_per_game"),
+        "three_attempts_per_game": weighted_average(
+            rows,
+            "three_attempts_per_game",
+        ),
+        "free_throw_attempts_per_game": weighted_average(
+            rows,
+            "free_throw_attempts_per_game",
+        ),
     }
 
 
@@ -210,6 +222,18 @@ def consolidate_seasons(raw_rows):
             "fg_percent": weighted_average(chosen_rows, "fg_percent"),
             "three_percent": weighted_average(chosen_rows, "three_percent"),
             "ft_percent": weighted_average(chosen_rows, "ft_percent"),
+            "three_made_per_game": weighted_average(
+                chosen_rows,
+                "three_made_per_game",
+            ),
+            "three_attempts_per_game": weighted_average(
+                chosen_rows,
+                "three_attempts_per_game",
+            ),
+            "free_throw_attempts_per_game": weighted_average(
+                chosen_rows,
+                "free_throw_attempts_per_game",
+            ),
         }
 
         season_rows.append(consolidated)
@@ -332,7 +356,8 @@ def calculate_profiles():
         "player_season_stats",
         (
             "player_id, nba_id, season, team, games, ppg, rpg, apg, spg, bpg, "
-            "fg_percent, three_percent, ft_percent"
+            "fg_percent, three_percent, ft_percent, three_made_per_game, "
+            "three_attempts_per_game, free_throw_attempts_per_game"
         ),
     )
 
@@ -364,7 +389,12 @@ def calculate_profiles():
             print(f"-- Skipped {player['name']}: no consolidated seasons")
             continue
 
-        career_profile = build_career_profile_from_player(player)
+        career_profile = build_profile_from_rows(
+            player=player,
+            rows=season_rows,
+            profile_type="career",
+            season_label="Career",
+        )
         peak_profile = find_peak_profile(player, season_rows)
 
         latest_season = get_latest_season(season_rows)

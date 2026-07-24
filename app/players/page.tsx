@@ -70,6 +70,9 @@ const archetypeRarityRank = {
   red: 1,
 };
 
+const PLAYER_LIST_DISPLAY_OPTIONS = [50, 100, 200];
+const PLAYER_LIST_LOAD_MORE_OPTIONS = [25, 50, 100];
+
 export default function PlayersPage() {
   return (
     <Suspense fallback={null}>
@@ -111,6 +114,9 @@ function Players() {
     useState<DefaultPlayerView>("cards");
   const [sortBy, setSortBy] = useState<SortValue>("");
   const [sortDirection, setSortDirection] = useState<SortDirection>("primary");
+  const [playerListBaseLimit, setPlayerListBaseLimit] = useState(50);
+  const [playerListLoadMoreAmount, setPlayerListLoadMoreAmount] = useState(50);
+  const [visiblePlayerCount, setVisiblePlayerCount] = useState(50);
   const [openDropdown, setOpenDropdown] = useState<
     | "team"
     | "position"
@@ -231,7 +237,7 @@ function Players() {
     ],
   );
 
-  const visiblePlayers = filteredPlayers.slice(0, 100);
+  const visiblePlayers = filteredPlayers.slice(0, visiblePlayerCount);
 
   const hasActiveFilters = Boolean(
     showFavorites ||
@@ -330,6 +336,25 @@ function Players() {
       isActive = false;
     };
   }, []);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setVisiblePlayerCount(playerListBaseLimit);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [
+    deferredPlayerSearch,
+    favorites,
+    filteredArchetype,
+    filteredPosition,
+    filteredTeam,
+    playerListBaseLimit,
+    selectedRatingView,
+    showFavorites,
+    sortBy,
+    sortDirection,
+  ]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 1024px)");
@@ -535,6 +560,17 @@ function Players() {
     setOpenDropdown(null);
   }
 
+  function selectPlayerListBaseLimit(limit: number) {
+    setPlayerListBaseLimit(limit);
+    setVisiblePlayerCount(limit);
+  }
+
+  function loadMorePlayers() {
+    setVisiblePlayerCount((currentCount) =>
+      Math.min(currentCount + playerListLoadMoreAmount, filteredPlayers.length),
+    );
+  }
+
   function selectSortFilter(sort: SortValue) {
     handleSortClick(sort);
     setOpenDropdown(null);
@@ -676,6 +712,13 @@ function Players() {
                   selectedSkill={selectedRatingView}
                   sortBy={sortBy}
                   displayView={playerDisplayView}
+                  baseDisplayCount={playerListBaseLimit}
+                  loadMoreAmount={playerListLoadMoreAmount}
+                  displayCountOptions={PLAYER_LIST_DISPLAY_OPTIONS}
+                  loadMoreOptions={PLAYER_LIST_LOAD_MORE_OPTIONS}
+                  onSelectBaseDisplayCount={selectPlayerListBaseLimit}
+                  onSelectLoadMoreAmount={setPlayerListLoadMoreAmount}
+                  onLoadMore={loadMorePlayers}
                   onToggleFavorite={(playerName) =>
                     requireAuth("Sign in to save favorite players", () => {
                       void toggleFavorite(playerName);

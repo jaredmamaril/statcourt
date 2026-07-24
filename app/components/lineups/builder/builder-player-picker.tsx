@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import type { LineupSlot, Player } from "../../court-data";
 import type { BuilderStatProfileMode } from "./builder-position-helpers";
@@ -12,8 +12,8 @@ import { getPlayerHeadshot } from "../../player-images";
 import { BuilderPlayerCard } from "./builder-player-card";
 import type { DefaultPlayerView } from "../../../lib/use-user-settings";
 
-const DISPLAYED_BUILD_PLAYER_LIMIT = 20;
-const SEARCH_BUILD_PLAYER_LIMIT = 20;
+const BUILD_PLAYER_DISPLAY_OPTIONS = [20, 50, 80];
+const BUILD_PLAYER_LOAD_MORE_OPTIONS = [25, 50, 100];
 
 type BuilderPlayerPickerProps = {
   activeBuildPosition: LineupSlot;
@@ -44,6 +44,9 @@ export function BuilderPlayerPicker({
     playerId: number;
     contextKey: string;
   } | null>(null);
+  const [baseDisplayLimit, setBaseDisplayLimit] = useState(50);
+  const [loadMoreAmount, setLoadMoreAmount] = useState(50);
+  const [displayLimit, setDisplayLimit] = useState(50);
   const scoutContextKey = `${activeBuildPosition}-${builderStatProfile}`;
   const openScoutPlayerId =
     openScoutPlayer?.contextKey === scoutContextKey
@@ -75,10 +78,6 @@ export function BuilderPlayerPicker({
   );
 
   const displayedBuildPlayers = useMemo(() => {
-    const displayLimit = buildPlayerSearch.trim()
-      ? SEARCH_BUILD_PLAYER_LIMIT
-      : DISPLAYED_BUILD_PLAYER_LIMIT;
-
     if (!activeDraftPlayerName) {
       return availableBuildPlayers.slice(0, displayLimit);
     }
@@ -101,8 +100,27 @@ export function BuilderPlayerPicker({
     activeDraftPlayerName,
     allBuildPlayers,
     availableBuildPlayers,
-    buildPlayerSearch,
+    displayLimit,
   ]);
+
+  const hasMoreBuildPlayers =
+    displayedBuildPlayers.length < availableBuildPlayers.length;
+
+  const resetDisplayLimitKey = `${activeBuildPosition}-${builderStatProfile}-${buildPlayerSearch}`;
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDisplayLimit(baseDisplayLimit);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [baseDisplayLimit, resetDisplayLimitKey]);
+
+  function loadMoreBuildPlayers() {
+    setDisplayLimit((currentLimit) =>
+      Math.min(currentLimit + loadMoreAmount, availableBuildPlayers.length),
+    );
+  }
 
   return (
     <div className="flex min-w-0 flex-col gap-2">
@@ -118,7 +136,10 @@ export function BuilderPlayerPicker({
 
       <p className="text-center font-michroma text-[5.5px] uppercase text-white/30 lg:text-[8px]">
         {buildPlayerSearch.trim() ? (
-          <>Showing {displayedBuildPlayers.length} results</>
+          <>
+            Showing {displayedBuildPlayers.length} of{" "}
+            {availableBuildPlayers.length} results
+          </>
         ) : (
           <>
             Showing top {displayedBuildPlayers.length} of{" "}
@@ -127,7 +148,7 @@ export function BuilderPlayerPicker({
         )}
       </p>
 
-      <div className="statcourt-scroll max-h-26 w-full overflow-y-auto pr-1 lg:max-h-84 lg:pr-2">
+      <div className="statcourt-scroll max-h-21 w-full overflow-y-auto pr-1 lg:max-h-84 lg:pr-2">
         <div
           key={`${activeBuildPosition}-${builderStatProfile}-${displayView}`}
           className={
@@ -170,6 +191,53 @@ export function BuilderPlayerPicker({
               </div>
             );
           })}
+        </div>
+      </div>
+
+      <div className="rounded border border-white/10 bg-black/20 p-0.5 font-michroma lg:rounded-md lg:p-2">
+        <div className="flex flex-wrap items-center justify-center gap-0.5 lg:gap-2">
+          <label className="flex items-center gap-0.5 text-[4px] uppercase text-white/35 lg:gap-1 lg:text-[7px]">
+            Show
+            <select
+              value={baseDisplayLimit}
+              onChange={(event) =>
+                setBaseDisplayLimit(Number(event.target.value))
+              }
+              className="h-4.5 rounded border border-white/15 bg-[#06131d] px-0.5 text-[4.8px] text-white outline-none focus:border-[#1bc2ec] lg:h-7 lg:px-1.5 lg:text-[8px]"
+            >
+              {BUILD_PLAYER_DISPLAY_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex items-center gap-0.5 text-[4px] uppercase text-white/35 lg:gap-1 lg:text-[7px]">
+            Load
+            <select
+              value={loadMoreAmount}
+              onChange={(event) =>
+                setLoadMoreAmount(Number(event.target.value))
+              }
+              className="h-4.5 rounded border border-white/15 bg-[#06131d] px-0.5 text-[4.8px] text-white outline-none focus:border-[#1bc2ec] lg:h-7 lg:px-1.5 lg:text-[8px]"
+            >
+              {BUILD_PLAYER_LOAD_MORE_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  +{option}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <button
+            type="button"
+            onClick={loadMoreBuildPlayers}
+            disabled={!hasMoreBuildPlayers}
+            className="h-4.5 rounded border border-[#1bc2ec]/45 bg-[#1bc2ec]/10 px-1 font-michroma text-[4.8px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:h-7 lg:px-3 lg:text-[8px]"
+          >
+            {hasMoreBuildPlayers ? "Load More" : "All Shown"}
+          </button>
         </div>
       </div>
     </div>

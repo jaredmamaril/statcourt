@@ -21,8 +21,6 @@ import {
   useUserSettings,
 } from "../lib/use-user-settings";
 
-import { getPlayersFromSupabaseWithFallback } from "../components/supabase-players";
-
 import {
   RankingTabs,
   rankingTabs,
@@ -48,6 +46,9 @@ const archetypeRarityRank = {
   red: 4,
 } as const;
 
+const RANKING_BASE_DISPLAY_LIMIT = 50;
+const RANKING_BASE_LOAD_MORE_AMOUNT = 50;
+
 export default function Rankings() {
   const { settings, isLoadingSettings } = useUserSettings();
 
@@ -63,6 +64,12 @@ export default function Rankings() {
   const [playerSearch, setPlayerSearch] = useState("");
   const [archetypeFilter, setArchetypeFilter] = useState("");
   const [displayView, setDisplayView] = useState<DefaultPlayerView>("cards");
+  const [rankingDisplayLimit, setRankingDisplayLimit] = useState(
+    RANKING_BASE_DISPLAY_LIMIT,
+  );
+  const [rankingLoadMoreAmount, setRankingLoadMoreAmount] = useState(
+    RANKING_BASE_LOAD_MORE_AMOUNT,
+  );
   const [archetypeSort, setArchetypeSort] =
     useState<ArchetypeSort>("rarity");
   const [
@@ -86,13 +93,7 @@ export default function Rankings() {
 
     const timeoutId = window.setTimeout(() => {
       setStatProfileFilter(settings.defaultStatMode);
-      setActiveTab(
-        settings.defaultStatMode === "peak"
-          ? "peakOverall"
-          : settings.defaultStatMode === "current"
-            ? "currentOverall"
-            : "careerOverall",
-      );
+      setActiveTab("careerOverall");
       hasAppliedDefaultStatProfileRef.current = true;
     }, 0);
 
@@ -118,9 +119,21 @@ export default function Rankings() {
         setIsLoadingPlayers(true);
         setPlayerLoadError("");
 
-        const loadedPlayers = await getPlayersFromSupabaseWithFallback();
+        const response = await fetch("/api/players", {
+          cache: "no-store",
+        });
 
-        if (isMounted) {
+        if (!response.ok) {
+          throw new Error("Failed to load ranking players");
+        }
+
+        const data = (await response.json()) as {
+          players?: typeof fallbackPlayers;
+        };
+
+        const loadedPlayers = data.players ?? [];
+
+        if (isMounted && loadedPlayers.length > 0) {
           setPlayers(loadedPlayers);
         }
       } catch (error) {
@@ -201,6 +214,17 @@ export default function Rankings() {
     ? getArchetypePillStyle(selectedArchetypeOption.archetype).color
     : undefined;
 
+  const overallCategoryByProfile: Record<
+    RankingStatProfile,
+    PlayerRatingCategory
+  > = {
+    career: "careerOverall",
+    peak: "peakOverall",
+    current: "currentOverall",
+  };
+
+  const selectedOverallCategory = overallCategoryByProfile[statProfileFilter];
+
   const selectedArchetypePlayers = useMemo(
     () =>
       archetypeFilter
@@ -212,11 +236,17 @@ export default function Rankings() {
             )
             .sort(
               (a, b) =>
-                getPlayerRating(b, "careerOverall", statProfileFilter) -
-                getPlayerRating(a, "careerOverall", statProfileFilter),
+                getPlayerRating(b, selectedOverallCategory, statProfileFilter) -
+                getPlayerRating(a, selectedOverallCategory, statProfileFilter),
             )
         : [],
-    [archetypeFilter, players, statMode, statProfileFilter],
+    [
+      archetypeFilter,
+      players,
+      selectedOverallCategory,
+      statMode,
+      statProfileFilter,
+    ],
   );
 
   const selectedArchetypeInfo =
@@ -227,20 +257,11 @@ export default function Rankings() {
       : undefined;
 
   // Ranking data
-  const overallCategoryByProfile: Record<
-    RankingStatProfile,
-    PlayerRatingCategory
-  > = {
-    career: "careerOverall",
-    peak: "peakOverall",
-    current: "currentOverall",
-  };
-
   const ratingCategory: PlayerRatingCategory =
     activeTab === "archetypes"
       ? "careerOverall"
       : activeTab === "careerOverall"
-        ? overallCategoryByProfile[statProfileFilter]
+        ? selectedOverallCategory
         : activeTab;
 
   const filteredPlayers = useMemo(
@@ -305,17 +326,49 @@ export default function Rankings() {
   const activeTabLabel =
     rankingTabs.find((tab) => tab.value === activeTab)?.label ?? "Overall";
 
+  const selectedStatProfileLabel =
+    statProfileFilter === "career"
+      ? "Career"
+      : statProfileFilter === "peak"
+        ? "Peak"
+        : "Current";
+
   const rankingHeading =
     activeTab === "careerOverall"
-      ? "Top Overall Players"
+      ? `Top ${selectedStatProfileLabel} Overall Players`
       : `Top ${activeTabLabel} Ratings`;
 
-  const ratingLabel = `${activeTabLabel} Rating`;
+  const ratingLabel =
+    activeTab === "careerOverall"
+      ? `${selectedStatProfileLabel} Overall Rating`
+      : `${activeTabLabel} Rating`;
 
   // Event handlers
   function viewPlayerCard(playerName: string) {
     router.push(`/players/${encodeURIComponent(playerName)}`);
   }
+
+  function loadMoreRankings() {
+    setRankingDisplayLimit((currentLimit) =>
+      Math.min(currentLimit + rankingLoadMoreAmount, rankedPlayers.length),
+    );
+  }
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setRankingDisplayLimit(RANKING_BASE_DISPLAY_LIMIT);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [
+    activeTab,
+    archetypeFilter,
+    deferredPlayerSearch,
+    positionFilter,
+    ratingCategory,
+    statProfileFilter,
+    teamFilter,
+  ]);
 
   useEffect(() => {
     if (!shouldScrollToArchetypeDescription || !archetypeFilter) return;
@@ -497,6 +550,11 @@ export default function Rankings() {
                 ratingLabel={ratingLabel}
                 statProfileFilter={statProfileFilter}
                 displayView={displayView}
+                displayLimit={rankingDisplayLimit}
+                loadMoreAmount={rankingLoadMoreAmount}
+                onSelectDisplayLimit={setRankingDisplayLimit}
+                onSelectLoadMoreAmount={setRankingLoadMoreAmount}
+                onLoadMore={loadMoreRankings}
                 onViewPlayer={viewPlayerCard}
               />
             </>

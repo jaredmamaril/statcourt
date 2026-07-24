@@ -279,6 +279,9 @@ export type PlayerStats = {
   fgPercent: number;
   threePercent: number;
   ftPercent: number;
+  threeMadePerGame?: number | null;
+  threeAttemptsPerGame?: number | null;
+  freeThrowAttemptsPerGame?: number | null;
 };
 
 export type PlayerRatings = {
@@ -302,6 +305,9 @@ export type PlayerStatProfile = {
   fgPercent?: number | null;
   threePercent?: number | null;
   ftPercent?: number | null;
+  threeMadePerGame?: number | null;
+  threeAttemptsPerGame?: number | null;
+  freeThrowAttemptsPerGame?: number | null;
 };
 
 export type PlayerStatProfiles = Partial<
@@ -677,6 +683,13 @@ function getStatsByMode(player: Player, statMode: StatMode): PlayerStats {
     fgPercent: profile?.fgPercent ?? player.stats.fgPercent,
     threePercent: profile?.threePercent ?? player.stats.threePercent,
     ftPercent: profile?.ftPercent ?? player.stats.ftPercent,
+    threeMadePerGame:
+      profile?.threeMadePerGame ?? player.stats.threeMadePerGame,
+    threeAttemptsPerGame:
+      profile?.threeAttemptsPerGame ?? player.stats.threeAttemptsPerGame,
+    freeThrowAttemptsPerGame:
+      profile?.freeThrowAttemptsPerGame ??
+      player.stats.freeThrowAttemptsPerGame,
   };
 }
 
@@ -755,7 +768,7 @@ export function getPlayerInsights(
     stats.apg >= 4 &&
     player.ratings.defense >= 82;
 
-  const isCraftScoringGuard =
+  const isCraftyScoringGuard =
     isGuard && stats.ppg >= 16 && stats.apg >= 4 && stats.fgPercent >= 46;
 
   const isThreeLevelScorer =
@@ -1017,9 +1030,9 @@ export function getPlayerInsights(
       "blue",
       "Versatile forward who links scoring, passing, rebounding, and defense.",
     );
-  if (isCraftScoringGuard)
+  if (isCraftyScoringGuard)
     addInsight(
-      "Craft Scoring Guard",
+      "Crafty Scoring Guard",
       0.87,
       "core",
       "blue",

@@ -52,7 +52,42 @@ export type SupabasePlayerStatProfileRow = {
   fg_percent: number | null;
   three_percent: number | null;
   ft_percent: number | null;
+  three_made_per_game: number | null;
+  three_attempts_per_game: number | null;
+  free_throw_attempts_per_game: number | null;
 };
+
+function toNumber(value: number | string | null | undefined, fallback = 0) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const number = Number(value);
+
+    return Number.isFinite(number) ? number : fallback;
+  }
+
+  return fallback;
+}
+
+function toNullableNumber(value: number | string | null | undefined) {
+  if (value == null) {
+    return null;
+  }
+
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const number = Number(value);
+
+    return Number.isFinite(number) ? number : null;
+  }
+
+  return null;
+}
 
 export async function getSupabasePlayers() {
   const pageSize = 1000;
@@ -105,21 +140,21 @@ export function mapSupabasePlayerToPlayer(
     position: row.position as Position,
     jerseyNumber: row.jersey_number,
     ratings: {
-      defense: row.defense_rating ?? 70,
-      starPower: row.star_power ?? 40,
-      careerLegacy: row.career_legacy ?? 30,
+      defense: toNumber(row.defense_rating, 70),
+      starPower: toNumber(row.star_power, 40),
+      careerLegacy: toNumber(row.career_legacy, 30),
     },
     statProfiles,
     stats: {
       games: row.games ?? 0,
-      ppg: row.ppg ?? 0,
-      rpg: row.rpg ?? 0,
-      apg: row.apg ?? 0,
-      spg: row.spg ?? 0,
-      bpg: row.bpg ?? 0,
-      fgPercent: row.fg_percent ?? 0,
-      threePercent: row.three_percent ?? 0,
-      ftPercent: row.ft_percent ?? 0,
+      ppg: toNumber(row.ppg),
+      rpg: toNumber(row.rpg),
+      apg: toNumber(row.apg),
+      spg: toNumber(row.spg),
+      bpg: toNumber(row.bpg),
+      fgPercent: toNumber(row.fg_percent),
+      threePercent: toNumber(row.three_percent),
+      ftPercent: toNumber(row.ft_percent),
     },
   };
 }
@@ -131,24 +166,25 @@ function mapSupabaseProfileToPlayerProfile(
     profileType: row.profile_type,
     seasonLabel: row.season_label,
     games: row.games,
-    minutesPerGame: row.minutes_per_game,
-    ppg: row.ppg,
-    rpg: row.rpg,
-    apg: row.apg,
-    spg: row.spg,
-    bpg: row.bpg,
-    fgPercent: row.fg_percent,
-    threePercent: row.three_percent,
-    ftPercent: row.ft_percent,
+    minutesPerGame: toNullableNumber(row.minutes_per_game),
+    ppg: toNullableNumber(row.ppg),
+    rpg: toNullableNumber(row.rpg),
+    apg: toNullableNumber(row.apg),
+    spg: toNullableNumber(row.spg),
+    bpg: toNullableNumber(row.bpg),
+    fgPercent: toNullableNumber(row.fg_percent),
+    threePercent: toNullableNumber(row.three_percent),
+    ftPercent: toNullableNumber(row.ft_percent),
+    threeMadePerGame: toNullableNumber(row.three_made_per_game),
+    threeAttemptsPerGame: toNullableNumber(row.three_attempts_per_game),
+    freeThrowAttemptsPerGame: toNullableNumber(row.free_throw_attempts_per_game),
   };
 }
 
 export async function getPlayersFromSupabaseWithFallback(): Promise<Player[]> {
   try {
     const rows = await getSupabasePlayers();
-    const profileMap = await getSupabasePlayerProfiles(
-      rows.map((row) => row.id),
-    );
+    const profileMap = await getSupabasePlayerProfiles(rows);
 
     const mappedPlayers = rows.map((row) =>
       mapSupabasePlayerToPlayer(row, profileMap.get(row.id)),
@@ -160,8 +196,10 @@ export async function getPlayersFromSupabaseWithFallback(): Promise<Player[]> {
   }
 }
 
-async function getSupabasePlayerProfiles(playerIds: number[]) {
+async function getSupabasePlayerProfiles(players: SupabasePlayerRow[]) {
   const profilesByPlayerId = new Map<number, Player["statProfiles"]>();
+
+  const playerIds = players.map((player) => player.id);
 
   if (playerIds.length === 0) {
     return profilesByPlayerId;
@@ -175,7 +213,7 @@ async function getSupabasePlayerProfiles(playerIds: number[]) {
     const { data, error } = await supabase
       .from("player_stat_profiles")
       .select(
-        "player_id, nba_id, profile_type, season_label, games, minutes_per_game, ppg, rpg, apg, spg, bpg, fg_percent, three_percent, ft_percent",
+        "player_id, nba_id, profile_type, season_label, games, minutes_per_game, ppg, rpg, apg, spg, bpg, fg_percent, three_percent, ft_percent, three_made_per_game, three_attempts_per_game, free_throw_attempts_per_game",
       )
       .in("player_id", batchIds);
 
@@ -190,6 +228,58 @@ async function getSupabasePlayerProfiles(playerIds: number[]) {
         mapSupabaseProfileToPlayerProfile(row);
 
       profilesByPlayerId.set(row.player_id, currentProfiles);
+    }
+  }
+
+  const playersMissingProfiles = players.filter(
+    (player) =>
+      player.nba_id != null && !profilesByPlayerId.has(player.id),
+  );
+
+  for (
+    let start = 0;
+    start < playersMissingProfiles.length;
+    start += batchSize
+  ) {
+    const batchPlayers = playersMissingProfiles.slice(start, start + batchSize);
+    const batchNbaIds = batchPlayers
+      .map((player) => player.nba_id)
+      .filter((nbaId): nbaId is number => nbaId != null);
+
+    if (batchNbaIds.length === 0) {
+      continue;
+    }
+
+    const { data, error } = await supabase
+      .from("player_stat_profiles")
+      .select(
+        "player_id, nba_id, profile_type, season_label, games, minutes_per_game, ppg, rpg, apg, spg, bpg, fg_percent, three_percent, ft_percent, three_made_per_game, three_attempts_per_game, free_throw_attempts_per_game",
+      )
+      .in("nba_id", batchNbaIds);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const playerIdByNbaId = new Map(
+      batchPlayers
+        .filter((player) => player.nba_id != null)
+        .map((player) => [player.nba_id, player.id]),
+    );
+
+    for (const row of (data ?? []) as SupabasePlayerStatProfileRow[]) {
+      const playerId = playerIdByNbaId.get(row.nba_id);
+
+      if (playerId == null) {
+        continue;
+      }
+
+      const currentProfiles = profilesByPlayerId.get(playerId) ?? {};
+
+      currentProfiles[row.profile_type] =
+        mapSupabaseProfileToPlayerProfile(row);
+
+      profilesByPlayerId.set(playerId, currentProfiles);
     }
   }
 

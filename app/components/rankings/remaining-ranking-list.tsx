@@ -11,12 +11,20 @@ import { getArchetypePillStyle } from "./ranking-style-helpers";
 import { RankingPlayerTooltip } from "./ranking-player-tooltip";
 import type { DefaultPlayerView } from "../../lib/use-user-settings";
 
+const RANKING_DISPLAY_OPTIONS = [50, 100, 200];
+const RANKING_LOAD_MORE_OPTIONS = [25, 50, 100];
+
 type RemainingRankingListProps = {
   players: Player[];
   ratingCategory: PlayerRatingCategory;
   ratingLabel: string;
   statProfileFilter: PlayerStatProfileMode;
   displayView: DefaultPlayerView;
+  displayLimit: number;
+  loadMoreAmount: number;
+  onSelectDisplayLimit: (limit: number) => void;
+  onSelectLoadMoreAmount: (amount: number) => void;
+  onLoadMore: () => void;
   onViewPlayer: (playerName: string) => void;
 };
 
@@ -26,14 +34,21 @@ export function RemainingRankingList({
   ratingLabel,
   statProfileFilter,
   displayView,
+  displayLimit,
+  loadMoreAmount,
+  onSelectDisplayLimit,
+  onSelectLoadMoreAmount,
+  onLoadMore,
   onViewPlayer,
 }: RemainingRankingListProps) {
-  const DISPLAY_LIMIT = 100;
   const isCardView = displayView === "cards";
+  const remainingPlayers = players.slice(3, displayLimit);
+  const hasMorePlayers =
+    remainingPlayers.length < Math.max(players.length - 3, 0);
 
   return (
     <>
-      <div className="mb-2 flex items-center justify-between px-2 font-michroma text-[8px] uppercase tracking-wide text-white/40 sm:px-3 sm:text-[9px]">
+      <div className="mb-1.5 flex items-center justify-between px-1.5 font-michroma text-[6px] uppercase tracking-wide text-white/40 lg:mb-2 lg:px-3 lg:text-[9px]">
         <span className="-ml-2">Remaining Rankings</span>
         <span className="-mr-2">Rating</span>
       </div>
@@ -41,11 +56,11 @@ export function RemainingRankingList({
       <div
         className={
           isCardView
-            ? "grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4"
-            : "grid grid-cols-1 gap-2 lg:grid-cols-2"
+            ? "grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-4 lg:gap-2"
+            : "grid grid-cols-1 gap-1.5 lg:grid-cols-2 lg:gap-2"
         }
       >
-        {players.slice(3, DISPLAY_LIMIT).map((player, index) => {
+        {remainingPlayers.map((player, index) => {
           const archetype = getPlayerInsights(
             player,
             statProfileFilter,
@@ -86,6 +101,62 @@ export function RemainingRankingList({
           );
         })}
       </div>
+
+      {players.length > 3 && (
+        <div className="mt-2 rounded-md border border-white/10 bg-black/20 p-1.5 font-michroma lg:mt-3 lg:p-3">
+          <div className="flex flex-col gap-1.5 lg:flex-row lg:items-center lg:justify-between lg:gap-2">
+            <p className="text-center text-[5.5px] uppercase text-white/35 lg:text-left lg:text-[9px]">
+              Showing {remainingPlayers.length} of {players.length - 3}{" "}
+              remaining
+            </p>
+
+            <div className="flex flex-wrap items-center justify-center gap-1.5 lg:gap-2">
+              <label className="flex items-center gap-1 text-[5px] uppercase text-white/35 lg:gap-1.5 lg:text-[8px]">
+                Display
+                <select
+                  value={displayLimit}
+                  onChange={(event) =>
+                    onSelectDisplayLimit(Number(event.target.value))
+                  }
+                  className="h-6 rounded border border-white/15 bg-[#06131d] px-1.5 text-[6px] text-white outline-none transition focus:border-[#1bc2ec] lg:h-8 lg:px-2 lg:text-[9px]"
+                >
+                  {RANKING_DISPLAY_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="flex items-center gap-1 text-[5px] uppercase text-white/35 lg:gap-1.5 lg:text-[8px]">
+                Load
+                <select
+                  value={loadMoreAmount}
+                  onChange={(event) =>
+                    onSelectLoadMoreAmount(Number(event.target.value))
+                  }
+                  className="h-6 rounded border border-white/15 bg-[#06131d] px-1.5 text-[6px] text-white outline-none transition focus:border-[#1bc2ec] lg:h-8 lg:px-2 lg:text-[9px]"
+                >
+                  {RANKING_LOAD_MORE_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      +{option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <button
+                type="button"
+                onClick={onLoadMore}
+                disabled={!hasMorePlayers}
+                className="h-6 rounded border border-[#1bc2ec]/45 bg-[#1bc2ec]/10 px-2 text-[6px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:h-8 lg:px-3 lg:text-[9px]"
+              >
+                {hasMorePlayers ? "Load More" : "All Shown"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
@@ -119,9 +190,9 @@ function RankingPlayerRow({
     <div
       tabIndex={0}
       style={{ animationDelay: `${animationDelay}ms` }}
-      className="group relative grid w-full grid-cols-[32px_38px_minmax(0,1fr)_42px] items-center gap-1.5 rounded-md border border-white/10 bg-black/30 px-2 py-1 transition-all duration-200 animate-[playerListRowIn_180ms_ease-out_both] outline-none hover:z-200 hover:border-[#1bc2ec]/50 hover:bg-[#1bc2ec]/10 focus:z-200 focus:border-[#1bc2ec]/50 focus:bg-[#1bc2ec]/10 sm:grid-cols-[44px_64px_minmax(0,1fr)_48px_56px] sm:gap-2 sm:px-3 sm:py-2"
+      className="group relative grid w-full grid-cols-[26px_30px_minmax(0,1fr)_36px] items-center gap-1 rounded-md border border-white/10 bg-black/30 px-1.5 py-1 transition-all duration-200 animate-[playerListRowIn_180ms_ease-out_both] outline-none hover:z-200 hover:border-[#1bc2ec]/50 hover:bg-[#1bc2ec]/10 focus:z-200 focus:border-[#1bc2ec]/50 focus:bg-[#1bc2ec]/10 sm:grid-cols-[36px_48px_minmax(0,1fr)_42px_48px] sm:gap-1.5 sm:px-2 sm:py-1.5 lg:grid-cols-[44px_64px_minmax(0,1fr)_48px_56px] lg:gap-2 lg:px-3 lg:py-2"
     >
-      <span className="font-michroma text-[11px] font-bold text-[#1bc2ec] sm:text-xs">
+      <span className="font-michroma text-[9px] font-bold text-[#1bc2ec] sm:text-[10px] lg:text-xs">
         #{rank}
       </span>
 
@@ -130,17 +201,17 @@ function RankingPlayerRow({
         alt={player.name}
         width={120}
         height={120}
-        className="h-9.5 w-9.5 rounded-md object-cover sm:h-16 sm:w-16"
+        className="h-7.5 w-7.5 rounded-md object-cover sm:h-12 sm:w-12 lg:h-16 lg:w-16"
       />
 
-      <div className="min-w-0 pt-1 sm:pt-0">
-        <p className="truncate font-michroma text-[10px] font-semibold text-white sm:text-[13px]">
+      <div className="min-w-0 pt-0 sm:pt-0">
+        <p className="truncate font-michroma text-[8px] font-semibold text-white sm:text-[11px] lg:text-[13px]">
           {player.name}
         </p>
 
         {archetype && (
           <span
-            className="inline-flex max-w-18 rounded border px-1 py-1 font-michroma text-[5.5px] leading-none sm:max-w-full sm:px-2 sm:text-[9px]"
+            className="inline-flex rounded border px-1.5 py-0.5 font-michroma text-[5.3px] leading-none max-w-32 sm:text-[7px] lg:max-w-full lg:px-2 lg:py-1 lg:text-[9px]"
             style={getArchetypePillStyle(archetype)}
           >
             <span className="truncate uppercase">{archetype.label}</span>
@@ -148,19 +219,19 @@ function RankingPlayerRow({
         )}
 
         <p
-          className="font-michroma text-[7px] font-semibold sm:hidden"
+          className="font-michroma text-[6px] font-semibold sm:hidden"
           style={{ color: teamColor }}
         >
           {player.team}
         </p>
 
-        <p className="mt-0.5 font-michroma text-[7px] text-white/40 sm:text-[9px]">
+        <p className="mt-0.5 font-michroma text-[6px] text-white/40 sm:text-[7px] lg:text-[9px]">
           {player.position} - #{player.jerseyNumber}
         </p>
       </div>
 
       <span
-        className="hidden text-right font-michroma text-[11px] font-semibold sm:block"
+        className="hidden text-right font-michroma text-[9px] font-semibold sm:block lg:text-[11px]"
         style={{
           color: teamColor,
         }}
@@ -168,7 +239,7 @@ function RankingPlayerRow({
         {player.team}
       </span>
 
-      <span className="justify-self-end text-right font-michroma text-[11px] font-bold text-white sm:text-xs">
+      <span className="justify-self-end text-right font-michroma text-[9px] font-bold text-white sm:text-[10px] lg:text-xs">
         {rating}
       </span>
 
@@ -198,9 +269,9 @@ function RankingPlayerCard({
     <div
       tabIndex={0}
       style={{ animationDelay: `${animationDelay}ms` }}
-      className="group relative flex min-h-44 flex-col rounded-md border border-white/10 bg-black/30 px-2 py-2 text-center transition-all duration-200 animate-[playerListRowIn_180ms_ease-out_both] outline-none hover:z-200 hover:-translate-y-0.5 hover:border-[#1bc2ec]/50 hover:bg-[#1bc2ec]/10 focus:z-200 focus:border-[#1bc2ec]/50 focus:bg-[#1bc2ec]/10"
+      className="group relative flex min-h-36 flex-col rounded-md border border-white/10 bg-black/30 px-1.5 py-1.5 text-center transition-all duration-200 animate-[playerListRowIn_180ms_ease-out_both] outline-none hover:z-200 hover:-translate-y-0.5 hover:border-[#1bc2ec]/50 hover:bg-[#1bc2ec]/10 focus:z-200 focus:border-[#1bc2ec]/50 focus:bg-[#1bc2ec]/10 lg:min-h-44 lg:px-2 lg:py-2"
     >
-      <div className="flex items-center justify-between font-michroma text-[10px]">
+      <div className="flex items-center justify-between font-michroma text-[8px] lg:text-[10px]">
         <span className="font-bold text-[#1bc2ec]">#{rank}</span>
         <span className="font-bold text-white">{rating}</span>
       </div>
@@ -210,15 +281,15 @@ function RankingPlayerCard({
         alt={player.name}
         width={120}
         height={120}
-        className="mx-auto mt-2 h-18 w-18 rounded-md object-cover"
+        className="mx-auto mt-1.5 h-14 w-14 rounded-md object-cover lg:mt-2 lg:h-18 lg:w-18"
       />
 
-      <p className="mt-2 line-clamp-2 font-michroma text-[10px] font-semibold leading-tight text-white">
+      <p className="mt-1.5 line-clamp-2 font-michroma text-[8px] font-semibold leading-tight text-white lg:mt-2 lg:text-[10px]">
         {player.name}
       </p>
 
       <p
-        className="mt-1 font-michroma text-[8px] font-semibold"
+        className="mt-1 font-michroma text-[6px] font-semibold lg:text-[8px]"
         style={{ color: teamColor }}
       >
         {player.team} · {player.position}
@@ -226,7 +297,7 @@ function RankingPlayerCard({
 
       {archetype && (
         <span
-          className="mx-auto mt-2 inline-flex max-w-full rounded border px-1.5 py-1 font-michroma lg:text-[9px] text-[6px] leading-none"
+          className="mx-auto mt-1.5 inline-flex max-w-full rounded border px-1 py-0.5 font-michroma text-[5px] leading-none lg:mt-2 lg:px-1.5 lg:py-1 lg:text-[9px]"
           style={getArchetypePillStyle(archetype)}
         >
           <span className="truncate uppercase">{archetype.label}</span>

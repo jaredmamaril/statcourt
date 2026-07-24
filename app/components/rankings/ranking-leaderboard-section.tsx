@@ -4,6 +4,7 @@ import type { Player, Team, Position } from "../court-data";
 import { RankingFilterBar } from "./ranking-filter-bar";
 import { TopRankingCards } from "./top-ranking-cards";
 import type { DefaultPlayerView } from "../../lib/use-user-settings";
+import { RankingRatingFormulaTooltip } from "./ranking-rating-formula-tooltip";
 
 type ArchetypeOptionDetail = {
   label: string;
@@ -71,9 +72,16 @@ export function RankingLeaderboardSection({
 }: RankingLeaderboardSectionProps) {
   return (
     <>
-      <h1 className="text-center font-michroma text-[17px] uppercase tracking-wide text-white sm:text-xl lg:text-2xl">
-        {rankingHeading}
-      </h1>
+      <div className="flex items-center justify-center gap-2">
+        <h1 className="text-center font-michroma text-[17px] uppercase tracking-wide text-white sm:text-xl lg:text-2xl">
+          {rankingHeading}
+        </h1>
+
+        <RankingRatingFormulaTooltip
+          ratingCategory={ratingCategory}
+          statProfileFilter={statProfileFilter}
+        />
+      </div>
 
       <RankingFilterBar
         openFilter={openFilter}

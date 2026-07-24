@@ -153,6 +153,103 @@ function hasEnoughSample(
   return hasEnoughGames && hasEnoughMinutes;
 }
 
+function hasRealShootingProfile(
+  stats: {
+    games?: number | null;
+    minutesPerGame?: number | null;
+    ppg?: number | null;
+    threePercent?: number | null;
+    ftPercent?: number | null;
+    threeAttemptsPerGame?: number | null;
+  },
+  statProfileMode: PlayerStatProfileMode,
+) {
+  const minimums = getProfileMinimums(statProfileMode);
+  const hasSample = hasEnoughSample(
+    stats,
+    minimums.shootingGames,
+    minimums.minutesPerGame,
+  );
+
+  if (!hasSample) return false;
+
+  const threePercent = safeNumber(stats.threePercent, 0);
+  const ftPercent = safeNumber(stats.ftPercent, 0);
+  const threeAttemptsPerGame = stats.threeAttemptsPerGame;
+
+  if (threeAttemptsPerGame == null) {
+    return false;
+  }
+
+  const minimumThreeAttempts =
+    statProfileMode === "career" ? 1.5 : statProfileMode === "peak" ? 3 : 3.5;
+
+  return (
+    safeNumber(threeAttemptsPerGame, 0) >= minimumThreeAttempts &&
+    threePercent >= 32 &&
+    ftPercent >= 65
+  );
+}
+
+function hasRealEfficiencyProfile(
+  stats: {
+    games?: number | null;
+    minutesPerGame?: number | null;
+    ppg?: number | null;
+    fgPercent?: number | null;
+    ftPercent?: number | null;
+  },
+  statProfileMode: PlayerStatProfileMode,
+) {
+  const minimums = getProfileMinimums(statProfileMode);
+  const hasSample = hasEnoughSample(
+    stats,
+    minimums.efficiencyGames,
+    minimums.minutesPerGame,
+  );
+
+  if (!hasSample) return false;
+
+  const minimumPpg =
+    statProfileMode === "career" ? 8 : statProfileMode === "peak" ? 10 : 10;
+
+  return (
+    safeNumber(stats.ppg, 0) >= minimumPpg &&
+    safeNumber(stats.fgPercent, 0) >= 42 &&
+    safeNumber(stats.ftPercent, 0) >= 50
+  );
+}
+
+function hasStableShootingHistory(
+  player: Player,
+  activeStats: {
+    ppg?: number | null;
+    threePercent?: number | null;
+    ftPercent?: number | null;
+  },
+) {
+  const careerStats = player.statProfiles?.career ?? player.stats;
+  const careerThreePercent = safeNumber(careerStats.threePercent, 0);
+  const careerFtPercent = safeNumber(careerStats.ftPercent, 0);
+  const activePpg = safeNumber(activeStats.ppg, 0);
+  const activeThreePercent = safeNumber(activeStats.threePercent, 0);
+  const activeFtPercent = safeNumber(activeStats.ftPercent, 0);
+
+  if (careerThreePercent >= 34 && careerFtPercent >= 72) {
+    return true;
+  }
+
+  if (
+    careerThreePercent >= 32 &&
+    careerFtPercent >= 78 &&
+    activeThreePercent >= 36
+  ) {
+    return true;
+  }
+
+  return activePpg >= 18 && activeThreePercent >= 36 && activeFtPercent >= 78;
+}
+
 export function getPlayerRating(
   player: Player,
   category: PlayerRatingCategory = "careerOverall",
@@ -176,36 +273,62 @@ export function getPlayerRating(
     safeNumber(activeStats.fgPercent, 0),
     statMaxValues.fgPercent,
   );
-  const threeScore = normalizeStat(
+  const shootingThreePercent = Math.min(
     safeNumber(activeStats.threePercent, 0),
+    45,
+  );
+  const shootingFtPercent = Math.min(safeNumber(activeStats.ftPercent, 0), 92);
+  const threeAttemptsPerGame = safeNumber(activeStats.threeAttemptsPerGame, 0);
+  const threeAttemptsScore = normalizeStat(threeAttemptsPerGame, 10);
+  const hasMeaningfulThreeVolume =
+    activeStats.threeAttemptsPerGame != null &&
+    threeAttemptsPerGame >=
+      (statProfileMode === "career" ? 1.5 : statProfileMode === "peak" ? 2.5 : 3);
+  const lowVolumePenalty =
+    activeStats.threeAttemptsPerGame != null
+      ? Math.max(0, 4 - threeAttemptsPerGame) * 5
+      : 0;
+  const threeScore = normalizeStat(
+    shootingThreePercent,
     statMaxValues.threePercent,
   );
   const ftScore = normalizeStat(
-    safeNumber(activeStats.ftPercent, 0),
+    shootingFtPercent,
     statMaxValues.ftPercent,
   );
 
   const scoringScore = ppgScore;
-  const shootingScore = threeScore * 0.7 + ftScore * 0.3;
+  const shootingScore =
+    activeStats.threeAttemptsPerGame != null
+      ? threeScore * 0.45 +
+        ftScore * 0.15 +
+        threeAttemptsScore * 0.4 -
+        lowVolumePenalty
+      : threeScore * 0.7 + ftScore * 0.3;
   const playmakingScore = apgScore;
   const reboundingScore = rpgScore;
-  const efficiencyScore = fgScore * 0.5 + threeScore * 0.25 + ftScore * 0.25;
+  const efficiencyThreeScore = hasMeaningfulThreeVolume ? threeScore : 0;
+  const efficiencyScoringScore = normalizeStat(
+    safeNumber(activeStats.ppg, 0),
+    28,
+  );
+  const efficiencyScore =
+    fgScore * 0.4 +
+    ftScore * 0.2 +
+    efficiencyThreeScore * 0.2 +
+    efficiencyScoringScore * 0.2;
   const defenseScore = safeNumber(player.ratings.defense, 70);
   const starPowerScore = safeNumber(player.ratings.starPower, 40);
   const careerLegacyScore = safeNumber(player.ratings.careerLegacy, 30);
 
-  const minimums = getProfileMinimums(statProfileMode);
-
-  const qualifiesForShootingRating = hasEnoughSample(
+  const qualifiesForShootingRating = hasRealShootingProfile(
     activeStats,
-    minimums.shootingGames,
-    minimums.minutesPerGame,
-  );
+    statProfileMode,
+  ) && hasStableShootingHistory(player, activeStats);
 
-  const qualifiesForEfficiencyRating = hasEnoughSample(
+  const qualifiesForEfficiencyRating = hasRealEfficiencyProfile(
     activeStats,
-    minimums.efficiencyGames,
-    minimums.minutesPerGame,
+    statProfileMode,
   );
 
   if (category === "scoring") return toCategoryRating(scoringScore);
@@ -233,6 +356,24 @@ export function getPlayerRating(
     });
 
     return Number.isFinite(peakOverall) ? Number(peakOverall.toFixed(1)) : 55;
+  }
+
+  if (category === "currentOverall") {
+    const currentOverallScore =
+      scoringScore * 0.22 +
+      defenseScore * 0.17 +
+      playmakingScore * 0.14 +
+      efficiencyScore * 0.13 +
+      shootingScore * 0.1 +
+      reboundingScore * 0.08 +
+      starPowerScore * 0.12 +
+      careerLegacyScore * 0.04;
+
+    const currentOverall = toOverallRating(currentOverallScore);
+
+    return Number.isFinite(currentOverall)
+      ? Number(currentOverall.toFixed(1))
+      : 55;
   }
 
   const starCategories = [

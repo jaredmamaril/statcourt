@@ -98,7 +98,7 @@ export function PlayerFilters({
         <span>☆</span>
         Favorites
         {favoritesCount > 0 && (
-          <span className="ml-0.5 text-[9px] opacity-70 sm:text-[10px]">
+          <span className="ml-0.5 text-[7px] opacity-70 sm:text-[10px]">
             ({favoritesCount})
           </span>
         )}

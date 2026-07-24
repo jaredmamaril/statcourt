@@ -69,7 +69,7 @@ export function TopRankingCards({
 
                 {archetype && (
                   <span
-                    className="mt-1 inline-flex max-w-19 rounded border px-1 py-1 font-michroma text-[5px] leading-none lg:max-w-full lg:px-2 lg:text-[8px]"
+                    className="mt-1 inline-flex max-w-17 rounded border px-1 py-1 font-michroma text-[5px] leading-none lg:max-w-full lg:px-2 lg:text-[8px]"
                     style={getArchetypePillStyle(archetype)}
                   >
                     <span className="truncate uppercase">

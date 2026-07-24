@@ -22,6 +22,7 @@ NBAStatsHTTP.get_session = lambda self: session
 ONLY_IMPORT = set()
 IMPORT_LIMIT = 1000
 START_AFTER = ""
+REFRESH_EXISTING = False
 #$env:PYTHONIOENCODING="utf-8"
 #python -u scripts/import-player-season-stats.py > scripts/player-season-stats-output.txt
 
@@ -214,7 +215,7 @@ def get_players_to_import():
 
         return response.data
 
-    existing_nba_ids = get_existing_nba_ids(supabase)
+    existing_nba_ids = set() if REFRESH_EXISTING else get_existing_nba_ids(supabase)
 
     rows_to_import = []
     page_size = 1000
@@ -351,6 +352,9 @@ def get_player_season_rows(player):
                 "fg_percent": safe_percent(fgm, fga),
                 "three_percent": safe_percent(fg3m, fg3a),
                 "ft_percent": safe_percent(ftm, fta),
+                "three_made_per_game": safe_per_game(fg3m, games),
+                "three_attempts_per_game": safe_per_game(fg3a, games),
+                "free_throw_attempts_per_game": safe_per_game(fta, games),
             }
         )
 
