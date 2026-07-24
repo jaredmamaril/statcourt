@@ -18,7 +18,11 @@ type BuilderDraftBoardProps = {
   selectedLineupCount: number;
   playerRevealMode: PlayerRevealMode;
   onHoverPlayer: (playerName: string) => void;
-  onSelectDraftPlayer: (playerName: string) => void;
+  onSelectDraftPlayer: (
+    playerName: string,
+    position: LineupSlot,
+    isSelected: boolean,
+  ) => void;
   onRemovePlayer: (position: LineupSlot) => void;
   onScoutLineup: () => void;
 };
@@ -32,7 +36,11 @@ type BuilderDraftSlotProps = {
   hoveredBuildPlayer: string;
   activeDraftPlayerName: string;
   onHoverPlayer: (playerName: string) => void;
-  onSelectDraftPlayer: (playerName: string) => void;
+  onSelectDraftPlayer: (
+    playerName: string,
+    position: LineupSlot,
+    isSelected: boolean,
+  ) => void;
   onRemovePlayer: (position: LineupSlot) => void;
 };
 
@@ -69,10 +77,11 @@ function BuilderDraftSlot({
       playerName,
     },
   });
+  const isActiveDraftPlayer = Boolean(
+    player && player.name === activeDraftPlayerName,
+  );
   const isHighlighted =
-    player &&
-    (player.name === hoveredBuildPlayer ||
-      player.name === activeDraftPlayerName);
+    player && (player.name === hoveredBuildPlayer || isActiveDraftPlayer);
 
   function setNodeRef(node: HTMLDivElement | null) {
     setDroppableNodeRef(node);
@@ -82,6 +91,7 @@ function BuilderDraftSlot({
   return (
     <div
       ref={setNodeRef}
+      data-builder-draft-slot="true"
       key={`${position}-${playerName || "empty"}`}
       style={{
         animationDelay: getPlayerRevealDelay(playerRevealMode, positionIndex),
@@ -91,7 +101,7 @@ function BuilderDraftSlot({
       onClick={() => {
         if (!player) return;
 
-        onSelectDraftPlayer(player.name);
+        onSelectDraftPlayer(player.name, position, isActiveDraftPlayer);
       }}
       onMouseEnter={() => {
         if (player) {
@@ -136,7 +146,7 @@ function BuilderDraftSlot({
             event.stopPropagation();
             onRemovePlayer(position);
             onHoverPlayer("");
-            onSelectDraftPlayer("");
+            onSelectDraftPlayer("", position, false);
           }}
           className="font-michroma text-[9px] text-white/40 transition hover:text-red-400 lg:text-xs"
         >

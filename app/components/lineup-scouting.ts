@@ -6,7 +6,9 @@
 } from "./court-data";
 import {
   getBuilderPlayerRatingForPosition,
+  getPositionFit,
   type BuilderStatProfileMode,
+  type PositionFit,
 } from "../components/lineups/builder/builder-position-helpers";
 
 export type TeamGrades = {
@@ -52,6 +54,13 @@ function getStatsByMode(
     fgPercent: profile?.fgPercent ?? player.stats.fgPercent,
     threePercent: profile?.threePercent ?? player.stats.threePercent,
     ftPercent: profile?.ftPercent ?? player.stats.ftPercent,
+    threeMadePerGame:
+      profile?.threeMadePerGame ?? player.stats.threeMadePerGame,
+    threeAttemptsPerGame:
+      profile?.threeAttemptsPerGame ?? player.stats.threeAttemptsPerGame,
+    freeThrowAttemptsPerGame:
+      profile?.freeThrowAttemptsPerGame ??
+      player.stats.freeThrowAttemptsPerGame,
   };
 }
 
@@ -164,7 +173,7 @@ export function getLineupTierColor(tier: string) {
   if (tier === "Championship Favorite") return "#EFBF04";
   if (tier === "Championship Contender") return "#1bc2ec";
   if (tier === "Playoff Caliber") return "#FFFFFF";
-  if (tier === "Developmental Lineup") return "#94A3B8";
+  if (tier === "Specialist Build") return "#94A3B8";
 
   return "#94A3B8";
 }
@@ -519,6 +528,118 @@ export function clampScore(score: number) {
   return Math.max(0, Math.min(100, score));
 }
 
+function getLineupConstructionAdjustment(
+  selectedSlots: {
+    position: LineupSlot;
+    player: Player;
+  }[],
+  selectedPlayerStats: PlayerStats[],
+  statProfileMode: BuilderStatProfileMode,
+) {
+  if (selectedSlots.length < 5) {
+    return 0;
+  }
+
+  const fitCounts: Record<PositionFit, number> = {
+    natural: 0,
+    flex: 0,
+    reach: 0,
+    mismatch: 0,
+  };
+
+  const fitsBySlot = new Map<LineupSlot, PositionFit>();
+
+  selectedSlots.forEach((slot) => {
+    const fit = getPositionFit(slot.player, slot.position, statProfileMode);
+
+    fitCounts[fit] += 1;
+    fitsBySlot.set(slot.position, fit);
+  });
+
+  const shooters = selectedPlayerStats.filter(
+    (stats) =>
+      (stats.threePercent ?? 0) >= 36 &&
+      (stats.threeAttemptsPerGame ?? 0) >= 2,
+  ).length;
+
+  const creators = selectedPlayerStats.filter(
+    (stats) => (stats.apg ?? 0) >= 5,
+  ).length;
+
+  const rimAnchors = selectedSlots.filter((slot, index) => {
+    const stats = selectedPlayerStats[index];
+
+    return (
+      (slot.position === "PF" || slot.position === "C") &&
+      (stats.rpg ?? 0) >= 8 &&
+      (slot.player.ratings.defense >= 78 || (stats.bpg ?? 0) >= 0.7)
+    );
+  }).length;
+
+  const highUsageCreators = selectedPlayerStats.filter(
+    (stats) => (stats.ppg ?? 0) >= 24 && (stats.apg ?? 0) >= 5,
+  ).length;
+
+  let adjustment = 0;
+
+  if (fitCounts.natural === 0) {
+    adjustment -= 4;
+  } else if (fitCounts.natural <= 1) {
+    adjustment -= 2;
+  }
+
+  if (fitCounts.reach + fitCounts.mismatch >= 3) {
+    adjustment -= 3;
+  }
+
+  if (fitCounts.mismatch >= 2) {
+    adjustment -= 3;
+  }
+
+  const centerFit = fitsBySlot.get("C");
+
+  if (centerFit === "reach") {
+    adjustment -= 1.5;
+  } else if (centerFit === "mismatch") {
+    adjustment -= 3;
+  }
+
+  const backcourtFits = [fitsBySlot.get("PG"), fitsBySlot.get("SG")];
+  const unstableBackcourt = backcourtFits.every(
+    (fit) => fit === "reach" || fit === "mismatch",
+  );
+
+  if (unstableBackcourt) {
+    adjustment -= 2;
+  }
+
+  if (shooters < 2) {
+    adjustment -= 1.5;
+  }
+
+  if (creators === 0) {
+    adjustment -= 2;
+  }
+
+  if (rimAnchors === 0 && centerFit !== "natural" && centerFit !== "flex") {
+    adjustment -= 2;
+  }
+
+  if (highUsageCreators >= 4 && shooters < 3) {
+    adjustment -= 1.5;
+  }
+
+  if (fitCounts.natural >= 3 && fitCounts.mismatch === 0) {
+    adjustment += 1.5;
+  }
+
+  if (creators >= 2 && shooters >= 2 && rimAnchors >= 1) {
+    adjustment += 1;
+  }
+
+  return Math.max(-12, Math.min(3, adjustment));
+}
+
 export function getLineupScoutReport(
   selectedSlots: {
     position: LineupSlot;
@@ -639,6 +760,13 @@ export function getLineupScoutReport(
 
   const traditionalCenters = selectedSlots.filter(
     (slot) => slot.position === "C" && slot.player.position === "C",
+  ).length;
+
+  const trueBigs = selectedPlayerStats.filter(
+    (stats, index) =>
+      selectedPlayers[index].position === "C" ||
+      (selectedPlayers[index].heightInches ?? 0) >= 82 ||
+      ((stats.rpg ?? 0) >= 8 && (stats.bpg ?? 0) >= 0.7),
   ).length;
 
   const passablePlayers = selectedPlayerStats.filter(
@@ -780,7 +908,14 @@ export function getLineupScoutReport(
     adjustedReboundingScore * 0.18 +
     starPower * 0.12;
 
-  const lineupCeiling = adjustedOverall * 0.6 + teamCategoryAverage * 0.4;
+  const constructionAdjustment = getLineupConstructionAdjustment(
+    selectedSlots,
+    selectedPlayerStats,
+    statProfileMode,
+  );
+
+  const lineupCeiling =
+    adjustedOverall * 0.6 + teamCategoryAverage * 0.4 + constructionAdjustment;
 
   const finalOverall = Number(clampScore(lineupCeiling).toFixed(1));
 
@@ -834,6 +969,8 @@ export function getLineupScoutReport(
       ? "Versatility"
       : null,
 
+    constructionAdjustment >= 1 ? "Lineup Cohesion" : null,
+
     adjustedOverall >= 92 ? "Leadership" : null,
   ]
     .filter((strength): strength is string => Boolean(strength))
@@ -857,14 +994,20 @@ export function getLineupScoutReport(
       : null,
 
     selectedPlayers.length < 5 ? "Bench Creation" : null,
+
+    constructionAdjustment <= -4 ? "Position Fit" : null,
   ].filter((weakness): weakness is string => Boolean(weakness));
 
   const weakestScore = getRankedScoutScores(scores)
     .filter((score) => score.key !== "starPower")
     .at(-1);
 
+  const hasClearTradeoff = weakestScore ? weakestScore.value < 72 : false;
+
   const tradeoff =
-    weakestScore?.key === "shooting"
+    !hasClearTradeoff
+      ? "No major tradeoff."
+      : weakestScore?.key === "shooting"
       ? "This lineup sacrifices spacing for size, rebounding, and interior control."
       : weakestScore?.key === "playmaking"
         ? "This lineup leans more on individual talent than constant table-setting."
@@ -883,7 +1026,7 @@ export function getLineupScoutReport(
         ? "Championship Contender"
         : finalOverall >= 86
           ? "Playoff Caliber"
-          : "Developmental Lineup";
+          : "Specialist Build";
 
   let archetype = "Balanced Core";
 
@@ -1055,7 +1198,7 @@ export function getLineupScoutReport(
     versatileForwards >= 2 && elitePassers >= 2 ? "Positionless Core" : null,
     passablePlayers >= 5 ? "Positionless" : null,
     eliteBigs >= 2 ? "Twin Towers" : null,
-    traditionalCenters === 0 ? "Small Ball" : null,
+    trueBigs <= 1 ? "Small Ball" : null,
     eliteShooters >= 4 ? "Floor Spacing" : null,
     eliteDefenders >= 3 ? "Defensive Wall" : null,
   ].filter((badge): badge is string => Boolean(badge));

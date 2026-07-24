@@ -238,6 +238,18 @@ export function BuilderWorkspace({
   const pinnedPickerPlayerName =
     visibleActiveDraftPlayerName || customLineup[activeBuildPosition];
 
+  function handleWorkspacePointerDown(event: React.PointerEvent) {
+    if (!activeDraftPlayerName) return;
+
+    const target = event.target as HTMLElement;
+
+    if (target.closest("[data-builder-draft-slot='true']")) {
+      return;
+    }
+
+    setActiveDraftPlayerName("");
+  }
+
   function handleDragStart(event: DragStartEvent) {
     const activeData = event.active.data.current as
       | {
@@ -291,7 +303,10 @@ export function BuilderWorkspace({
       onDragEnd={handleDragEnd}
       onDragCancel={() => setDragPreviewLabel("")}
     >
-      <div className="mt-3 animate-[pageEnter_220ms_ease-out_both]">
+      <div
+        onPointerDownCapture={handleWorkspacePointerDown}
+        className="mt-3 animate-[pageEnter_220ms_ease-out_both]"
+      >
         <div className="grid grid-cols-[minmax(0,1fr)_122px] items-start gap-1 lg:grid-cols-[400px_300px_1fr] lg:gap-5">
           <div className="min-w-0">
             <div className="mb-3 flex flex-col items-center justify-center gap-1 lg:mb-2 lg:flex-row lg:gap-2">
@@ -381,10 +396,9 @@ export function BuilderWorkspace({
             selectedLineupCount={selectedLineupCount}
             playerRevealMode={playerRevealMode}
             onHoverPlayer={setHoveredBuildPlayer}
-            onSelectDraftPlayer={(playerName) => {
-              setActiveDraftPlayerName((currentPlayerName) =>
-                currentPlayerName === playerName ? "" : playerName,
-              );
+            onSelectDraftPlayer={(playerName, position, isSelected) => {
+              onSelectPosition(position);
+              setActiveDraftPlayerName(isSelected ? "" : playerName);
             }}
             onRemovePlayer={onRemovePlayer}
             onScoutLineup={onScoutLineup}
