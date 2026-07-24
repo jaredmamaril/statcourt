@@ -73,6 +73,34 @@ const archetypeRarityRank = {
 const PLAYER_LIST_DISPLAY_OPTIONS = [50, 100, 200];
 const PLAYER_LIST_LOAD_MORE_OPTIONS = [25, 50, 100];
 
+function getFeaturedPlayerScore(player: Player) {
+  const careerOverall = getPlayerRating(player, "careerOverall");
+  const starPower = getPlayerRating(player, "starPower");
+  const careerLegacy = player.ratings.careerLegacy ?? 0;
+  const games = player.stats.games ?? 0;
+  const sampleScore = Math.min(games / 900, 1) * 100;
+
+  return (
+    careerOverall * 0.42 +
+    starPower * 0.28 +
+    careerLegacy * 0.2 +
+    sampleScore * 0.1
+  );
+}
+
+function isFeaturedPlayerEligible(player: Player) {
+  const careerOverall = getPlayerRating(player, "careerOverall");
+  const starPower = getPlayerRating(player, "starPower");
+  const careerLegacy = player.ratings.careerLegacy ?? 0;
+  const games = player.stats.games ?? 0;
+
+  const hasStrongProfile =
+    careerOverall >= 84 || starPower >= 86 || careerLegacy >= 70;
+  const hasEnoughSample = games >= 350 || starPower >= 90 || careerLegacy >= 80;
+
+  return hasStrongProfile && hasEnoughSample;
+}
+
 export default function PlayersPage() {
   return (
     <Suspense fallback={null}>
@@ -374,13 +402,14 @@ function Players() {
 
   // Get random featured player from notable players only
   const featuredPlayerPool = useMemo(() => {
-    const notablePlayers = players.filter(
-      (player) =>
-        getPlayerRating(player, "careerOverall") >= 75 ||
-        getPlayerRating(player, "starPower") >= 75,
+    const rankedPlayers = [...players].sort(
+      (a, b) => getFeaturedPlayerScore(b) - getFeaturedPlayerScore(a),
     );
+    const notablePlayers = rankedPlayers
+      .filter(isFeaturedPlayerEligible)
+      .slice(0, 75);
 
-    return notablePlayers.length > 0 ? notablePlayers : players;
+    return notablePlayers.length > 0 ? notablePlayers : rankedPlayers.slice(0, 25);
   }, [players]);
 
   useEffect(() => {
