@@ -8,7 +8,7 @@ export const statcourtThemes = {
     panelAlt: "#071827",
     accent: "#1bc2ec",
     accentRgb: "27 194 236",
-    pattern: "/court-pattern.svg",
+    pattern: "/court-pattern-blue.svg",
   },
   arenaGold: {
     id: "arena-gold",
@@ -19,7 +19,7 @@ export const statcourtThemes = {
     panelAlt: "#201706",
     accent: "#f4b400",
     accentRgb: "244 180 0",
-    pattern: "/court-pattern.svg",
+    pattern: "/court-pattern-gold.svg",
   },
   neonViolet: {
     id: "neon-violet",
@@ -30,7 +30,7 @@ export const statcourtThemes = {
     panelAlt: "#330b45",
     accent: "#f472ff",
     accentRgb: "244 114 255",
-    pattern: "/court-pattern.svg",
+    pattern: "/court-pattern-violet.svg",
   },
 } as const;
 

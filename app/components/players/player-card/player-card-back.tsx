@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { getReadableTeamColor, type Player } from "../../court-data";
 
 type PlayerCardBackProps = {
@@ -24,14 +23,10 @@ export function PlayerCardBack({
         borderColor: teamColor,
       }}
     >
-      <div className="absolute -inset-1 z-0 opacity-50">
-        <Image
-          src="/court-pattern.svg"
-          alt="Court background"
-          fill
-          className="object-cover"
-        />
-      </div>
+      <div
+        className="absolute -inset-1 z-0 bg-cover bg-center opacity-50"
+        style={{ backgroundImage: "var(--court-pattern)" }}
+      />
 
       {children}
     </div>

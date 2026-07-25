@@ -56,14 +56,10 @@ export function PlayerCardFront({
         />
       </svg>
 
-      <div className="absolute -inset-20 z-10 rotate-90 opacity-50 lg:-inset-30">
-        <Image
-          src="/court.svg"
-          alt="Court background"
-          fill
-          className="object-contain"
-        />
-      </div>
+      <div
+        className="absolute -inset-20 z-10 rotate-90 bg-contain bg-center bg-no-repeat opacity-50 lg:-inset-30"
+        style={{ backgroundImage: "var(--court-pattern)" }}
+      />
 
       <div
         className="absolute top-13 right-9 z-30 lg:top-18 lg:right-14"

@@ -151,7 +151,7 @@ export default function PublicProfilePage() {
       <div
         className="pointer-events-none fixed inset-0 opacity-[0.28]"
         style={{
-          backgroundImage: "url('/court-pattern.svg')",
+          backgroundImage: "var(--court-pattern)",
           backgroundPosition: "top left",
           backgroundSize: "900px auto",
         }}

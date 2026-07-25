@@ -7,7 +7,7 @@
   --court-panel-alt: #071827;
   --court-accent: #1bc2ec;
   --court-accent-rgb: 27 194 236;
-  --court-pattern: url("/court-pattern.svg");
+  --court-pattern: url("/court-pattern-blue.svg");
 }
 
 html[data-statcourt-theme="court-dark"] {
@@ -17,7 +17,7 @@ html[data-statcourt-theme="court-dark"] {
   --court-panel-alt: #071827;
   --court-accent: #1bc2ec;
   --court-accent-rgb: 27 194 236;
-  --court-pattern: url("/court-pattern.svg");
+  --court-pattern: url("/court-pattern-blue.svg");
 }
 
 html[data-statcourt-theme="arena-gold"] {
@@ -27,7 +27,7 @@ html[data-statcourt-theme="arena-gold"] {
   --court-panel-alt: #201706;
   --court-accent: #f4b400;
   --court-accent-rgb: 244 180 0;
-  --court-pattern: url("/court-pattern.svg");
+  --court-pattern: url("/court-pattern-gold.svg");
 }
 
 html[data-statcourt-theme="neon-violet"] {
@@ -37,7 +37,7 @@ html[data-statcourt-theme="neon-violet"] {
   --court-panel-alt: #330b45;
   --court-accent: #f472ff;
   --court-accent-rgb: 244 114 255;
-  --court-pattern: url("/court-pattern.svg");
+  --court-pattern: url("/court-pattern-violet.svg");
 }
 
 @theme inline {
