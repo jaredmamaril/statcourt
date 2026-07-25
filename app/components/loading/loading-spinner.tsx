@@ -6,7 +6,7 @@ export function LoadingSpinner({ className = "" }: LoadingSpinnerProps) {
   return (
     <div
       aria-hidden="true"
-      className={`statcourt-loading-spinner mx-auto rounded-full border border-[#1bc2ec]/20 border-t-[#1bc2ec] animate-spin ${className}`}
+      className={`statcourt-loading-spinner mx-auto animate-spin rounded-full border border-[rgb(var(--court-accent-rgb)/0.2)] border-t-[var(--court-accent)] ${className}`}
     />
   );
 }

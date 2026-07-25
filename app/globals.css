@@ -3,6 +3,41 @@
 :root {
   --background: #08111f;
   --foreground: #f8fafc;
+  --court-panel: #06131d;
+  --court-panel-alt: #071827;
+  --court-accent: #1bc2ec;
+  --court-accent-rgb: 27 194 236;
+  --court-pattern: url("/court-pattern.svg");
+}
+
+html[data-statcourt-theme="court-dark"] {
+  --background: #08111f;
+  --foreground: #f8fafc;
+  --court-panel: #06131d;
+  --court-panel-alt: #071827;
+  --court-accent: #1bc2ec;
+  --court-accent-rgb: 27 194 236;
+  --court-pattern: url("/court-pattern.svg");
+}
+
+html[data-statcourt-theme="arena-gold"] {
+  --background: #100d07;
+  --foreground: #fff7ed;
+  --court-panel: #171106;
+  --court-panel-alt: #201706;
+  --court-accent: #f4b400;
+  --court-accent-rgb: 244 180 0;
+  --court-pattern: url("/court-pattern.svg");
+}
+
+html[data-statcourt-theme="neon-violet"] {
+  --background: #17051f;
+  --foreground: #fff7ff;
+  --court-panel: #21072d;
+  --court-panel-alt: #330b45;
+  --court-accent: #f472ff;
+  --court-accent-rgb: 244 114 255;
+  --court-pattern: url("/court-pattern.svg");
 }
 
 @theme inline {
@@ -281,7 +316,7 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   background-color: var(--background);
-  background-image: url("/court-pattern.svg");
+  background-image: var(--court-pattern);
   background-attachment: fixed;
   background-position: top left;
   background-repeat: repeat;
@@ -333,7 +368,7 @@ html.statcourt-reduced-motion {
 /* Dropdowns/Lists */
 .statcourt-scroll {
   scrollbar-width: thin;
-  scrollbar-color: rgba(27, 194, 236, 0.45) rgba(255, 255, 255, 0.08);
+  scrollbar-color: rgb(var(--court-accent-rgb) / 0.45) rgba(255, 255, 255, 0.08);
 }
 
 .statcourt-scroll::-webkit-scrollbar {
@@ -347,10 +382,10 @@ html.statcourt-reduced-motion {
 }
 
 .statcourt-scroll::-webkit-scrollbar-thumb {
-  background: rgba(27, 194, 236, 0.45);
+  background: rgb(var(--court-accent-rgb) / 0.45);
   border-radius: 999px;
 }
 
 .statcourt-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(27, 194, 236, 0.75);
+  background: rgb(var(--court-accent-rgb) / 0.75);
 }

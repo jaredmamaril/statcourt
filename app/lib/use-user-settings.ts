@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../components/supabase-client";
 import { useAuthUser } from "./use-auth-user";
+import {
+  defaultStatCourtTheme,
+  isStatCourtThemeId,
+  type StatCourtThemeId,
+} from "./themes";
 
 export type DefaultStatMode = "career" | "peak" | "current";
 export type DefaultPlayerView = "cards" | "list";
@@ -13,6 +18,7 @@ export type UserSettings = {
   defaultPlayerView: DefaultPlayerView;
   defaultCompareMode: DefaultCompareMode;
   reducedMotion: boolean;
+  theme: StatCourtThemeId;
 };
 
 type UserSettingsRow = {
@@ -20,6 +26,7 @@ type UserSettingsRow = {
   default_player_view: DefaultPlayerView | null;
   default_compare_mode: DefaultCompareMode | null;
   reduced_motion: boolean | null;
+  theme: string | null;
 };
 
 export const defaultUserSettings: UserSettings = {
@@ -27,6 +34,7 @@ export const defaultUserSettings: UserSettings = {
   defaultPlayerView: "cards",
   defaultCompareMode: "career_playstyle",
   reducedMotion: false,
+  theme: defaultStatCourtTheme.id,
 };
 
 export const userSettingsChangedEvent = "statcourt:user-settings-changed";
@@ -50,6 +58,10 @@ function rowToSettings(row: UserSettingsRow | null): UserSettings {
     defaultCompareMode:
       row.default_compare_mode ?? defaultUserSettings.defaultCompareMode,
     reducedMotion: row.reduced_motion ?? defaultUserSettings.reducedMotion,
+    theme:
+      row.theme && isStatCourtThemeId(row.theme)
+        ? row.theme
+        : defaultUserSettings.theme,
   };
 }
 
@@ -92,7 +104,7 @@ export function useUserSettings() {
       const { data, error } = await supabase
         .from("user_settings")
         .select(
-          "default_stat_mode, default_player_view, default_compare_mode, reduced_motion",
+          "default_stat_mode, default_player_view, default_compare_mode, reduced_motion, theme",
         )
         .eq("user_id", user.id)
         .maybeSingle();

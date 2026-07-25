@@ -18,7 +18,7 @@ export const ArchetypeDescriptionPanel = forwardRef<
   ref,
 ) {
   if (!archetypeLabel) return null;
-  const archetypeColor = selectedArchetypeColor ?? "#1bc2ec";
+  const archetypeColor = selectedArchetypeColor ?? "var(--court-accent)";
 
   return (
     <div
@@ -84,7 +84,7 @@ export const ArchetypeDescriptionPanel = forwardRef<
 
               <div className="h-0.5 w-full rounded bg-white/10">
                 <div
-                  className="h-full rounded bg-[#1bc2ec]"
+                  className="h-full rounded bg-[var(--court-accent)]"
                   style={{
                     width: `${Number(value) * 10}%`,
                   }}
@@ -97,3 +97,4 @@ export const ArchetypeDescriptionPanel = forwardRef<
     </div>
   );
 });
+

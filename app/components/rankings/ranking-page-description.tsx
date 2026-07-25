@@ -18,3 +18,4 @@ export function RankingPageDescription({
     </p>
   );
 }
+

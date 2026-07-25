@@ -13,7 +13,7 @@ export function ArchetypeHeader() {
           Rarity
         </button>
 
-        <div className="pointer-events-none absolute left-1/2 top-full z-100 mt-2 w-46 -translate-x-1/2 rounded-md border border-[#1bc2ec]/40 bg-black/95 p-2.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 lg:left-0 lg:w-56 lg:translate-x-0 lg:p-3">
+        <div className="pointer-events-none absolute left-1/2 top-full z-100 mt-2 w-46 -translate-x-1/2 rounded-md border border-[rgb(var(--court-accent-rgb)/0.4)] bg-black/95 p-2.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 lg:left-0 lg:w-56 lg:translate-x-0 lg:p-3">
           <p className="font-michroma text-[8px] text-[#EFBF04]">
             Gold - Generational
           </p>
@@ -37,3 +37,4 @@ export function ArchetypeHeader() {
     </div>
   );
 }
+

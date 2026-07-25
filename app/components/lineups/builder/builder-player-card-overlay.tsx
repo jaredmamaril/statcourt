@@ -29,7 +29,7 @@ export function BuilderPlayerCardOverlay({
       }`}
     >
       <div className="min-h-0 flex-1">
-        <p className="text-center font-michroma text-[5px] uppercase text-[#1bc2ec] lg:text-[8px]">
+        <p className="text-center font-michroma text-[5px] uppercase text-[var(--court-accent)] lg:text-[8px]">
           Scout Impact
         </p>
 
@@ -45,7 +45,7 @@ export function BuilderPlayerCardOverlay({
 
               <div className="h-0.5 overflow-hidden rounded-full bg-white/10 lg:ml-1 lg:h-1">
                 <div
-                  className="h-full rounded-full bg-[#1bc2ec]"
+                  className="h-full rounded-full bg-[var(--court-accent)]"
                   style={{
                     width: `${Math.min(stat.value, 100)}%`,
                   }}
@@ -67,7 +67,7 @@ export function BuilderPlayerCardOverlay({
           event.stopPropagation();
           onPickPlayer();
         }}
-        className="mt-1 rounded border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-1 py-0.5 font-michroma text-[5px] uppercase text-[#1bc2ec] lg:hidden"
+        className="mt-1 rounded border border-[rgb(var(--court-accent-rgb)/0.7)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-1 py-0.5 font-michroma text-[5px] uppercase text-[var(--court-accent)] lg:hidden"
       >
         Draft
       </button>
@@ -87,7 +87,7 @@ export function BuilderPlayerCardOverlay({
           <p className="font-michroma text-[7px] uppercase text-white/35">
             Slot
           </p>
-          <p className="font-michroma text-[10px] text-[#1bc2ec]">
+          <p className="font-michroma text-[10px] text-[var(--court-accent)]">
             {positionRating.toFixed(1)}
           </p>
         </div>

@@ -88,7 +88,7 @@ export function SelectedPlayerCard({
 
         <Link
           href={`/players/${encodeURIComponent(player.name)}`}
-          className="rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/16 px-2.5 py-1.5 font-michroma text-[7px] uppercase text-[#1bc2ec] shadow-[0_0_14px_rgba(27,194,236,0.16)] transition hover:scale-[1.03] hover:bg-[#1bc2ec]/24 sm:px-3 sm:text-[8px]"
+          className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.7)] bg-[rgb(var(--court-accent-rgb)/0.16)] px-2.5 py-1.5 font-michroma text-[7px] uppercase text-[var(--court-accent)] shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.16)] transition hover:scale-[1.03] hover:bg-[rgb(var(--court-accent-rgb)/0.24)] sm:px-3 sm:text-[8px]"
         >
           Full Profile
         </Link>
@@ -133,12 +133,12 @@ export function SelectedPlayerCard({
                   </p>
                 </div>
 
-                <div className="rounded-md border border-[#1bc2ec]/30 bg-[#1bc2ec]/10 px-1.5 py-1 text-center sm:px-2">
+                <div className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.3)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-1.5 py-1 text-center sm:px-2">
                   <p className="text-[6px] uppercase text-white/45 sm:text-[7px]">
                     Star Power
                   </p>
 
-                  <p className="text-[11px] leading-tight text-[#1bc2ec] sm:text-sm">
+                  <p className="text-[11px] leading-tight text-[var(--court-accent)] sm:text-sm">
                     {starPower.toFixed(0)}
                   </p>
 

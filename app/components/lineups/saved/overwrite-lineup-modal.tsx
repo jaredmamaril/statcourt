@@ -21,7 +21,7 @@ export function OverwriteLineupModal({
 }: OverwriteLineupModalProps) {
   return (
     <div className="fixed inset-0 z-1000 flex animate-[modalBackdropIn_120ms_ease-out_both] items-center justify-center bg-black/65 px-3">
-      <div className="w-full max-w-75 animate-[cardFaceIn_140ms_ease-out_both] rounded-md border border-[#f4bb44]/50 bg-[#07111f] p-4 text-center shadow-lg lg:max-w-md lg:p-6">
+      <div className="w-full max-w-75 animate-[cardFaceIn_140ms_ease-out_both] rounded-md border border-[#f4bb44]/50 bg-[var(--court-panel-alt)] p-4 text-center shadow-lg lg:max-w-md lg:p-6">
         <p className="font-michroma text-sm text-white lg:text-lg">
           Overwrite Lineup?
         </p>
@@ -39,7 +39,9 @@ export function OverwriteLineupModal({
 
           <div>
             <p className="text-white/30">New</p>
-            <p className="mt-1 text-[#1bc2ec]">{nextProfileLabel}</p>
+            <p className="mt-1 text-[var(--court-accent)]">
+              {nextProfileLabel}
+            </p>
           </div>
         </div>
 

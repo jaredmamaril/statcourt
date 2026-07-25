@@ -39,7 +39,7 @@ export function ScoutBottomSummary({
           <p className="font-michroma text-[7px] lg:text-[10px] uppercase text-white/40">
             Similar To
           </p>
-          <p className="font-michroma text-[9px] lg:text-xs text-[#1bc2ec]">
+          <p className="font-michroma text-[9px] text-[var(--court-accent)] lg:text-xs">
             {similarLineup}
           </p>
           <p className="font-michroma text-[6.5px] lg:text-[8px] leading-relaxed text-white/35">

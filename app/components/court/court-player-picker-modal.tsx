@@ -39,10 +39,10 @@ export function CourtPlayerPickerModal({
         className="absolute inset-0 cursor-default"
       />
 
-      <div className="relative z-10 flex max-h-[90vh] w-full max-w-4xl flex-col rounded-xl border border-[#1bc2ec]/35 bg-[#06131d]/95 p-4 shadow-[0_0_44px_rgba(27,194,236,0.22)] animate-[courtPickerModalIn_180ms_ease-out_both] sm:p-5">
+      <div className="relative z-10 flex max-h-[90vh] w-full max-w-4xl flex-col rounded-xl border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[color:color-mix(in_srgb,var(--court-panel)_95%,transparent)] p-4 shadow-[0_0_44px_rgb(var(--court-accent-rgb)/0.22)] animate-[courtPickerModalIn_180ms_ease-out_both] sm:p-5">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="font-michroma text-[8px] uppercase tracking-wide text-[#1bc2ec] sm:text-[9px]">
+            <p className="font-michroma text-[8px] uppercase tracking-wide text-[var(--court-accent)] sm:text-[9px]">
               Choose Your Player
             </p>
 
@@ -66,7 +66,7 @@ export function CourtPlayerPickerModal({
           onChange={(event) => setSearch(event.target.value)}
           disabled={isLoadingPlayers}
           placeholder="Search player..."
-          className="mt-4 w-full rounded-md border border-white/15 bg-black/35 px-3 py-2.5 font-michroma text-xs text-white outline-none transition placeholder:text-white/25 focus:border-[#1bc2ec]/70 focus:bg-black/50 disabled:cursor-wait disabled:border-white/10 disabled:text-white/25 sm:mt-5 sm:px-4 sm:py-3 sm:text-sm"
+          className="mt-4 w-full rounded-md border border-white/15 bg-black/35 px-3 py-2.5 font-michroma text-xs text-white outline-none transition placeholder:text-white/25 focus:border-[rgb(var(--court-accent-rgb)/0.7)] focus:bg-black/50 disabled:cursor-wait disabled:border-white/10 disabled:text-white/25 sm:mt-5 sm:px-4 sm:py-3 sm:text-sm"
         />
 
         {playerLoadError && (
@@ -77,8 +77,8 @@ export function CourtPlayerPickerModal({
 
         <div className="statcourt-scroll mt-4 min-h-0 flex-1 overflow-y-auto pr-1 sm:pr-2">
           {isLoadingPlayers ? (
-            <div className="rounded-lg border border-[#1bc2ec]/25 bg-black/20 p-6 text-center sm:p-8">
-              <p className="font-michroma text-[8px] uppercase text-[#1bc2ec] sm:text-xs">
+            <div className="rounded-lg border border-[rgb(var(--court-accent-rgb)/0.25)] bg-black/20 p-6 text-center sm:p-8">
+              <p className="font-michroma text-[8px] uppercase text-[var(--court-accent)] sm:text-xs">
                 Loading Players
               </p>
               <p className="mt-2 font-michroma text-[6px] text-white/35 sm:text-[8px]">
@@ -97,7 +97,7 @@ export function CourtPlayerPickerModal({
                     key={player.id}
                     type="button"
                     onClick={() => onSelectPlayer(player.name)}
-                    className="flex min-w-0 items-center gap-2 rounded-lg border border-white/10 bg-black/25 p-2.5 text-left transition hover:border-[#1bc2ec]/50 hover:bg-[#071827] hover:shadow-[0_0_18px_rgba(27,194,236,0.12)] active:scale-[0.99] sm:gap-3 sm:p-3"
+                    className="flex min-w-0 items-center gap-2 rounded-lg border border-white/10 bg-black/25 p-2.5 text-left transition hover:border-[rgb(var(--court-accent-rgb)/0.5)] hover:bg-[var(--court-panel-alt)] hover:shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.12)] active:scale-[0.99] sm:gap-3 sm:p-3"
                   >
                     <div
                       className="h-12 w-12 shrink-0 overflow-hidden rounded-md border bg-black/30 sm:h-14 sm:w-14"

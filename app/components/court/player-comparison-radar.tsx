@@ -33,8 +33,8 @@ export function PlayerComparisonRadar({
     const data = payload[0].payload as RadarStatRow;
 
     return (
-      <div className="rounded-md border border-[#347A99]/50 bg-[#07111f]/90 px-2.5 py-2 text-[10px] shadow-[0_0_14px_rgba(27,194,236,0.12)] sm:px-3 sm:py-2.5 sm:text-xs">
-        <p className="font-michroma text-xs font-bold text-[#1bc2ec] sm:text-sm">
+      <div className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.5)] bg-[color:color-mix(in_srgb,var(--court-panel-alt)_90%,transparent)] px-2.5 py-2 text-[10px] shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.12)] sm:px-3 sm:py-2.5 sm:text-xs">
+        <p className="font-michroma text-xs font-bold text-[var(--court-accent)] sm:text-sm">
           {label}
         </p>
 

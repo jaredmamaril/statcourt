@@ -33,7 +33,7 @@ export function CourtComparisonHeader({
             onClick={() => onStatModeChange(option.value)}
             className={`rounded border px-2 py-0.5 font-michroma text-[6px] uppercase tracking-wide transition-all duration-200 sm:px-2.5 sm:py-1 sm:text-[7px] ${
               isActive
-                ? "scale-[1.04] border-[#1bc2ec]/55 bg-[#1bc2ec]/22 text-[#1bc2ec] shadow-[0_0_14px_rgba(27,194,236,0.28)]"
+                ? "scale-[1.04] border-[rgb(var(--court-accent-rgb)/0.55)] bg-[rgb(var(--court-accent-rgb)/0.22)] text-[var(--court-accent)] shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.28)]"
                 : "border-transparent text-white/35 hover:bg-white/5 hover:text-white/70"
             }`}
           >
@@ -46,8 +46,8 @@ export function CourtComparisonHeader({
 
   if (isLoadingPlayers || !leftPlayer || !rightPlayer) {
     return (
-      <div className="mx-auto w-full max-w-70 rounded-lg border border-[#1bc2ec]/25 bg-[#06131d]/82 px-3 py-2 text-center shadow-[0_0_18px_rgba(27,194,236,0.1)] sm:w-fit sm:max-w-none sm:px-4 sm:py-2.5">
-        <p className="font-michroma text-[8px] uppercase tracking-wide text-[#1bc2ec] sm:text-[10px]">
+      <div className="mx-auto w-full max-w-70 rounded-lg border border-[rgb(var(--court-accent-rgb)/0.25)] bg-[color:color-mix(in_srgb,var(--court-panel)_82%,transparent)] px-3 py-2 text-center shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.1)] sm:w-fit sm:max-w-none sm:px-4 sm:py-2.5">
+        <p className="font-michroma text-[8px] uppercase tracking-wide text-[var(--court-accent)] sm:text-[10px]">
           Court Comparison
         </p>
 
@@ -61,8 +61,8 @@ export function CourtComparisonHeader({
   }
 
   return (
-    <div className="mx-auto w-full max-w-70 rounded-lg border border-[#1bc2ec]/25 bg-[#06131d]/82 px-2 py-1.5 text-center shadow-[0_0_18px_rgba(27,194,236,0.1)] sm:w-fit sm:max-w-none sm:px-4 sm:py-2.5">
-      <p className="font-michroma text-[8px] uppercase tracking-wide text-[#1bc2ec] sm:text-[10px]">
+    <div className="mx-auto w-full max-w-70 rounded-lg border border-[rgb(var(--court-accent-rgb)/0.25)] bg-[color:color-mix(in_srgb,var(--court-panel)_82%,transparent)] px-2 py-1.5 text-center shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.1)] sm:w-fit sm:max-w-none sm:px-4 sm:py-2.5">
+      <p className="font-michroma text-[8px] uppercase tracking-wide text-[var(--court-accent)] sm:text-[10px]">
         Court Comparison
       </p>
 

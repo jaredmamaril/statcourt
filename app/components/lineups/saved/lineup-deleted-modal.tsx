@@ -5,7 +5,7 @@ type LineupDeletedModalProps = {
 export function LineupDeletedModal({ onClose }: LineupDeletedModalProps) {
   return (
     <div className="fixed inset-0 z-1000 flex animate-[modalBackdropIn_160ms_ease-out_both] items-center justify-center bg-black/70 px-3">
-      <div className="w-full max-w-[300px] animate-[modalIn_180ms_ease-out_both] rounded-md border border-red-500/60 bg-[#07111f] p-4 text-center shadow-[0_0_35px_rgba(239,68,68,0.25)] lg:max-w-sm lg:p-6">
+      <div className="w-full max-w-[300px] animate-[modalIn_180ms_ease-out_both] rounded-md border border-red-500/60 bg-[var(--court-panel-alt)] p-4 text-center shadow-[0_0_35px_rgba(239,68,68,0.25)] lg:max-w-sm lg:p-6">
         <p className="font-michroma text-sm text-red-400 lg:text-lg">
           Lineup Deleted
         </p>

@@ -30,7 +30,7 @@ export function LineupSavedModal({
 
   return (
     <div className="fixed inset-0 z-1000 flex animate-[modalBackdropIn_120ms_ease-out_both] items-center justify-center bg-black/65 px-3">
-      <div className="w-full max-w-[300px] animate-[cardFaceIn_140ms_ease-out_both] rounded-md border border-emerald-400/60 bg-[#07111f] p-4 text-center shadow-lg lg:max-w-md lg:p-6">
+      <div className="w-full max-w-[300px] animate-[cardFaceIn_140ms_ease-out_both] rounded-md border border-emerald-400/60 bg-[var(--court-panel-alt)] p-4 text-center shadow-lg lg:max-w-md lg:p-6">
         <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full border border-emerald-400/60 bg-emerald-400/10 font-michroma text-lg text-emerald-400 lg:h-12 lg:w-12 lg:text-2xl">
           &#10003;
         </div>
@@ -52,7 +52,7 @@ export function LineupSavedModal({
             type="button"
             onClick={viewSavedLineups}
             disabled={isOpeningSaved}
-            className="rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-3 py-2 font-michroma text-[8px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 disabled:cursor-wait disabled:border-[#1bc2ec]/35 disabled:text-[#1bc2ec]/45 lg:px-4 lg:py-3 lg:text-xs"
+            className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.7)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-3 py-2 font-michroma text-[8px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] disabled:cursor-wait disabled:border-[rgb(var(--court-accent-rgb)/0.35)] disabled:text-[rgb(var(--court-accent-rgb)/0.45)] lg:px-4 lg:py-3 lg:text-xs"
           >
             {isOpeningSaved ? "Opening" : "View Saved"}
           </button>

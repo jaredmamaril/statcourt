@@ -10,7 +10,7 @@ export function PlayerPageHeader({
   return (
     <>
       <div className="mb-2 flex flex-col items-center justify-between gap-1">
-        <h1 className="font-michroma text-lg sm:text-2xl font-bold tracking-wide text-[#1bc2ec]">
+        <h1 className="font-michroma text-lg font-bold tracking-wide text-[var(--court-accent)] sm:text-2xl">
           PICK A PLAYER
         </h1>
 
@@ -23,7 +23,7 @@ export function PlayerPageHeader({
           value={playerSearch}
           onChange={(e) => onPlayerSearchChange(e.target.value)}
           placeholder="Search player..."
-          className="mt-1 w-full max-w-65 rounded-md border border-white/30 bg-black/40 px-3 py-1.5 text-center font-michroma text-[10px] text-white/80 outline-none placeholder:text-white/35 focus:border-white sm:max-w-none sm:w-64 sm:px-4 sm:text-sm"
+          className="mt-1 w-full max-w-65 rounded-md border border-[rgb(var(--court-accent-rgb)/0.25)] bg-[color:color-mix(in_srgb,var(--court-panel)_72%,transparent)] px-3 py-1.5 text-center font-michroma text-[10px] text-white/80 outline-none transition placeholder:text-white/35 focus:border-[rgb(var(--court-accent-rgb)/0.75)] focus:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_78%,transparent)] sm:max-w-none sm:w-64 sm:px-4 sm:text-sm"
         />
       </div>
 

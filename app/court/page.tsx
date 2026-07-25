@@ -212,7 +212,7 @@ export default function Court() {
                   rightColor={
                     selectedRightPlayer
                       ? getTeamColor(selectedRightPlayer.team)
-                      : "#347A99"
+                      : "var(--court-accent)"
                   }
                 />
               </div>
@@ -221,7 +221,7 @@ export default function Court() {
                 <CourtPlayerPanel
                   side="right"
                   selectedPlayer={selectedRightPlayer}
-                  fallbackColor="#347A99"
+                  fallbackColor="var(--court-accent)"
                   selectedPlayerName={rightPlayer}
                   onOpenPicker={() => setActivePickerSide("right")}
                 />

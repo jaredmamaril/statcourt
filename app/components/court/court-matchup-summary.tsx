@@ -156,7 +156,7 @@ export function CourtMatchupSummary({
       : leftPlayer
     : null;
 
-  const leadColor = leadPlayer ? getTeamColor(leadPlayer.team) : "#1bc2ec";
+  const leadColor = leadPlayer ? getTeamColor(leadPlayer.team) : "var(--court-accent)";
   const supportColor = supportPlayer
     ? getTeamColor(supportPlayer.team)
     : "#94A3B8";
@@ -181,10 +181,10 @@ export function CourtMatchupSummary({
   return (
     <div
       key={`${leftPlayer.id}-${rightPlayer.id}-${statMode}`}
-      className="relative z-10 mx-auto mt-3 w-full max-w-5xl rounded-lg border border-[#1bc2ec]/25 bg-[#06131d]/88 p-3 shadow-[0_0_16px_rgba(27,194,236,0.1)] animate-[courtSummaryReveal_320ms_ease-out_both] sm:mt-4 sm:p-4"
+      className="relative z-10 mx-auto mt-3 w-full max-w-5xl rounded-lg border border-[rgb(var(--court-accent-rgb)/0.25)] bg-[color:color-mix(in_srgb,var(--court-panel)_88%,transparent)] p-3 shadow-[0_0_16px_rgb(var(--court-accent-rgb)/0.1)] animate-[courtSummaryReveal_320ms_ease-out_both] sm:mt-4 sm:p-4"
     >
       <div className="mb-2 flex items-start justify-between gap-3 sm:mb-3">
-        <p className="font-michroma text-[8px] uppercase tracking-wide text-[#1bc2ec] sm:text-[10px]">
+        <p className="font-michroma text-[8px] uppercase tracking-wide text-[var(--court-accent)] sm:text-[10px]">
           Matchup Summary
         </p>
 
@@ -199,12 +199,12 @@ export function CourtMatchupSummary({
 
       <div className="mt-2 grid gap-2 sm:mt-3 sm:grid-cols-2 sm:gap-3">
         {isBalancedMatchup ? (
-          <div className="flex h-full flex-col justify-center rounded-md border border-[#1bc2ec]/35 bg-black/20 p-2.5 text-center shadow-[0_0_12px_rgba(27,194,236,0.12)] sm:col-span-2 sm:p-3">
+          <div className="flex h-full flex-col justify-center rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-black/20 p-2.5 text-center shadow-[0_0_12px_rgb(var(--court-accent-rgb)/0.12)] sm:col-span-2 sm:p-3">
             <p className="font-michroma text-[7px] uppercase text-white/70 sm:text-[8px]">
               Balanced Matchup
             </p>
 
-            <p className="mt-1.5 font-michroma text-xs text-[#1bc2ec] sm:mt-2 sm:text-sm">
+            <p className="mt-1.5 font-michroma text-xs text-[var(--court-accent)] sm:mt-2 sm:text-sm">
               Split Profile
             </p>
           </div>

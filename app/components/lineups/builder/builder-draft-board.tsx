@@ -111,13 +111,13 @@ function BuilderDraftSlot({
       onMouseLeave={() => onHoverPlayer("")}
       className={`animate-[loadedPlayerReveal_360ms_ease-out_both] grid h-fit touch-none grid-cols-[15px_1fr_auto] items-center gap-0.5 rounded-md border px-1 py-2 transition lg:grid-cols-[44px_1fr_auto] lg:gap-2 lg:px-3 lg:py-2 ${
         isDragging
-          ? "border-[#1bc2ec]/90 bg-[#1bc2ec]/20 opacity-45 shadow-[0_0_18px_rgba(27,194,236,0.45)]"
+          ? "border-[rgb(var(--court-accent-rgb)/0.9)] bg-[rgb(var(--court-accent-rgb)/0.2)] opacity-45 shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.45)]"
           : isOver
-            ? "border-[#1bc2ec]/90 bg-[#1bc2ec]/20 shadow-[0_0_16px_rgba(27,194,236,0.35)]"
+            ? "border-[rgb(var(--court-accent-rgb)/0.9)] bg-[rgb(var(--court-accent-rgb)/0.2)] shadow-[0_0_16px_rgb(var(--court-accent-rgb)/0.35)]"
             : isHighlighted
-              ? "border-[#1bc2ec]/80 bg-[#1bc2ec]/15 shadow-[0_0_16px_rgba(27,194,236,0.35)]"
+              ? "border-[rgb(var(--court-accent-rgb)/0.8)] bg-[rgb(var(--court-accent-rgb)/0.15)] shadow-[0_0_16px_rgb(var(--court-accent-rgb)/0.35)]"
               : player
-                ? "border-emerald-400/50 bg-emerald-400/10 hover:border-[#1bc2ec]/70 hover:bg-[#1bc2ec]/10"
+                ? "border-emerald-400/50 bg-emerald-400/10 hover:border-[rgb(var(--court-accent-rgb)/0.7)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)]"
                 : "border-white/10 bg-black/20"
       }`}
     >
@@ -199,7 +199,7 @@ function BuilderDraftBoardComponent({
 
             <p
               key={averageLineupRating?.toFixed(1) ?? "--"}
-              className="animate-[ovrRise_250ms_ease-out] font-michroma text-[9px] text-[#1bc2ec] lg:text-xl"
+              className="animate-[ovrRise_250ms_ease-out] font-michroma text-[9px] text-[var(--court-accent)] lg:text-xl"
             >
               {averageLineupRating ? averageLineupRating.toFixed(1) : "--"}
             </p>
@@ -251,7 +251,7 @@ function BuilderDraftBoardComponent({
           onClick={onScoutLineup}
           className={`mx-auto rounded-md border px-1.5 py-1 font-michroma text-[5.5px] uppercase transition lg:px-8 lg:py-5 lg:text-[16px] ${
             isLineupComplete
-              ? "cursor-pointer border-[#1bc2ec]/70 bg-[#1bc2ec]/10 font-bold text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.35)] hover:bg-[#1bc2ec]/20"
+              ? "cursor-pointer border-[rgb(var(--court-accent-rgb)/0.7)] bg-[rgb(var(--court-accent-rgb)/0.1)] font-bold text-[var(--court-accent)] shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.35)] hover:bg-[rgb(var(--court-accent-rgb)/0.2)]"
               : "cursor-not-allowed border-white/10 bg-white/5 text-white/30"
           }`}
         >

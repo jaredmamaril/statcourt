@@ -158,7 +158,7 @@ export function PlayerCardSimilarPanel({
         </span>
 
         <Info
-          className="h-2.5 w-2.5 cursor-help text-[#1bc2ec]/50 transition group-hover/similarInfo:text-[#1bc2ec] sm:h-3 sm:w-3"
+          className="h-2.5 w-2.5 cursor-help text-[rgb(var(--court-accent-rgb)/0.5)] transition group-hover/similarInfo:text-[var(--court-accent)] sm:h-3 sm:w-3"
           onPointerDown={toggleSimilarInfoOnTouch}
           onClick={(event) => {
             event.stopPropagation();
@@ -218,7 +218,7 @@ export function PlayerCardSimilarPanel({
           </span>
 
           <Info
-            className="h-2.5 w-2.5 cursor-help text-[#1bc2ec]/50 transition group-hover/fitLegend:text-[#1bc2ec] sm:h-3 sm:w-3"
+            className="h-2.5 w-2.5 cursor-help text-[rgb(var(--court-accent-rgb)/0.5)] transition group-hover/fitLegend:text-[var(--court-accent)] sm:h-3 sm:w-3"
             onPointerDown={toggleLineupLegendOnTouch}
             onClick={(event) => {
               event.stopPropagation();
@@ -233,7 +233,7 @@ export function PlayerCardSimilarPanel({
             }`}
           >
             <p>
-              <span className="text-[#1bc2ec]">Cyan</span> - pace, passing, and
+              <span className="text-[var(--court-accent)]">Cyan</span> - pace, passing, and
               transition offense.
             </p>
             <p>

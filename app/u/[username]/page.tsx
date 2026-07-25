@@ -147,7 +147,7 @@ export default function PublicProfilePage() {
   const accountInitial = displayName.trim().charAt(0).toUpperCase() || "S";
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#07111f] px-4 py-6 text-white lg:px-8 lg:py-10">
+    <main className="relative min-h-screen overflow-hidden bg-[var(--court-panel-alt)] px-4 py-6 text-white lg:px-8 lg:py-10">
       <div
         className="pointer-events-none fixed inset-0 opacity-[0.28]"
         style={{
@@ -160,15 +160,15 @@ export default function PublicProfilePage() {
       <section className="relative z-10 mx-auto max-w-4xl">
         <Link
           href="/players"
-          className="inline-flex rounded-md border border-[#1bc2ec]/40 bg-[#1bc2ec]/10 px-3 py-2 font-michroma text-[8px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white lg:text-[10px]"
+          className="inline-flex rounded-md border border-[rgb(var(--court-accent-rgb)/0.4)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-3 py-2 font-michroma text-[8px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white lg:text-[10px]"
         >
           Browse Players
         </Link>
 
-        <div className="mt-5 rounded-lg border border-[#1bc2ec]/25 bg-[#06131d]/85 p-4 shadow-[0_0_26px_rgba(0,0,0,0.28)] lg:mt-8 lg:p-7">
+        <div className="mt-5 rounded-lg border border-[rgb(var(--court-accent-rgb)/0.25)] bg-[color:color-mix(in_srgb,var(--court-panel)_85%,transparent)] p-4 shadow-[0_0_26px_rgba(0,0,0,0.28)] lg:mt-8 lg:p-7">
           {isLoadingProfile ? (
             <div className="flex min-h-72 flex-col items-center justify-center text-center">
-              <div className="h-8 w-8 animate-spin rounded-full border border-[#1bc2ec]/20 border-t-[#1bc2ec]" />
+              <div className="h-8 w-8 animate-spin rounded-full border border-[rgb(var(--court-accent-rgb)/0.2)] border-t-[var(--court-accent)]" />
               <p className="mt-4 font-michroma text-[9px] uppercase text-white/45 lg:text-xs">
                 Loading Profile
               </p>
@@ -177,7 +177,7 @@ export default function PublicProfilePage() {
             <>
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md border border-[#1bc2ec]/35 bg-black/30 text-[#1bc2ec] lg:h-24 lg:w-24">
+                  <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-black/30 text-[var(--court-accent)] lg:h-24 lg:w-24">
                     {profile.avatar_url ? (
                       <Image
                         src={profile.avatar_url}
@@ -194,7 +194,7 @@ export default function PublicProfilePage() {
                   </div>
 
                   <div className="min-w-0">
-                    <p className="font-michroma text-[7px] uppercase tracking-wide text-[#1bc2ec] lg:text-[10px]">
+                    <p className="font-michroma text-[7px] uppercase tracking-wide text-[var(--court-accent)] lg:text-[10px]">
                       Public Profile
                     </p>
 
@@ -214,8 +214,8 @@ export default function PublicProfilePage() {
               </div>
 
               <div className="mt-5 grid gap-3 lg:mt-7 lg:grid-cols-3">
-                <div className="rounded-md border border-white/10 bg-black/20 p-3 transition hover:border-[#1bc2ec]/35 hover:bg-[#071827]/80 lg:p-4">
-                  <CalendarDays className="h-4 w-4 text-[#1bc2ec]" />
+                <div className="rounded-md border border-white/10 bg-black/20 p-3 transition hover:border-[rgb(var(--court-accent-rgb)/0.35)] hover:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_80%,transparent)] lg:p-4">
+                  <CalendarDays className="h-4 w-4 text-[var(--court-accent)]" />
                   <p className="mt-3 font-michroma text-[7px] uppercase text-white/35 lg:text-[8px]">
                     Account
                   </p>
@@ -331,3 +331,4 @@ export default function PublicProfilePage() {
     </main>
   );
 }
+

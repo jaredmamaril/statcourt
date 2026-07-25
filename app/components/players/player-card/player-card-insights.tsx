@@ -69,7 +69,7 @@ export function PlayerCardInsights({
               </div>
 
               <div
-                className={`pointer-events-none absolute bottom-full left-0 z-999 mb-1.5 w-40 rounded-md border border-[#1bc2ec]/50 bg-black/95 p-2 text-center transition-opacity duration-200 sm:left-1/2 sm:w-56 sm:-translate-x-1/2 ${
+                className={`pointer-events-none absolute bottom-full left-0 z-999 mb-1.5 w-40 rounded-md border border-[rgb(var(--court-accent-rgb)/0.5)] bg-black/95 p-2 text-center transition-opacity duration-200 sm:left-1/2 sm:w-56 sm:-translate-x-1/2 ${
                   openTooltip === archetypeTooltipId
                     ? "opacity-100"
                     : "opacity-0 group-hover:opacity-100"
@@ -120,7 +120,7 @@ export function PlayerCardInsights({
               </span>
 
               <span
-                className={`pointer-events-none absolute bottom-full left-0 z-999 mb-1.5 w-40 rounded-md border border-[#1bc2ec]/50 bg-black/95 p-2 text-center transition-opacity duration-200 sm:left-1/2 sm:w-56 sm:-translate-x-1/2 ${
+                className={`pointer-events-none absolute bottom-full left-0 z-999 mb-1.5 w-40 rounded-md border border-[rgb(var(--court-accent-rgb)/0.5)] bg-black/95 p-2 text-center transition-opacity duration-200 sm:left-1/2 sm:w-56 sm:-translate-x-1/2 ${
                   openTooltip === traitTooltipId
                     ? "opacity-100"
                     : "opacity-0 group-hover:opacity-100"

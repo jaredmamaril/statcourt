@@ -52,6 +52,6 @@ export function getLineupCategoryColor(
 ) {
   return (
     lineupCards.find((card) => card.title === selectedLineupCategory)?.color ??
-    "#1bc2ec"
+    "var(--court-accent)"
   );
 }

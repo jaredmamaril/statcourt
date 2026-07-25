@@ -945,7 +945,7 @@ export default function Lineups() {
               />
             )
           ) : (
-            <div className="mx-auto mt-6 max-w-75 animate-[pageEnter_220ms_ease-out_both] rounded-lg border border-[#1bc2ec]/35 bg-[#06131d]/80 p-3.5 text-center shadow-[0_0_22px_rgba(27,194,236,0.14)] lg:mt-16 lg:max-w-md lg:p-6 lg:shadow-[0_0_28px_rgba(27,194,236,0.16)]">
+            <div className="mx-auto mt-6 max-w-75 animate-[pageEnter_220ms_ease-out_both] rounded-lg border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-3.5 text-center shadow-[0_0_22px_rgb(var(--court-accent-rgb)/0.14)] lg:mt-16 lg:max-w-md lg:p-6 lg:shadow-[0_0_28px_rgb(var(--court-accent-rgb)/0.16)]">
               <p className="font-michroma text-[10px] uppercase text-white lg:text-lg">
                 Sign in to view saved lineups
               </p>
@@ -957,7 +957,7 @@ export default function Lineups() {
               <button
                 type="button"
                 onClick={() => router.push("/signin")}
-                className="mt-3 rounded-md border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-3 py-2 font-michroma text-[7px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white lg:mt-5 lg:px-4 lg:py-3 lg:text-[10px]"
+                className="mt-3 rounded-md border border-[rgb(var(--court-accent-rgb)/0.5)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-3 py-2 font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white lg:mt-5 lg:px-4 lg:py-3 lg:text-[10px]"
               >
                 Sign In
               </button>

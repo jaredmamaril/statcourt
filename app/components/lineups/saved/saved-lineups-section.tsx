@@ -101,7 +101,7 @@ export function SavedLineupsSection({
 
           {isLoadingPlayers && (
             <div className="mt-2 text-center">
-              <p className="font-michroma text-[7px] uppercase text-[#1bc2ec]/70 lg:text-[10px]">
+              <p className="font-michroma text-[7px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[10px]">
                 Loading lineup player profiles...
               </p>
 

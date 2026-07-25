@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -136,7 +136,7 @@ const quickActions = [
     label: "Build Lineup",
     href: "/lineups?tab=builder",
     icon: LayoutDashboard,
-    color: "#1bc2ec",
+    color: "var(--court-accent)",
   },
   {
     label: "Browse Players",
@@ -418,7 +418,7 @@ export default function ProfilePage() {
         value: String(displayedProfileStats.savedLineups),
         tooltip: "Total lineups saved to your signed-in StatCourt account.",
         icon: Bookmark,
-        color: "#1bc2ec",
+        color: "var(--court-accent)",
       },
       {
         label: "Favorite Players",
@@ -455,8 +455,8 @@ export default function ProfilePage() {
             : displayedProfileStats.favoriteArchetype?.rarity === "purple"
               ? "#A855F7"
               : displayedProfileStats.favoriteArchetype?.rarity === "blue"
-                ? "#1bc2ec"
-                : "#1bc2ec",
+                ? "var(--court-accent)"
+                : "var(--court-accent)",
       },
     ],
     [displayedProfileStats],
@@ -465,10 +465,10 @@ export default function ProfilePage() {
   return (
     <main className="page-enter relative min-h-svh px-3 py-3 text-white lg:px-6 lg:pt-12">
       <section className="relative z-10 mx-auto max-w-5xl py-3 lg:py-10">
-        <div className="mb-3 rounded-lg border border-[#1bc2ec]/30 bg-[#06131d]/80 p-3 shadow-[0_0_22px_rgba(27,194,236,0.12)] lg:mb-8 lg:p-6 lg:shadow-[0_0_30px_rgba(27,194,236,0.14)]">
+        <div className="mb-3 rounded-lg border border-[rgb(var(--court-accent-rgb)/0.3)] bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-3 shadow-[0_0_22px_rgb(var(--court-accent-rgb)/0.12)] lg:mb-8 lg:p-6 lg:shadow-[0_0_30px_rgb(var(--court-accent-rgb)/0.14)]">
           <div className="flex items-center justify-between gap-3 lg:gap-5">
             <div>
-              <p className="font-michroma text-[7px] uppercase tracking-wide text-[#1bc2ec] lg:text-[10px]">
+              <p className="font-michroma text-[7px] uppercase tracking-wide text-[var(--court-accent)] lg:text-[10px]">
                 Court Hub
               </p>
 
@@ -484,7 +484,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={sharePublicProfile}
-                  className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-[#1bc2ec]/40 bg-[#1bc2ec]/10 px-2.5 py-1.5 font-michroma text-[6px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white lg:mt-4 lg:px-3 lg:text-[8px]"
+                  className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-[rgb(var(--court-accent-rgb)/0.4)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2.5 py-1.5 font-michroma text-[6px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white lg:mt-4 lg:px-3 lg:text-[8px]"
                 >
                   <Share2 className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
                   {shareProfileStatus || "Share Profile"}
@@ -494,7 +494,7 @@ export default function ProfilePage() {
 
             <div className="shrink-0">
               <label
-                className={`group relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 font-michroma text-xs text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.18)] transition hover:border-[#1bc2ec] hover:text-white lg:h-24 lg:w-24 lg:text-xl lg:shadow-[0_0_24px_rgba(27,194,236,0.22)] ${
+                className={`group relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg border border-[rgb(var(--court-accent-rgb)/0.5)] bg-[rgb(var(--court-accent-rgb)/0.1)] font-michroma text-xs text-[var(--court-accent)] shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.18)] transition hover:border-[var(--court-accent)] hover:text-white lg:h-24 lg:w-24 lg:text-xl lg:shadow-[0_0_24px_rgb(var(--court-accent-rgb)/0.22)] ${
                   user && !isUploadingAvatar
                     ? "cursor-pointer"
                     : "cursor-not-allowed opacity-70"
@@ -514,7 +514,7 @@ export default function ProfilePage() {
                 )}
 
                 <span className="absolute inset-0 flex items-center justify-center bg-black/55 opacity-0 transition group-hover:opacity-100">
-                  <Camera className="h-4 w-4 text-[#1bc2ec] lg:h-6 lg:w-6" />
+                  <Camera className="h-4 w-4 text-[var(--court-accent)] lg:h-6 lg:w-6" />
                 </span>
 
                 <input
@@ -530,7 +530,7 @@ export default function ProfilePage() {
               </label>
 
               {avatarStatus && (
-                <p className="mt-1 max-w-24 text-center font-michroma text-[5px] uppercase text-[#1bc2ec]/70 lg:text-[7px]">
+                <p className="mt-1 max-w-24 text-center font-michroma text-[5px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[7px]">
                   {avatarStatus}
                 </p>
               )}
@@ -548,7 +548,7 @@ export default function ProfilePage() {
             return (
               <div
                 key={stat.label}
-                className="group relative cursor-pointer rounded-lg border border-white/10 bg-[#06131d]/80 p-2.5 shadow-[0_0_16px_rgba(0,0,0,0.22)] transition duration-200 hover:-translate-y-1 hover:border-white/25 hover:bg-[#071827]/90 hover:shadow-[0_0_26px_rgba(27,194,236,0.16)] lg:p-4"
+                className="group relative cursor-pointer rounded-lg border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-2.5 shadow-[0_0_16px_rgba(0,0,0,0.22)] transition duration-200 hover:-translate-y-1 hover:border-white/25 hover:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_90%,transparent)] hover:shadow-[0_0_26px_rgb(var(--court-accent-rgb)/0.16)] lg:p-4"
               >
                 <button
                   type="button"
@@ -561,13 +561,13 @@ export default function ProfilePage() {
                     );
                   }}
                   onBlur={() => setOpenStatTooltip(null)}
-                  className="peer absolute top-2 right-2 z-20 cursor-help text-white/30 transition hover:text-[#1bc2ec] lg:top-3 lg:right-3"
+                  className="peer absolute top-2 right-2 z-20 cursor-help text-white/30 transition hover:text-[var(--court-accent)] lg:top-3 lg:right-3"
                 >
                   <Info className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
                 </button>
 
                 <div
-                  className={`pointer-events-none absolute top-7 right-1 left-1 z-30 rounded-md border border-[#1bc2ec]/35 bg-black/95 p-1.5 font-michroma text-[5px] leading-relaxed text-white/70 shadow-[0_0_18px_rgba(27,194,236,0.22)] transition lg:top-9 lg:right-3 lg:left-auto lg:w-52 lg:p-2 lg:text-[8px] ${
+                  className={`pointer-events-none absolute top-7 right-1 left-1 z-30 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-black/95 p-1.5 font-michroma text-[5px] leading-relaxed text-white/70 shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.22)] transition lg:top-9 lg:right-3 lg:left-auto lg:w-52 lg:p-2 lg:text-[8px] ${
                     openStatTooltip === stat.label
                       ? "opacity-100"
                       : "opacity-0 peer-hover:opacity-100"
@@ -610,11 +610,11 @@ export default function ProfilePage() {
         </div>
 
         <div className="mt-3 grid gap-2 lg:mt-6 lg:grid-cols-[1fr_1fr] lg:gap-4">
-          <section className="flex rounded-lg border border-white/10 bg-[#06131d]/80 p-3 lg:min-h-80 lg:p-5">
+          <section className="flex rounded-lg border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-3 lg:min-h-80 lg:p-5">
             <div className="flex min-h-0 w-full flex-col">
               <div className="mb-2.5 flex items-center gap-2 lg:mb-4 lg:gap-3">
                 <div className="flex min-w-0 flex-1 items-center gap-2 lg:gap-3">
-                  <Activity className="h-3.5 w-3.5 text-[#1bc2ec] lg:h-5 lg:w-5" />
+                  <Activity className="h-3.5 w-3.5 text-[var(--court-accent)] lg:h-5 lg:w-5" />
                   <p className="font-michroma text-[9px] uppercase text-white lg:text-sm">
                     Recent Activity
                   </p>
@@ -625,7 +625,7 @@ export default function ProfilePage() {
                     type="button"
                     onClick={clearRecentActivity}
                     disabled={isClearingActivity}
-                    className="rounded-md border border-white/10 bg-white/5 px-2 py-1 font-michroma text-[5px] uppercase text-white/35 transition hover:border-[#1bc2ec]/35 hover:text-[#1bc2ec] disabled:cursor-not-allowed disabled:opacity-50 lg:text-[7px]"
+                    className="rounded-md border border-white/10 bg-white/5 px-2 py-1 font-michroma text-[5px] uppercase text-white/35 transition hover:border-[rgb(var(--court-accent-rgb)/0.35)] hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:opacity-50 lg:text-[7px]"
                   >
                     Clear
                   </button>
@@ -633,7 +633,7 @@ export default function ProfilePage() {
               </div>
 
               {activityStatus && (
-                <p className="mb-2 font-michroma text-[5px] uppercase text-[#1bc2ec]/70 lg:text-[7px]">
+                <p className="mb-2 font-michroma text-[5px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[7px]">
                   {activityStatus}
                 </p>
               )}
@@ -669,7 +669,7 @@ export default function ProfilePage() {
                           <Link
                             key={activity.id}
                             href={activity.href}
-                            className="rounded-md border border-white/10 bg-black/20 p-2.5 transition hover:border-[#1bc2ec]/45 hover:bg-[#1bc2ec]/10 lg:p-3"
+                            className="rounded-md border border-white/10 bg-black/20 p-2.5 transition hover:border-[rgb(var(--court-accent-rgb)/0.45)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)] lg:p-3"
                           >
                             {activityContent}
                           </Link>
@@ -690,7 +690,7 @@ export default function ProfilePage() {
                   <div className="mt-2 grid grid-cols-3 gap-1.5 lg:mt-3 lg:gap-2">
                     <Link
                       href="/players"
-                      className="rounded-md border border-[#1bc2ec]/35 bg-[#1bc2ec]/10 px-2 py-1.5 text-center font-michroma text-[5px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white lg:px-3 lg:py-2 lg:text-[7px]"
+                      className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 py-1.5 text-center font-michroma text-[5px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white lg:px-3 lg:py-2 lg:text-[7px]"
                     >
                       Scout
                     </Link>
@@ -724,7 +724,7 @@ export default function ProfilePage() {
                   <div className="mt-2.5 grid grid-cols-3 gap-1.5 lg:mt-4 lg:gap-2">
                     <Link
                       href="/players"
-                      className="rounded-md border border-[#1bc2ec]/45 bg-[#1bc2ec]/10 px-2 py-2 font-michroma text-[5px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white lg:px-3 lg:py-2.5 lg:text-[7px]"
+                      className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 py-2 font-michroma text-[5px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white lg:px-3 lg:py-2.5 lg:text-[7px]"
                     >
                       Scout
                     </Link>
@@ -748,7 +748,7 @@ export default function ProfilePage() {
             </div>
           </section>
 
-          <section className="rounded-lg border border-white/10 bg-[#06131d]/80 p-3 lg:p-5">
+          <section className="rounded-lg border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-3 lg:p-5">
             <div className="mb-2.5 flex items-center gap-2 lg:mb-4 lg:gap-3">
               <Shield className="h-3.5 w-3.5 text-[#EFBF04] lg:h-5 lg:w-5" />
               <p className="font-michroma text-[9px] uppercase text-white lg:text-sm">
@@ -764,7 +764,7 @@ export default function ProfilePage() {
                   <Link
                     key={action.label}
                     href={action.href}
-                    className="group flex items-center gap-2 rounded-md border border-white/10 bg-black/20 px-3 py-2 font-michroma text-[7px] uppercase text-white/75 transition duration-200 hover:-translate-y-0.5 hover:border-[#1bc2ec]/45 hover:bg-[#1bc2ec]/10 hover:text-white hover:shadow-[0_0_22px_rgba(27,194,236,0.18)] lg:gap-3 lg:px-4 lg:py-3 lg:text-[10px]"
+                    className="group flex items-center gap-2 rounded-md border border-white/10 bg-black/20 px-3 py-2 font-michroma text-[7px] uppercase text-white/75 transition duration-200 hover:-translate-y-0.5 hover:border-[rgb(var(--court-accent-rgb)/0.45)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)] hover:text-white hover:shadow-[0_0_22px_rgb(var(--court-accent-rgb)/0.18)] lg:gap-3 lg:px-4 lg:py-3 lg:text-[10px]"
                   >
                     <span
                       className="flex h-6 w-6 items-center justify-center rounded-md border bg-white/5 transition duration-200 group-hover:scale-105 group-hover:brightness-125 lg:h-8 lg:w-8"
@@ -784,7 +784,7 @@ export default function ProfilePage() {
           </section>
         </div>
 
-        <div className="mt-3 rounded-lg border border-white/10 bg-[#06131d]/80 p-3 lg:mt-6 lg:p-5">
+        <div className="mt-3 rounded-lg border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-3 lg:mt-6 lg:p-5">
           <div className="mb-2.5 flex items-center justify-between gap-3 lg:mb-4">
             <div className="flex items-center gap-2 lg:gap-3">
               <Users className="h-3.5 w-3.5 text-white/50 lg:h-5 lg:w-5" />
@@ -810,7 +810,7 @@ export default function ProfilePage() {
                 Signed In As
               </p>
 
-              <p className="mt-1 truncate font-michroma text-[8px] text-[#1bc2ec] lg:text-[10px]">
+              <p className="mt-1 truncate font-michroma text-[8px] text-[var(--court-accent)] lg:text-[10px]">
                 {user?.email ?? "No active account"}
               </p>
 
@@ -845,7 +845,7 @@ export default function ProfilePage() {
                       user ? "mr-1 text-[#22C55E]" : "mr-1 text-white/25"
                     }
                   >
-                    {user ? "✓" : "•"}
+                    {user ? "?" : "-"}
                   </span>
                   {status}
                 </div>
@@ -857,3 +857,4 @@ export default function ProfilePage() {
     </main>
   );
 }
+

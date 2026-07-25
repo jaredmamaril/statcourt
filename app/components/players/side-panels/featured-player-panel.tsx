@@ -60,7 +60,7 @@ export function FeaturedPlayerPanel({
           {featuredPlayer.name}
         </p>
 
-        <p className="mt-1 text-xs text-[#1bc2ec]">
+        <p className="mt-1 text-xs text-[var(--court-accent)]">
           {featuredPlayerRating.toFixed(1)} OVR
         </p>
 

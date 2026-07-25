@@ -135,11 +135,11 @@ function BuilderPlayerCardComponent({
           onPickPlayer(player.name);
         }
       }}
-      className={`group relative h-21 touch-none overflow-hidden rounded-md border bg-black/30 p-0.75 text-center transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/10 lg:h-52 lg:p-3 ${
+      className={`group relative h-21 touch-none overflow-hidden rounded-md border bg-black/30 p-0.75 text-center transition hover:border-[var(--court-accent)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)] lg:h-52 lg:p-3 ${
         isSelected
-          ? "border-[#1bc2ec] bg-[#1bc2ec]/15 shadow-[0_0_18px_rgba(27,194,236,0.35)]"
+          ? "border-[var(--court-accent)] bg-[rgb(var(--court-accent-rgb)/0.15)] shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.35)]"
           : isDragging
-            ? "border-[#1bc2ec] bg-[#1bc2ec]/15 opacity-45 shadow-[0_0_22px_rgba(27,194,236,0.35)]"
+            ? "border-[var(--court-accent)] bg-[rgb(var(--court-accent-rgb)/0.15)] opacity-45 shadow-[0_0_22px_rgb(var(--court-accent-rgb)/0.35)]"
           : "border-white/15"
       }`}
     >
@@ -159,7 +159,7 @@ function BuilderPlayerCardComponent({
         {player.team} • {player.position}
       </p>
 
-      <p className="mt-0.5 font-michroma text-[5.4px] text-[#1bc2ec] lg:mt-1 lg:text-[10px]">
+      <p className="mt-0.5 font-michroma text-[5.4px] text-[var(--court-accent)] lg:mt-1 lg:text-[10px]">
         {positionRating.toFixed(1)} OVR
       </p>
 
@@ -168,7 +168,7 @@ function BuilderPlayerCardComponent({
           positionFit === "natural"
             ? "text-emerald-400"
             : positionFit === "flex"
-              ? "text-[#1bc2ec]"
+              ? "text-[var(--court-accent)]"
               : positionFit === "reach"
                 ? "text-yellow-400"
                 : "text-red-400"

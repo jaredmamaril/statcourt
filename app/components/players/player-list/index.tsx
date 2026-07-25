@@ -114,7 +114,7 @@ export function PlayerList({
                         onChange={(event) =>
                           onSelectBaseDisplayCount(Number(event.target.value))
                         }
-                        className="h-6 rounded border border-white/15 bg-[#06131d] px-1.5 text-[6px] text-white outline-none transition focus:border-[#1bc2ec] lg:h-8 lg:px-2 lg:text-[9px]"
+                        className="h-6 rounded border border-white/15 bg-[var(--court-panel)] px-1.5 text-[6px] text-white outline-none transition focus:border-[var(--court-accent)] lg:h-8 lg:px-2 lg:text-[9px]"
                       >
                         {displayCountOptions.map((option) => (
                           <option key={option} value={option}>
@@ -131,7 +131,7 @@ export function PlayerList({
                         onChange={(event) =>
                           onSelectLoadMoreAmount(Number(event.target.value))
                         }
-                        className="h-6 rounded border border-white/15 bg-[#06131d] px-1.5 text-[6px] text-white outline-none transition focus:border-[#1bc2ec] lg:h-8 lg:px-2 lg:text-[9px]"
+                        className="h-6 rounded border border-white/15 bg-[var(--court-panel)] px-1.5 text-[6px] text-white outline-none transition focus:border-[var(--court-accent)] lg:h-8 lg:px-2 lg:text-[9px]"
                       >
                         {loadMoreOptions.map((option) => (
                           <option key={option} value={option}>
@@ -145,7 +145,7 @@ export function PlayerList({
                       type="button"
                       onClick={onLoadMore}
                       disabled={!hasMorePlayers}
-                      className="h-6 rounded border border-[#1bc2ec]/45 bg-[#1bc2ec]/10 px-2 text-[6px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:h-8 lg:px-3 lg:text-[9px]"
+                      className="h-6 rounded border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 text-[6px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:h-8 lg:px-3 lg:text-[9px]"
                     >
                       {hasMorePlayers ? "Load More" : "All Shown"}
                     </button>
@@ -185,7 +185,7 @@ function PlayerListCard({
     <div
       className={`relative flex min-h-33 flex-col items-center rounded-md border bg-black/20 px-2 py-2 text-center font-michroma transition-all duration-200 ${
         isSelected
-          ? "border-[#1bc2ec] text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.18)]"
+          ? "border-[var(--court-accent)] text-[var(--court-accent)] shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.18)]"
           : "border-white/10 text-white/85 hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/5"
       }`}
     >
@@ -199,8 +199,8 @@ function PlayerListCard({
         }
         className={`absolute left-2 top-1.5 cursor-pointer text-xs transition-colors ${
           isFavorite
-            ? "text-[#1bc2ec]"
-            : "text-white/20 hover:text-[#1bc2ec]/70"
+            ? "text-[var(--court-accent)]"
+            : "text-white/20 hover:text-[rgb(var(--court-accent-rgb)/0.7)]"
         }`}
       >
         {isFavorite ? "★" : "☆"}

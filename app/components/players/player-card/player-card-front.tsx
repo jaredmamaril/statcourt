@@ -21,7 +21,7 @@ export function PlayerCardFront({
 
   return (
     <div
-      className={`absolute inset-0 h-full rounded-2xl border border-[#1bc2ec]/10 bg-black/30 p-4 lg:min-h-134 lg:rounded-3xl lg:p-6 ${
+      className={`absolute inset-0 h-full rounded-2xl border border-[rgb(var(--court-accent-rgb)/0.1)] bg-black/30 p-4 lg:min-h-134 lg:rounded-3xl lg:p-6 ${
         isCardFlipped ? "pointer-events-none" : "pointer-events-auto"
       } ${isCardFlipped ? "" : "animate-[cardFaceIn_180ms_ease-out_both]"}`}
       style={{ backfaceVisibility: "hidden" }}

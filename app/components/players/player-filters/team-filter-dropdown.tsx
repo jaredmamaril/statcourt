@@ -28,7 +28,7 @@ export function TeamFilterDropdown({
         onClick={onOpenDropdown}
         className={`flex h-6 cursor-pointer items-center gap-1 rounded-md border px-2 font-michroma text-[9px] transition-all duration-200 sm:h-auto sm:gap-2 sm:py-1 sm:text-xs ${
           filteredTeam
-            ? "scale-[1.02] bg-[#1bc2ec]/10 ring-1 ring-[#1bc2ec]/30"
+            ? "scale-[1.02] bg-[rgb(var(--court-accent-rgb)/0.1)] ring-1 ring-[rgb(var(--court-accent-rgb)/0.3)]"
             : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
         }`}
         style={{
@@ -48,11 +48,11 @@ export function TeamFilterDropdown({
 
         <span>{filteredTeam || "All Teams"}</span>
 
-        <span className="text-[8px] text-[#1bc2ec] sm:text-xs">▾</span>
+        <span className="text-[8px] text-[var(--court-accent)] sm:text-xs">▾</span>
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-full z-30 mt-1.5 max-h-36 w-22 overflow-y-auto rounded-md border border-white/20 bg-[#07111f] py-1 shadow-xl animate-[dropdownIn_140ms_ease-out_both] sm:mt-2 sm:max-h-40 sm:w-36">
+        <div className="absolute left-0 top-full z-30 mt-1.5 max-h-36 w-22 overflow-y-auto rounded-md border border-white/20 bg-[var(--court-panel-alt)] py-1 shadow-xl animate-[dropdownIn_140ms_ease-out_both] sm:mt-2 sm:max-h-40 sm:w-36">
           <button
             type="button"
             onClick={() => onSelectTeam("")}
@@ -72,7 +72,7 @@ export function TeamFilterDropdown({
                 onClick={() => onSelectTeam(team)}
                 className={`block w-full cursor-pointer px-2 py-1.5 text-left font-michroma text-[9px] sm:px-3 sm:py-2 sm:text-xs ${
                   filteredTeam === team
-                    ? "bg-[#1bc2ec]/10 text-[#1bc2ec]"
+                    ? "bg-[rgb(var(--court-accent-rgb)/0.1)] text-[var(--court-accent)]"
                     : "text-white/70 hover:bg-white/10"
                 }`}
                 style={{ color: teamColor }}
@@ -96,3 +96,4 @@ export function TeamFilterDropdown({
     </div>
   );
 }
+

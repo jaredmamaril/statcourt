@@ -5,6 +5,8 @@ import { Habibi } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/navbar";
 import { ReducedMotionSync } from "./components/settings/reduced-motion-sync";
+import { ThemeSync } from "./components/settings/theme-sync";
+import { defaultStatCourtTheme } from "./lib/themes";
 
 const michroma = Michroma({
   variable: "--font-michroma",
@@ -41,10 +43,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      data-statcourt-theme={defaultStatCourtTheme.id}
       className={`${geistSans.variable} ${geistMono.variable} ${michroma.variable} ${habibi.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {/* Future: consider implementing a theme provider to allow users to switch between light and dark modes, and to manage other global styles or settings across the app */}
+        <ThemeSync />
         <ReducedMotionSync />
         <Navbar />
         {children}

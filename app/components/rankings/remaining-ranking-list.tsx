@@ -118,7 +118,7 @@ export function RemainingRankingList({
                   onChange={(event) =>
                     onSelectDisplayLimit(Number(event.target.value))
                   }
-                  className="h-6 rounded border border-white/15 bg-[#06131d] px-1.5 text-[6px] text-white outline-none transition focus:border-[#1bc2ec] lg:h-8 lg:px-2 lg:text-[9px]"
+                  className="h-6 rounded border border-white/15 bg-[var(--court-panel)] px-1.5 text-[6px] text-white outline-none transition focus:border-[var(--court-accent)] lg:h-8 lg:px-2 lg:text-[9px]"
                 >
                   {RANKING_DISPLAY_OPTIONS.map((option) => (
                     <option key={option} value={option}>
@@ -135,7 +135,7 @@ export function RemainingRankingList({
                   onChange={(event) =>
                     onSelectLoadMoreAmount(Number(event.target.value))
                   }
-                  className="h-6 rounded border border-white/15 bg-[#06131d] px-1.5 text-[6px] text-white outline-none transition focus:border-[#1bc2ec] lg:h-8 lg:px-2 lg:text-[9px]"
+                  className="h-6 rounded border border-white/15 bg-[var(--court-panel)] px-1.5 text-[6px] text-white outline-none transition focus:border-[var(--court-accent)] lg:h-8 lg:px-2 lg:text-[9px]"
                 >
                   {RANKING_LOAD_MORE_OPTIONS.map((option) => (
                     <option key={option} value={option}>
@@ -149,7 +149,7 @@ export function RemainingRankingList({
                 type="button"
                 onClick={onLoadMore}
                 disabled={!hasMorePlayers}
-                className="h-6 rounded border border-[#1bc2ec]/45 bg-[#1bc2ec]/10 px-2 text-[6px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:h-8 lg:px-3 lg:text-[9px]"
+                className="h-6 rounded border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 text-[6px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:h-8 lg:px-3 lg:text-[9px]"
               >
                 {hasMorePlayers ? "Load More" : "All Shown"}
               </button>
@@ -190,9 +190,9 @@ function RankingPlayerRow({
     <div
       tabIndex={0}
       style={{ animationDelay: `${animationDelay}ms` }}
-      className="group relative grid w-full grid-cols-[26px_30px_minmax(0,1fr)_36px] items-center gap-1 rounded-md border border-white/10 bg-black/30 px-1.5 py-1 transition-all duration-200 animate-[playerListRowIn_180ms_ease-out_both] outline-none hover:z-200 hover:border-[#1bc2ec]/50 hover:bg-[#1bc2ec]/10 focus:z-200 focus:border-[#1bc2ec]/50 focus:bg-[#1bc2ec]/10 sm:grid-cols-[36px_48px_minmax(0,1fr)_42px_48px] sm:gap-1.5 sm:px-2 sm:py-1.5 lg:grid-cols-[44px_64px_minmax(0,1fr)_48px_56px] lg:gap-2 lg:px-3 lg:py-2"
+      className="group relative grid w-full grid-cols-[26px_30px_minmax(0,1fr)_36px] items-center gap-1 rounded-md border border-white/10 bg-black/30 px-1.5 py-1 transition-all duration-200 animate-[playerListRowIn_180ms_ease-out_both] outline-none hover:z-200 hover:border-[rgb(var(--court-accent-rgb)/0.5)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)] focus:z-200 focus:border-[rgb(var(--court-accent-rgb)/0.5)] focus:bg-[rgb(var(--court-accent-rgb)/0.1)] sm:grid-cols-[36px_48px_minmax(0,1fr)_42px_48px] sm:gap-1.5 sm:px-2 sm:py-1.5 lg:grid-cols-[44px_64px_minmax(0,1fr)_48px_56px] lg:gap-2 lg:px-3 lg:py-2"
     >
-      <span className="font-michroma text-[9px] font-bold text-[#1bc2ec] sm:text-[10px] lg:text-xs">
+      <span className="font-michroma text-[9px] font-bold text-[var(--court-accent)] sm:text-[10px] lg:text-xs">
         #{rank}
       </span>
 
@@ -269,10 +269,10 @@ function RankingPlayerCard({
     <div
       tabIndex={0}
       style={{ animationDelay: `${animationDelay}ms` }}
-      className="group relative flex min-h-36 flex-col rounded-md border border-white/10 bg-black/30 px-1.5 py-1.5 text-center transition-all duration-200 animate-[playerListRowIn_180ms_ease-out_both] outline-none hover:z-200 hover:-translate-y-0.5 hover:border-[#1bc2ec]/50 hover:bg-[#1bc2ec]/10 focus:z-200 focus:border-[#1bc2ec]/50 focus:bg-[#1bc2ec]/10 lg:min-h-44 lg:px-2 lg:py-2"
+      className="group relative flex min-h-36 flex-col rounded-md border border-white/10 bg-black/30 px-1.5 py-1.5 text-center transition-all duration-200 animate-[playerListRowIn_180ms_ease-out_both] outline-none hover:z-200 hover:-translate-y-0.5 hover:border-[rgb(var(--court-accent-rgb)/0.5)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)] focus:z-200 focus:border-[rgb(var(--court-accent-rgb)/0.5)] focus:bg-[rgb(var(--court-accent-rgb)/0.1)] lg:min-h-44 lg:px-2 lg:py-2"
     >
       <div className="flex items-center justify-between font-michroma text-[8px] lg:text-[10px]">
-        <span className="font-bold text-[#1bc2ec]">#{rank}</span>
+        <span className="font-bold text-[var(--court-accent)]">#{rank}</span>
         <span className="font-bold text-white">{rating}</span>
       </div>
 
@@ -314,3 +314,4 @@ function RankingPlayerCard({
     </div>
   );
 }
+

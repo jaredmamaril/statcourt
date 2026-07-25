@@ -35,6 +35,13 @@ import {
   setPendingAuthProvider,
   suppressCurrentSigninTracking,
 } from "../lib/user-signins";
+import {
+  defaultStatCourtTheme,
+  applyStatCourtTheme,
+  resetStatCourtTheme,
+  statcourtThemeOptions,
+  type StatCourtThemeId,
+} from "../lib/themes";
 
 type UserDataCounts = {
   savedLineups: number;
@@ -100,6 +107,7 @@ function settingToRow(settings: UserSettings, userId: string) {
     default_player_view: settings.defaultPlayerView,
     default_compare_mode: settings.defaultCompareMode,
     reduced_motion: settings.reducedMotion,
+    theme: settings.theme,
     updated_at: new Date().toISOString(),
   };
 }
@@ -232,6 +240,9 @@ export default function SettingsPage() {
     isLoadingSettings: isLoadingUserSettings,
   } = useUserSettings();
   const [settings, setSettings] = useState<UserSettings>(defaultUserSettings);
+  const [selectedThemeId, setSelectedThemeId] = useState<StatCourtThemeId>(
+    defaultStatCourtTheme.id,
+  );
   const [userProfile, setUserProfile] = useState<UserProfileRow | null>(null);
   const [dataCounts, setDataCounts] = useState<UserDataCounts>(defaultCounts);
   const [latestTrackedSignInAt, setLatestTrackedSignInAt] = useState<
@@ -284,6 +295,8 @@ export default function SettingsPage() {
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       setSettings(loadedSettings);
+      setSelectedThemeId(loadedSettings.theme);
+      applyStatCourtTheme(loadedSettings.theme);
     }, 0);
 
     return () => window.clearTimeout(timeoutId);
@@ -521,8 +534,18 @@ export default function SettingsPage() {
     setSettingsStatus("Saved");
   }
 
+  async function selectTheme(themeId: StatCourtThemeId) {
+    setSelectedThemeId(themeId);
+    applyStatCourtTheme(themeId);
+    await saveSettings({
+      ...settings,
+      theme: themeId,
+    });
+  }
+
   async function signOut() {
     await supabase.auth.signOut();
+    resetStatCourtTheme();
     router.push("/signin");
   }
 
@@ -1195,6 +1218,7 @@ export default function SettingsPage() {
     }
 
     await supabase.auth.signOut();
+    resetStatCourtTheme();
     router.push("/signin");
   }
 
@@ -1232,7 +1256,7 @@ export default function SettingsPage() {
       <main className="page-enter relative min-h-svh px-3 py-3 text-white lg:px-6 lg:pt-12">
         <section className="relative z-10 mx-auto max-w-4xl py-3 lg:py-10">
           <div className="mb-3 lg:mb-8">
-            <p className="font-michroma text-[7px] uppercase tracking-wide text-[#1bc2ec] lg:text-[10px]">
+            <p className="font-michroma text-[7px] uppercase tracking-wide text-[var(--court-accent)] lg:text-[10px]">
               StatCourt Account
             </p>
 
@@ -1246,10 +1270,10 @@ export default function SettingsPage() {
           </div>
 
           <div className="grid gap-2 lg:gap-5">
-            <section className="rounded-lg border border-white/10 bg-[#06131d]/80 p-2.5 shadow-[0_0_18px_rgba(0,0,0,0.25)] lg:p-5">
+            <section className="rounded-lg border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-2.5 shadow-[0_0_18px_rgba(0,0,0,0.25)] lg:p-5">
               <div className="mb-2.5 flex items-center justify-between gap-2 lg:mb-5 lg:gap-3">
                 <div className="flex items-center gap-2 lg:gap-3">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-md border border-[#1bc2ec]/40 bg-[#1bc2ec]/10 text-[#1bc2ec] lg:h-9 lg:w-9">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-md border border-[rgb(var(--court-accent-rgb)/0.4)] bg-[rgb(var(--court-accent-rgb)/0.1)] text-[var(--court-accent)] lg:h-9 lg:w-9">
                     <UserCircle className="h-2.5 w-2.5 lg:h-4 lg:w-4" />
                   </div>
 
@@ -1258,7 +1282,7 @@ export default function SettingsPage() {
                   </p>
                 </div>
 
-                <p className="font-michroma text-[6px] uppercase text-[#1bc2ec]/70 lg:text-[8px]">
+                <p className="font-michroma text-[6px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[8px]">
                   {accountActionStatus}
                 </p>
               </div>
@@ -1266,7 +1290,7 @@ export default function SettingsPage() {
               <div className="grid gap-1.5 lg:gap-3">
                 <div className="rounded-md border border-white/10 bg-black/20 p-2 lg:p-3">
                   <div className="flex items-center justify-between gap-2">
-                    <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border border-[#1bc2ec]/40 bg-[#1bc2ec]/10 font-michroma text-sm text-[#1bc2ec] lg:h-14 lg:w-14 lg:text-lg">
+                    <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border border-[rgb(var(--court-accent-rgb)/0.4)] bg-[rgb(var(--court-accent-rgb)/0.1)] font-michroma text-sm text-[var(--court-accent)] lg:h-14 lg:w-14 lg:text-lg">
                       {avatarUrl ? (
                         <Image
                           src={avatarUrl}
@@ -1293,7 +1317,7 @@ export default function SettingsPage() {
                     <label
                       className={`shrink-0 rounded-md border px-2.5 py-1.5 font-michroma text-[6px] uppercase transition lg:px-3 lg:text-[8px] ${
                         user && !isUploadingAvatar
-                          ? "cursor-pointer border-[#1bc2ec]/50 bg-[#1bc2ec]/10 text-[#1bc2ec] hover:bg-[#1bc2ec]/20 hover:text-white"
+                          ? "cursor-pointer border-[rgb(var(--court-accent-rgb)/0.5)] bg-[rgb(var(--court-accent-rgb)/0.1)] text-[var(--court-accent)] hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white"
                           : "cursor-not-allowed border-white/10 bg-white/5 text-white/25"
                       }`}
                     >
@@ -1312,7 +1336,7 @@ export default function SettingsPage() {
                   </div>
 
                   {avatarStatus && (
-                    <p className="mt-1.5 font-michroma text-[5px] uppercase text-[#1bc2ec]/70 lg:text-[7px]">
+                    <p className="mt-1.5 font-michroma text-[5px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[7px]">
                       {avatarStatus}
                     </p>
                   )}
@@ -1335,7 +1359,7 @@ export default function SettingsPage() {
                         setProfileStatus("");
                       }}
                       disabled={!user}
-                      className="shrink-0 rounded-md border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-2.5 py-1.5 font-michroma text-[6px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-3 lg:text-[8px]"
+                      className="shrink-0 rounded-md border border-[rgb(var(--court-accent-rgb)/0.5)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2.5 py-1.5 font-michroma text-[6px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-3 lg:text-[8px]"
                     >
                       {isEditingDisplayName ? "Close" : "Edit Name"}
                     </button>
@@ -1353,14 +1377,14 @@ export default function SettingsPage() {
                         disabled={!user}
                         maxLength={40}
                         placeholder={displayName}
-                        className="min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-2 font-michroma text-[8px] text-white outline-none transition placeholder:text-white/25 focus:border-[#1bc2ec]/60 disabled:cursor-not-allowed disabled:text-white/30 lg:px-3 lg:text-[10px]"
+                        className="min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-2 font-michroma text-[8px] text-white outline-none transition placeholder:text-white/25 focus:border-[rgb(var(--court-accent-rgb)/0.6)] disabled:cursor-not-allowed disabled:text-white/30 lg:px-3 lg:text-[10px]"
                       />
 
                       <button
                         type="button"
                         onClick={saveDisplayName}
                         disabled={!user}
-                        className="rounded-md border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-3 py-2 font-michroma text-[7px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-4 lg:text-[9px]"
+                        className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.5)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-3 py-2 font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-4 lg:text-[9px]"
                       >
                         Save
                       </button>
@@ -1382,7 +1406,7 @@ export default function SettingsPage() {
                   )}
 
                   {profileStatus && (
-                    <p className="mt-1.5 font-michroma text-[5px] uppercase text-[#1bc2ec]/70 lg:text-[7px]">
+                    <p className="mt-1.5 font-michroma text-[5px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[7px]">
                       {profileStatus}
                     </p>
                   )}
@@ -1405,7 +1429,7 @@ export default function SettingsPage() {
                         setUsernameStatus("");
                       }}
                       disabled={!user}
-                      className="shrink-0 rounded-md border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-2.5 py-1.5 font-michroma text-[6px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-3 lg:text-[8px]"
+                      className="shrink-0 rounded-md border border-[rgb(var(--court-accent-rgb)/0.5)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2.5 py-1.5 font-michroma text-[6px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-3 lg:text-[8px]"
                     >
                       {isEditingUsername ? "Close" : "Edit Username"}
                     </button>
@@ -1423,14 +1447,14 @@ export default function SettingsPage() {
                         disabled={!user}
                         maxLength={24}
                         placeholder="statcourt_user"
-                        className="min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-2 font-michroma text-[8px] text-white outline-none transition placeholder:text-white/25 focus:border-[#1bc2ec]/60 disabled:cursor-not-allowed disabled:text-white/30 lg:px-3 lg:text-[10px]"
+                        className="min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-2 font-michroma text-[8px] text-white outline-none transition placeholder:text-white/25 focus:border-[rgb(var(--court-accent-rgb)/0.6)] disabled:cursor-not-allowed disabled:text-white/30 lg:px-3 lg:text-[10px]"
                       />
 
                       <button
                         type="button"
                         onClick={saveUsername}
                         disabled={!user}
-                        className="rounded-md border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-3 py-2 font-michroma text-[7px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-4 lg:text-[9px]"
+                        className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.5)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-3 py-2 font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-4 lg:text-[9px]"
                       >
                         Save
                       </button>
@@ -1450,7 +1474,7 @@ export default function SettingsPage() {
                   )}
 
                   {usernameStatus && (
-                    <p className="mt-1.5 font-michroma text-[5px] uppercase text-[#1bc2ec]/70 lg:text-[7px]">
+                    <p className="mt-1.5 font-michroma text-[5px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[7px]">
                       {usernameStatus}
                     </p>
                   )}
@@ -1487,7 +1511,7 @@ export default function SettingsPage() {
                         className={`shrink-0 rounded-md border px-2.5 py-1.5 font-michroma text-[6px] uppercase transition disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/20 lg:px-3 lg:text-[8px] ${
                           isPublicProfileEnabled
                             ? "border-red-500/35 bg-red-500/10 text-red-300 hover:bg-red-500/20 hover:text-white"
-                            : "border-[#1bc2ec]/35 bg-[#1bc2ec]/10 text-[#1bc2ec] hover:bg-[#1bc2ec]/20 hover:text-white"
+                            : "border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] text-[var(--court-accent)] hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white"
                         }`}
                       >
                         {isPublicProfileEnabled
@@ -1513,7 +1537,7 @@ export default function SettingsPage() {
                         <button
                           type="button"
                           onClick={sharePublicProfile}
-                          className="rounded-md border border-[#1bc2ec]/35 bg-[#1bc2ec]/10 px-2.5 py-1.5 font-michroma text-[6px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white lg:px-3 lg:text-[8px]"
+                          className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2.5 py-1.5 font-michroma text-[6px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white lg:px-3 lg:text-[8px]"
                         >
                           {shareProfileStatus || "Share Profile"}
                         </button>
@@ -1540,7 +1564,7 @@ export default function SettingsPage() {
               </div>
             </section>
 
-            <section className="rounded-lg border border-white/10 bg-[#06131d]/80 p-2.5 shadow-[0_0_18px_rgba(0,0,0,0.25)] lg:p-5">
+            <section className="rounded-lg border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-2.5 shadow-[0_0_18px_rgba(0,0,0,0.25)] lg:p-5">
               <div className="mb-2.5 flex items-center justify-between gap-2 lg:mb-5 lg:gap-3">
                 <div className="flex items-center gap-2 lg:gap-3">
                   <div className="flex h-6 w-6 items-center justify-center rounded-md border border-[#EFBF04]/40 bg-[#EFBF04]/10 text-[#EFBF04] lg:h-9 lg:w-9">
@@ -1552,7 +1576,7 @@ export default function SettingsPage() {
                   </p>
                 </div>
 
-                <p className="font-michroma text-[6px] uppercase text-[#1bc2ec]/70 lg:text-[8px]">
+                <p className="font-michroma text-[6px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[8px]">
                   {passwordStatus}
                 </p>
               </div>
@@ -1574,7 +1598,7 @@ export default function SettingsPage() {
                       setAccountActionStatus("");
                     }}
                     disabled={!user}
-                    className="shrink-0 rounded-md border border-white/10 bg-white/5 px-2.5 py-1.5 font-michroma text-[6px] uppercase text-white/45 transition hover:border-[#1bc2ec]/35 hover:text-[#1bc2ec] disabled:cursor-not-allowed disabled:text-white/20 lg:px-3 lg:text-[8px]"
+                    className="shrink-0 rounded-md border border-white/10 bg-white/5 px-2.5 py-1.5 font-michroma text-[6px] uppercase text-white/45 transition hover:border-[rgb(var(--court-accent-rgb)/0.35)] hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:text-white/20 lg:px-3 lg:text-[8px]"
                   >
                     {isChangingEmail ? "Close" : "Change Email"}
                   </button>
@@ -1591,7 +1615,7 @@ export default function SettingsPage() {
                       }}
                       disabled={!user}
                       placeholder="New email"
-                      className="w-full min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-1.5 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/25 focus:border-[#1bc2ec]/60 disabled:cursor-not-allowed disabled:text-white/30 lg:px-3 lg:py-2 lg:text-[10px]"
+                      className="w-full min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-1.5 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/25 focus:border-[rgb(var(--court-accent-rgb)/0.6)] disabled:cursor-not-allowed disabled:text-white/30 lg:px-3 lg:py-2 lg:text-[10px]"
                     />
 
                     <div className="relative min-w-0">
@@ -1604,7 +1628,7 @@ export default function SettingsPage() {
                         }}
                         disabled={!user}
                         placeholder="Current password"
-                        className="w-full min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-1.5 pr-7 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/25 focus:border-[#1bc2ec]/60 disabled:cursor-not-allowed disabled:text-white/30 lg:px-3 lg:py-2 lg:pr-8 lg:text-[10px]"
+                        className="w-full min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-1.5 pr-7 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/25 focus:border-[rgb(var(--court-accent-rgb)/0.6)] disabled:cursor-not-allowed disabled:text-white/30 lg:px-3 lg:py-2 lg:pr-8 lg:text-[10px]"
                       />
 
                       <button
@@ -1614,7 +1638,7 @@ export default function SettingsPage() {
                         }
                         disabled={!user}
                         aria-label="Toggle email password visibility"
-                        className="absolute right-1.5 top-1/2 -translate-y-1/2 text-white/35 transition hover:text-[#1bc2ec] disabled:cursor-not-allowed disabled:text-white/15 lg:right-2"
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 text-white/35 transition hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:text-white/15 lg:right-2"
                       >
                         <Eye className="h-2.5 w-2.5 lg:h-3.5 lg:w-3.5" />
                       </button>
@@ -1624,7 +1648,7 @@ export default function SettingsPage() {
                       type="button"
                       onClick={updateEmail}
                       disabled={!user}
-                      className="rounded-md border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-2 py-1.5 font-michroma text-[6px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-4 lg:py-2 lg:text-[9px]"
+                      className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.5)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 py-1.5 font-michroma text-[6px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-4 lg:py-2 lg:text-[9px]"
                     >
                       Update
                     </button>
@@ -1634,7 +1658,7 @@ export default function SettingsPage() {
                         type="button"
                         onClick={resendEmailChangeConfirmation}
                         disabled={!user}
-                        className="rounded-md border border-[#1bc2ec]/30 bg-[#1bc2ec]/5 px-2 py-1.5 font-michroma text-[6px] uppercase text-[#1bc2ec]/75 transition hover:bg-[#1bc2ec]/15 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:col-span-2 lg:px-4 lg:py-2 lg:text-[9px]"
+                        className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.3)] bg-[rgb(var(--court-accent-rgb)/0.05)] px-2 py-1.5 font-michroma text-[6px] uppercase text-[rgb(var(--court-accent-rgb)/0.75)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.15)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:col-span-2 lg:px-4 lg:py-2 lg:text-[9px]"
                       >
                         Resend Confirmation
                       </button>
@@ -1695,7 +1719,7 @@ export default function SettingsPage() {
                       type="button"
                       onClick={connectGoogleProvider}
                       disabled={!user}
-                      className="shrink-0 rounded-md border border-[#1bc2ec]/35 bg-[#1bc2ec]/10 px-2.5 py-1.5 font-michroma text-[6px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/20 lg:px-3 lg:text-[8px]"
+                      className="shrink-0 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2.5 py-1.5 font-michroma text-[6px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/20 lg:px-3 lg:text-[8px]"
                     >
                       Connect Google
                     </button>
@@ -1725,7 +1749,7 @@ export default function SettingsPage() {
                       {isLoadingDataCounts ? (
                         <LoadingSpinner className="mx-0 h-3 w-3 lg:h-4 lg:w-4" />
                       ) : (
-                        <span className="text-[#1bc2ec]">
+                        <span className="text-[var(--court-accent)]">
                           {dataCounts.recentSignins}
                         </span>
                       )}
@@ -1735,7 +1759,7 @@ export default function SettingsPage() {
                       type="button"
                       onClick={() => setIsDevicesOpen((current) => !current)}
                       disabled={!user || isLoadingDataCounts}
-                      className="mt-2 rounded-md border border-[#1bc2ec]/35 bg-[#1bc2ec]/10 px-2 py-1 font-michroma text-[5px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:text-[7px]"
+                      className="mt-2 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 py-1 font-michroma text-[5px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:text-[7px]"
                     >
                       {isDevicesOpen ? "Hide Devices" : "Devices"}
                     </button>
@@ -1746,7 +1770,7 @@ export default function SettingsPage() {
                   <div className="mt-2 grid gap-1.5 border-t border-white/10 pt-2 lg:mt-3 lg:gap-2 lg:pt-3">
                     {!isLoadingDataCounts && (
                       <div>
-                        <p className="mb-1 font-michroma text-[5px] uppercase text-[#1bc2ec]/70 lg:text-[7px]">
+                        <p className="mb-1 font-michroma text-[5px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[7px]">
                           Active Devices
                         </p>
 
@@ -1837,7 +1861,7 @@ export default function SettingsPage() {
                           isClearingSignins ||
                           dataCounts.recentSignins === 0
                         }
-                        className="rounded-md border border-white/10 bg-white/5 px-2 py-1 font-michroma text-[5px] uppercase text-white/35 transition hover:border-[#1bc2ec]/35 hover:text-[#1bc2ec] disabled:cursor-not-allowed disabled:opacity-40 lg:text-[7px]"
+                        className="rounded-md border border-white/10 bg-white/5 px-2 py-1 font-michroma text-[5px] uppercase text-white/35 transition hover:border-[rgb(var(--court-accent-rgb)/0.35)] hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:opacity-40 lg:text-[7px]"
                       >
                         {isClearingSignins ? "Clearing..." : "Clear Sign-ins"}
                       </button>
@@ -1922,7 +1946,7 @@ export default function SettingsPage() {
                       </button>
 
                       {passwordStatus && (
-                        <p className="font-michroma text-[6px] leading-relaxed text-[#1bc2ec]/80 lg:col-span-5 lg:text-[8px]">
+                        <p className="font-michroma text-[6px] leading-relaxed text-[rgb(var(--court-accent-rgb)/0.8)] lg:col-span-5 lg:text-[8px]">
                           {passwordStatus}
                         </p>
                       )}
@@ -1941,7 +1965,7 @@ export default function SettingsPage() {
                         }}
                         disabled={!user}
                         placeholder="Current password"
-                        className="w-full min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-1.5 pr-7 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/25 focus:border-[#1bc2ec]/60 disabled:cursor-not-allowed disabled:text-white/30 lg:px-3 lg:py-2 lg:pr-8 lg:text-[10px]"
+                        className="w-full min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-1.5 pr-7 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/25 focus:border-[rgb(var(--court-accent-rgb)/0.6)] disabled:cursor-not-allowed disabled:text-white/30 lg:px-3 lg:py-2 lg:pr-8 lg:text-[10px]"
                       />
 
                       <button
@@ -1954,7 +1978,7 @@ export default function SettingsPage() {
                         }
                         disabled={!user}
                         aria-label="Toggle current password visibility"
-                        className="absolute right-1.5 top-1/2 -translate-y-1/2 text-white/35 transition hover:text-[#1bc2ec] disabled:cursor-not-allowed disabled:text-white/15 lg:right-2"
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 text-white/35 transition hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:text-white/15 lg:right-2"
                       >
                         <Eye className="h-2.5 w-2.5 lg:h-3.5 lg:w-3.5" />
                       </button>
@@ -1970,7 +1994,7 @@ export default function SettingsPage() {
                         }}
                         disabled={!user}
                         placeholder="New password"
-                        className="w-full min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-1.5 pr-7 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/25 focus:border-[#1bc2ec]/60 disabled:cursor-not-allowed disabled:text-white/30 lg:px-3 lg:py-2 lg:pr-8 lg:text-[10px]"
+                        className="w-full min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-1.5 pr-7 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/25 focus:border-[rgb(var(--court-accent-rgb)/0.6)] disabled:cursor-not-allowed disabled:text-white/30 lg:px-3 lg:py-2 lg:pr-8 lg:text-[10px]"
                       />
 
                       <button
@@ -1983,7 +2007,7 @@ export default function SettingsPage() {
                         }
                         disabled={!user}
                         aria-label="Toggle new password visibility"
-                        className="absolute right-1.5 top-1/2 -translate-y-1/2 text-white/35 transition hover:text-[#1bc2ec] disabled:cursor-not-allowed disabled:text-white/15 lg:right-2"
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 text-white/35 transition hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:text-white/15 lg:right-2"
                       >
                         <Eye className="h-2.5 w-2.5 lg:h-3.5 lg:w-3.5" />
                       </button>
@@ -2001,7 +2025,7 @@ export default function SettingsPage() {
                         }}
                         disabled={!user}
                         placeholder="Confirm password"
-                        className="w-full min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-1.5 pr-7 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/25 focus:border-[#1bc2ec]/60 disabled:cursor-not-allowed disabled:text-white/30 lg:px-3 lg:py-2 lg:pr-8 lg:text-[10px]"
+                        className="w-full min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-1.5 pr-7 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/25 focus:border-[rgb(var(--court-accent-rgb)/0.6)] disabled:cursor-not-allowed disabled:text-white/30 lg:px-3 lg:py-2 lg:pr-8 lg:text-[10px]"
                       />
 
                       <button
@@ -2014,7 +2038,7 @@ export default function SettingsPage() {
                         }
                         disabled={!user}
                         aria-label="Toggle confirm password visibility"
-                        className="absolute right-1.5 top-1/2 -translate-y-1/2 text-white/35 transition hover:text-[#1bc2ec] disabled:cursor-not-allowed disabled:text-white/15 lg:right-2"
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 text-white/35 transition hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:text-white/15 lg:right-2"
                       >
                         <Eye className="h-2.5 w-2.5 lg:h-3.5 lg:w-3.5" />
                       </button>
@@ -2059,13 +2083,13 @@ export default function SettingsPage() {
                       type="button"
                       onClick={sendPasswordResetFromSettings}
                       disabled={!user?.email || isSendingPasswordLink}
-                      className="justify-self-start font-michroma text-[6px] uppercase text-white/35 transition hover:text-[#1bc2ec] disabled:cursor-not-allowed disabled:text-white/15 lg:col-span-5 lg:text-[8px]"
+                      className="justify-self-start font-michroma text-[6px] uppercase text-white/35 transition hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:text-white/15 lg:col-span-5 lg:text-[8px]"
                     >
                       {isSendingPasswordLink ? "Sending..." : "Forgot Password?"}
                     </button>
 
                     {passwordStatus && (
-                      <p className="font-michroma text-[6px] leading-relaxed text-[#1bc2ec]/80 lg:col-span-5 lg:text-[8px]">
+                      <p className="font-michroma text-[6px] leading-relaxed text-[rgb(var(--court-accent-rgb)/0.8)] lg:col-span-5 lg:text-[8px]">
                         {passwordStatus}
                       </p>
                     )}
@@ -2075,7 +2099,7 @@ export default function SettingsPage() {
                 )}
               </div>
 
-              <div className="mt-2 rounded-md border border-[#1bc2ec]/20 bg-black/20 p-2 lg:mt-3 lg:p-4">
+              <div className="mt-2 rounded-md border border-[rgb(var(--court-accent-rgb)/0.2)] bg-black/20 p-2 lg:mt-3 lg:p-4">
                 <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
                   Privacy
                 </p>
@@ -2087,7 +2111,7 @@ export default function SettingsPage() {
               </div>
             </section>
 
-            <section className="rounded-lg border border-white/10 bg-[#06131d]/80 p-2.5 shadow-[0_0_18px_rgba(0,0,0,0.25)] lg:p-5">
+            <section className="rounded-lg border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-2.5 shadow-[0_0_18px_rgba(0,0,0,0.25)] lg:p-5">
               <div className="mb-2.5 flex items-center gap-2 lg:mb-5 lg:gap-3">
                 <div className="flex h-6 w-6 items-center justify-center rounded-md border border-[#A855F7]/40 bg-[#A855F7]/10 text-[#A855F7] lg:h-9 lg:w-9">
                   <Monitor className="h-2.5 w-2.5 lg:h-4 lg:w-4" />
@@ -2104,12 +2128,36 @@ export default function SettingsPage() {
                     Theme
                   </p>
 
-                  <p className="mt-1 font-michroma text-[9px] text-white lg:mt-2 lg:text-sm">
-                    Dark Court
-                  </p>
+                  <div className="mt-2 grid gap-1 lg:gap-1.5">
+                    {statcourtThemeOptions.map((theme) => {
+                      const isSelected = selectedThemeId === theme.id;
 
-                  <p className="mt-1 font-michroma text-[5px] uppercase text-white/25 lg:text-[7px]">
-                    More themes later
+                      return (
+                        <button
+                          key={theme.id}
+                          type="button"
+                          onClick={() => selectTheme(theme.id)}
+                          className={`flex items-center justify-between rounded-md border px-2 py-1.5 text-left transition ${
+                            isSelected
+                              ? "border-[rgb(var(--court-accent-rgb)/0.6)] bg-[rgb(var(--court-accent-rgb)/0.14)]"
+                              : "border-white/10 bg-black/20 hover:border-white/25"
+                          }`}
+                        >
+                          <span className="font-michroma text-[7px] text-white lg:text-[9px]">
+                            {theme.label}
+                          </span>
+
+                          <span
+                            className="h-3 w-3 rounded-full border border-white/25"
+                            style={{ backgroundColor: theme.accent }}
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <p className="mt-2 font-michroma text-[5px] uppercase text-white/25 lg:text-[7px]">
+                    Local preview
                   </p>
                 </div>
 
@@ -2121,19 +2169,19 @@ export default function SettingsPage() {
                       reducedMotion: !settings.reducedMotion,
                     })
                   }
-                  className="rounded-md border border-white/10 bg-black/20 p-2 text-left transition duration-200 hover:-translate-y-0.5 hover:border-[#1bc2ec]/35 hover:bg-[#071827]/80 hover:shadow-[0_0_18px_rgba(27,194,236,0.12)] lg:p-4"
+                  className="rounded-md border border-white/10 bg-black/20 p-2 text-left transition duration-200 hover:-translate-y-0.5 hover:border-[rgb(var(--court-accent-rgb)/0.35)] hover:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_80%,transparent)] hover:shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.12)] lg:p-4"
                 >
                   <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
                     Reduced Motion
                   </p>
-                  <p className="mt-1 font-michroma text-[9px] text-[#1bc2ec] lg:mt-2 lg:text-sm">
+                  <p className="mt-1 font-michroma text-[9px] text-[var(--court-accent)] lg:mt-2 lg:text-sm">
                     {settings.reducedMotion ? "On" : "Off"}
                   </p>
                 </button>
               </div>
             </section>
 
-            <section className="rounded-lg border border-white/10 bg-[#06131d]/80 p-2.5 shadow-[0_0_18px_rgba(0,0,0,0.25)] lg:p-5">
+            <section className="rounded-lg border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-2.5 shadow-[0_0_18px_rgba(0,0,0,0.25)] lg:p-5">
               <div className="mb-2.5 flex items-center justify-between gap-2 lg:mb-5 lg:gap-3">
                 <div className="flex items-center gap-2 lg:gap-3">
                   <div className="flex h-6 w-6 items-center justify-center rounded-md border border-[#EFBF04]/40 bg-[#EFBF04]/10 text-[#EFBF04] lg:h-9 lg:w-9">
@@ -2145,7 +2193,7 @@ export default function SettingsPage() {
                   </p>
                 </div>
 
-                <p className="font-michroma text-[6px] uppercase text-[#1bc2ec]/70 lg:text-[8px]">
+                <p className="font-michroma text-[6px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[8px]">
                   {isLoadingUserSettings ? "Loading" : settingsStatus}
                 </p>
               </div>
@@ -2177,7 +2225,7 @@ export default function SettingsPage() {
               </div>
             </section>
 
-            <section className="rounded-lg border border-white/10 bg-[#06131d]/80 p-2.5 shadow-[0_0_18px_rgba(0,0,0,0.25)] lg:p-5">
+            <section className="rounded-lg border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-2.5 shadow-[0_0_18px_rgba(0,0,0,0.25)] lg:p-5">
               <div className="mb-2.5 flex items-center gap-2 lg:mb-5 lg:gap-3">
                 <div className="flex h-6 w-6 items-center justify-center rounded-md border border-[#22C55E]/40 bg-[#22C55E]/10 text-[#22C55E] lg:h-9 lg:w-9">
                   <Database className="h-2.5 w-2.5 lg:h-4 lg:w-4" />
@@ -2197,7 +2245,7 @@ export default function SettingsPage() {
                 ].map(([item, value]) => (
                   <div
                     key={item}
-                    className="rounded-md border border-white/10 bg-black/20 p-2 transition duration-200 hover:-translate-y-0.5 hover:border-[#1bc2ec]/35 hover:bg-[#071827]/80 hover:shadow-[0_0_18px_rgba(27,194,236,0.12)] lg:p-4"
+                    className="rounded-md border border-white/10 bg-black/20 p-2 transition duration-200 hover:-translate-y-0.5 hover:border-[rgb(var(--court-accent-rgb)/0.35)] hover:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_80%,transparent)] hover:shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.12)] lg:p-4"
                   >
                     <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
                       {item}
@@ -2220,7 +2268,7 @@ export default function SettingsPage() {
                           isClearingActivity ||
                           dataCounts.recentActivity === 0
                         }
-                        className="mt-2 rounded border border-white/10 bg-white/5 px-2 py-1 font-michroma text-[5px] uppercase text-white/35 transition hover:border-[#1bc2ec]/35 hover:text-[#1bc2ec] disabled:cursor-not-allowed disabled:opacity-40 lg:text-[7px]"
+                        className="mt-2 rounded border border-white/10 bg-white/5 px-2 py-1 font-michroma text-[5px] uppercase text-white/35 transition hover:border-[rgb(var(--court-accent-rgb)/0.35)] hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:opacity-40 lg:text-[7px]"
                       >
                         Clear
                       </button>
@@ -2230,13 +2278,13 @@ export default function SettingsPage() {
               </div>
 
               {activityStatus && (
-                <p className="mt-2 font-michroma text-[6px] uppercase text-[#1bc2ec]/70 lg:text-[8px]">
+                <p className="mt-2 font-michroma text-[6px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[8px]">
                   {activityStatus}
                 </p>
               )}
             </section>
 
-            <section className="rounded-lg border border-white/10 bg-[#06131d]/80 p-2.5 lg:p-5">
+            <section className="rounded-lg border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-2.5 lg:p-5">
               <div className="mb-2.5 flex items-center gap-2 lg:mb-5 lg:gap-3">
                 <div className="flex h-6 w-6 items-center justify-center rounded-md border border-white/20 bg-white/5 text-white/60 lg:h-9 lg:w-9">
                   <Eye className="h-2.5 w-2.5 lg:h-4 lg:w-4" />
@@ -2247,13 +2295,13 @@ export default function SettingsPage() {
                 </p>
               </div>
 
-              <div className="mb-2 flex w-fit items-center gap-2 rounded-md border border-[#1bc2ec]/25 bg-[#1bc2ec]/8 px-2 py-1 lg:mb-3 lg:px-3 lg:py-1.5">
+              <div className="mb-2 flex w-fit items-center gap-2 rounded-md border border-[rgb(var(--court-accent-rgb)/0.25)] bg-[rgb(var(--court-accent-rgb)/0.08)] px-2 py-1 lg:mb-3 lg:px-3 lg:py-1.5">
                 <span
                   className={`h-1.5 w-1.5 rounded-full lg:h-2 lg:w-2 ${
                     user ? "bg-[#22C55E]" : "bg-[#EFBF04]"
                   }`}
                 />
-                <p className="font-michroma text-[6px] uppercase text-[#1bc2ec] lg:text-[8px]">
+                <p className="font-michroma text-[6px] uppercase text-[var(--court-accent)] lg:text-[8px]">
                   {user ? "Account Synced" : "Local Session"}
                 </p>
               </div>
@@ -2378,7 +2426,7 @@ export default function SettingsPage() {
 
       {isDeleteAccountModalOpen && (
         <div className="fixed inset-0 z-999999 flex items-center justify-center overflow-y-auto bg-black/75 px-4 py-8">
-          <div className="w-full max-w-sm rounded-lg border border-red-500/35 bg-[#06131d] p-4 shadow-[0_0_28px_rgba(239,68,68,0.2)] lg:max-w-md lg:p-5">
+          <div className="w-full max-w-sm rounded-lg border border-red-500/35 bg-[var(--court-panel)] p-4 shadow-[0_0_28px_rgba(239,68,68,0.2)] lg:max-w-md lg:p-5">
             <p className="font-michroma text-[9px] uppercase text-red-300 lg:text-xs">
               Are you sure?
             </p>
@@ -2456,8 +2504,8 @@ function PreferenceButtonGroup<TValue extends string>({
               onClick={() => onSelect(option.value)}
               className={`rounded border px-2 py-1.5 text-left font-michroma text-[6px] uppercase transition lg:text-[8px] ${
                 isSelected
-                  ? "border-[#1bc2ec]/60 bg-[#1bc2ec]/15 text-[#1bc2ec]"
-                  : "border-white/10 bg-white/5 text-white/45 hover:border-[#1bc2ec]/35 hover:text-white"
+                  ? "border-[rgb(var(--court-accent-rgb)/0.6)] bg-[rgb(var(--court-accent-rgb)/0.15)] text-[var(--court-accent)]"
+                  : "border-white/10 bg-white/5 text-white/45 hover:border-[rgb(var(--court-accent-rgb)/0.35)] hover:text-white"
               }`}
             >
               {option.label}
@@ -2474,3 +2522,4 @@ function PreferenceButtonGroup<TValue extends string>({
     </div>
   );
 }
+

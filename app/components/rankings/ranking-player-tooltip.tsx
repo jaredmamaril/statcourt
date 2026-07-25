@@ -19,12 +19,12 @@ export function RankingPlayerTooltip({
   const playerInsights = getPlayerInsights(player, statProfileFilter);
 
   return (
-    <div className="pointer-events-none absolute left-1/2 top-full z-[999] w-44 -translate-x-1/2 rounded-md border border-[#1bc2ec]/40 bg-black/95 p-2 opacity-0 transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 sm:w-64 sm:p-3">
+    <div className="pointer-events-none absolute left-1/2 top-full z-[999] w-44 -translate-x-1/2 rounded-md border border-[rgb(var(--court-accent-rgb)/0.4)] bg-black/95 p-2 opacity-0 transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 sm:w-64 sm:p-3">
       <p className="font-michroma text-[8px] font-bold text-white sm:text-[10px]">
         {player.name}
       </p>
 
-      <p className="mt-1.5 font-michroma text-[7px] text-[#1bc2ec] sm:mt-2 sm:text-[9px]">
+      <p className="mt-1.5 font-michroma text-[7px] text-[var(--court-accent)] sm:mt-2 sm:text-[9px]">
         {ratingLabel}: {rating}
       </p>
 
@@ -46,10 +46,11 @@ export function RankingPlayerTooltip({
       <button
         type="button"
         onClick={() => onViewPlayer(player.name)}
-        className="mt-2 w-full cursor-pointer rounded border border-[#1bc2ec]/50 bg-[#1bc2ec]/10 px-2 py-1.5 font-michroma text-[8px] font-bold uppercase tracking-wide text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 sm:mt-3 sm:px-3 sm:py-2 sm:text-[12px]"
+        className="mt-2 w-full cursor-pointer rounded border border-[rgb(var(--court-accent-rgb)/0.5)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 py-1.5 font-michroma text-[8px] font-bold uppercase tracking-wide text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] sm:mt-3 sm:px-3 sm:py-2 sm:text-[12px]"
       >
         Full Profile
       </button>
     </div>
   );
 }
+

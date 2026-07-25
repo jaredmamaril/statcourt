@@ -44,7 +44,7 @@ export default function Home() {
               router.push("/court");
             }, 650);
           }}
-          className={`mt-78 cursor-pointer rounded-md border border-[#1bc2ec]/45 bg-[#347A99]/16 px-6 py-3 font-michroma text-base text-white shadow-md transition-all duration-500 hover:-translate-y-0.5 hover:border-[#1bc2ec]/75 hover:bg-[#1bc2ec]/14 active:scale-95 ${
+          className={`mt-78 cursor-pointer rounded-md border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[rgb(var(--court-accent-rgb)/0.16)] px-6 py-3 font-michroma text-base text-white shadow-md transition-all duration-500 hover:-translate-y-0.5 hover:border-[rgb(var(--court-accent-rgb)/0.75)] hover:bg-[rgb(var(--court-accent-rgb)/0.14)] active:scale-95 ${
             showEnterButton
               ? "translate-y-0 opacity-100"
               : "pointer-events-none translate-y-3 opacity-0"

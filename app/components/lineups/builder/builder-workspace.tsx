@@ -56,7 +56,7 @@ const positionFitLegend = [
   {
     label: "Flex",
     description: "Realistic alternate slot. -2 OVR.",
-    color: "text-[#1bc2ec]",
+    color: "text-[var(--court-accent)]",
   },
   {
     label: "Reach",
@@ -100,7 +100,7 @@ function PositionFitLegend() {
         aria-label="Position fit legend"
         aria-expanded={isOpen}
         onClick={() => setIsOpen((current) => !current)}
-        className="flex h-4 items-center gap-1 rounded border border-white/15 bg-black/30 px-1.5 font-michroma text-[5px] uppercase text-white/45 transition hover:border-[#1bc2ec]/70 hover:text-[#1bc2ec] lg:h-6 lg:px-2 lg:text-[7px]"
+        className="flex h-4 items-center gap-1 rounded border border-white/15 bg-black/30 px-1.5 font-michroma text-[5px] uppercase text-white/45 transition hover:border-[rgb(var(--court-accent-rgb)/0.7)] hover:text-[var(--court-accent)] lg:h-6 lg:px-2 lg:text-[7px]"
       >
         Fit
         <span className="flex h-2.5 w-2.5 items-center justify-center rounded-full border border-current text-[6px] lg:h-3.5 lg:w-3.5 lg:text-[8px]">
@@ -109,13 +109,13 @@ function PositionFitLegend() {
       </button>
 
       <div
-        className={`pointer-events-none absolute left-1/2 top-full z-50 mt-1 w-40 -translate-x-1/2 rounded border border-[#1bc2ec]/40 bg-[#020912] p-1.5 shadow-[0_0_14px_rgba(27,194,236,0.2)] transition lg:w-52 lg:p-2 ${
+        className={`pointer-events-none absolute left-1/2 top-full z-50 mt-1 w-40 -translate-x-1/2 rounded border border-[rgb(var(--court-accent-rgb)/0.4)] bg-[#020912] p-1.5 shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.2)] transition lg:w-52 lg:p-2 ${
           isOpen
             ? "opacity-100"
             : "opacity-0 group-hover/fit:opacity-100 group-focus-within/fit:opacity-100"
         }`}
       >
-        <p className="mb-1 font-michroma text-[6px] uppercase text-[#1bc2ec] lg:text-[8px]">
+        <p className="mb-1 font-michroma text-[6px] uppercase text-[var(--court-accent)] lg:text-[8px]">
           Position Fit
         </p>
 
@@ -327,7 +327,7 @@ export function BuilderWorkspace({
                       onClick={() => onStatProfileChange(profile)}
                       className={`rounded px-1.5 py-0.5 font-michroma text-[5.5px] uppercase transition lg:px-2.5 lg:py-1 lg:text-[8px] ${
                         isActive
-                          ? "bg-[#1bc2ec]/20 text-[#1bc2ec]"
+                          ? "bg-[rgb(var(--court-accent-rgb)/0.2)] text-[var(--court-accent)]"
                           : "text-white/35 hover:bg-white/5 hover:text-white/70"
                       }`}
                     >
@@ -348,7 +348,7 @@ export function BuilderWorkspace({
                       onClick={() => onDisplayViewChange(view)}
                       className={`rounded px-1.5 py-0.5 font-michroma text-[5.5px] uppercase transition lg:px-2.5 lg:py-1 lg:text-[8px] ${
                         isActive
-                          ? "bg-[#1bc2ec]/20 text-[#1bc2ec]"
+                          ? "bg-[rgb(var(--court-accent-rgb)/0.2)] text-[var(--court-accent)]"
                           : "text-white/35 hover:bg-white/5 hover:text-white/70"
                       }`}
                     >
@@ -433,7 +433,7 @@ export function BuilderWorkspace({
         typeof document !== "undefined" &&
         createPortal(
           <div
-            className="pointer-events-none fixed z-9999 rounded-md border border-[#1bc2ec]/80 bg-[#06131d]/95 px-2 py-1.5 font-michroma text-[5px] uppercase text-[#1bc2ec] shadow-[0_0_22px_rgba(27,194,236,0.35)] lg:px-3 lg:py-2 lg:text-xs"
+            className="pointer-events-none fixed z-9999 rounded-md border border-[rgb(var(--court-accent-rgb)/0.8)] bg-[color:color-mix(in_srgb,var(--court-panel)_95%,transparent)] px-2 py-1.5 font-michroma text-[5px] uppercase text-[var(--court-accent)] shadow-[0_0_22px_rgb(var(--court-accent-rgb)/0.35)] lg:px-3 lg:py-2 lg:text-xs"
             style={{
               left: dragPreviewPosition.x - 55,
               top: dragPreviewPosition.y + 15,
@@ -447,3 +447,4 @@ export function BuilderWorkspace({
     </DndContext>
   );
 }
+

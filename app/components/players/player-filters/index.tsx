@@ -91,7 +91,7 @@ export function PlayerFilters({
         onClick={onToggleFavorites}
         className={`flex h-6 cursor-pointer items-center gap-1 rounded-md border px-2 font-michroma text-[10px] transition-all duration-200 sm:h-auto sm:gap-1.5 sm:py-1 sm:text-xs ${
           showFavorites
-            ? "scale-[1.02] border-[#1bc2ec]/70 bg-[#1bc2ec]/10 text-[#1bc2ec]/90 ring-1 ring-[#1bc2ec]/30"
+            ? "scale-[1.02] border-[rgb(var(--court-accent-rgb)/0.7)] bg-[rgb(var(--court-accent-rgb)/0.1)] text-[rgb(var(--court-accent-rgb)/0.9)] ring-1 ring-[rgb(var(--court-accent-rgb)/0.3)]"
             : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
         }`}
       >
@@ -177,3 +177,4 @@ export function PlayerFilters({
     </div>
   );
 }
+

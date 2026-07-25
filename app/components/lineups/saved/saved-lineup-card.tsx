@@ -71,7 +71,7 @@ export function SavedLineupCard({
             <button
               type="button"
               onClick={() => onTogglePublic(lineup)}
-              className="w-fit cursor-pointer rounded-md border px-2 py-1 font-michroma text-[5.5px] uppercase shadow-[0_0_10px_rgba(27,194,236,0.08)] transition hover:scale-105 hover:text-white lg:px-2.5 lg:py-1.5 lg:text-[8px]"
+              className="w-fit cursor-pointer rounded-md border px-2 py-1 font-michroma text-[5.5px] uppercase shadow-[0_0_10px_rgb(var(--court-accent-rgb)/0.08)] transition hover:scale-105 hover:text-white lg:px-2.5 lg:py-1.5 lg:text-[8px]"
               style={{
                 color: lineup.isPublic ? "#22C55E" : "rgba(255,255,255,0.45)",
                 borderColor: lineup.isPublic

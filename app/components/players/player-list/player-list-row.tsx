@@ -81,7 +81,7 @@ export function PlayerListRow({
       key={player.id}
       className={`flex w-full items-stretch rounded-md border text-left font-michroma text-[10px] transition-all duration-200 sm:text-xs ${
         isSelected
-          ? "border-[#178aa7] bg-[#1bc2ec]/10 text-[#1bc2ec]"
+          ? "border-[rgb(var(--court-accent-rgb)/0.65)] bg-[rgb(var(--court-accent-rgb)/0.1)] text-[var(--court-accent)]"
           : "border-white/10 bg-black/20 text-white/90 hover:border-white/30 hover:bg-white/5"
       }`}
     >
@@ -95,8 +95,8 @@ export function PlayerListRow({
         }
         className={`shrink-0 cursor-pointer px-1 py-1 text-xs transition-colors duration-200 sm:px-1.5 sm:text-sm ${
           isFavorite
-            ? "text-[#1bc2ec]"
-            : "text-white/20 hover:text-[#1bc2ec]/60"
+            ? "text-[var(--court-accent)]"
+            : "text-white/20 hover:text-[rgb(var(--court-accent-rgb)/0.6)]"
         }`}
       >
         {isFavorite ? "★" : "☆"}
@@ -138,7 +138,7 @@ export function PlayerListRow({
             </span>
 
             {selectedStatValue !== null && (
-              <span className="shrink-0 rounded border border-[#1bc2ec]/30 bg-[#1bc2ec]/10 px-1.5 py-0.5 text-[10px] text-[#1bc2ec]">
+              <span className="shrink-0 rounded border border-[rgb(var(--court-accent-rgb)/0.3)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-1.5 py-0.5 text-[10px] text-[var(--court-accent)]">
                 {selectedStatValue}
                 {isPercentSort ? "%" : ""}
               </span>

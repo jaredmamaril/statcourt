@@ -1,4 +1,4 @@
-﻿import { getPlayerInsights, type Player, type StatMode } from "../court-data";
+import { getPlayerInsights, type Player, type StatMode } from "../court-data";
 import {
   getPlayerRating,
   type PlayerRatingCategory,
@@ -133,3 +133,4 @@ export function ArchetypeCardGrid({
     </div>
   );
 }
+

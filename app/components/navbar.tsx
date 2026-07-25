@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "./supabase-client";
 import { useUserProfile } from "../lib/use-user-profile";
+import { resetStatCourtTheme } from "../lib/themes";
 import {
   Activity,
   Bookmark,
@@ -65,6 +66,7 @@ export default function Navbar() {
 
   async function signOut() {
     await supabase.auth.signOut();
+    resetStatCourtTheme();
     setIsUserMenuOpen(false);
   }
 
@@ -154,7 +156,7 @@ export default function Navbar() {
               priority
               className="h-10 w-10 rounded-md lg:h-12 lg:w-12"
             />
-            <span className="hidden font-michroma text-xl font-bold text-[#1bc2ec] min-[360px]:block lg:text-2xl">
+            <span className="hidden font-michroma text-xl font-bold text-[var(--court-accent)] min-[360px]:block lg:text-2xl">
               statcourt
             </span>
           </Link>
@@ -171,7 +173,7 @@ export default function Navbar() {
                     setIsMobileMenuOpen(false);
                     setIsUserMenuOpen(false);
                   }}
-                  className={`font-michroma text-base transition-colors duration-200 ${isActive ? "text-[#1bc2ec] text-lg font-bold" : "text-white/90 hover:text-[#1bc2ec]"}`}
+                  className={`font-michroma text-base transition-colors duration-200 ${isActive ? "text-[var(--court-accent)] text-lg font-bold" : "text-white/90 hover:text-[var(--court-accent)]"}`}
                 >
                   {item.label}
                 </Link>
@@ -186,7 +188,7 @@ export default function Navbar() {
                 setIsMobileMenuOpen((current) => !current);
                 setIsUserMenuOpen(false);
               }}
-              className="flex h-9 w-9 items-center justify-center rounded-md border border-[#1bc2ec]/45 bg-[#1bc2ec]/10 text-[#1bc2ec] shadow-[0_0_14px_rgba(27,194,236,0.18)] transition hover:border-[#1bc2ec]/80 hover:bg-[#1bc2ec]/18 hover:text-white lg:hidden"
+              className="flex h-9 w-9 items-center justify-center rounded-md border border-[color:rgb(var(--court-accent-rgb)/0.45)] bg-[color:rgb(var(--court-accent-rgb)/0.1)] text-[var(--court-accent)] shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.18)] transition hover:border-[color:rgb(var(--court-accent-rgb)/0.8)] hover:bg-[color:rgb(var(--court-accent-rgb)/0.18)] hover:text-white lg:hidden"
               aria-label="Toggle navigation menu"
             >
               {isMobileMenuOpen ? (
@@ -207,11 +209,11 @@ export default function Navbar() {
                       setIsUserMenuOpen((current) => !current);
                       setIsMobileMenuOpen(false);
                     }}
-                    className="flex h-9 w-9 items-center justify-center rounded-md border border-[#1bc2ec]/60 bg-[#1bc2ec]/10 font-michroma text-[12px] text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.24)] transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/20 hover:text-white hover:shadow-[0_0_24px_rgba(27,194,236,0.42)] lg:h-10 lg:w-44 lg:justify-start lg:gap-2 lg:px-3"
+                    className="flex h-9 w-9 items-center justify-center rounded-md border border-[color:rgb(var(--court-accent-rgb)/0.6)] bg-[color:rgb(var(--court-accent-rgb)/0.1)] font-michroma text-[12px] text-[var(--court-accent)] shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.24)] transition hover:border-[var(--court-accent)] hover:bg-[color:rgb(var(--court-accent-rgb)/0.2)] hover:text-white hover:shadow-[0_0_24px_rgb(var(--court-accent-rgb)/0.42)] lg:h-10 lg:w-44 lg:justify-start lg:gap-2 lg:px-3"
                     aria-expanded={isUserMenuOpen}
                     aria-label="Open account menu"
                   >
-                    <span className="relative flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded bg-[#06131d] text-[10px] uppercase text-[#1bc2ec]">
+                    <span className="relative flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded bg-[var(--court-panel)] text-[10px] uppercase text-[var(--court-accent)]">
                       {userAvatarUrl ? (
                         <Image
                           src={userAvatarUrl}
@@ -231,7 +233,7 @@ export default function Navbar() {
                   </button>
 
                   <div
-                    className={`absolute right-0 top-10 z-999 w-36 rounded-md border border-white/10 bg-[#06131d]/95 p-1.5 shadow-[0_0_20px_rgba(0,0,0,0.4)] transition lg:top-11 lg:w-44 lg:p-2 ${
+                    className={`absolute right-0 top-10 z-999 w-36 rounded-md border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_95%,transparent)] p-1.5 shadow-[0_0_20px_rgba(0,0,0,0.4)] transition lg:top-11 lg:w-44 lg:p-2 ${
                       isUserMenuOpen
                         ? "pointer-events-auto translate-y-0 opacity-100"
                         : "pointer-events-none -translate-y-1 opacity-0"
@@ -240,7 +242,7 @@ export default function Navbar() {
                     <Link
                       href="/profile"
                       onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center gap-1.5 rounded px-2 py-1.5 text-left font-michroma text-[7px] uppercase text-white/90 transition hover:bg-white/5 hover:text-[#1bc2ec] lg:gap-2 lg:px-3 lg:py-2 lg:text-[10px]"
+                      className="flex items-center gap-1.5 rounded px-2 py-1.5 text-left font-michroma text-[7px] uppercase text-white/90 transition hover:bg-white/5 hover:text-[var(--court-accent)] lg:gap-2 lg:px-3 lg:py-2 lg:text-[10px]"
                     >
                       <UserCircle className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
                       My Profile
@@ -249,7 +251,7 @@ export default function Navbar() {
                     <Link
                       href="/lineups?tab=saved"
                       onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center gap-1.5 rounded px-2 py-1.5 text-left font-michroma text-[7px] uppercase text-white/90 transition hover:bg-white/5 hover:text-[#1bc2ec] lg:gap-2 lg:px-3 lg:py-2 lg:text-[10px]"
+                      className="flex items-center gap-1.5 rounded px-2 py-1.5 text-left font-michroma text-[7px] uppercase text-white/90 transition hover:bg-white/5 hover:text-[var(--court-accent)] lg:gap-2 lg:px-3 lg:py-2 lg:text-[10px]"
                     >
                       <Bookmark className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
                       Saved Lineups
@@ -258,7 +260,7 @@ export default function Navbar() {
                     <Link
                       href="/settings"
                       onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center gap-1.5 rounded px-2 py-1.5 text-left font-michroma text-[7px] uppercase text-white/90 transition hover:bg-white/5 hover:text-[#1bc2ec] lg:gap-2 lg:px-3 lg:py-2 lg:text-[10px]"
+                      className="flex items-center gap-1.5 rounded px-2 py-1.5 text-left font-michroma text-[7px] uppercase text-white/90 transition hover:bg-white/5 hover:text-[var(--court-accent)] lg:gap-2 lg:px-3 lg:py-2 lg:text-[10px]"
                     >
                       <Settings className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
                       Settings
@@ -280,12 +282,12 @@ export default function Navbar() {
                 href="/signin"
                 className="
                 group inline-flex cursor-pointer items-center gap-1.5 rounded-md
-                border border-[#1bc2ec]/60 bg-[#06131d]/80
+                border border-[color:rgb(var(--court-accent-rgb)/0.6)] bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)]
                 px-2.5 py-2 font-michroma text-[7px] uppercase tracking-wide
-                text-[#1bc2ec] shadow-[0_0_18px_rgba(27,194,236,0.22)]
+                text-[var(--court-accent)] shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.22)]
                 transition duration-200
-                hover:border-[#1bc2ec]/80 hover:bg-[#1bc2ec]/10
-                hover:text-white hover:shadow-[0_0_20px_rgba(27,194,236,0.35)]
+                hover:border-[color:rgb(var(--court-accent-rgb)/0.8)] hover:bg-[color:rgb(var(--court-accent-rgb)/0.1)]
+                hover:text-white hover:shadow-[0_0_20px_rgb(var(--court-accent-rgb)/0.35)]
                 active:scale-[0.97]
                 lg:gap-2 lg:px-3.5 lg:text-[9px]
               "
@@ -301,7 +303,7 @@ export default function Navbar() {
       {isMobileMenuOpen && (
         <div
           ref={mobileMenuPanelRef}
-          className="fixed left-0 right-0 top-12 z-999998 border-b border-[#1bc2ec]/20 bg-[#06131d]/95 px-3 py-2 shadow-[0_0_24px_rgba(0,0,0,0.45)] lg:hidden"
+          className="fixed left-0 right-0 top-12 z-999998 border-b border-[color:rgb(var(--court-accent-rgb)/0.2)] bg-[color:color-mix(in_srgb,var(--court-panel)_95%,transparent)] px-3 py-2 shadow-[0_0_24px_rgba(0,0,0,0.45)] lg:hidden"
         >
           <div className="grid gap-1.5">
             {navItems.map((item) => {

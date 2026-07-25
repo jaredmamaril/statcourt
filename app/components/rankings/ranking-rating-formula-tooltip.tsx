@@ -143,17 +143,17 @@ export function RankingRatingFormulaTooltip({
           setIsOpen((current) => !current);
         }}
         onBlur={() => setIsOpen(false)}
-        className="inline-flex h-5 w-5 cursor-help items-center justify-center rounded-full border border-[#1bc2ec]/45 bg-black/35 text-[#1bc2ec] transition hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/10 lg:h-6 lg:w-6"
+        className="inline-flex h-5 w-5 cursor-help items-center justify-center rounded-full border border-[rgb(var(--court-accent-rgb)/0.45)] bg-black/35 text-[var(--court-accent)] transition hover:border-[var(--court-accent)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)] lg:h-6 lg:w-6"
       >
         <Info className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
       </button>
 
       <div
-        className={`pointer-events-none fixed top-24 left-3 right-3 z-[999] rounded-md border border-[#1bc2ec]/35 bg-black/95 p-2.5 text-left font-michroma shadow-[0_0_18px_rgba(27,194,236,0.18)] transition-opacity duration-150 sm:absolute sm:top-full sm:right-auto sm:left-1/2 sm:mt-2 sm:w-72 sm:max-w-[calc(100vw-2rem)] sm:-translate-x-1/2 lg:w-76 lg:p-3 ${
+        className={`pointer-events-none fixed top-24 left-3 right-3 z-[999] rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-black/95 p-2.5 text-left font-michroma shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.18)] transition-opacity duration-150 sm:absolute sm:top-full sm:right-auto sm:left-1/2 sm:mt-2 sm:w-72 sm:max-w-[calc(100vw-2rem)] sm:-translate-x-1/2 lg:w-76 lg:p-3 ${
           isOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100"
         }`}
       >
-        <p className="text-[8px] uppercase text-[#1bc2ec] lg:text-[10px]">
+        <p className="text-[8px] uppercase text-[var(--court-accent)] lg:text-[10px]">
           {formula.title}
         </p>
 
@@ -164,3 +164,4 @@ export function RankingRatingFormulaTooltip({
     </div>
   );
 }
+

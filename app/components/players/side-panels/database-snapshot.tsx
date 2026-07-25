@@ -34,7 +34,7 @@ function SnapshotMetricLabel({ label, tooltip }: SnapshotMetricLabelProps) {
         {label}
       </p>
 
-      <Info className="h-3 w-3 cursor-help text-[#1bc2ec]/45 transition group-hover/metric:text-[#1bc2ec]" />
+      <Info className="h-3 w-3 cursor-help text-[rgb(var(--court-accent-rgb)/0.45)] transition group-hover/metric:text-[var(--court-accent)]" />
 
       <div className="pointer-events-none absolute left-1/2 top-full z-999 mt-1 w-52 -translate-x-1/2 rounded-md border border-white/15 bg-black/95 p-2 text-left text-[7px] leading-relaxed text-white/50 opacity-0 shadow-[0_0_18px_rgba(0,0,0,0.55)] transition-opacity duration-200 group-hover/metric:opacity-100">
         {tooltip}
@@ -60,7 +60,7 @@ export function DatabaseSnapshot({
       <div className="group/database relative inline-block">
         <p className="flex cursor-help items-center justify-center gap-1 text-[8px] tracking-wide text-white/25 transition group-hover/database:text-white/50">
           Database Snapshot
-          <Info className="h-4 w-4 text-[#1bc2ec]/60 transition group-hover/database:text-[#1bc2ec]" />
+          <Info className="h-4 w-4 text-[rgb(var(--court-accent-rgb)/0.6)] transition group-hover/database:text-[var(--court-accent)]" />
         </p>
 
         <div className="pointer-events-none absolute left-1/2 top-full z-999 mt-2 w-72 -translate-x-1/2 rounded-md border border-white/15 bg-black/95 p-3 text-left opacity-0 shadow-[0_0_24px_rgba(0,0,0,0.55)] transition-opacity duration-200 group-hover/database:opacity-100">
@@ -70,7 +70,7 @@ export function DatabaseSnapshot({
 
           <div className="space-y-2 text-[8px] leading-relaxed">
             <p>
-              <span className="text-[#1bc2ec]">Players In Database</span>
+              <span className="text-[var(--court-accent)]">Players In Database</span>
               <span className="text-white/45"> - total players loaded.</span>
             </p>
             <p>
@@ -102,7 +102,7 @@ export function DatabaseSnapshot({
             label="Players In Database"
             tooltip="Total players currently loaded from the active player database."
           />
-          <p className="text-lg text-[#1bc2ec]">{playersCount}</p>
+          <p className="text-lg text-[var(--court-accent)]">{playersCount}</p>
         </div>
 
         <div className="mb-2 border-t border-white/10 pt-3">
@@ -116,7 +116,7 @@ export function DatabaseSnapshot({
           <div className="mx-auto grid max-w-32 grid-cols-3 gap-3 text-center">
             {positions.map((position) => (
               <div key={position}>
-                <p className="text-[8px] text-[#1bc2ec]">{position}</p>
+                <p className="text-[8px] text-[var(--court-accent)]">{position}</p>
                 <p className="text-[10px] text-white/45">
                   {positionBreakdown[position]}
                 </p>

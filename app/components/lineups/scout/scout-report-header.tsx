@@ -17,7 +17,7 @@ export function ScoutReportHeader({
             Scouting Report
           </h2>
 
-          <p className="mt-1 w-fit rounded border border-[#1bc2ec]/35 bg-[#1bc2ec]/10 px-2 py-0.5 font-michroma text-[6px] uppercase text-[#1bc2ec] lg:text-[9px]">
+          <p className="mt-1 w-fit rounded border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 py-0.5 font-michroma text-[6px] uppercase text-[var(--court-accent)] lg:text-[9px]">
             Based on {statProfileLabel}
           </p>
 

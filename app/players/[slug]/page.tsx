@@ -184,10 +184,10 @@ export default function PlayerProfilePage() {
   }, [params.slug, players]);
 
   const stats = player ? getStatsByMode(player, statMode) : null;
-  const teamColor = player ? getTeamColor(player.team) : "#1bc2ec";
+  const teamColor = player ? getTeamColor(player.team) : "var(--court-accent)";
   const readableTeamColor = player
     ? getReadableTeamColor(player.team)
-    : "#1bc2ec";
+    : "var(--court-accent)";
   const profileLabel =
     player && statMode === "peak"
       ? getProfileLabel(player.statProfiles?.peak)
@@ -244,7 +244,7 @@ export default function PlayerProfilePage() {
           label: "Playmaking",
           category: "playmaking",
           value: getPlayerRating(player, "playmaking", statMode),
-          color: "#1bc2ec",
+          color: "var(--court-accent)",
         },
         {
           label: "Rebounding",
@@ -348,7 +348,7 @@ export default function PlayerProfilePage() {
 
           <Link
             href="/players"
-            className="rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/16 px-3 py-2 font-michroma text-[8px] uppercase text-[#1bc2ec] shadow-[0_0_14px_rgba(27,194,236,0.16)] transition hover:scale-[1.02] hover:bg-[#1bc2ec]/24 lg:px-4 lg:text-[10px]"
+            className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.7)] bg-[rgb(var(--court-accent-rgb)/0.16)] px-3 py-2 font-michroma text-[8px] uppercase text-[var(--court-accent)] shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.16)] transition hover:scale-[1.02] hover:bg-[rgb(var(--court-accent-rgb)/0.24)] lg:px-4 lg:text-[10px]"
           >
             Browse Players
           </Link>
@@ -378,7 +378,7 @@ export default function PlayerProfilePage() {
             )}
 
             <div
-              className="rounded-lg border bg-[#06131d]/86 p-2.5 shadow-[0_0_22px_rgba(27,194,236,0.12)] lg:p-6"
+              className="rounded-lg border bg-[color:color-mix(in_srgb,var(--court-panel)_86%,transparent)] p-2.5 shadow-[0_0_22px_rgb(var(--court-accent-rgb)/0.12)] lg:p-6"
               style={{
                 borderColor: `${teamColor}55`,
               }}
@@ -420,7 +420,7 @@ export default function PlayerProfilePage() {
                 </div>
 
                 <div>
-                  <p className="font-michroma text-[7px] uppercase tracking-wide text-[#1bc2ec] sm:text-[8px] lg:text-[10px]">
+                  <p className="font-michroma text-[7px] uppercase tracking-wide text-[var(--court-accent)] sm:text-[8px] lg:text-[10px]">
                     Player Profile
                   </p>
 
@@ -447,7 +447,7 @@ export default function PlayerProfilePage() {
                           onClick={() => setStatMode(mode)}
                           className={`rounded px-2 py-1 font-michroma text-[7px] uppercase transition lg:px-3 lg:text-[9px] ${
                             isActive
-                              ? "bg-[#1bc2ec]/20 text-[#1bc2ec]"
+                              ? "bg-[rgb(var(--court-accent-rgb)/0.2)] text-[var(--court-accent)]"
                               : "text-white/35 hover:bg-white/5 hover:text-white/70"
                           }`}
                         >
@@ -462,18 +462,18 @@ export default function PlayerProfilePage() {
                   </p>
 
                   <div className="mt-2 flex flex-wrap gap-1.5 lg:mt-3 lg:gap-2">
-                    <div className="flex overflow-hidden rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/16 shadow-[0_0_14px_rgba(27,194,236,0.16)]">
+                    <div className="flex overflow-hidden rounded-md border border-[rgb(var(--court-accent-rgb)/0.7)] bg-[rgb(var(--court-accent-rgb)/0.16)] shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.16)]">
                       <button
                         type="button"
                         onClick={() => comparePlayer("left")}
-                        className="px-2.5 py-1.5 font-michroma text-[7px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/24 lg:px-3 lg:text-[9px]"
+                        className="px-2.5 py-1.5 font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.24)] lg:px-3 lg:text-[9px]"
                       >
                         Left Compare
                       </button>
                       <button
                         type="button"
                         onClick={() => comparePlayer("right")}
-                        className="border-l border-[#1bc2ec]/35 px-2.5 py-1.5 font-michroma text-[7px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/24 lg:px-3 lg:text-[9px]"
+                        className="border-l border-[rgb(var(--court-accent-rgb)/0.35)] px-2.5 py-1.5 font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.24)] lg:px-3 lg:text-[9px]"
                       >
                         Right Compare
                       </button>
@@ -510,7 +510,7 @@ export default function PlayerProfilePage() {
                     <StatBox
                       label="Star"
                       value={starPower.toFixed(0)}
-                      color="#1bc2ec"
+                      color="var(--court-accent)"
                     />
                   </div>
 
@@ -538,7 +538,7 @@ export default function PlayerProfilePage() {
             <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
               <div className="grid gap-4">
                 <section className="rounded-lg border border-white/10 bg-black/25 p-3 lg:p-5">
-                  <p className="font-michroma text-[9px] uppercase text-[#1bc2ec] lg:text-xs">
+                  <p className="font-michroma text-[9px] uppercase text-[var(--court-accent)] lg:text-xs">
                     Ratings Breakdown
                   </p>
 
@@ -581,7 +581,7 @@ export default function PlayerProfilePage() {
                 </section>
 
                 <section className="rounded-lg border border-white/10 bg-black/25 p-2.5 lg:p-5">
-                  <p className="font-michroma text-[8px] uppercase text-[#1bc2ec] lg:text-xs">
+                  <p className="font-michroma text-[8px] uppercase text-[var(--court-accent)] lg:text-xs">
                     Scouting Identity
                   </p>
 
@@ -596,7 +596,7 @@ export default function PlayerProfilePage() {
                       title="Star Power"
                       value={getStarPowerTier(starPower)}
                       description={`${starPower.toFixed(0)} star score`}
-                      color="#1bc2ec"
+                      color="var(--court-accent)"
                     />
                   </div>
 
@@ -647,7 +647,7 @@ export default function PlayerProfilePage() {
 
               <aside className="grid gap-4">
                 <section className="rounded-lg border border-white/10 bg-black/25 p-3 lg:p-5">
-                  <p className="font-michroma text-[9px] uppercase text-[#1bc2ec] lg:text-xs">
+                  <p className="font-michroma text-[9px] uppercase text-[var(--court-accent)] lg:text-xs">
                     Similar Players
                   </p>
                   <div className="mt-3 grid gap-2">
@@ -674,7 +674,7 @@ export default function PlayerProfilePage() {
                 </section>
 
                 <section className="rounded-lg border border-white/10 bg-black/25 p-3 lg:p-5">
-                  <p className="font-michroma text-[9px] uppercase text-[#1bc2ec] lg:text-xs">
+                  <p className="font-michroma text-[9px] uppercase text-[var(--court-accent)] lg:text-xs">
                     Best Lineup Fits
                   </p>
                   <div className="mt-3 grid gap-2">
@@ -730,10 +730,10 @@ export default function PlayerProfilePage() {
           onMouseDown={() => setIsBuildSlotModalOpen(false)}
         >
           <div
-            className="w-full max-w-82 rounded-lg border border-[#1bc2ec]/40 bg-[#06131d] p-3 shadow-[0_0_26px_rgba(27,194,236,0.16)] lg:max-w-md lg:p-5"
+            className="w-full max-w-82 rounded-lg border border-[rgb(var(--court-accent-rgb)/0.4)] bg-[var(--court-panel)] p-3 shadow-[0_0_26px_rgb(var(--court-accent-rgb)/0.16)] lg:max-w-md lg:p-5"
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <p className="font-michroma text-[9px] uppercase text-[#1bc2ec] lg:text-xs">
+            <p className="font-michroma text-[9px] uppercase text-[var(--court-accent)] lg:text-xs">
               Build With Player
             </p>
 
@@ -759,9 +759,9 @@ export default function PlayerProfilePage() {
                     key={slot}
                     type="button"
                     onClick={() => buildWithPlayer(slot)}
-                    className="grid grid-cols-[34px_minmax(0,1fr)_auto] items-center gap-2 rounded-md border border-white/10 bg-black/25 px-2.5 py-2 text-left transition hover:scale-[1.02] hover:border-[#1bc2ec]/55 hover:bg-[#1bc2ec]/10 lg:grid-cols-[44px_minmax(0,1fr)_auto] lg:px-3"
+                    className="grid grid-cols-[34px_minmax(0,1fr)_auto] items-center gap-2 rounded-md border border-white/10 bg-black/25 px-2.5 py-2 text-left transition hover:scale-[1.02] hover:border-[rgb(var(--court-accent-rgb)/0.55)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)] lg:grid-cols-[44px_minmax(0,1fr)_auto] lg:px-3"
                   >
-                    <span className="font-michroma text-[9px] text-[#1bc2ec] lg:text-xs">
+                    <span className="font-michroma text-[9px] text-[var(--court-accent)] lg:text-xs">
                       {slot}
                     </span>
 
@@ -815,8 +815,18 @@ function StatBox({
   value: string;
   color?: string;
 }) {
+  const borderColor =
+    color === "var(--court-accent)"
+      ? "rgb(var(--court-accent-rgb) / 0.35)"
+      : color === "#FFFFFF"
+        ? undefined
+        : `${color}55`;
+
   return (
-    <div className="rounded-md border border-white/10 bg-black/25 p-2 text-center lg:p-3">
+    <div
+      className="rounded-md border border-white/10 bg-black/25 p-2 text-center lg:p-3"
+      style={{ borderColor }}
+    >
       <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
         {label}
       </p>
@@ -838,10 +848,15 @@ function InfoCard({
   description: string;
   color: string;
 }) {
+  const borderColor =
+    color === "var(--court-accent)"
+      ? "rgb(var(--court-accent-rgb) / 0.35)"
+      : `${color}55`;
+
   return (
     <div
       className="rounded-md border bg-black/25 p-2 lg:p-3"
-      style={{ borderColor: `${color}55` }}
+      style={{ borderColor }}
     >
       <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[9px]">
         {title}
@@ -858,3 +873,4 @@ function InfoCard({
     </div>
   );
 }
+

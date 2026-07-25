@@ -13,7 +13,7 @@ export function NameLineupModal({
 }: NameLineupModalProps) {
   return (
     <div className="fixed inset-0 z-1000 flex animate-[modalBackdropIn_120ms_ease-out_both] items-center justify-center bg-black/65 px-3">
-      <div className="w-full max-w-75 animate-[cardFaceIn_140ms_ease-out_both] rounded-md border border-[#1bc2ec]/60 bg-[#07111f] p-4 shadow-lg lg:max-w-md lg:p-6">
+      <div className="w-full max-w-75 animate-[cardFaceIn_140ms_ease-out_both] rounded-md border border-[rgb(var(--court-accent-rgb)/0.6)] bg-[var(--court-panel-alt)] p-4 shadow-lg lg:max-w-md lg:p-6">
         <p className="font-michroma text-[7px] uppercase text-white/40 lg:text-[10px]">
           Save Lineup
         </p>
@@ -25,7 +25,7 @@ export function NameLineupModal({
         <input
           value={lineupNameInput}
           onChange={(event) => onChangeName(event.target.value)}
-          className="mt-4 w-full rounded-md border border-white/15 bg-black/30 px-3 py-2 font-michroma text-[9px] text-white outline-none placeholder:text-white/30 focus:border-[#1bc2ec] lg:mt-5 lg:px-4 lg:py-3 lg:text-xs"
+          className="mt-4 w-full rounded-md border border-white/15 bg-black/30 px-3 py-2 font-michroma text-[9px] text-white outline-none placeholder:text-white/30 focus:border-[var(--court-accent)] lg:mt-5 lg:px-4 lg:py-3 lg:text-xs"
           placeholder="Lineup name..."
         />
 
@@ -41,7 +41,7 @@ export function NameLineupModal({
           <button
             type="button"
             onClick={onSave}
-            className="rounded-md border border-[#1bc2ec]/70 bg-[#1bc2ec]/10 px-3 py-2 font-michroma text-[8px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 lg:px-4 lg:py-3 lg:text-xs"
+            className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.7)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-3 py-2 font-michroma text-[8px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] lg:px-4 lg:py-3 lg:text-xs"
           >
             Save
           </button>

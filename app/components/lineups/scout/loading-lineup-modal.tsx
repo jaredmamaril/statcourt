@@ -68,7 +68,7 @@ export function LoadingLineupModal({
       }`}
     >
       <div
-        className={`w-full max-w-72 rounded-md border border-[#1bc2ec]/60 bg-[#07111f] p-4 shadow-[0_0_35px_rgba(27,194,236,0.25)] transition-all duration-300 sm:max-w-md sm:p-6 ${
+        className={`w-full max-w-72 rounded-md border border-[rgb(var(--court-accent-rgb)/0.6)] bg-[var(--court-panel-alt)] p-4 shadow-[0_0_35px_rgb(var(--court-accent-rgb)/0.25)] transition-all duration-300 sm:max-w-md sm:p-6 ${
           isExiting
             ? "translate-y-2 scale-95 opacity-0"
             : "translate-y-0 scale-100 opacity-100"
@@ -78,7 +78,7 @@ export function LoadingLineupModal({
           Loading Lineup
         </p>
 
-        <p className="mt-2 min-h-4 font-michroma text-[10px] text-[#1bc2ec] sm:mt-3 sm:min-h-5 sm:text-sm">
+        <p className="mt-2 min-h-4 font-michroma text-[10px] text-[var(--court-accent)] sm:mt-3 sm:min-h-5 sm:text-sm">
           {steps[currentStep]}
         </p>
 
@@ -86,7 +86,7 @@ export function LoadingLineupModal({
 
         <div className="mt-4 h-1 overflow-hidden rounded-full bg-white/10 sm:mt-5 sm:h-1.5">
           <div
-            className="h-full rounded-full bg-[#1bc2ec] transition-all duration-100"
+            className="h-full rounded-full bg-[var(--court-accent)] transition-all duration-100"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -99,7 +99,7 @@ export function LoadingLineupModal({
                 index <= currentStep ? "text-white/70" : "text-white/25"
               }`}
             >
-              <span className="text-[#1bc2ec]">
+              <span className="text-[var(--court-accent)]">
                 {index < currentStep ? "✓" : index === currentStep ? "•" : "·"}
               </span>{" "}
               {step}

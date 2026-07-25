@@ -76,7 +76,7 @@ export function ScoutReportModal({
   return (
     <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 px-2 lg:px-4">
       <div
-        className="relative w-full max-w-85 animate-[modalIn_260ms_ease-out] rounded-md border bg-[#07111f] lg:max-w-xl"
+        className="relative w-full max-w-85 animate-[modalIn_260ms_ease-out] rounded-md border bg-[var(--court-panel-alt)] lg:max-w-xl"
         style={{
           borderColor: `${scoutArchetypeColor}99`,
         }}

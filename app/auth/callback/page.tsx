@@ -61,11 +61,12 @@ export default function AuthCallbackPage() {
 
   return (
     <main className="page-enter flex min-h-svh items-center justify-center bg-background px-4 text-white">
-      <div className="rounded-lg border border-[#1bc2ec]/35 bg-[#06131d]/85 px-4 py-3 text-center shadow-[0_0_24px_rgba(27,194,236,0.16)]">
-        <p className="font-michroma text-[8px] uppercase text-[#1bc2ec] lg:text-[10px]">
+      <div className="rounded-lg border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[color:color-mix(in_srgb,var(--court-panel)_85%,transparent)] px-4 py-3 text-center shadow-[0_0_24px_rgb(var(--court-accent-rgb)/0.16)]">
+        <p className="font-michroma text-[8px] uppercase text-[var(--court-accent)] lg:text-[10px]">
           {status}
         </p>
       </div>
     </main>
   );
 }
+

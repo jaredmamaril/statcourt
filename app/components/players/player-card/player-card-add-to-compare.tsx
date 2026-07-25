@@ -59,7 +59,7 @@ export function PlayerCardAddToCompare({
               onAddPlayerToCompare("left");
               setIsCompareMenuOpen(false);
             }}
-            className="rounded border border-white/15 px-2 py-1.5 text-left font-michroma text-[8px] text-white/70 transition hover:border-[#1bc2ec]/60 hover:text-[#1bc2ec] sm:px-3 sm:py-2 sm:text-[10px]"
+            className="rounded border border-white/15 px-2 py-1.5 text-left font-michroma text-[8px] text-white/70 transition hover:border-[rgb(var(--court-accent-rgb)/0.6)] hover:text-[var(--court-accent)] sm:px-3 sm:py-2 sm:text-[10px]"
           >
             <span className="block text-white/40">Left Player</span>
             <span className="block truncate">
@@ -74,7 +74,7 @@ export function PlayerCardAddToCompare({
               onAddPlayerToCompare("right");
               setIsCompareMenuOpen(false);
             }}
-            className="rounded border border-white/15 px-2 py-1.5 text-left font-michroma text-[8px] text-white/70 transition hover:border-[#1bc2ec]/60 hover:text-[#1bc2ec] sm:px-3 sm:py-2 sm:text-[10px]"
+            className="rounded border border-white/15 px-2 py-1.5 text-left font-michroma text-[8px] text-white/70 transition hover:border-[rgb(var(--court-accent-rgb)/0.6)] hover:text-[var(--court-accent)] sm:px-3 sm:py-2 sm:text-[10px]"
           >
             <span className="block text-white/40">Right Player</span>
             <span className="block truncate">

@@ -47,12 +47,12 @@ export function TopRankingCards({
             key={player.id}
             tabIndex={0}
             style={{ animationDelay: `${index * 45}ms` }}
-            className="group relative min-w-0 rounded-md border border-[#1bc2ec]/30 bg-black/40 px-1.5 py-2 transition-all duration-200 animate-[playerListRowIn_180ms_ease-out_both] outline-none hover:z-200 hover:border-[#1bc2ec]/70 hover:bg-[#1bc2ec]/10 focus:z-200 focus:border-[#1bc2ec]/70 focus:bg-[#1bc2ec]/10 lg:px-4 lg:py-3"
+            className="group relative min-w-0 rounded-md border border-[rgb(var(--court-accent-rgb)/0.3)] bg-black/40 px-1.5 py-2 transition-all duration-200 animate-[playerListRowIn_180ms_ease-out_both] outline-none hover:z-200 hover:border-[rgb(var(--court-accent-rgb)/0.7)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)] focus:z-200 focus:border-[rgb(var(--court-accent-rgb)/0.7)] focus:bg-[rgb(var(--court-accent-rgb)/0.1)] lg:px-4 lg:py-3"
           >
             <div className="flex min-w-0 flex-col gap-1">
               <div>
                 <div className="flex items-center justify-between gap-1">
-                  <p className="font-michroma text-[9px] font-bold text-[#1bc2ec] lg:text-[11px]">
+                  <p className="font-michroma text-[9px] font-bold text-[var(--court-accent)] lg:text-[11px]">
                     {rankLabel}
                   </p>
 
@@ -114,3 +114,4 @@ export function TopRankingCards({
     </div>
   );
 }
+

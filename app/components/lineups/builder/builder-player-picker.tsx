@@ -130,7 +130,7 @@ export function BuilderPlayerPicker({
           value={buildPlayerSearch}
           onChange={(event) => onSearchChange(event.target.value)}
           placeholder="Search Player..."
-          className="h-5 w-51 rounded-md border border-white/15 bg-black/30 px-3 font-michroma text-[8px] text-white outline-none transition placeholder:text-white/30 focus:border-white lg:h-10 lg:w-full lg:text-xs"
+          className="h-5 w-51 rounded-md border border-[rgb(var(--court-accent-rgb)/0.22)] bg-[color:color-mix(in_srgb,var(--court-panel)_72%,transparent)] px-3 font-michroma text-[8px] text-white outline-none transition placeholder:text-white/30 focus:border-[rgb(var(--court-accent-rgb)/0.75)] focus:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_78%,transparent)] lg:h-10 lg:w-full lg:text-xs"
         />
       </div>
 
@@ -203,7 +203,7 @@ export function BuilderPlayerPicker({
               onChange={(event) =>
                 setBaseDisplayLimit(Number(event.target.value))
               }
-              className="h-4.5 rounded border border-white/15 bg-[#06131d] px-0.5 text-[4.8px] text-white outline-none focus:border-[#1bc2ec] lg:h-7 lg:px-1.5 lg:text-[8px]"
+              className="h-4.5 rounded border border-white/15 bg-[var(--court-panel)] px-0.5 text-[4.8px] text-white outline-none focus:border-[var(--court-accent)] lg:h-7 lg:px-1.5 lg:text-[8px]"
             >
               {BUILD_PLAYER_DISPLAY_OPTIONS.map((option) => (
                 <option key={option} value={option}>
@@ -220,7 +220,7 @@ export function BuilderPlayerPicker({
               onChange={(event) =>
                 setLoadMoreAmount(Number(event.target.value))
               }
-              className="h-4.5 rounded border border-white/15 bg-[#06131d] px-0.5 text-[4.8px] text-white outline-none focus:border-[#1bc2ec] lg:h-7 lg:px-1.5 lg:text-[8px]"
+              className="h-4.5 rounded border border-white/15 bg-[var(--court-panel)] px-0.5 text-[4.8px] text-white outline-none focus:border-[var(--court-accent)] lg:h-7 lg:px-1.5 lg:text-[8px]"
             >
               {BUILD_PLAYER_LOAD_MORE_OPTIONS.map((option) => (
                 <option key={option} value={option}>
@@ -234,7 +234,7 @@ export function BuilderPlayerPicker({
             type="button"
             onClick={loadMoreBuildPlayers}
             disabled={!hasMoreBuildPlayers}
-            className="h-4.5 rounded border border-[#1bc2ec]/45 bg-[#1bc2ec]/10 px-1 font-michroma text-[4.8px] uppercase text-[#1bc2ec] transition hover:bg-[#1bc2ec]/20 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:h-7 lg:px-3 lg:text-[8px]"
+            className="h-4.5 rounded border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-1 font-michroma text-[4.8px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:h-7 lg:px-3 lg:text-[8px]"
           >
             {hasMoreBuildPlayers ? "Load More" : "All Shown"}
           </button>
@@ -295,10 +295,10 @@ function BuilderPlayerListRow({
       onClick={() => onPickPlayer(player.name)}
       className={`grid w-full min-w-0 touch-none grid-cols-[34px_minmax(0,1fr)_52px] items-center gap-2 rounded-md border bg-black/30 px-2 py-1.5 text-left transition lg:grid-cols-[46px_minmax(0,1fr)_70px] lg:px-3 lg:py-2 ${
         isSelected
-          ? "border-[#1bc2ec] bg-[#1bc2ec]/15 shadow-[0_0_18px_rgba(27,194,236,0.35)]"
+          ? "border-[var(--court-accent)] bg-[rgb(var(--court-accent-rgb)/0.15)] shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.35)]"
           : isDragging
-            ? "border-[#1bc2ec] bg-[#1bc2ec]/15 opacity-45 shadow-[0_0_22px_rgba(27,194,236,0.35)]"
-            : "border-white/15 hover:border-[#1bc2ec] hover:bg-[#1bc2ec]/10"
+            ? "border-[var(--court-accent)] bg-[rgb(var(--court-accent-rgb)/0.15)] opacity-45 shadow-[0_0_22px_rgb(var(--court-accent-rgb)/0.35)]"
+            : "border-white/15 hover:border-[var(--court-accent)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)]"
       }`}
     >
       <PlayerImage
@@ -319,7 +319,7 @@ function BuilderPlayerListRow({
       </span>
 
       <span className="text-right">
-        <span className="block font-michroma text-[7px] text-[#1bc2ec] lg:text-[10px]">
+        <span className="block font-michroma text-[7px] text-[var(--court-accent)] lg:text-[10px]">
           {positionRating.toFixed(1)}
         </span>
         <span
@@ -327,7 +327,7 @@ function BuilderPlayerListRow({
             positionFit === "natural"
               ? "text-emerald-400"
               : positionFit === "flex"
-                ? "text-[#1bc2ec]"
+                ? "text-[var(--court-accent)]"
                 : positionFit === "reach"
                   ? "text-yellow-400"
                   : "text-red-400"
