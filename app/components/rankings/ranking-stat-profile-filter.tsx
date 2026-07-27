@@ -24,7 +24,7 @@ export function RankingStatProfileFilter({
       <button
         type="button"
         onClick={onToggle}
-        className="flex h-6 min-w-28 scale-[1.02] cursor-pointer items-center justify-between rounded-md border border-[rgb(var(--court-accent-rgb)/0.6)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 font-michroma text-[9px] text-[var(--court-accent)] ring-1 ring-[rgb(var(--court-accent-rgb)/0.3)] transition hover:border-[rgb(var(--court-accent-rgb)/0.8)] sm:h-auto sm:min-w-36 sm:px-3 sm:py-1 sm:text-xs"
+        className="flex h-6 min-w-28 scale-[1.02] cursor-pointer items-center justify-between rounded-md border border-[rgb(var(--court-accent-rgb)/0.95)] bg-[color:color-mix(in_srgb,var(--court-accent)_38%,var(--court-panel-alt))] px-2 font-michroma text-[9px] text-[var(--court-accent)] ring-1 ring-[rgb(var(--court-accent-rgb)/0.45)] transition hover:border-[rgb(var(--court-accent-rgb)/0.95)] sm:h-auto sm:min-w-36 sm:px-3 sm:py-1 sm:text-xs"
       >
         <span className="truncate">{statProfileLabels[selectedProfile]}</span>
 
@@ -42,7 +42,7 @@ export function RankingStatProfileFilter({
               onClick={() => onSelectProfile(profile)}
               className={`block w-full cursor-pointer px-2 py-1.5 text-left font-michroma text-[9px] transition sm:px-3 sm:py-2 sm:text-xs ${
                 selectedProfile === profile
-                  ? "bg-[rgb(var(--court-accent-rgb)/0.2)] text-[var(--court-accent)]"
+                  ? "bg-[color:color-mix(in_srgb,var(--court-accent)_38%,var(--court-panel-alt))] text-[var(--court-accent)]"
                   : "text-white/70 hover:bg-white/10"
               }`}
             >

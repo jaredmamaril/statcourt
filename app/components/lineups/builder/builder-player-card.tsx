@@ -135,7 +135,7 @@ function BuilderPlayerCardComponent({
           onPickPlayer(player.name);
         }
       }}
-      className={`group relative h-21 touch-none overflow-hidden rounded-md border bg-black/30 p-0.75 text-center transition hover:border-[var(--court-accent)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)] lg:h-52 lg:p-3 ${
+      className={`group relative h-21 touch-none overflow-hidden rounded-md border bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] p-0.75 text-center transition hover:border-[var(--court-accent)] hover:bg-[rgb(var(--court-accent-rgb)/0.14)] lg:h-52 lg:p-3 ${
         isSelected
           ? "border-[var(--court-accent)] bg-[rgb(var(--court-accent-rgb)/0.15)] shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.35)]"
           : isDragging

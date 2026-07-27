@@ -44,8 +44,8 @@ export function ArchetypeFilterDropdown({
         onClick={onOpenDropdown}
         className={`flex h-6 min-w-0 max-w-37.5 cursor-pointer items-center gap-1 rounded-md border px-2 font-michroma text-[10px] transition-all duration-200 sm:h-auto sm:max-w-38 sm:gap-2 sm:py-1 sm:text-xs ${
           filteredArchetype
-            ? "scale-[1.02] border-[rgb(var(--court-accent-rgb)/0.7)] bg-[rgb(var(--court-accent-rgb)/0.1)] text-[var(--court-accent)] ring-1 ring-[rgb(var(--court-accent-rgb)/0.3)]"
-            : "border-white/20 bg-black/10 text-white/60 hover:border-white/60"
+            ? "scale-[1.02] border-[rgb(var(--court-accent-rgb)/0.7)] bg-[color:color-mix(in_srgb,var(--court-accent)_38%,var(--court-panel-alt))] text-[var(--court-accent)] ring-1 ring-[rgb(var(--court-accent-rgb)/0.45)]"
+            : "border-white/20 bg-[color:color-mix(in_srgb,var(--court-panel)_86%,black)] text-white/70 hover:border-white/60"
         }`}
         style={
           filteredArchetype

@@ -23,7 +23,7 @@ export const ArchetypeDescriptionPanel = forwardRef<
   return (
     <div
       ref={ref}
-      className="scroll-mt-24 mt-4 rounded-md border border-white/10 bg-black/30 p-2.5 lg:mt-6 lg:p-4"
+      className="scroll-mt-24 mt-4 rounded-md border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_90%,black)] p-2.5 lg:mt-6 lg:p-4"
     >
       <h2
         className="font-michroma text-xs uppercase tracking-wide lg:text-sm"

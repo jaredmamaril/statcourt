@@ -81,8 +81,8 @@ export function PlayerListRow({
       key={player.id}
       className={`flex w-full items-stretch rounded-md border text-left font-michroma text-[10px] transition-all duration-200 sm:text-xs ${
         isSelected
-          ? "border-[rgb(var(--court-accent-rgb)/0.65)] bg-[rgb(var(--court-accent-rgb)/0.1)] text-[var(--court-accent)]"
-          : "border-white/10 bg-black/20 text-white/90 hover:border-white/30 hover:bg-white/5"
+          ? "border-[rgb(var(--court-accent-rgb)/0.85)] bg-[color:color-mix(in_srgb,var(--court-accent)_34%,var(--court-panel-alt))] text-[var(--court-accent)]"
+          : "border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] text-white/90 hover:border-[rgb(var(--court-accent-rgb)/0.75)] hover:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_96%,black)]"
       }`}
     >
       <button

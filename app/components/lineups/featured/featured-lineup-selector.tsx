@@ -22,15 +22,15 @@ export function FeaturedLineupSelector({
           onClick={() => onSelectLineup(lineupName)}
           className={`h-7 animate-[playerListRowIn_160ms_ease-out_both] rounded-md border px-2 text-left font-michroma text-[8px] transition lg:h-auto lg:px-4 lg:py-3 lg:text-xs ${
             selectedLineupName === lineupName
-              ? "bg-black/30"
-              : "border-white/10 bg-black/30 text-white/60 hover:text-white"
+              ? "bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)]"
+              : "border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] text-white/65 hover:text-white"
           }`}
           style={
             selectedLineupName === lineupName
               ? {
                   color: selectedCategoryColor,
                   borderColor: `${selectedCategoryColor}99`,
-                  backgroundColor: `${selectedCategoryColor}18`,
+                  backgroundColor: `${selectedCategoryColor}24`,
                   animationDelay: `${index * 35}ms`,
                 }
               : {

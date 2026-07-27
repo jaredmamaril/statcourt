@@ -26,7 +26,7 @@ export function BuilderPositionTabs({
             onClick={() => onSelectPosition(position)}
             className={`h-6 min-w-7 cursor-pointer rounded border px-0.5 font-michroma text-[6px] transition lg:h-10 lg:w-14 lg:text-xs ${
               isActive
-                ? "border-[var(--court-accent)] text-[var(--court-accent)]"
+                ? "border-[var(--court-accent)] bg-[rgb(var(--court-accent-rgb)/0.34)] text-[var(--court-accent)] shadow-[0_0_12px_rgb(var(--court-accent-rgb)/0.16)]"
                 : hasPlayer
                   ? "border-emerald-500/70 text-emerald-400"
                   : "border-white/15 text-white/45 hover:border-white/40 hover:text-white/75"

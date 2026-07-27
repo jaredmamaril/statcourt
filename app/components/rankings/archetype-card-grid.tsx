@@ -83,7 +83,7 @@ export function ArchetypeCardGrid({
             key={label}
             type="button"
             onClick={() => onSelectArchetype(label)}
-            className={`cursor-pointer rounded-md border bg-black/30 px-2.5 py-2 text-left font-michroma transition-all duration-200 hover:bg-white/10 lg:px-4 lg:py-4 ${
+            className={`cursor-pointer rounded-md border bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] px-2.5 py-2 text-left font-michroma transition-all duration-200 hover:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_92%,black)] lg:px-4 lg:py-4 ${
               isSelected ? "scale-[1.01]" : ""
             }`}
             style={{

@@ -100,7 +100,7 @@ export function PlayerList({
             ))}
 
             {totalPlayersCount > 0 && (
-              <div className="col-span-full mt-2 rounded-md border border-white/10 bg-black/20 p-1.5 font-michroma lg:p-3">
+              <div className="col-span-full mt-2 rounded-md border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_90%,black)] p-1.5 font-michroma lg:p-3">
                 <div className="flex flex-col gap-1.5 lg:flex-row lg:items-center lg:justify-between lg:gap-2">
                   <p className="text-center text-[5.5px] uppercase text-white/35 lg:text-left lg:text-[9px]">
                     Showing {players.length} of {totalPlayersCount}
@@ -183,10 +183,10 @@ function PlayerListCard({
 
   return (
     <div
-      className={`relative flex min-h-33 flex-col items-center rounded-md border bg-black/20 px-2 py-2 text-center font-michroma transition-all duration-200 ${
+      className={`relative flex min-h-33 flex-col items-center rounded-md border bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] px-2 py-2 text-center font-michroma transition-all duration-200 ${
         isSelected
-          ? "border-[var(--court-accent)] text-[var(--court-accent)] shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.18)]"
-          : "border-white/10 text-white/85 hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/5"
+          ? "border-[var(--court-accent)] bg-[color:color-mix(in_srgb,var(--court-accent)_34%,var(--court-panel-alt))] text-[var(--court-accent)] shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.24)]"
+          : "border-white/15 text-white/85 hover:-translate-y-0.5 hover:border-[rgb(var(--court-accent-rgb)/0.75)] hover:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_96%,black)]"
       }`}
     >
       <button

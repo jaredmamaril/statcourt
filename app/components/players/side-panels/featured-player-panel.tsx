@@ -45,7 +45,7 @@ export function FeaturedPlayerPanel({
 
   return (
     <div className="panel-reveal absolute -right-58 top-4 hidden w-64 text-center font-michroma uppercase xl:block">
-      <div className="mt-2 rounded-md border border-white/10 bg-black/10 p-3">
+      <div className="mt-2 rounded-md border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_90%,black)] p-3">
         <p className="mb-2 text-[8px] tracking-wide text-white/25">
           Featured Player
         </p>

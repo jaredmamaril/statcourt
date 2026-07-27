@@ -34,7 +34,7 @@ export function FeaturedLineupDetail({
 }: FeaturedLineupDetailProps) {
   return (
     <div
-      className="animate-[pageEnter_220ms_ease-out_both] rounded-md border border-white/10 bg-black/25 p-2 lg:p-4"
+      className="animate-[pageEnter_220ms_ease-out_both] rounded-md border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_90%,black)] p-2 lg:p-4"
     >
       <h2
         className="border-b pb-1.5 text-center font-michroma text-[10px] uppercase tracking-wide text-white lg:pb-3 lg:text-sm"
@@ -52,7 +52,7 @@ export function FeaturedLineupDetail({
         />
 
         <div
-          className="relative min-h-0 animate-[playerListRowIn_220ms_ease-out_both] rounded-md border bg-black/30 p-2 lg:min-h-96 lg:p-5"
+          className="relative min-h-0 animate-[playerListRowIn_220ms_ease-out_both] rounded-md border bg-[color:color-mix(in_srgb,var(--court-panel-alt)_88%,black)] p-2 lg:min-h-96 lg:p-5"
           style={{
             borderColor: `${selectedCategoryColor}55`,
           }}

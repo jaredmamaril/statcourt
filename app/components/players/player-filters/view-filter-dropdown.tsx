@@ -27,7 +27,7 @@ export function ViewFilterDropdown({
       <button
         type="button"
         onClick={onOpenDropdown}
-        className="flex h-6 cursor-pointer items-center gap-1 rounded-md border border-white/20 bg-black/10 px-2 font-michroma text-[9px] text-white/60 transition-all duration-200 hover:border-[rgb(var(--court-accent-rgb)/0.5)] hover:text-[var(--court-accent)] sm:h-auto sm:gap-2 sm:py-1 sm:text-xs"
+        className="flex h-6 cursor-pointer items-center gap-1 rounded-md border border-white/20 bg-[color:color-mix(in_srgb,var(--court-panel)_86%,black)] px-2 font-michroma text-[9px] text-white/60 transition-all duration-200 hover:border-[rgb(var(--court-accent-rgb)/0.5)] hover:text-[var(--court-accent)] sm:h-auto sm:gap-2 sm:py-1 sm:text-xs"
       >
         <span>{selectedViewLabel}</span>
         <span className="text-[8px] text-[var(--court-accent)] sm:text-xs">▾</span>
@@ -42,7 +42,7 @@ export function ViewFilterDropdown({
               onClick={() => onSelectView(option.value)}
               className={`block w-full cursor-pointer px-2 py-1.5 text-left font-michroma text-[9px] sm:px-3 sm:py-2 sm:text-xs ${
                 selectedView === option.value
-                  ? "bg-[rgb(var(--court-accent-rgb)/0.1)] text-[var(--court-accent)]"
+                  ? "bg-[color:color-mix(in_srgb,var(--court-accent)_38%,var(--court-panel-alt))] text-[var(--court-accent)]"
                   : "text-white/70 hover:bg-white/10"
               }`}
             >

@@ -161,9 +161,10 @@ export default function Court() {
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-background text-white">
       <div
-        className="pointer-events-none fixed inset-0 z-0 bg-center bg-repeat"
+        className="pointer-events-none fixed inset-0 z-0 bg-repeat"
         style={{
           backgroundImage: "var(--court-pattern)",
+          backgroundPosition: "top left",
           backgroundSize: "900px auto",
         }}
         aria-hidden="true"

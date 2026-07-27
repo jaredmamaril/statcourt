@@ -14,7 +14,7 @@ export function RecentlyScouted({
   if (recentlyViewedPlayers.length === 0) return null;
 
   return (
-    <div className="panel-reveal mt-4 rounded-md border border-white/10 bg-black/10 p-3">
+    <div className="panel-reveal mt-4 rounded-md border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_90%,black)] p-3">
       <p className="mb-2 text-[8px] tracking-wide text-white/25">
         Recently Scouted
       </p>

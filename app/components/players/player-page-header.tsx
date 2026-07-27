@@ -23,7 +23,7 @@ export function PlayerPageHeader({
           value={playerSearch}
           onChange={(e) => onPlayerSearchChange(e.target.value)}
           placeholder="Search player..."
-          className="mt-1 w-full max-w-65 rounded-md border border-[rgb(var(--court-accent-rgb)/0.25)] bg-[color:color-mix(in_srgb,var(--court-panel)_72%,transparent)] px-3 py-1.5 text-center font-michroma text-[10px] text-white/80 outline-none transition placeholder:text-white/35 focus:border-[rgb(var(--court-accent-rgb)/0.75)] focus:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_78%,transparent)] sm:max-w-none sm:w-64 sm:px-4 sm:text-sm"
+          className="mt-1 w-full max-w-65 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[color:color-mix(in_srgb,var(--court-panel)_90%,black)] px-3 py-1.5 text-center font-michroma text-[10px] text-white/80 outline-none transition placeholder:text-white/40 focus:border-[rgb(var(--court-accent-rgb)/0.8)] focus:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_94%,black)] sm:max-w-none sm:w-64 sm:px-4 sm:text-sm"
         />
       </div>
 

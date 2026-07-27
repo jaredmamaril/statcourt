@@ -8,7 +8,7 @@ export function ArchetypeHeader() {
       <div className="group relative">
         <button
           type="button"
-          className="cursor-help rounded border border-white/15 bg-black/30 px-2 py-1 font-michroma text-[8px] uppercase text-white/50 lg:text-[9px]"
+          className="cursor-help rounded border border-white/20 bg-[color:color-mix(in_srgb,var(--court-panel)_86%,black)] px-2 py-1 font-michroma text-[8px] uppercase text-white/60 lg:text-[9px]"
         >
           Rarity
         </button>

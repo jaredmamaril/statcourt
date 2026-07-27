@@ -45,7 +45,7 @@ export function SkillFilterDropdown({
       <button
         type="button"
         onClick={onOpenDropdown}
-        className="flex h-6 scale-[1.02] cursor-pointer items-center gap-1 rounded-md border border-[rgb(var(--court-accent-rgb)/0.7)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 font-michroma text-[9px] text-[var(--court-accent)] ring-1 ring-[rgb(var(--court-accent-rgb)/0.3)] transition-all duration-200 sm:h-auto sm:gap-2 sm:py-1 sm:text-xs"
+        className="flex h-6 scale-[1.02] cursor-pointer items-center gap-1 rounded-md border border-[rgb(var(--court-accent-rgb)/0.95)] bg-[color:color-mix(in_srgb,var(--court-accent)_38%,var(--court-panel-alt))] px-2 font-michroma text-[9px] text-[var(--court-accent)] ring-1 ring-[rgb(var(--court-accent-rgb)/0.45)] transition-all duration-200 sm:h-auto sm:gap-2 sm:py-1 sm:text-xs"
       >
         <span className="truncate">
           {selectedSkillOption?.label ?? "Career OVR"}
@@ -65,7 +65,7 @@ export function SkillFilterDropdown({
               onClick={() => onSelectSkill(option.value)}
               className={`block w-full cursor-pointer px-2 py-1.5 text-left font-michroma text-[9px] sm:px-3 sm:py-2 sm:text-xs ${
                 selectedSkill === option.value
-                  ? "bg-[rgb(var(--court-accent-rgb)/0.1)] text-[var(--court-accent)]"
+                  ? "bg-[color:color-mix(in_srgb,var(--court-accent)_38%,var(--court-panel-alt))] text-[var(--court-accent)]"
                   : "text-white/70 hover:bg-white/10"
               }`}
             >

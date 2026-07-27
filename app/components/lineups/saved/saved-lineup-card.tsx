@@ -42,7 +42,7 @@ export function SavedLineupCard({
 
   return (
     <div
-      className="group animate-[playerListRowIn_180ms_ease-out_both] rounded-md border border-white/10 bg-black/25 p-2 transition-all duration-200 hover:-translate-y-1 lg:p-4"
+      className="group animate-[playerListRowIn_180ms_ease-out_both] rounded-md border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_90%,black)] p-2 transition-all duration-200 hover:-translate-y-1 lg:p-4"
       style={{
         borderColor: `${archetypeColor}33`,
         animationDelay: `${Math.min(index, 10) * 35}ms`,
@@ -64,7 +64,7 @@ export function SavedLineupCard({
           </p>
 
           <div className="mt-1 flex flex-wrap items-center gap-1">
-            <p className="w-fit rounded border border-white/10 bg-white/4 px-1.5 py-0.5 font-michroma text-[4.5px] uppercase text-white/35 lg:px-2 lg:text-[7px]">
+            <p className="w-fit rounded border border-white/15 bg-white/8 px-1.5 py-0.5 font-michroma text-[4.5px] uppercase text-white/45 lg:px-2 lg:text-[7px]">
               {statProfileLabel}
             </p>
 

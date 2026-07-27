@@ -63,8 +63,8 @@ export function SavedLineupsToolbar({
             onClick={onToggleProfileDropdown}
             className={`flex h-8 min-w-24 cursor-pointer items-center justify-between gap-1 rounded-md border px-2 font-michroma text-[7px] transition lg:h-auto lg:min-w-42 lg:gap-3 lg:px-4 lg:py-3 lg:text-xs ${
               savedLineupProfileFilter !== "all"
-                ? "scale-[1.02] border-[rgb(var(--court-accent-rgb)/0.7)] bg-[rgb(var(--court-accent-rgb)/0.1)] text-[var(--court-accent)] ring-1 ring-[rgb(var(--court-accent-rgb)/0.25)]"
-                : "border-white/15 bg-black/30 text-white/60 hover:border-white/40"
+                ? "scale-[1.02] border-[rgb(var(--court-accent-rgb)/0.9)] bg-[rgb(var(--court-accent-rgb)/0.3)] text-[var(--court-accent)] ring-1 ring-[rgb(var(--court-accent-rgb)/0.3)]"
+                : "border-white/20 bg-[color:color-mix(in_srgb,var(--court-panel)_86%,black)] text-white/65 hover:border-white/40"
             }`}
           >
             <span>{savedProfileLabel}</span>
@@ -97,8 +97,8 @@ export function SavedLineupsToolbar({
             onClick={onToggleSortDropdown}
             className={`flex h-8 min-w-24 cursor-pointer items-center justify-between gap-1 rounded-md border px-2 font-michroma text-[7px] transition lg:h-auto lg:min-w-48 lg:gap-3 lg:px-4 lg:py-3 lg:text-xs ${
               savedLineupSort !== "highestOvr"
-                ? "scale-[1.02] border-[rgb(var(--court-accent-rgb)/0.7)] bg-[rgb(var(--court-accent-rgb)/0.1)] text-[var(--court-accent)] ring-1 ring-[rgb(var(--court-accent-rgb)/0.25)]"
-                : "border-white/15 bg-black/30 text-white/60 hover:border-white/40"
+                ? "scale-[1.02] border-[rgb(var(--court-accent-rgb)/0.9)] bg-[rgb(var(--court-accent-rgb)/0.3)] text-[var(--court-accent)] ring-1 ring-[rgb(var(--court-accent-rgb)/0.3)]"
+                : "border-white/20 bg-[color:color-mix(in_srgb,var(--court-panel)_86%,black)] text-white/65 hover:border-white/40"
             }`}
           >
             <span>Sort: {savedSortLabel}</span>

@@ -96,7 +96,7 @@ export function DatabaseSnapshot({
         </div>
       </div>
 
-      <div className="mt-2 rounded-md border border-white/10 bg-black/10 p-3">
+      <div className="mt-2 rounded-md border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_90%,black)] p-3">
         <div className="mb-1">
           <SnapshotMetricLabel
             label="Players In Database"

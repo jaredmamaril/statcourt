@@ -32,12 +32,12 @@ export function FeaturedLineupCategoryGrid({
             key={card.title}
             type="button"
             onClick={() => onSelectCategory(card.title, featuredLineup)}
-            className={`animate-[playerListRowIn_180ms_ease-out_both] grid min-h-26 grid-cols-1 rounded-md border bg-black/30 p-2 text-left transition-all duration-200 active:scale-[0.98] lg:min-h-36 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-6 lg:p-4 ${
+            className={`animate-[playerListRowIn_180ms_ease-out_both] grid min-h-26 grid-cols-1 rounded-md border bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] p-2 text-left transition-all duration-200 active:scale-[0.98] lg:min-h-36 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-6 lg:p-4 ${
               isSelected ? "-translate-y-0.5" : "hover:-translate-y-0.5"
             }`}
             style={{
               borderColor: isSelected ? card.color : `${card.color}80`,
-              backgroundColor: isSelected ? `${card.color}14` : undefined,
+              backgroundColor: isSelected ? `${card.color}22` : undefined,
               boxShadow: isSelected ? `0 0 22px ${card.color}26` : undefined,
               animationDelay: `${Math.min(index, 5) * 45}ms`,
             }}

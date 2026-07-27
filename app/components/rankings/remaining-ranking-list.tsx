@@ -103,7 +103,7 @@ export function RemainingRankingList({
       </div>
 
       {players.length > 3 && (
-        <div className="mt-2 rounded-md border border-white/10 bg-black/20 p-1.5 font-michroma lg:mt-3 lg:p-3">
+        <div className="mt-2 rounded-md border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_90%,black)] p-1.5 font-michroma lg:mt-3 lg:p-3">
           <div className="flex flex-col gap-1.5 lg:flex-row lg:items-center lg:justify-between lg:gap-2">
             <p className="text-center text-[5.5px] uppercase text-white/35 lg:text-left lg:text-[9px]">
               Showing {remainingPlayers.length} of {players.length - 3}{" "}
@@ -190,7 +190,7 @@ function RankingPlayerRow({
     <div
       tabIndex={0}
       style={{ animationDelay: `${animationDelay}ms` }}
-      className="group relative grid w-full grid-cols-[26px_30px_minmax(0,1fr)_36px] items-center gap-1 rounded-md border border-white/10 bg-black/30 px-1.5 py-1 transition-all duration-200 animate-[playerListRowIn_180ms_ease-out_both] outline-none hover:z-200 hover:border-[rgb(var(--court-accent-rgb)/0.5)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)] focus:z-200 focus:border-[rgb(var(--court-accent-rgb)/0.5)] focus:bg-[rgb(var(--court-accent-rgb)/0.1)] sm:grid-cols-[36px_48px_minmax(0,1fr)_42px_48px] sm:gap-1.5 sm:px-2 sm:py-1.5 lg:grid-cols-[44px_64px_minmax(0,1fr)_48px_56px] lg:gap-2 lg:px-3 lg:py-2"
+      className="group relative grid w-full grid-cols-[26px_30px_minmax(0,1fr)_36px] items-center gap-1 rounded-md border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] px-1.5 py-1 transition-all duration-200 animate-[playerListRowIn_180ms_ease-out_both] outline-none hover:z-200 hover:border-[rgb(var(--court-accent-rgb)/0.75)] hover:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_96%,black)] focus:z-200 focus:border-[rgb(var(--court-accent-rgb)/0.75)] focus:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_96%,black)] sm:grid-cols-[36px_48px_minmax(0,1fr)_42px_48px] sm:gap-1.5 sm:px-2 sm:py-1.5 lg:grid-cols-[44px_64px_minmax(0,1fr)_48px_56px] lg:gap-2 lg:px-3 lg:py-2"
     >
       <span className="font-michroma text-[9px] font-bold text-[var(--court-accent)] sm:text-[10px] lg:text-xs">
         #{rank}
@@ -269,7 +269,7 @@ function RankingPlayerCard({
     <div
       tabIndex={0}
       style={{ animationDelay: `${animationDelay}ms` }}
-      className="group relative flex min-h-36 flex-col rounded-md border border-white/10 bg-black/30 px-1.5 py-1.5 text-center transition-all duration-200 animate-[playerListRowIn_180ms_ease-out_both] outline-none hover:z-200 hover:-translate-y-0.5 hover:border-[rgb(var(--court-accent-rgb)/0.5)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)] focus:z-200 focus:border-[rgb(var(--court-accent-rgb)/0.5)] focus:bg-[rgb(var(--court-accent-rgb)/0.1)] lg:min-h-44 lg:px-2 lg:py-2"
+      className="group relative flex min-h-36 flex-col rounded-md border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] px-1.5 py-1.5 text-center transition-all duration-200 animate-[playerListRowIn_180ms_ease-out_both] outline-none hover:z-200 hover:-translate-y-0.5 hover:border-[rgb(var(--court-accent-rgb)/0.75)] hover:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_96%,black)] focus:z-200 focus:border-[rgb(var(--court-accent-rgb)/0.75)] focus:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_96%,black)] lg:min-h-44 lg:px-2 lg:py-2"
     >
       <div className="flex items-center justify-between font-michroma text-[8px] lg:text-[10px]">
         <span className="font-bold text-[var(--court-accent)]">#{rank}</span>

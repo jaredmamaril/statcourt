@@ -27,8 +27,8 @@ export function LineupPageHeader({
               onClick={() => onTabChange(tab.value)}
               className={`flex shrink-0 cursor-pointer items-center justify-center rounded-b-md rounded-t-none border border-t-0 px-3 font-michroma text-[9px] uppercase tracking-wide transition-all duration-200 sm:px-4 sm:text-xs ${
                 isActive
-                  ? "h-7 border-[rgb(var(--court-accent-rgb)/0.7)] bg-[rgb(var(--court-accent-rgb)/0.2)] text-[var(--court-accent)] sm:h-10 lg:h-auto lg:py-4"
-                  : "h-6 border-white/10 bg-black/30 text-white/50 hover:border-white/30 hover:text-white/80 sm:h-8 lg:h-auto lg:py-2.5"
+                  ? "h-7 border-[rgb(var(--court-accent-rgb)/0.9)] bg-[rgb(var(--court-accent-rgb)/0.34)] text-[var(--court-accent)] shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.18)] sm:h-10 lg:h-auto lg:py-4"
+                  : "h-6 border-white/20 bg-[color:color-mix(in_srgb,var(--court-panel)_86%,black)] text-white/60 hover:border-white/35 hover:text-white/85 sm:h-8 lg:h-auto lg:py-2.5"
               }`}
             >
               {tab.label}

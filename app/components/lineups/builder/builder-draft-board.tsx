@@ -118,7 +118,7 @@ function BuilderDraftSlot({
               ? "border-[rgb(var(--court-accent-rgb)/0.8)] bg-[rgb(var(--court-accent-rgb)/0.15)] shadow-[0_0_16px_rgb(var(--court-accent-rgb)/0.35)]"
               : player
                 ? "border-emerald-400/50 bg-emerald-400/10 hover:border-[rgb(var(--court-accent-rgb)/0.7)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)]"
-                : "border-white/10 bg-black/20"
+                : "border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_86%,black)]"
       }`}
     >
       <span
@@ -179,7 +179,7 @@ function BuilderDraftBoardComponent({
   );
 
   return (
-    <div className="rounded-md border border-white/10 bg-black/20 p-1 lg:p-4">
+    <div className="rounded-md border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_90%,black)] p-1 lg:p-4">
       <div className="flex items-center justify-between">
         <div>
           <p className="font-michroma text-[6px] uppercase text-white/40 lg:text-[10px]">

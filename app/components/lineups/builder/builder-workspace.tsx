@@ -100,7 +100,7 @@ function PositionFitLegend() {
         aria-label="Position fit legend"
         aria-expanded={isOpen}
         onClick={() => setIsOpen((current) => !current)}
-        className="flex h-4 items-center gap-1 rounded border border-white/15 bg-black/30 px-1.5 font-michroma text-[5px] uppercase text-white/45 transition hover:border-[rgb(var(--court-accent-rgb)/0.7)] hover:text-[var(--court-accent)] lg:h-6 lg:px-2 lg:text-[7px]"
+        className="flex h-4 items-center gap-1 rounded border border-white/20 bg-[color:color-mix(in_srgb,var(--court-panel)_86%,black)] px-1.5 font-michroma text-[5px] uppercase text-white/55 transition hover:border-[rgb(var(--court-accent-rgb)/0.7)] hover:text-[var(--court-accent)] lg:h-6 lg:px-2 lg:text-[7px]"
       >
         Fit
         <span className="flex h-2.5 w-2.5 items-center justify-center rounded-full border border-current text-[6px] lg:h-3.5 lg:w-3.5 lg:text-[8px]">
@@ -310,7 +310,7 @@ export function BuilderWorkspace({
         <div className="grid grid-cols-[minmax(0,1fr)_122px] items-start gap-1 lg:grid-cols-[400px_300px_1fr] lg:gap-5">
           <div className="min-w-0">
             <div className="mb-3 flex flex-col items-center justify-center gap-1 lg:mb-2 lg:flex-row lg:gap-2">
-              <div className="inline-flex rounded-md border border-white/10 bg-black/25 p-0.5">
+              <div className="inline-flex rounded-md border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] p-0.5">
                 {(["career", "peak", "current"] as const).map((profile) => {
                   const isActive = builderStatProfile === profile;
                   const label =
@@ -327,7 +327,7 @@ export function BuilderWorkspace({
                       onClick={() => onStatProfileChange(profile)}
                       className={`rounded px-1.5 py-0.5 font-michroma text-[5.5px] uppercase transition lg:px-2.5 lg:py-1 lg:text-[8px] ${
                         isActive
-                          ? "bg-[rgb(var(--court-accent-rgb)/0.2)] text-[var(--court-accent)]"
+                          ? "bg-[rgb(var(--court-accent-rgb)/0.34)] text-[var(--court-accent)] shadow-[0_0_12px_rgb(var(--court-accent-rgb)/0.16)]"
                           : "text-white/35 hover:bg-white/5 hover:text-white/70"
                       }`}
                     >
@@ -337,7 +337,7 @@ export function BuilderWorkspace({
                 })}
               </div>
 
-              <div className="inline-flex rounded-md border border-white/10 bg-black/25 p-0.5">
+              <div className="inline-flex rounded-md border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] p-0.5">
                 {(["cards", "list"] as const).map((view) => {
                   const isActive = displayView === view;
 
@@ -348,7 +348,7 @@ export function BuilderWorkspace({
                       onClick={() => onDisplayViewChange(view)}
                       className={`rounded px-1.5 py-0.5 font-michroma text-[5.5px] uppercase transition lg:px-2.5 lg:py-1 lg:text-[8px] ${
                         isActive
-                          ? "bg-[rgb(var(--court-accent-rgb)/0.2)] text-[var(--court-accent)]"
+                          ? "bg-[rgb(var(--court-accent-rgb)/0.34)] text-[var(--court-accent)] shadow-[0_0_12px_rgb(var(--court-accent-rgb)/0.16)]"
                           : "text-white/35 hover:bg-white/5 hover:text-white/70"
                       }`}
                     >

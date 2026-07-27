@@ -47,7 +47,7 @@ export function TopRankingCards({
             key={player.id}
             tabIndex={0}
             style={{ animationDelay: `${index * 45}ms` }}
-            className="group relative min-w-0 rounded-md border border-[rgb(var(--court-accent-rgb)/0.3)] bg-black/40 px-1.5 py-2 transition-all duration-200 animate-[playerListRowIn_180ms_ease-out_both] outline-none hover:z-200 hover:border-[rgb(var(--court-accent-rgb)/0.7)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)] focus:z-200 focus:border-[rgb(var(--court-accent-rgb)/0.7)] focus:bg-[rgb(var(--court-accent-rgb)/0.1)] lg:px-4 lg:py-3"
+            className="group relative min-w-0 rounded-md border border-[rgb(var(--court-accent-rgb)/0.4)] bg-[color:color-mix(in_srgb,var(--court-panel)_90%,black)] px-1.5 py-2 transition-all duration-200 animate-[playerListRowIn_180ms_ease-out_both] outline-none hover:z-200 hover:border-[rgb(var(--court-accent-rgb)/0.85)] hover:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_96%,black)] focus:z-200 focus:border-[rgb(var(--court-accent-rgb)/0.85)] focus:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_96%,black)] lg:px-4 lg:py-3"
           >
             <div className="flex min-w-0 flex-col gap-1">
               <div>

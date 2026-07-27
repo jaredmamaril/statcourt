@@ -194,7 +194,7 @@ export function BuilderPlayerPicker({
         </div>
       </div>
 
-      <div className="rounded border border-white/10 bg-black/20 p-0.5 font-michroma lg:rounded-md lg:p-2">
+      <div className="rounded border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_90%,black)] p-0.5 font-michroma lg:rounded-md lg:p-2">
         <div className="flex flex-wrap items-center justify-center gap-0.5 lg:gap-2">
           <label className="flex items-center gap-0.5 text-[4px] uppercase text-white/35 lg:gap-1 lg:text-[7px]">
             Show
@@ -293,7 +293,7 @@ function BuilderPlayerListRow({
       {...attributes}
       type="button"
       onClick={() => onPickPlayer(player.name)}
-      className={`grid w-full min-w-0 touch-none grid-cols-[34px_minmax(0,1fr)_52px] items-center gap-2 rounded-md border bg-black/30 px-2 py-1.5 text-left transition lg:grid-cols-[46px_minmax(0,1fr)_70px] lg:px-3 lg:py-2 ${
+      className={`grid w-full min-w-0 touch-none grid-cols-[34px_minmax(0,1fr)_52px] items-center gap-2 rounded-md border bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] px-2 py-1.5 text-left transition lg:grid-cols-[46px_minmax(0,1fr)_70px] lg:px-3 lg:py-2 ${
         isSelected
           ? "border-[var(--court-accent)] bg-[rgb(var(--court-accent-rgb)/0.15)] shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.35)]"
           : isDragging
