@@ -365,6 +365,10 @@ html.statcourt-reduced-motion {
   transform: none !important;
 }
 
+.statcourt-reduced-motion .home-court-scan {
+  display: none !important;
+}
+
 /* Dropdowns/Lists */
 .statcourt-scroll {
   scrollbar-width: thin;

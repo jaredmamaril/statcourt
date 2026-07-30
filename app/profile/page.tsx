@@ -540,7 +540,7 @@ export default function ProfilePage() {
 
         <div
           ref={statCardsRef}
-          className="grid grid-cols-2 gap-2 lg:grid-cols-5 lg:gap-4"
+          className="grid grid-cols-3 gap-1.5 lg:grid-cols-5 lg:gap-4"
         >
           {accountStats.map((stat) => {
             const Icon = stat.icon;
@@ -548,7 +548,7 @@ export default function ProfilePage() {
             return (
               <div
                 key={stat.label}
-                className="group relative cursor-pointer rounded-lg border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-2.5 shadow-[0_0_16px_rgba(0,0,0,0.22)] transition duration-200 hover:-translate-y-1 hover:border-white/25 hover:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_90%,transparent)] hover:shadow-[0_0_26px_rgb(var(--court-accent-rgb)/0.16)] lg:p-4"
+                className="group relative cursor-pointer rounded-lg border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-1.5 shadow-[0_0_16px_rgba(0,0,0,0.22)] transition duration-200 hover:-translate-y-1 hover:border-white/25 hover:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_90%,transparent)] hover:shadow-[0_0_26px_rgb(var(--court-accent-rgb)/0.16)] lg:p-4"
               >
                 <button
                   type="button"
@@ -561,13 +561,13 @@ export default function ProfilePage() {
                     );
                   }}
                   onBlur={() => setOpenStatTooltip(null)}
-                  className="peer absolute top-2 right-2 z-20 cursor-help text-white/30 transition hover:text-[var(--court-accent)] lg:top-3 lg:right-3"
+                  className="peer absolute top-1.5 right-1.5 z-20 cursor-help text-white/30 transition hover:text-[var(--court-accent)] lg:top-3 lg:right-3"
                 >
-                  <Info className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
+                  <Info className="h-2.5 w-2.5 lg:h-3.5 lg:w-3.5" />
                 </button>
 
                 <div
-                  className={`pointer-events-none absolute top-7 right-1 left-1 z-30 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-black/95 p-1.5 font-michroma text-[5px] leading-relaxed text-white/70 shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.22)] transition lg:top-9 lg:right-3 lg:left-auto lg:w-52 lg:p-2 lg:text-[8px] ${
+                  className={`pointer-events-none absolute top-6 right-1 left-1 z-30 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-black/95 p-1.5 font-michroma text-[4.5px] leading-relaxed text-white/70 shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.22)] transition lg:top-9 lg:right-3 lg:left-auto lg:w-52 lg:p-2 lg:text-[8px] ${
                     openStatTooltip === stat.label
                       ? "opacity-100"
                       : "opacity-0 peer-hover:opacity-100"
@@ -577,29 +577,29 @@ export default function ProfilePage() {
                 </div>
 
                 <div
-                  className="mb-2 flex h-7 w-7 items-center justify-center rounded-md border bg-white/5 transition duration-200 group-hover:scale-105 group-hover:brightness-125 lg:mb-4 lg:h-9 lg:w-9"
+                  className="mb-1.5 flex h-5.5 w-5.5 items-center justify-center rounded-md border bg-white/5 transition duration-200 group-hover:scale-105 group-hover:brightness-125 lg:mb-4 lg:h-9 lg:w-9"
                   style={{
                     borderColor: `${stat.color}80`,
                     color: stat.color,
                     boxShadow: `0 0 16px ${stat.color}33`,
                   }}
                 >
-                  <Icon className="h-3 w-3 lg:h-4 lg:w-4" />
+                  <Icon className="h-2.5 w-2.5 lg:h-4 lg:w-4" />
                 </div>
 
-                <p className="font-michroma text-[6px] uppercase tracking-wide text-white/35 lg:text-[8px]">
+                <p className="line-clamp-2 font-michroma text-[4.5px] uppercase tracking-wide text-white/35 lg:text-[8px]">
                   {stat.label}
                 </p>
 
                 <div
-                  className="mt-1 font-michroma text-[10px] text-white lg:mt-2 lg:text-xl"
+                  className="font-michroma text-[7px] text-white lg:mt-2 lg:text-xl"
                   style={{
                     color: stat.color,
                     textShadow: `0 0 14px ${stat.color}55`,
                   }}
                 >
                   {isLoadingProfileStats ? (
-                    <LoadingSpinner className="h-4 w-4 lg:h-5 lg:w-5" />
+                    <LoadingSpinner className="h-3 w-3 lg:h-5 lg:w-5" />
                   ) : (
                     stat.value
                   )}
@@ -610,12 +610,12 @@ export default function ProfilePage() {
         </div>
 
         <div className="mt-3 grid gap-2 lg:mt-6 lg:grid-cols-[1fr_1fr] lg:gap-4">
-          <section className="flex rounded-lg border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-3 lg:min-h-80 lg:p-5">
+          <section className="flex rounded-lg border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-2 lg:min-h-80 lg:p-5">
             <div className="flex min-h-0 w-full flex-col">
-              <div className="mb-2.5 flex items-center gap-2 lg:mb-4 lg:gap-3">
-                <div className="flex min-w-0 flex-1 items-center gap-2 lg:gap-3">
-                  <Activity className="h-3.5 w-3.5 text-[var(--court-accent)] lg:h-5 lg:w-5" />
-                  <p className="font-michroma text-[9px] uppercase text-white lg:text-sm">
+              <div className="mb-1.5 flex items-center gap-1.5 lg:mb-4 lg:gap-3">
+                <div className="flex min-w-0 flex-1 items-center gap-1.5 lg:gap-3">
+                  <Activity className="h-3 w-3 text-[var(--court-accent)] lg:h-5 lg:w-5" />
+                  <p className="font-michroma text-[7px] uppercase text-white lg:text-sm">
                     Recent Activity
                   </p>
                 </div>
@@ -625,7 +625,7 @@ export default function ProfilePage() {
                     type="button"
                     onClick={clearRecentActivity}
                     disabled={isClearingActivity}
-                    className="rounded-md border border-white/10 bg-white/5 px-2 py-1 font-michroma text-[5px] uppercase text-white/35 transition hover:border-[rgb(var(--court-accent-rgb)/0.35)] hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:opacity-50 lg:text-[7px]"
+                    className="rounded-md border border-white/10 bg-white/5 px-1.5 py-0.5 font-michroma text-[4.5px] uppercase text-white/35 transition hover:border-[rgb(var(--court-accent-rgb)/0.35)] hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:opacity-50 lg:px-2 lg:py-1 lg:text-[7px]"
                   >
                     Clear
                   </button>
@@ -633,22 +633,22 @@ export default function ProfilePage() {
               </div>
 
               {activityStatus && (
-                <p className="mb-2 font-michroma text-[5px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[7px]">
+                <p className="mb-1.5 font-michroma text-[4.5px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:mb-2 lg:text-[7px]">
                   {activityStatus}
                 </p>
               )}
 
               {isLoadingProfileStats ? (
-                <div className="flex min-h-36 flex-col items-center justify-center rounded-md border border-white/10 bg-black/20 p-3 text-center lg:min-h-44 lg:p-5">
-                  <LoadingSpinner className="h-6 w-6 lg:h-8 lg:w-8" />
+                <div className="flex min-h-24 flex-col items-center justify-center rounded-md border border-white/10 bg-black/20 p-2 text-center lg:min-h-44 lg:p-5">
+                  <LoadingSpinner className="h-4 w-4 lg:h-8 lg:w-8" />
 
-                  <p className="mt-3 font-michroma text-[7px] uppercase text-white/45 lg:text-[9px]">
+                  <p className="mt-2 font-michroma text-[5.5px] uppercase text-white/45 lg:mt-3 lg:text-[9px]">
                     Loading activity
                   </p>
                 </div>
               ) : displayedRecentActivity.length > 0 ? (
                 <>
-                  <div className="statcourt-scroll grid max-h-54 gap-2 overflow-y-auto pr-1 lg:max-h-56">
+                  <div className="statcourt-scroll grid max-h-42 gap-1.5 overflow-y-auto pr-1 lg:max-h-56 lg:gap-2">
                     {displayedRecentActivity.map((activity) => {
                       const activityContent = (
                         <>
@@ -656,7 +656,7 @@ export default function ProfilePage() {
                             {activity.label}
                           </p>
 
-                          <p className="mt-1 font-michroma text-[5px] uppercase text-white/30 lg:text-[7px]">
+                          <p className="mt-0.5 font-michroma text-[4.5px] uppercase text-white/30 lg:mt-1 lg:text-[7px]">
                             {activity.activity_type.replaceAll("_", " ")}
                             {" / "}
                             {formatActivityTime(activity.created_at)}
@@ -669,7 +669,7 @@ export default function ProfilePage() {
                           <Link
                             key={activity.id}
                             href={activity.href}
-                            className="rounded-md border border-white/10 bg-black/20 p-2.5 transition hover:border-[rgb(var(--court-accent-rgb)/0.45)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)] lg:p-3"
+                            className="rounded-md border border-white/10 bg-black/20 p-1.5 transition hover:border-[rgb(var(--court-accent-rgb)/0.45)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)] lg:p-3"
                           >
                             {activityContent}
                           </Link>
@@ -679,7 +679,7 @@ export default function ProfilePage() {
                       return (
                         <div
                           key={activity.id}
-                          className="rounded-md border border-white/10 bg-black/20 p-2.5 lg:p-3"
+                          className="rounded-md border border-white/10 bg-black/20 p-1.5 lg:p-3"
                         >
                           {activityContent}
                         </div>
@@ -687,58 +687,58 @@ export default function ProfilePage() {
                     })}
                   </div>
 
-                  <div className="mt-2 grid grid-cols-3 gap-1.5 lg:mt-3 lg:gap-2">
+                  <div className="mt-1.5 grid grid-cols-3 gap-1 lg:mt-3 lg:gap-2">
                     <Link
                       href="/players"
-                      className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 py-1.5 text-center font-michroma text-[5px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white lg:px-3 lg:py-2 lg:text-[7px]"
+                      className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-1.5 py-1 text-center font-michroma text-[4.5px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white lg:px-3 lg:py-2 lg:text-[7px]"
                     >
                       Scout
                     </Link>
 
                     <Link
                       href="/lineups?tab=builder"
-                      className="rounded-md border border-[#EFBF04]/35 bg-[#EFBF04]/10 px-2 py-1.5 text-center font-michroma text-[5px] uppercase text-[#EFBF04] transition hover:bg-[#EFBF04]/20 hover:text-white lg:px-3 lg:py-2 lg:text-[7px]"
+                      className="rounded-md border border-[#EFBF04]/35 bg-[#EFBF04]/10 px-1.5 py-1 text-center font-michroma text-[4.5px] uppercase text-[#EFBF04] transition hover:bg-[#EFBF04]/20 hover:text-white lg:px-3 lg:py-2 lg:text-[7px]"
                     >
                       Build
                     </Link>
 
                     <Link
                       href="/lineups?tab=saved"
-                      className="rounded-md border border-[#A855F7]/35 bg-[#A855F7]/10 px-2 py-1.5 text-center font-michroma text-[5px] uppercase text-[#A855F7] transition hover:bg-[#A855F7]/20 hover:text-white lg:px-3 lg:py-2 lg:text-[7px]"
+                      className="rounded-md border border-[#A855F7]/35 bg-[#A855F7]/10 px-1.5 py-1 text-center font-michroma text-[4.5px] uppercase text-[#A855F7] transition hover:bg-[#A855F7]/20 hover:text-white lg:px-3 lg:py-2 lg:text-[7px]"
                     >
                       Saved
                     </Link>
                   </div>
                 </>
               ) : (
-                <div className="rounded-md border border-white/10 bg-black/20 p-3 text-center lg:p-5">
-                  <p className="font-michroma text-[10px] text-white/60 lg:text-sm">
+                <div className="rounded-md border border-white/10 bg-black/20 p-2 text-center lg:p-5">
+                  <p className="font-michroma text-[7px] text-white/60 lg:text-sm">
                     No activity yet.
                   </p>
 
-                  <p className="mt-1.5 font-michroma text-[6px] leading-relaxed text-white/35 lg:mt-2 lg:text-[9px]">
+                  <p className="mt-1 font-michroma text-[5px] leading-relaxed text-white/35 lg:mt-2 lg:text-[9px]">
                     Saved lineups, favorites, and scouting actions will appear
                     here.
                   </p>
 
-                  <div className="mt-2.5 grid grid-cols-3 gap-1.5 lg:mt-4 lg:gap-2">
+                  <div className="mt-2 grid grid-cols-3 gap-1 lg:mt-4 lg:gap-2">
                     <Link
                       href="/players"
-                      className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 py-2 font-michroma text-[5px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white lg:px-3 lg:py-2.5 lg:text-[7px]"
+                      className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-1.5 py-1.5 font-michroma text-[4.5px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white lg:px-3 lg:py-2.5 lg:text-[7px]"
                     >
                       Scout
                     </Link>
 
                     <Link
                       href="/lineups?tab=builder"
-                      className="rounded-md border border-[#EFBF04]/45 bg-[#EFBF04]/10 px-2 py-2 font-michroma text-[5px] uppercase text-[#EFBF04] transition hover:bg-[#EFBF04]/20 hover:text-white lg:px-3 lg:py-2.5 lg:text-[7px]"
+                      className="rounded-md border border-[#EFBF04]/45 bg-[#EFBF04]/10 px-1.5 py-1.5 font-michroma text-[4.5px] uppercase text-[#EFBF04] transition hover:bg-[#EFBF04]/20 hover:text-white lg:px-3 lg:py-2.5 lg:text-[7px]"
                     >
                       Build
                     </Link>
 
                     <Link
                       href="/lineups?tab=saved"
-                      className="rounded-md border border-[#A855F7]/45 bg-[#A855F7]/10 px-2 py-2 font-michroma text-[5px] uppercase text-[#A855F7] transition hover:bg-[#A855F7]/20 hover:text-white lg:px-3 lg:py-2.5 lg:text-[7px]"
+                      className="rounded-md border border-[#A855F7]/45 bg-[#A855F7]/10 px-1.5 py-1.5 font-michroma text-[4.5px] uppercase text-[#A855F7] transition hover:bg-[#A855F7]/20 hover:text-white lg:px-3 lg:py-2.5 lg:text-[7px]"
                     >
                       Saved
                     </Link>
@@ -748,15 +748,15 @@ export default function ProfilePage() {
             </div>
           </section>
 
-          <section className="rounded-lg border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-3 lg:p-5">
-            <div className="mb-2.5 flex items-center gap-2 lg:mb-4 lg:gap-3">
-              <Shield className="h-3.5 w-3.5 text-[#EFBF04] lg:h-5 lg:w-5" />
-              <p className="font-michroma text-[9px] uppercase text-white lg:text-sm">
+          <section className="rounded-lg border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-2 lg:p-5">
+            <div className="mb-1.5 flex items-center gap-1.5 lg:mb-4 lg:gap-3">
+              <Shield className="h-3 w-3 text-[#EFBF04] lg:h-5 lg:w-5" />
+              <p className="font-michroma text-[7px] uppercase text-white lg:text-sm">
                 Quick Actions
               </p>
             </div>
 
-            <div className="grid gap-2 lg:gap-3">
+            <div className="grid gap-1.5 lg:gap-3">
               {quickActions.map((action) => {
                 const Icon = action.icon;
 
@@ -764,16 +764,16 @@ export default function ProfilePage() {
                   <Link
                     key={action.label}
                     href={action.href}
-                    className="group flex items-center gap-2 rounded-md border border-white/10 bg-black/20 px-3 py-2 font-michroma text-[7px] uppercase text-white/75 transition duration-200 hover:-translate-y-0.5 hover:border-[rgb(var(--court-accent-rgb)/0.45)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)] hover:text-white hover:shadow-[0_0_22px_rgb(var(--court-accent-rgb)/0.18)] lg:gap-3 lg:px-4 lg:py-3 lg:text-[10px]"
+                    className="group flex items-center gap-1.5 rounded-md border border-white/10 bg-black/20 px-2 py-1.5 font-michroma text-[5.5px] uppercase text-white/75 transition duration-200 hover:-translate-y-0.5 hover:border-[rgb(var(--court-accent-rgb)/0.45)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)] hover:text-white hover:shadow-[0_0_22px_rgb(var(--court-accent-rgb)/0.18)] lg:gap-3 lg:px-4 lg:py-3 lg:text-[10px]"
                   >
                     <span
-                      className="flex h-6 w-6 items-center justify-center rounded-md border bg-white/5 transition duration-200 group-hover:scale-105 group-hover:brightness-125 lg:h-8 lg:w-8"
+                      className="flex h-5 w-5 items-center justify-center rounded-md border bg-white/5 transition duration-200 group-hover:scale-105 group-hover:brightness-125 lg:h-8 lg:w-8"
                       style={{
                         borderColor: `${action.color}70`,
                         color: action.color,
                       }}
                     >
-                      <Icon className="h-3 w-3 lg:h-4 lg:w-4" />
+                      <Icon className="h-2.5 w-2.5 lg:h-4 lg:w-4" />
                     </span>
 
                     {action.label}

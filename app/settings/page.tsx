@@ -3,10 +3,13 @@
 import Image from "next/image";
 import {
   Database,
+  ExternalLink,
   Eye,
+  Globe2,
   KeyRound,
   LogOut,
   Monitor,
+  Share2,
   Settings2,
   Trash2,
   UserCircle,
@@ -769,7 +772,7 @@ export default function SettingsPage() {
     );
   }
 
-  async function sharePublicProfile() {
+  async function copyPublicProfileLink() {
     if (!userProfile?.username || !isPublicProfileEnabled) return;
 
     const profileUrl = `${window.location.origin}/u/${userProfile.username}`;
@@ -795,6 +798,27 @@ export default function SettingsPage() {
       setShareProfileStatus("Copy failed");
       window.setTimeout(() => setShareProfileStatus(""), 1800);
     }
+  }
+
+  async function sharePublicProfile() {
+    if (!userProfile?.username || !isPublicProfileEnabled) return;
+
+    const profileUrl = `${window.location.origin}/u/${userProfile.username}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${displayName} on StatCourt`,
+          text: `View ${displayName}'s StatCourt profile.`,
+          url: profileUrl,
+        });
+        return;
+      } catch {
+        return;
+      }
+    }
+
+    await copyPublicProfileLink();
   }
 
   async function uploadAvatar(file: File | undefined) {
@@ -1491,63 +1515,6 @@ export default function SettingsPage() {
                   <div className="rounded-md border border-white/10 bg-black/20 p-2 lg:p-3">
                     <div className="flex items-center justify-between gap-2">
                       <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
-                        Public Profile
-                      </p>
-
-                      <p
-                        className={`min-w-0 flex-1 truncate font-michroma text-[8px] lg:text-[10px] ${
-                          isPublicProfileEnabled
-                            ? "text-[#22C55E]"
-                            : "text-white/55"
-                        }`}
-                      >
-                        {publicProfileStatusLabel}
-                      </p>
-
-                      <button
-                        type="button"
-                        onClick={togglePublicProfile}
-                        disabled={!user}
-                        className={`shrink-0 rounded-md border px-2.5 py-1.5 font-michroma text-[6px] uppercase transition disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/20 lg:px-3 lg:text-[8px] ${
-                          isPublicProfileEnabled
-                            ? "border-red-500/35 bg-red-500/10 text-red-300 hover:bg-red-500/20 hover:text-white"
-                            : "border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] text-[var(--court-accent)] hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white"
-                        }`}
-                      >
-                        {isPublicProfileEnabled
-                          ? "Make Private"
-                          : "Make Public"}
-                      </button>
-                    </div>
-
-                    <p className="mt-1.5 font-michroma text-[5px] uppercase text-white/25 lg:text-[7px]">
-                      Controls whether your future username profile can be
-                      viewed publicly.
-                    </p>
-
-                    {isPublicProfileEnabled && userProfile?.username && (
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        <Link
-                          href={`/u/${userProfile.username}`}
-                          className="inline-flex rounded-md border border-[#22C55E]/30 bg-[#22C55E]/10 px-2.5 py-1.5 font-michroma text-[6px] uppercase text-[#22C55E] transition hover:bg-[#22C55E]/20 hover:text-white lg:px-3 lg:text-[8px]"
-                        >
-                          View Public Profile
-                        </Link>
-
-                        <button
-                          type="button"
-                          onClick={sharePublicProfile}
-                          className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2.5 py-1.5 font-michroma text-[6px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white lg:px-3 lg:text-[8px]"
-                        >
-                          {shareProfileStatus || "Share Profile"}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="rounded-md border border-white/10 bg-black/20 p-2 lg:p-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
                         Account Status
                       </p>
 
@@ -1560,6 +1527,118 @@ export default function SettingsPage() {
                       </p>
                     </div>
                   </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="rounded-lg border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-2.5 shadow-[0_0_18px_rgba(0,0,0,0.25)] lg:p-5">
+              <div className="mb-2.5 flex items-center justify-between gap-2 lg:mb-5 lg:gap-3">
+                <div className="flex items-center gap-2 lg:gap-3">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-md border border-[rgb(var(--court-accent-rgb)/0.4)] bg-[rgb(var(--court-accent-rgb)/0.1)] text-[var(--court-accent)] lg:h-9 lg:w-9">
+                    <Globe2 className="h-2.5 w-2.5 lg:h-4 lg:w-4" />
+                  </div>
+
+                  <p className="font-michroma text-[9px] uppercase text-white lg:text-sm">
+                    Social
+                  </p>
+                </div>
+
+                <p className="font-michroma text-[6px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[8px]">
+                  {shareProfileStatus || accountActionStatus}
+                </p>
+              </div>
+
+              <div className="grid gap-1.5 lg:gap-3">
+                <div className="rounded-md border border-white/10 bg-black/20 p-2 lg:p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                      Public Profile
+                    </p>
+
+                    <p
+                      className={`min-w-0 flex-1 truncate font-michroma text-[8px] lg:text-[10px] ${
+                        isPublicProfileEnabled
+                          ? "text-[#22C55E]"
+                          : "text-white/55"
+                      }`}
+                    >
+                      {publicProfileStatusLabel}
+                    </p>
+
+                    <button
+                      type="button"
+                      onClick={togglePublicProfile}
+                      disabled={!user || !userProfile?.username}
+                      className={`shrink-0 rounded-md border px-2.5 py-1.5 font-michroma text-[6px] uppercase transition disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/20 lg:px-3 lg:text-[8px] ${
+                        isPublicProfileEnabled
+                          ? "border-red-500/35 bg-red-500/10 text-red-300 hover:bg-red-500/20 hover:text-white"
+                          : "border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] text-[var(--court-accent)] hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white"
+                      }`}
+                    >
+                      {isPublicProfileEnabled ? "Make Private" : "Make Public"}
+                    </button>
+                  </div>
+
+                  <p className="mt-1.5 font-michroma text-[5px] uppercase leading-relaxed text-white/25 lg:text-[7px]">
+                    {userProfile?.username
+                      ? "Controls whether your username profile can be viewed publicly."
+                      : "Set a username first before making your profile public."}
+                  </p>
+                </div>
+
+                <div className="rounded-md border border-white/10 bg-black/20 p-2 lg:p-3">
+                  <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+                    <div className="min-w-0">
+                      <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                        Profile Link
+                      </p>
+
+                      <p className="mt-1 truncate font-michroma text-[8px] text-white/55 lg:text-[10px]">
+                        {userProfile?.username
+                          ? `/u/${userProfile.username}`
+                          : "No public link yet"}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-1.5 lg:flex lg:flex-wrap lg:justify-end">
+                      {isPublicProfileEnabled && userProfile?.username ? (
+                        <Link
+                          href={`/u/${userProfile.username}`}
+                          className="inline-flex items-center justify-center gap-1 rounded-md border border-[#22C55E]/30 bg-[#22C55E]/10 px-2 py-1.5 font-michroma text-[5.5px] uppercase text-[#22C55E] transition hover:bg-[#22C55E]/20 hover:text-white lg:px-3 lg:text-[8px]"
+                        >
+                          <ExternalLink className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
+                          View
+                        </Link>
+                      ) : (
+                        <span className="inline-flex items-center justify-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 py-1.5 font-michroma text-[5.5px] uppercase text-white/25 lg:px-3 lg:text-[8px]">
+                          <ExternalLink className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
+                          View
+                        </span>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={sharePublicProfile}
+                        disabled={!isPublicProfileEnabled || !userProfile?.username}
+                        className="inline-flex items-center justify-center gap-1 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 py-1.5 font-michroma text-[5.5px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/20 lg:px-3 lg:text-[8px]"
+                      >
+                        <Share2 className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
+                        Share
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-md border border-white/10 bg-black/20 p-2 lg:p-3">
+                  <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                    Public Details
+                  </p>
+
+                  <p className="mt-1.5 font-michroma text-[5px] uppercase leading-relaxed text-white/30 lg:text-[7px]">
+                    Public profiles can show your avatar, display name,
+                    username, public lineups, favorite players, and basketball
+                    identity.
+                  </p>
                 </div>
               </div>
             </section>

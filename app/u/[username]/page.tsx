@@ -3,10 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Lock, Star } from "lucide-react";
+import { Flag, Share2, Target, Lock, Star, UserPlus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { getPlayerInsights, type Player } from "../../components/court-data";
-import { LineupBadgeIcon } from "../../components/lineups/shared/lineup-style-helpers";
 import { supabase } from "../../components/supabase-client";
 
 type PublicProfile = {
@@ -58,7 +57,10 @@ type PublicSavedLineupRow = {
   players: Record<string, string> | null;
 };
 
-const PUBLIC_FAVORITE_PREVIEW_LIMIT = 5;
+const PUBLIC_FAVORITE_MOBILE_PREVIEW_LIMIT = 2;
+const PUBLIC_FAVORITE_MOBILE_LOAD_STEP = 2;
+const PUBLIC_FAVORITE_DESKTOP_PREVIEW_LIMIT = 4;
+const PUBLIC_FAVORITE_DESKTOP_LOAD_STEP = 4;
 const MAX_PUBLIC_FAVORITE_PLAYERS = 50;
 const PUBLIC_LINEUP_SLOT_ORDER = ["PG", "SG", "SF", "PF", "C"] as const;
 
@@ -89,6 +91,102 @@ function getMostCommonValue(values: (string | null)[]) {
   return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
 }
 
+function getMostCommonValues(values: (string | null)[], limit: number) {
+  const counts = new Map<string, number>();
+
+  values
+    .filter((value): value is string => Boolean(value))
+    .forEach((value) => {
+      counts.set(value, (counts.get(value) ?? 0) + 1);
+    });
+
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([value]) => value);
+}
+
+function formatIdentityPriority(values: string[]) {
+  if (values.length === 0) return "Still developing";
+
+  const normalizedValues = values.map((value) => value.toLowerCase());
+  const has = (value: string) => normalizedValues.includes(value);
+
+  if (has("offense") && has("defense")) return "Two-Way Balance";
+  if (has("shooting") && has("star power")) return "Spacing and Star Power";
+  if (has("playmaking") && has("rebounding")) {
+    return "Playmaking and Interior Control";
+  }
+  if (has("rim pressure") && (has("playmaking") || has("rebounding"))) {
+    return "Playmaking and Interior Control";
+  }
+  if (has("offense") && has("playmaking")) {
+    return "Shot Creation and Playmaking";
+  }
+  if (has("offense") && has("shooting")) return "Shot Creation and Spacing";
+  if (has("defense") && has("rebounding")) {
+    return "Defensive Control and Glass";
+  }
+
+  if (values.length === 1) return values[0];
+
+  return `${values[0]} and ${values[1]}`;
+}
+
+function getLineupStyleBadge(archetype: string) {
+  const normalized = archetype.toLowerCase();
+
+  if (normalized.includes("point-center")) return "Point-Center Specialist";
+  if (normalized.includes("playmaking")) return "Playmaking First";
+  if (normalized.includes("two-way")) return "Two-Way Builder";
+  if (normalized.includes("defensive")) return "Defense-First Builder";
+  if (normalized.includes("spacing") || normalized.includes("shooting")) {
+    return "Spacing Architect";
+  }
+  if (normalized.includes("rim") || normalized.includes("paint")) {
+    return "Paint Pressure Builder";
+  }
+  if (normalized.includes("star")) return "Star-Powered Builder";
+  if (normalized.includes("positionless")) return "Positionless Builder";
+
+  return "Lineup Identity";
+}
+
+function getFavoritePlayerBadge(archetype: string) {
+  const normalized = archetype.toLowerCase();
+
+  if (normalized.includes("scorer")) return "Scorer Collector";
+  if (normalized.includes("playmaker") || normalized.includes("creator")) {
+    return "Creator Collector";
+  }
+  if (normalized.includes("shooter") || normalized.includes("spacing")) {
+    return "Shooter Collector";
+  }
+  if (normalized.includes("defensive") || normalized.includes("two-way")) {
+    return "Two-Way Taste";
+  }
+  if (normalized.includes("big") || normalized.includes("rebound")) {
+    return "Frontcourt Eye";
+  }
+
+  return "Player Identity";
+}
+
+function getPriorityBadge(priority: string) {
+  const normalized = priority.toLowerCase();
+
+  if (normalized.includes("two-way")) return "Two-Way Builder";
+  if (normalized.includes("playmaking")) return "Playmaking First";
+  if (normalized.includes("spacing")) return "Spacing First";
+  if (normalized.includes("defensive")) return "Defense First";
+  if (normalized.includes("shot creation")) return "Shot-Creation First";
+  if (normalized.includes("interior") || normalized.includes("glass")) {
+    return "Interior Control";
+  }
+
+  return "Identity Builder";
+}
+
 function getPublicFavoriteHeadshot(player: PublicFavoritePlayer) {
   if (player.nbaId) {
     return `https://cdn.nba.com/headshots/nba/latest/1040x760/${player.nbaId}.png`;
@@ -112,12 +210,24 @@ export default function PublicProfilePage() {
     Record<string, PublicFavoritePlayer>
   >({});
   const [isShowingAllFavorites, setIsShowingAllFavorites] = useState(false);
+  const [visibleMobileFavoriteLimit, setVisibleMobileFavoriteLimit] = useState(
+    PUBLIC_FAVORITE_MOBILE_PREVIEW_LIMIT,
+  );
+  const [visibleDesktopFavoriteLimit, setVisibleDesktopFavoriteLimit] =
+    useState(PUBLIC_FAVORITE_DESKTOP_PREVIEW_LIMIT);
   const [publicLineups, setPublicLineups] = useState<PublicSavedLineupRow[]>(
     [],
   );
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [profileError, setProfileError] = useState("");
   const [isTopArchetypeOpen, setIsTopArchetypeOpen] = useState(false);
+  const [isLineupStyleOpen, setIsLineupStyleOpen] = useState(false);
+  const [isFavoriteArchetypesOpen, setIsFavoriteArchetypesOpen] =
+    useState(false);
+  const [openLineupIdentityTooltip, setOpenLineupIdentityTooltip] = useState<
+    string | null
+  >(null);
+  const [profileActionStatus, setProfileActionStatus] = useState("");
 
   useEffect(() => {
     let isActive = true;
@@ -174,7 +284,7 @@ export default function PublicProfilePage() {
         .eq("user_id", publicProfile.id)
         .eq("is_public", true)
         .order("updated_at", { ascending: false })
-        .limit(4);
+        .limit(12);
 
       if (!isActive) return;
 
@@ -237,7 +347,7 @@ export default function PublicProfilePage() {
               fallbackImage: null,
               archetype: null,
             },
-          );
+        );
       }
 
       if (!isActive) return;
@@ -247,6 +357,8 @@ export default function PublicProfilePage() {
       setFavoritePlayerDetails(favoriteDetails);
       setPublicPlayersByName(playerDetailsByName);
       setIsShowingAllFavorites(false);
+      setVisibleMobileFavoriteLimit(PUBLIC_FAVORITE_MOBILE_PREVIEW_LIMIT);
+      setVisibleDesktopFavoriteLimit(PUBLIC_FAVORITE_DESKTOP_PREVIEW_LIMIT);
       setPublicLineups(publicLineupRows);
       setIsLoadingProfile(false);
     }
@@ -260,6 +372,8 @@ export default function PublicProfilePage() {
         setFavoritePlayerDetails([]);
         setPublicPlayersByName({});
         setIsShowingAllFavorites(false);
+        setVisibleMobileFavoriteLimit(PUBLIC_FAVORITE_MOBILE_PREVIEW_LIMIT);
+        setVisibleDesktopFavoriteLimit(PUBLIC_FAVORITE_DESKTOP_PREVIEW_LIMIT);
         setPublicLineups([]);
         setProfileError("Profile not found.");
         setIsLoadingProfile(false);
@@ -284,17 +398,49 @@ export default function PublicProfilePage() {
   const publicLineupArchetype =
     getMostCommonValue(publicLineups.map((lineup) => lineup.archetype)) ??
     "Not enough public data";
+  const teamBuildingPriority = formatIdentityPriority(
+    getMostCommonValues(
+      publicLineups.flatMap((lineup) => lineup.strengths ?? []),
+      2,
+    ),
+  );
+  const lineupStyleBadge = getLineupStyleBadge(publicLineupArchetype);
+  const favoritePlayerBadge = getFavoritePlayerBadge(favoritePlayerArchetype);
+  const priorityBadge = getPriorityBadge(teamBuildingPriority);
+  const favoriteIdentityArchetypes = getMostCommonValues(
+    favoritePlayerDetails.map((favoritePlayer) => favoritePlayer.archetype),
+    3,
+  );
   const preferredStatProfile =
     getMostCommonValue(publicLineups.map((lineup) => lineup.stat_profile)) ??
     "career";
-  const visibleFavoritePlayers = isShowingAllFavorites
-    ? favoritePlayerDetails
-    : favoritePlayerDetails.slice(0, PUBLIC_FAVORITE_PREVIEW_LIMIT);
-  const hasMoreFavoritePlayers =
-    favoritePlayerDetails.length > PUBLIC_FAVORITE_PREVIEW_LIMIT;
-  const hiddenFavoritePlayerCount = Math.max(
-    favoritePlayerDetails.length - PUBLIC_FAVORITE_PREVIEW_LIMIT,
+  const mobileFavoriteLimit = isShowingAllFavorites
+    ? visibleMobileFavoriteLimit
+    : PUBLIC_FAVORITE_MOBILE_PREVIEW_LIMIT;
+  const desktopFavoriteLimit = isShowingAllFavorites
+    ? visibleDesktopFavoriteLimit
+    : PUBLIC_FAVORITE_DESKTOP_PREVIEW_LIMIT;
+  const visibleFavoritePlayers = favoritePlayerDetails.slice(
     0,
+    Math.max(mobileFavoriteLimit, desktopFavoriteLimit),
+  );
+  const hasMoreFavoritePlayers =
+    favoritePlayerDetails.length > PUBLIC_FAVORITE_MOBILE_PREVIEW_LIMIT;
+  const hiddenMobileFavoritePlayerCount = Math.max(
+    favoritePlayerDetails.length - mobileFavoriteLimit,
+    0,
+  );
+  const hiddenDesktopFavoritePlayerCount = Math.max(
+    favoritePlayerDetails.length - desktopFavoriteLimit,
+    0,
+  );
+  const displayedMobileHiddenFavoritePlayerCount = Math.min(
+    hiddenMobileFavoritePlayerCount,
+    PUBLIC_FAVORITE_MOBILE_LOAD_STEP,
+  );
+  const displayedDesktopHiddenFavoritePlayerCount = Math.min(
+    hiddenDesktopFavoritePlayerCount,
+    PUBLIC_FAVORITE_DESKTOP_LOAD_STEP,
   );
   const featuredPublicLineup =
     [...publicLineups].sort((a, b) => (b.overall ?? 0) - (a.overall ?? 0))[0] ??
@@ -302,6 +448,31 @@ export default function PublicProfilePage() {
   const remainingPublicLineups = featuredPublicLineup
     ? publicLineups.filter((lineup) => lineup.id !== featuredPublicLineup.id)
     : [];
+
+  async function copyPublicProfileLink() {
+    const profileUrl =
+      typeof window === "undefined" ? `/u/${username}` : window.location.href;
+
+    await navigator.clipboard.writeText(profileUrl);
+    setProfileActionStatus("Copied");
+    window.setTimeout(() => setProfileActionStatus(""), 1600);
+  }
+
+  async function sharePublicProfile() {
+    const profileUrl =
+      typeof window === "undefined" ? `/u/${username}` : window.location.href;
+
+    if (navigator.share) {
+      await navigator.share({
+        title: `${displayName} on StatCourt`,
+        text: `View ${displayName}'s StatCourt profile.`,
+        url: profileUrl,
+      });
+      return;
+    }
+
+    await copyPublicProfileLink();
+  }
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[var(--court-panel-alt)] px-4 py-6 text-white lg:px-8 lg:py-10">
@@ -322,7 +493,7 @@ export default function PublicProfilePage() {
           Browse Players
         </Link>
 
-        <div className="mt-5 rounded-lg border border-[rgb(var(--court-accent-rgb)/0.25)] bg-[color:color-mix(in_srgb,var(--court-panel)_85%,transparent)] p-4 shadow-[0_0_26px_rgba(0,0,0,0.28)] lg:mt-8 lg:p-7">
+        <div className="mt-4 rounded-lg border border-[rgb(var(--court-accent-rgb)/0.25)] bg-[color:color-mix(in_srgb,var(--court-panel)_85%,transparent)] p-3 shadow-[0_0_26px_rgba(0,0,0,0.28)] lg:mt-8 lg:p-7">
           {isLoadingProfile ? (
             <div className="flex min-h-72 flex-col items-center justify-center text-center">
               <div className="h-8 w-8 animate-spin rounded-full border border-[rgb(var(--court-accent-rgb)/0.2)] border-t-[var(--court-accent)]" />
@@ -332,9 +503,9 @@ export default function PublicProfilePage() {
             </div>
           ) : profile ? (
             <>
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center">
-                  <div className="relative flex h-18 w-18 shrink-0 items-center justify-center overflow-hidden rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-black/30 text-[var(--court-accent)] lg:h-26 lg:w-26">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div className="flex min-w-0 items-center gap-2.5 lg:gap-4">
+                  <div className="relative flex h-13 w-13 shrink-0 items-center justify-center overflow-hidden rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-black/30 text-[var(--court-accent)] lg:h-26 lg:w-26">
                     {profile.avatar_url ? (
                       <Image
                         src={profile.avatar_url}
@@ -344,50 +515,84 @@ export default function PublicProfilePage() {
                         className="object-cover"
                       />
                     ) : (
-                      <span className="font-michroma text-xl lg:text-3xl">
+                      <span className="font-michroma text-base lg:text-3xl">
                         {accountInitial}
                       </span>
                     )}
                   </div>
 
                   <div className="min-w-0">
-                    <p className="font-michroma text-[7px] uppercase tracking-wide text-[var(--court-accent)] lg:text-[10px]">
+                    <p className="font-michroma text-[5.5px] uppercase tracking-wide text-[var(--court-accent)] lg:text-[10px]">
                       Public Profile
                     </p>
 
-                    <h1 className="mt-1 truncate font-michroma text-2xl uppercase text-white lg:text-3xl">
+                    <h1 className="mt-0.5 truncate font-michroma text-lg uppercase text-white lg:mt-1 lg:text-3xl">
                       {displayName}
                     </h1>
 
-                    <p className="mt-1 font-michroma text-[9px] text-white/45 lg:text-xs">
+                    <p className="mt-0.5 font-michroma text-[7px] text-white/45 lg:mt-1 lg:text-xs">
                       @{profile.username}
                     </p>
 
-                    <p className="mt-2 max-w-xl font-michroma text-[8px] leading-relaxed text-white/50 lg:mt-3 lg:text-[10px]">
+                    <p className="mt-2 hidden max-w-xl font-michroma text-[8px] leading-relaxed text-white/50 lg:mt-3 lg:block lg:text-[10px]">
                       StatCourt profile built around public lineups, favorite
                       players, and scouting identity.
                     </p>
 
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      <span className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.25)] bg-[rgb(var(--court-accent-rgb)/0.08)] px-2 py-1 font-michroma text-[6px] uppercase text-[var(--court-accent)] lg:text-[8px]">
-                        Lineup Builder
+                    <div className="statcourt-scroll mt-1.5 flex max-w-[calc(100vw-6.5rem)] flex-nowrap gap-0.5 overflow-x-auto pb-1 lg:mt-2 lg:max-w-2xl lg:gap-1.5 lg:pb-0">
+                      <span className="max-w-24 shrink-0 truncate rounded-md border border-[rgb(var(--court-accent-rgb)/0.25)] bg-[rgb(var(--court-accent-rgb)/0.08)] px-1 py-0.5 font-michroma text-[4.5px] uppercase text-[var(--court-accent)] lg:max-w-44 lg:px-2 lg:py-1 lg:text-[7px]">
+                        {lineupStyleBadge}
                       </span>
 
-                      <span className="rounded-md border border-white/10 bg-white/5 px-2 py-1 font-michroma text-[6px] uppercase text-white/45 lg:text-[8px]">
-                        {favoritePlayerArchetype}
+                      <span className="max-w-24 shrink-0 truncate rounded-md border border-[#A855F7]/25 bg-[#A855F7]/10 px-1 py-0.5 font-michroma text-[4.5px] uppercase text-[#C084FC] lg:max-w-44 lg:px-2 lg:py-1 lg:text-[7px]">
+                        {favoritePlayerBadge}
                       </span>
 
-                      <span className="rounded-md border border-white/10 bg-white/5 px-2 py-1 font-michroma text-[6px] uppercase text-white/45 lg:text-[8px]">
-                        {formatStatProfile(preferredStatProfile)}
+                      <span className="max-w-24 shrink-0 truncate rounded-md border border-[#22C55E]/25 bg-[#22C55E]/10 px-1 py-0.5 font-michroma text-[4.5px] uppercase text-[#22C55E] lg:max-w-44 lg:px-2 lg:py-1 lg:text-[7px]">
+                        {priorityBadge}
                       </span>
 
-                      <span className="rounded-md border border-white/10 bg-white/5 px-2 py-1 font-michroma text-[6px] uppercase text-white/45 lg:text-[8px]">
+                      <span className="shrink-0 rounded-md border border-white/10 bg-white/5 px-1 py-0.5 font-michroma text-[4.5px] uppercase text-white/45 lg:px-2 lg:py-1 lg:text-[7px]">
                         {formatMemberSince(profile.created_at)}
                       </span>
                     </div>
                   </div>
                 </div>
 
+                <div className="relative flex shrink-0 flex-wrap gap-1.5 lg:justify-end">
+                  <button
+                    type="button"
+                    onClick={sharePublicProfile}
+                    className="inline-flex items-center gap-1 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 py-1.5 font-michroma text-[6px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.18)] hover:text-white lg:px-3 lg:py-2 lg:text-[8px]"
+                  >
+                    <Share2 className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
+                    Share Profile
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProfileActionStatus("Coming Soon");
+                      window.setTimeout(() => setProfileActionStatus(""), 1800);
+                    }}
+                    className="inline-flex items-center gap-1 rounded-md border border-[#A855F7]/35 bg-[#A855F7]/10 px-2 py-1.5 font-michroma text-[6px] uppercase text-[#C084FC] transition hover:bg-[#A855F7]/20 hover:text-white lg:px-3 lg:py-2 lg:text-[8px]"
+                  >
+                    <UserPlus className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
+                    {profileActionStatus || "Follow"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProfileActionStatus("Report coming soon");
+                      window.setTimeout(() => setProfileActionStatus(""), 1800);
+                    }}
+                    className="inline-flex items-center gap-1 rounded-md border border-red-400/30 bg-red-400/10 px-2 py-1.5 font-michroma text-[6px] uppercase text-red-300 transition hover:bg-red-400/18 hover:text-white lg:px-3 lg:py-2 lg:text-[8px]"
+                  >
+                    <Flag className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
+                    Report
+                  </button>
+                </div>
               </div>
 
               <div className="mt-5 grid grid-cols-4 gap-1.5 rounded-md border border-[rgb(var(--court-accent-rgb)/0.22)] bg-[rgb(var(--court-accent-rgb)/0.06)] p-1.5 shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.08)] lg:mt-7 lg:gap-3 lg:p-3">
@@ -423,7 +628,7 @@ export default function PublicProfilePage() {
                   <p className="mt-1 font-michroma text-[5px] uppercase leading-tight text-white/35 lg:text-[8px]">
                     Most Common
                     <br />
-                    Player Archetype
+                    Favorite Archetype
                   </p>
                 </div>
 
@@ -437,77 +642,177 @@ export default function PublicProfilePage() {
                 </div>
 
                 <div className="relative min-h-14 rounded border border-[rgb(var(--court-accent-rgb)/0.26)] bg-[color:color-mix(in_srgb,var(--court-accent)_14%,var(--court-panel))] p-1.5 text-center shadow-[inset_0_0_18px_rgb(var(--court-accent-rgb)/0.08)] lg:min-h-24 lg:p-3">
-                  <p className="mx-auto line-clamp-2 max-w-18 font-michroma text-[7px] leading-tight text-white sm:max-w-30 sm:text-[8px] lg:max-w-36 lg:text-xs">
-                    {publicLineupArchetype}
-                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setIsLineupStyleOpen((current) => !current)}
+                    className="mx-auto block max-w-18 font-michroma text-[7px] leading-tight text-white transition hover:text-[var(--court-accent)] sm:max-w-30 sm:text-[8px] lg:max-w-36 lg:cursor-default lg:text-xs"
+                    aria-expanded={isLineupStyleOpen}
+                  >
+                    <span className="line-clamp-2">
+                      {publicLineupArchetype}
+                    </span>
+                  </button>
+
+                  {isLineupStyleOpen && (
+                    <div className="absolute left-1/2 z-30 mt-1 w-28 -translate-x-1/2 rounded border border-white/15 bg-black/90 px-1.5 py-1 text-center shadow-[0_0_10px_rgb(var(--court-accent-rgb)/0.35)] lg:hidden">
+                      <p className="font-michroma text-[6px] leading-snug text-white/85">
+                        {publicLineupArchetype}
+                      </p>
+                    </div>
+                  )}
 
                   <p className="mt-1 font-michroma text-[5px] uppercase leading-tight text-white/35 lg:text-[8px]">
-                    Most Common
+                    Most-Used
                     <br />
-                    Lineup Archetype
+                    Lineup Style
                   </p>
                 </div>
               </div>
 
+              <div className="mt-3 rounded-lg border border-[rgb(var(--court-accent-rgb)/0.24)] bg-[color:color-mix(in_srgb,var(--court-panel)_91%,black)] p-2 shadow-[0_0_22px_rgb(var(--court-accent-rgb)/0.08)] lg:mt-5 lg:p-4">
+                <p className="font-michroma text-[7px] uppercase tracking-wide text-[var(--court-accent)] lg:text-[10px]">
+                  Basketball Identity
+                </p>
+
+                <div className="mt-2 grid gap-1.5 lg:mt-3 lg:grid-cols-[1.2fr_1fr] lg:gap-2.5">
+                  <div className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[color:color-mix(in_srgb,var(--court-accent)_16%,var(--court-panel))] p-2 shadow-[0_0_24px_rgb(var(--court-accent-rgb)/0.16)] lg:flex lg:min-h-36 lg:flex-col lg:justify-center lg:p-4">
+                    <div className="flex items-center gap-1.5 lg:gap-3">
+                      <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[rgb(var(--court-accent-rgb)/0.12)] text-[var(--court-accent)] shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.18)] lg:h-10 lg:w-10">
+                        <Target className="h-2.5 w-2.5 lg:h-5 lg:w-5" />
+                      </div>
+
+                      <div className="min-w-0">
+                        <p className="font-michroma text-[5px] uppercase text-white/40 lg:text-[8px]">
+                          Preferred Style
+                        </p>
+                        <p className="mt-0.5 line-clamp-2 font-michroma text-[8px] uppercase leading-tight text-[var(--court-accent)] [text-shadow:0_0_14px_rgb(var(--court-accent-rgb)/0.4)] lg:mt-1.5 lg:text-base lg:leading-relaxed">
+                          {publicLineupArchetype}
+                        </p>
+                      </div>
+                    </div>
+
+                    <p className="hidden font-michroma leading-relaxed text-white/45 lg:mt-3 lg:block lg:max-w-md lg:text-[8px]">
+                      Built from this profile public lineup archetypes and saved
+                      scouting reports.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-1.5 lg:grid-cols-1 lg:gap-1.5">
+                    <div className="min-w-0 rounded-md border border-white/10 bg-black/25 p-1.5 lg:p-2.5">
+                      <p className="font-michroma text-[4.5px] uppercase text-white/35 lg:text-[7px]">
+                        Team-Building Priority
+                      </p>
+                      <p className="mt-0.5 line-clamp-2 font-michroma text-[6px] uppercase leading-tight text-white lg:mt-1 lg:text-[8px] lg:leading-relaxed">
+                        {teamBuildingPriority}
+                      </p>
+                    </div>
+
+                    <div className="min-w-0 rounded-md border border-white/10 bg-black/25 p-1.5 lg:p-2.5">
+                      <p className="font-michroma text-[4.5px] uppercase text-white/35 lg:text-[7px]">
+                        Most Used Stat Profile
+                      </p>
+                      <p className="mt-0.5 truncate font-michroma text-[6px] uppercase text-white lg:mt-1 lg:text-[8px]">
+                        {formatStatProfile(preferredStatProfile)}
+                      </p>
+                    </div>
+
+                    <div className="relative min-w-0 rounded-md border border-[#A855F7]/25 bg-[#A855F7]/8 p-1.5 lg:p-2.5">
+                      <p className="font-michroma text-[4.5px] uppercase text-white/35 lg:text-[7px]">
+                        Favorite Archetypes
+                      </p>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setIsFavoriteArchetypesOpen((current) => !current)
+                        }
+                        className="mt-1 flex w-full flex-wrap gap-0.5 text-left lg:mt-1.5 lg:cursor-default lg:gap-1"
+                        aria-expanded={isFavoriteArchetypesOpen}
+                      >
+                        {(favoriteIdentityArchetypes.length
+                          ? favoriteIdentityArchetypes
+                          : ["Not enough data"]
+                        ).map((archetype) => (
+                          <span
+                            key={archetype}
+                            className="max-w-full truncate rounded border border-[#A855F7]/30 bg-[#A855F7]/12 px-1 py-0.5 font-michroma text-[4.5px] uppercase text-white/80 lg:px-1.5 lg:text-[6px]"
+                          >
+                            {archetype}
+                          </span>
+                        ))}
+                      </button>
+
+                      {isFavoriteArchetypesOpen && (
+                        <div className="absolute right-0 z-30 mt-1 w-32 rounded border border-[#A855F7]/30 bg-black/90 px-1.5 py-1 text-left shadow-[0_0_10px_rgba(168,85,247,0.35)] lg:hidden">
+                          <p className="font-michroma text-[5px] uppercase text-white/35">
+                            Favorite Archetypes
+                          </p>
+                          <p className="mt-1 font-michroma text-[6px] leading-snug text-white/85">
+                            {(favoriteIdentityArchetypes.length
+                              ? favoriteIdentityArchetypes
+                              : ["Not enough data"]
+                            ).join(", ")}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {featuredPublicLineup && (
-                <div className="mt-4 rounded-lg border border-[#EFBF04]/45 bg-[color:color-mix(in_srgb,var(--court-panel)_92%,black)] p-3 shadow-[0_0_26px_rgba(239,191,4,0.1)] lg:mt-6 lg:grid lg:grid-cols-[1fr_1.1fr] lg:gap-5 lg:p-5">
+                <div className="mt-3 rounded-lg border border-[#EFBF04]/45 bg-[color:color-mix(in_srgb,var(--court-panel)_92%,black)] p-2 shadow-[0_0_26px_rgba(239,191,4,0.1)] lg:mt-6 lg:grid lg:grid-cols-[1fr_1.1fr] lg:gap-5 lg:p-5">
                   <div>
-                    <p className="font-michroma text-[7px] uppercase tracking-wide text-[#EFBF04] lg:text-[9px]">
+                    <p className="font-michroma text-[6px] uppercase tracking-wide text-[#EFBF04] lg:text-[9px]">
                       Featured Lineup
                     </p>
 
-                    <div className="mt-2 flex items-start justify-between gap-3">
+                    <div className="mt-1.5 flex items-start justify-between gap-2 lg:mt-2 lg:gap-3">
                       <div className="min-w-0">
-                        <h2 className="truncate font-michroma text-lg uppercase text-white lg:text-2xl">
+                        <h2 className="truncate font-michroma text-sm uppercase text-white lg:text-2xl">
                           {featuredPublicLineup.name}
                         </h2>
 
-                        <p className="mt-1 font-michroma text-[8px] uppercase text-[#EFBF04] lg:text-[10px]">
+                        <p className="mt-0.5 line-clamp-1 font-michroma text-[6px] uppercase text-[#EFBF04] lg:mt-1 lg:text-[10px]">
                           {featuredPublicLineup.archetype ??
                             "Public StatCourt Build"}
                         </p>
                       </div>
 
                       <div className="shrink-0 text-right">
-                        <p className="font-michroma text-2xl text-[#EFBF04] lg:text-4xl">
+                        <p className="font-michroma text-lg text-[#EFBF04] lg:text-4xl">
                           {featuredPublicLineup.overall?.toFixed(1) ?? "--"}
                         </p>
-                        <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                        <p className="font-michroma text-[5px] uppercase text-white/35 lg:text-[8px]">
                           OVR
                         </p>
                       </div>
                     </div>
 
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      <span className="rounded border border-white/15 bg-white/8 px-2 py-1 font-michroma text-[6px] uppercase text-white/55 lg:text-[8px]">
+                    <div className="mt-2 flex flex-wrap gap-1 lg:mt-3 lg:gap-1.5">
+                      <span className="rounded border border-white/15 bg-white/8 px-1.5 py-0.5 font-michroma text-[5px] uppercase text-white/55 lg:px-2 lg:py-1 lg:text-[8px]">
                         {formatStatProfile(featuredPublicLineup.stat_profile)}
                       </span>
 
                       {featuredPublicLineup.tier && (
-                        <span className="rounded border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[color:color-mix(in_srgb,var(--court-accent)_24%,var(--court-panel-alt))] px-2 py-1 font-michroma text-[6px] uppercase text-[var(--court-accent)] lg:text-[8px]">
+                        <span className="rounded border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[color:color-mix(in_srgb,var(--court-accent)_24%,var(--court-panel-alt))] px-1.5 py-0.5 font-michroma text-[5px] uppercase text-[var(--court-accent)] lg:px-2 lg:py-1 lg:text-[8px]">
                           {featuredPublicLineup.tier}
-                        </span>
-                      )}
-
-                      {featuredPublicLineup.court_balance && (
-                        <span className="rounded border border-white/15 bg-white/8 px-2 py-1 font-michroma text-[6px] uppercase text-white/55 lg:text-[8px]">
-                          {featuredPublicLineup.court_balance}
                         </span>
                       )}
                     </div>
 
-                    <p className="mt-3 font-michroma text-[7px] leading-relaxed text-white/55 lg:text-[9px]">
+                    <p className="mt-2 line-clamp-2 font-michroma text-[5.5px] leading-relaxed text-white/55 lg:mt-3 lg:text-[9px]">
                       {featuredPublicLineup.summary ??
                         featuredPublicLineup.team_identity ??
                         "Public lineup built through StatCourt scouting."}
                     </p>
 
-                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                      <div className="rounded-md border border-white/10 bg-black/25 p-2">
-                        <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                    <div className="mt-2 grid grid-cols-2 gap-1.5 lg:mt-3 lg:gap-2">
+                      <div className="rounded-md border border-white/10 bg-black/25 p-1.5 lg:p-2">
+                        <p className="font-michroma text-[5px] uppercase text-white/35 lg:text-[8px]">
                           Strengths
                         </p>
-                        <div className="mt-1.5 grid grid-cols-2 gap-1">
+                        <div className="mt-1 grid grid-cols-2 gap-0.5 lg:mt-1.5 lg:gap-1">
                           {(featuredPublicLineup.strengths?.length
                             ? featuredPublicLineup.strengths
                             : ["Lineup Identity"]
@@ -516,7 +821,7 @@ export default function PublicProfilePage() {
                             .map((strength) => (
                               <span
                                 key={strength}
-                                className="min-w-0 truncate rounded border border-emerald-400/30 bg-emerald-400/10 px-1.5 py-0.5 text-center font-michroma text-[5.5px] uppercase text-emerald-300 lg:text-[6px]"
+                                className="min-w-0 truncate rounded border border-emerald-400/30 bg-emerald-400/10 px-1 py-0.5 text-center font-michroma text-[4.5px] uppercase text-emerald-300 lg:px-1.5 lg:text-[6px]"
                               >
                                 {strength}
                               </span>
@@ -524,11 +829,11 @@ export default function PublicProfilePage() {
                         </div>
                       </div>
 
-                      <div className="rounded-md border border-white/10 bg-black/25 p-2">
-                        <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                      <div className="rounded-md border border-white/10 bg-black/25 p-1.5 lg:p-2">
+                        <p className="font-michroma text-[5px] uppercase text-white/35 lg:text-[8px]">
                           Team Grades
                         </p>
-                        <div className="mt-1.5 grid min-w-0 grid-cols-2 gap-x-2 gap-y-1 font-michroma text-[5.5px] uppercase text-white/45 lg:text-[6px]">
+                        <div className="mt-1 grid min-w-0 grid-cols-2 gap-x-1 gap-y-0.5 font-michroma text-[4.5px] uppercase text-white/45 lg:mt-1.5 lg:gap-x-2 lg:gap-y-1 lg:text-[6px]">
                           {Object.entries(featuredPublicLineup.grades ?? {})
                             .slice(0, 5)
                             .map(([gradeLabel, grade]) => (
@@ -555,68 +860,47 @@ export default function PublicProfilePage() {
                       </div>
                     </div>
 
-                    {featuredPublicLineup.badges &&
-                      featuredPublicLineup.badges.length > 0 && (
-                        <div className="statcourt-scroll mt-2 flex flex-nowrap gap-1.5 overflow-x-auto pb-1">
-                          {featuredPublicLineup.badges.slice(0, 5).map((badge) => (
-                            <span
-                              key={badge}
-                              className="inline-flex shrink-0 items-center gap-1 rounded border border-[#EFBF04]/25 bg-[#EFBF04]/10 px-1.5 py-0.5 font-michroma text-[5px] uppercase text-[#EFBF04] lg:text-[6px]"
-                            >
-                              <LineupBadgeIcon badge={badge} />
-                              {badge}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                    <div className="mt-3 grid gap-2 sm:grid-cols-3 lg:mt-4">
-                      <div className="min-w-0 rounded-md border border-[#EFBF04]/25 bg-[#EFBF04]/8 p-2">
-                        <p className="font-michroma text-[5.5px] uppercase text-white/35 lg:text-[7px]">
+                    <div className="mt-1.5 grid grid-cols-2 gap-1.5 lg:mt-4 lg:gap-2">
+                      <div className="min-w-0 rounded-md border border-[rgb(var(--court-accent-rgb)/0.28)] bg-[rgb(var(--court-accent-rgb)/0.08)] p-1.5 lg:p-2">
+                        <p className="font-michroma text-[4.5px] uppercase text-white/35 lg:text-[7px]">
                           Team Identity
                         </p>
-                        <p className="mt-1 truncate font-michroma text-[7px] uppercase text-[#EFBF04] lg:text-[8px]">
+                        <p className="mt-0.5 truncate font-michroma text-[5.5px] uppercase text-[var(--court-accent)] lg:mt-1 lg:text-[8px]">
                           {featuredPublicLineup.team_identity ??
                             "Identity Developing"}
                         </p>
                       </div>
 
-                      <div className="min-w-0 rounded-md border border-[rgb(var(--court-accent-rgb)/0.28)] bg-[rgb(var(--court-accent-rgb)/0.08)] p-2">
-                        <p className="font-michroma text-[5.5px] uppercase text-white/35 lg:text-[7px]">
+                      <div className="min-w-0 rounded-md border border-[rgb(var(--court-accent-rgb)/0.28)] bg-[rgb(var(--court-accent-rgb)/0.08)] p-1.5 lg:p-2">
+                        <p className="font-michroma text-[4.5px] uppercase text-white/35 lg:text-[7px]">
                           X-Factor
                         </p>
-                        <p className="mt-1 truncate font-michroma text-[7px] uppercase text-[var(--court-accent)] lg:text-[8px]">
+                        <p className="mt-0.5 truncate font-michroma text-[5.5px] uppercase text-[var(--court-accent)] lg:mt-1 lg:text-[8px]">
                           {featuredPublicLineup.x_factor_name ?? "Not Set"}
                         </p>
                         {featuredPublicLineup.x_factor_description && (
-                          <p className="mt-1 line-clamp-2 font-michroma text-[5.5px] leading-relaxed text-white/45 lg:text-[6px]">
+                          <p className="hidden font-michroma leading-relaxed text-white/45 lg:mt-1 lg:line-clamp-2 lg:block lg:text-[6px]">
                             {featuredPublicLineup.x_factor_description}
                           </p>
                         )}
                       </div>
-
-                      <div className="min-w-0 rounded-md border border-white/10 bg-black/25 p-2">
-                        <p className="font-michroma text-[5.5px] uppercase text-white/35 lg:text-[7px]">
-                          Similar To
-                        </p>
-                        <p className="mt-1 truncate font-michroma text-[7px] uppercase text-white lg:text-[8px]">
-                          {featuredPublicLineup.similar_to ?? "No Match Yet"}
-                        </p>
-                        {featuredPublicLineup.similar_to_description && (
-                          <p className="mt-1 line-clamp-2 font-michroma text-[5.5px] leading-relaxed text-white/45 lg:text-[6px]">
-                            {featuredPublicLineup.similar_to_description}
-                          </p>
-                        )}
-                      </div>
                     </div>
+
+                    <button
+                      type="button"
+                      className="mt-2 w-full rounded-md border border-[#EFBF04]/55 bg-[#EFBF04]/10 px-2 py-1.5 font-michroma text-[5.5px] uppercase text-[#EFBF04] transition hover:bg-[#EFBF04]/18 hover:text-white lg:mt-4 lg:px-3 lg:py-2 lg:text-[9px]"
+                      title="Full public scout report view coming soon"
+                    >
+                      View Full Scout Report
+                    </button>
                   </div>
 
-                  <div className="mt-4 rounded-md border border-white/10 bg-black/25 p-2 lg:mt-0 lg:p-3">
-                    <p className="font-michroma text-[7px] uppercase text-white/35 lg:text-[9px]">
-                      Court Preview
+                  <div className="mt-2 rounded-md border border-white/10 bg-black/25 p-1.5 lg:mt-0 lg:p-3">
+                    <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[9px]">
+                      Starting Five
                     </p>
 
-                    <div className="mt-2 grid gap-2">
+                    <div className="mt-1.5 grid gap-1 lg:mt-2 lg:gap-2">
                       {PUBLIC_LINEUP_SLOT_ORDER.map((slot) => {
                         const playerName = featuredPublicLineup.players?.[slot];
                         const playerDetail = playerName
@@ -634,13 +918,13 @@ export default function PublicProfilePage() {
                         return (
                           <div
                             key={slot}
-                            className="grid grid-cols-[24px_36px_minmax(0,1fr)] items-center gap-2 rounded-md border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] p-1.5 lg:grid-cols-[30px_44px_minmax(0,1fr)] lg:p-2"
+                            className="grid grid-cols-[18px_28px_minmax(0,1fr)] items-center gap-1.5 rounded-md border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] p-1 lg:grid-cols-[30px_44px_minmax(0,1fr)] lg:gap-2 lg:p-2"
                           >
-                            <p className="font-michroma text-[8px] text-[#EFBF04] lg:text-[10px]">
+                            <p className="font-michroma text-[6px] text-[var(--court-accent)] lg:text-[10px]">
                               {slot}
                             </p>
 
-                            <div className="relative h-9 w-9 overflow-hidden rounded bg-white/8 lg:h-11 lg:w-11">
+                            <div className="relative h-7 w-7 overflow-hidden rounded bg-white/8 lg:h-11 lg:w-11">
                               {getPublicFavoriteHeadshot(previewPlayer) ? (
                                 <Image
                                   src={
@@ -653,17 +937,17 @@ export default function PublicProfilePage() {
                                   className="object-cover"
                                 />
                               ) : (
-                                <div className="flex h-full w-full items-center justify-center font-michroma text-[8px] text-white/45">
+                                <div className="flex h-full w-full items-center justify-center font-michroma text-[7px] text-white/45">
                                   {previewPlayer.name.charAt(0)}
                                 </div>
                               )}
                             </div>
 
                             <div className="min-w-0">
-                              <p className="truncate font-michroma text-[8px] text-white lg:text-[10px]">
+                              <p className="truncate font-michroma text-[6.5px] text-white lg:text-[10px]">
                                 {previewPlayer.name}
                               </p>
-                              <p className="mt-0.5 font-michroma text-[5.5px] uppercase text-white/35 lg:text-[7px]">
+                              <p className="mt-0.5 font-michroma text-[4.5px] uppercase text-white/35 lg:text-[7px]">
                                 {previewPlayer.team ?? "FA"}{" "}
                                 {previewPlayer.position
                                   ? `- ${previewPlayer.position}`
@@ -688,13 +972,17 @@ export default function PublicProfilePage() {
 
                 {favoritePlayerDetails.length > 0 ? (
                   <>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {visibleFavoritePlayers.map((favoritePlayer) => (
+                    <div className="mt-2 flex flex-wrap gap-1 lg:gap-2">
+                      {visibleFavoritePlayers.map((favoritePlayer, index) => (
                         <div
                           key={favoritePlayer.name}
-                          className="grid w-[calc(50%-0.25rem)] grid-cols-[30px_minmax(0,1fr)] items-center gap-2 rounded-md border border-[#A855F7]/30 bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] p-1.5 lg:w-36 lg:grid-cols-[34px_minmax(0,1fr)] lg:p-2"
+                          className={`w-[calc((100%_-_3rem)/2)] min-w-0 flex-col items-center gap-1 rounded-md border border-[#A855F7]/30 bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] p-1 text-center lg:w-44 lg:grid-cols-[38px_minmax(0,1fr)] lg:items-center lg:gap-2 lg:p-2 lg:text-left ${
+                            index >= mobileFavoriteLimit
+                              ? "hidden lg:grid"
+                              : "flex lg:grid"
+                          }`}
                         >
-                          <div className="relative h-7.5 w-7.5 overflow-hidden rounded bg-[#A855F7]/15 lg:h-8.5 lg:w-8.5">
+                          <div className="relative h-6 w-6 overflow-hidden rounded bg-[#A855F7]/15 lg:h-8.5 lg:w-8.5">
                             {getPublicFavoriteHeadshot(favoritePlayer) ? (
                               <Image
                                 src={
@@ -714,10 +1002,10 @@ export default function PublicProfilePage() {
                           </div>
 
                           <div className="min-w-0">
-                            <p className="truncate font-michroma text-[7px] text-white lg:text-[9px]">
+                            <p className="max-w-full truncate font-michroma text-[5px] leading-tight text-white lg:text-[9px]">
                               {favoritePlayer.name}
                             </p>
-                            <p className="mt-0.5 truncate font-michroma text-[5px] uppercase text-white/40 lg:text-[7px]">
+                            <p className="mt-0.5 truncate font-michroma text-[4px] uppercase text-white/40 lg:text-[7px]">
                               {favoritePlayer.team ?? "FA"}{" "}
                               {favoritePlayer.position
                                 ? `- ${favoritePlayer.position}`
@@ -727,29 +1015,64 @@ export default function PublicProfilePage() {
                         </div>
                       ))}
 
-                      {!isShowingAllFavorites &&
-                        hiddenFavoritePlayerCount > 0 && (
-                          <button
-                            type="button"
-                            onClick={() => setIsShowingAllFavorites(true)}
-                            className="flex w-[calc(50%-0.25rem)] items-center justify-center rounded-md border border-[#A855F7]/35 bg-[#A855F7]/10 p-2 font-michroma text-[9px] text-[#A855F7] transition hover:bg-[#A855F7]/20 lg:w-18 lg:text-xs"
-                          >
-                            +{hiddenFavoritePlayerCount}
-                          </button>
-                        )}
+                      {hiddenMobileFavoritePlayerCount > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsShowingAllFavorites(true);
+                            setVisibleMobileFavoriteLimit((current) =>
+                              Math.min(
+                                Math.max(
+                                  current,
+                                  PUBLIC_FAVORITE_MOBILE_PREVIEW_LIMIT,
+                                ) + PUBLIC_FAVORITE_MOBILE_LOAD_STEP,
+                                favoritePlayerDetails.length,
+                              ),
+                            );
+                          }}
+                          className="flex h-auto w-10 shrink-0 items-center justify-center rounded-md border border-[#A855F7]/35 bg-[#A855F7]/10 p-1 font-michroma text-[7px] text-[#A855F7] transition hover:bg-[#A855F7]/20 lg:hidden"
+                        >
+                          +{displayedMobileHiddenFavoritePlayerCount}
+                        </button>
+                      )}
+
+                      {hiddenDesktopFavoritePlayerCount > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsShowingAllFavorites(true);
+                            setVisibleDesktopFavoriteLimit((current) =>
+                              Math.min(
+                                Math.max(
+                                  current,
+                                  PUBLIC_FAVORITE_DESKTOP_PREVIEW_LIMIT,
+                                ) + PUBLIC_FAVORITE_DESKTOP_LOAD_STEP,
+                                favoritePlayerDetails.length,
+                              ),
+                            );
+                          }}
+                          className="hidden h-auto w-14 shrink-0 items-center justify-center rounded-md border border-[#A855F7]/35 bg-[#A855F7]/10 p-2 font-michroma text-xs text-[#A855F7] transition hover:bg-[#A855F7]/20 lg:flex"
+                        >
+                          +{displayedDesktopHiddenFavoritePlayerCount}
+                        </button>
+                      )}
                     </div>
 
-                    {hasMoreFavoritePlayers && (
+                    {hasMoreFavoritePlayers && isShowingAllFavorites && (
                       <button
                         type="button"
-                        onClick={() =>
-                          setIsShowingAllFavorites((current) => !current)
-                        }
+                        onClick={() => {
+                          setIsShowingAllFavorites(false);
+                          setVisibleMobileFavoriteLimit(
+                            PUBLIC_FAVORITE_MOBILE_PREVIEW_LIMIT,
+                          );
+                          setVisibleDesktopFavoriteLimit(
+                            PUBLIC_FAVORITE_DESKTOP_PREVIEW_LIMIT,
+                          );
+                        }}
                         className="mt-3 rounded-md border border-[#A855F7]/35 bg-[#A855F7]/10 px-3 py-1.5 font-michroma text-[6px] uppercase text-[#A855F7] transition hover:bg-[#A855F7]/20 lg:text-[8px]"
                       >
-                        {isShowingAllFavorites
-                          ? "Show Fewer"
-                          : "View All Favorites"}
+                        Show Fewer
                       </button>
                     )}
                   </>
@@ -762,15 +1085,15 @@ export default function PublicProfilePage() {
 
               {remainingPublicLineups.length > 0 && (
                 <div className="mt-5 lg:mt-7">
-                  <p className="font-michroma text-[8px] uppercase text-white/40 lg:text-[10px]">
-                    More Public Lineups
+                  <p className="font-michroma text-[8px] uppercase tracking-wide text-[var(--court-accent)] lg:text-[10px]">
+                    Public Lineups
                   </p>
 
                   <div className="mt-2 grid gap-2 lg:mt-3 lg:grid-cols-2">
                     {remainingPublicLineups.map((lineup) => (
                       <div
                         key={lineup.id}
-                        className="rounded-md border border-[#EFBF04]/25 bg-black/20 p-3 transition hover:border-[#EFBF04]/50 hover:bg-[#171407]/70 lg:p-4"
+                        className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.22)] bg-black/20 p-3 transition hover:border-[rgb(var(--court-accent-rgb)/0.5)] hover:bg-[rgb(var(--court-accent-rgb)/0.08)] lg:p-4"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
@@ -778,58 +1101,96 @@ export default function PublicProfilePage() {
                               {lineup.name}
                             </p>
 
-                            <p className="mt-1 font-michroma text-[7px] uppercase text-[#EFBF04] lg:text-[9px]">
+                            <p className="mt-1 font-michroma text-[7px] uppercase text-[var(--court-accent)] lg:text-[9px]">
                               {lineup.archetype ?? "Saved Lineup"}
                             </p>
                           </div>
 
-                          <p className="shrink-0 font-michroma text-base text-[#EFBF04] lg:text-2xl">
+                          <p className="shrink-0 font-michroma text-base text-[var(--court-accent)] lg:text-2xl">
                             {lineup.overall?.toFixed(1) ?? "--"}
                           </p>
                         </div>
 
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          <span className="rounded border border-white/10 bg-white/5 px-2 py-1 font-michroma text-[6px] uppercase text-white/45 lg:text-[8px]">
-                            {formatStatProfile(lineup.stat_profile)}
+                        <div className="mt-2 grid grid-cols-3 gap-1">
+                          <span className="min-w-0 truncate rounded border border-[rgb(var(--court-accent-rgb)/0.25)] bg-[rgb(var(--court-accent-rgb)/0.08)] px-1.5 py-1 text-center font-michroma text-[5px] uppercase text-[var(--court-accent)] lg:px-2 lg:text-[7px]">
+                            {lineup.tier ?? "Public Build"}
                           </span>
 
-                          {lineup.tier && (
-                            <span className="rounded border border-[rgb(var(--court-accent-rgb)/0.25)] bg-[rgb(var(--court-accent-rgb)/0.08)] px-2 py-1 font-michroma text-[6px] uppercase text-[var(--court-accent)] lg:text-[8px]">
-                              {lineup.tier}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setOpenLineupIdentityTooltip((current) =>
+                                current === lineup.id ? null : lineup.id,
+                              )
+                            }
+                            onBlur={() => setOpenLineupIdentityTooltip(null)}
+                            className="group relative min-w-0 rounded border border-[#A855F7]/25 bg-[#A855F7]/10 px-1.5 py-1 text-center font-michroma text-[5px] uppercase text-[#C084FC] transition hover:bg-[#A855F7]/18 hover:text-white lg:px-2 lg:text-[7px]"
+                            aria-expanded={
+                              openLineupIdentityTooltip === lineup.id
+                            }
+                          >
+                            <span className="block truncate">
+                              {lineup.team_identity ?? "Identity"}
                             </span>
-                          )}
 
-                          {lineup.court_balance && (
-                            <span className="rounded border border-white/10 bg-white/5 px-2 py-1 font-michroma text-[6px] uppercase text-white/45 lg:text-[8px]">
-                              {lineup.court_balance}
+                            <span
+                              className={`pointer-events-none absolute left-1/2 top-full z-40 mt-1 w-32 -translate-x-1/2 rounded border border-[#A855F7]/30 bg-black/95 px-1.5 py-1 font-michroma text-[5px] leading-snug text-white/85 shadow-[0_0_12px_rgba(168,85,247,0.3)] transition lg:w-44 lg:text-[7px] ${
+                                openLineupIdentityTooltip === lineup.id
+                                  ? "opacity-100"
+                                  : "opacity-0 group-hover:opacity-100"
+                              }`}
+                            >
+                              {lineup.team_identity ?? "Identity"}
                             </span>
-                          )}
+                          </button>
+
+                          <span className="min-w-0 truncate rounded border border-white/10 bg-white/5 px-1.5 py-1 text-center font-michroma text-[5px] uppercase text-white/45 lg:px-2 lg:text-[7px]">
+                            {formatStatProfile(lineup.stat_profile)}
+                          </span>
                         </div>
 
-                        <p className="mt-2 font-michroma text-[7px] text-white/55 lg:text-[9px]">
-                          {lineup.summary ??
-                            lineup.team_identity ??
-                            "Public StatCourt build"}
-                        </p>
+                        <div className="mt-3 grid grid-cols-5 gap-1.5 lg:gap-2">
+                          {PUBLIC_LINEUP_SLOT_ORDER.map((slot) => {
+                            const playerName = lineup.players?.[slot];
+                            const playerDetail = playerName
+                              ? publicPlayersByName[playerName]
+                              : null;
+                            const previewPlayer = playerDetail ?? {
+                              name: playerName ?? "Empty",
+                              nbaId: null,
+                              team: null,
+                              position: null,
+                              fallbackImage: null,
+                              archetype: null,
+                            };
 
-                        <p className="mt-2 truncate font-michroma text-[6px] text-white/35 lg:text-[8px]">
-                          {Object.values(lineup.players ?? {})
-                            .filter(Boolean)
-                            .join(" - ")}
-                        </p>
-
-                        {lineup.badges && lineup.badges.length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-1">
-                            {lineup.badges.slice(0, 3).map((badge) => (
-                              <span
-                                key={badge}
-                                className="rounded border border-[#EFBF04]/25 bg-[#EFBF04]/10 px-1.5 py-0.5 font-michroma text-[5.5px] uppercase text-[#EFBF04] lg:text-[7px]"
+                            return (
+                              <div
+                                key={slot}
+                                className="relative aspect-square w-full max-w-12 justify-self-center overflow-hidden rounded border border-white/10 bg-white/8 lg:max-w-16"
+                                title={`${slot}: ${previewPlayer.name}`}
                               >
-                                {badge}
-                              </span>
-                            ))}
-                          </div>
-                        )}
+                                {getPublicFavoriteHeadshot(previewPlayer) ? (
+                                  <Image
+                                    src={
+                                      getPublicFavoriteHeadshot(
+                                        previewPlayer,
+                                      ) ?? "/blank-player.svg"
+                                    }
+                                    alt=""
+                                    fill
+                                    sizes="144px"
+                                    className="object-cover"
+                                  />
+                                ) : (
+                                  <div className="flex h-full w-full items-center justify-center font-michroma text-[7px] text-white/45">
+                                    {slot}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     ))}
                   </div>

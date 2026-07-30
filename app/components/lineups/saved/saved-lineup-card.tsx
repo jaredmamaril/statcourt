@@ -39,6 +39,10 @@ export function SavedLineupCard({
   const tierColor = getLineupTierColor(lineup.tier);
   const topScore = getSavedLineupTopScore(lineup);
   const statProfileLabel = statProfileLabels[lineup.statProfile ?? "career"];
+  const visibleBadges =
+    lineup.badges.length > 0
+      ? lineup.badges
+      : [lineup.teamIdentity, ...lineup.strengths].filter(Boolean).slice(0, 3);
 
   return (
     <div
@@ -127,7 +131,7 @@ export function SavedLineupCard({
       </p>
 
       <SavedLineupBadges
-        badges={lineup.badges}
+        badges={visibleBadges}
         archetypeColor={archetypeColor}
       />
 
