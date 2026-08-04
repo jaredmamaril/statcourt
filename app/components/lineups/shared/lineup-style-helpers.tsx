@@ -18,27 +18,32 @@ export function getSavedLineupArchetypeColor(archetype: string) {
   const archetypeColors: Record<string, string> = {
     "Transition Attack": "#1BC2EC",
     "Showtime Offense": "#1BC2EC",
-    "Playmaking Engine": "#1BC2EC",
-    "Point-Center Offense": "#1BC2EC",
+    "Playmaking Engine": "#38BDF8",
+    "Point-Center Offense": "#14B8A6",
 
     "Defensive Powerhouse": "#22C55E",
-    "Defensive Juggernaut": "#22C55E",
+    "Defensive Juggernaut": "#16A34A",
     "Lockdown Unit": "#22C55E",
 
     "Floor Spacing Machine": "#A855F7",
     "Spacing Engine": "#A855F7",
 
     "Offensive Superteam": "#F97316",
-    "Iso Superteam": "#F97316",
-    "Star-Powered Contender": "#F97316",
+    "Iso Superteam": "#FB7185",
+    "Star-Powered Contender": "#F59E0B",
+    "One-Way Offense": "#EF4444",
 
     "Two-Way Dynasty": "#EFBF04",
     "Championship Dynasty": "#EFBF04",
-    "Positionless Basketball": "#EFBF04",
-    "Balanced Core": "#EFBF04",
+    "Positionless Basketball": "#D946EF",
+    "Balanced Core": "#84CC16",
 
-    "Paint Control Unit": "#EF4444",
-    "Rim Pressure Unit": "#EF4444",
+    "Paint Control Unit": "#DC2626",
+    "Rim Pressure Unit": "#F43F5E",
+    "Size Over Skill": "#B91C1C",
+
+    "Guard Creation Overload": "#06B6D4",
+    "Development Core": "#CBD5E1",
   };
 
   return archetypeColors[archetype] ?? "#1BC2EC";
@@ -58,7 +63,7 @@ export const archetypeColorLegend = [
       "Fast-paced offense built around transition scoring and playmaking.",
   },
   {
-    color: "#1bc2ec",
+    color: "#14B8A6",
     label: "Point-Center Offense",
     description: "Frontcourt hub creation with passing, scoring, and size.",
   },
@@ -68,27 +73,27 @@ export const archetypeColorLegend = [
     description: "High-level shooting gravity and maximum spacing pressure.",
   },
   {
-    color: "#F97316",
+    color: "#FB7185",
     label: "Iso Superteam",
     description: "Elite isolation scoring and matchup hunting.",
   },
   {
-    color: "#22C55E",
+    color: "#16A34A",
     label: "Defensive Juggernaut",
     description: "Top-end defense, size, pressure, and glass control.",
   },
   {
-    color: "#EF4444",
+    color: "#F43F5E",
     label: "Rim Pressure Unit",
     description: "Paint attacks, rim pressure, and interior physicality.",
   },
   {
-    color: "#EFBF04",
+    color: "#D946EF",
     label: "Positionless Basketball",
     description: "Interchangeable roles, passing, and multi-position talent.",
   },
   {
-    color: "#1bc2ec",
+    color: "#38BDF8",
     label: "Playmaking Engine",
     description: "Multiple passers creating efficient looks across the floor.",
   },
@@ -98,7 +103,7 @@ export const archetypeColorLegend = [
     description: "Explosive scoring from multiple creators.",
   },
   {
-    color: "#EF4444",
+    color: "#DC2626",
     label: "Paint Control Unit",
     description: "Dominant size, rebounding, and interior control.",
   },
@@ -108,14 +113,38 @@ export const archetypeColorLegend = [
     description: "Elite defense, rebounding, and physical control.",
   },
   {
-    color: "#F97316",
+    color: "#F59E0B",
     label: "Star-Powered Contender",
     description: "Driven by elite individual talent and star power.",
   },
   {
-    color: "#EFBF04",
+    color: "#84CC16",
     label: "Balanced Core",
     description: "Well-rounded lineup with no major specialization.",
+  },
+  {
+    color: "#06B6D4",
+    label: "Guard Creation Overload",
+    description:
+      "Multiple ball-handlers create pressure, but size and rebounding become concerns.",
+  },
+  {
+    color: "#B91C1C",
+    label: "Size Over Skill",
+    description:
+      "Big, physical lineup that controls the glass but can crowd the floor.",
+  },
+  {
+    color: "#EF4444",
+    label: "One-Way Offense",
+    description:
+      "Strong scoring profile with defensive coverage and possession tradeoffs.",
+  },
+  {
+    color: "#CBD5E1",
+    label: "Development Core",
+    description:
+      "Low-ceiling or incomplete build that still needs a clearer winning identity.",
   },
 ];
 

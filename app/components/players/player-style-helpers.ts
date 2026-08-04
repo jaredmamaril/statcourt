@@ -81,9 +81,10 @@ export function getLineupFitStyles(fit: string): CSSProperties {
     "Transition Attack": "#1BC2EC",
     "Showtime Offense": "#1BC2EC",
     "Lead Guard Engine": "#1BC2EC",
-    "Point-Center Offense": "#1BC2EC",
+    "Point-Center Offense": "#14B8A6",
     "Secondary Creator Unit": "#1BC2EC",
-    "Playmaking Engine": "#1BC2EC",
+    "Playmaking Engine": "#38BDF8",
+    "Guard Creation Overload": "#06B6D4",
 
     // Shooting / spacing
     "Floor Spacing Machine": "#A855F7",
@@ -95,14 +96,15 @@ export function getLineupFitStyles(fit: string): CSSProperties {
     "Five-Out Attack": "#A855F7",
 
     // Star / scoring
-    "Star-Powered Contender": "#F97316",
-    "Iso Superteam": "#F97316",
+    "Star-Powered Contender": "#F59E0B",
+    "Iso Superteam": "#FB7185",
     "Offensive Superteam": "#F97316",
+    "One-Way Offense": "#EF4444",
     "Bench Scoring Unit": "#F97316",
 
     // Defense
     "Defensive Powerhouse": "#22C55E",
-    "Defensive Juggernaut": "#22C55E",
+    "Defensive Juggernaut": "#16A34A",
     "Point-of-Attack Defense": "#22C55E",
     "Switchable Defense": "#22C55E",
     "Backline Defense": "#22C55E",
@@ -110,18 +112,19 @@ export function getLineupFitStyles(fit: string): CSSProperties {
     "Defensive Support": "#22C55E",
 
     // Interior / physicality
-    "Paint Control Unit": "#EF4444",
+    "Paint Control Unit": "#DC2626",
     "Interior Support Unit": "#EF4444",
-    "Rim Pressure Unit": "#EF4444",
+    "Rim Pressure Unit": "#F43F5E",
+    "Size Over Skill": "#B91C1C",
     "Rebounding Support": "#EF4444",
     "Interior Pressure Frontcourt": "#EF4444",
     "Physical Frontcourt": "#EF4444",
 
     // Elite balance
     "Two-Way Dynasty": "#EFBF04",
-    "Positionless Basketball": "#EFBF04",
+    "Positionless Basketball": "#D946EF",
     "Versatile Wing Core": "#EFBF04",
-    "Balanced Core": "#EFBF04",
+    "Balanced Core": "#84CC16",
 
     // Depth / energy
     "Guard Depth Unit": "#CBD5E1",

@@ -10,6 +10,11 @@ import {
   type BuilderStatProfileMode,
   type PositionFit,
 } from "../components/lineups/builder/builder-position-helpers";
+import {
+  lineupReferenceCatalog,
+  type LineupReferenceScores,
+  type LineupReferenceTier,
+} from "./lineups/lineup-reference-catalog";
 
 export type TeamGrades = {
   offense: string;
@@ -21,15 +26,6 @@ export type TeamGrades = {
 
 export type XFactorResult = {
   player: Player;
-  description: string;
-};
-
-type SimilarLineupProfile = {
-  name: string;
-  scores: Pick<
-    LineupScoutScores,
-    "offense" | "defense" | "shooting" | "playmaking" | "rebounding"
-  >;
   description: string;
 };
 
@@ -64,77 +60,6 @@ function getStatsByMode(
   };
 }
 
-const similarLineupProfiles: SimilarLineupProfile[] = [
-  {
-    name: "2017 Warriors",
-    scores: {
-      offense: 96,
-      defense: 86,
-      shooting: 99,
-      playmaking: 92,
-      rebounding: 78,
-    },
-    description: "Elite spacing, shooting gravity, and offensive flow.",
-  },
-  {
-    name: "1986 Celtics",
-    scores: {
-      offense: 91,
-      defense: 88,
-      shooting: 84,
-      playmaking: 92,
-      rebounding: 90,
-    },
-    description: "High-IQ passing, frontcourt skill, and connected offense.",
-  },
-  {
-    name: "2012 Heat",
-    scores: {
-      offense: 92,
-      defense: 90,
-      shooting: 78,
-      playmaking: 86,
-      rebounding: 76,
-    },
-    description:
-      "Downhill pressure, transition attacks, and elite athletic creation.",
-  },
-  {
-    name: "2001 Lakers",
-    scores: {
-      offense: 90,
-      defense: 84,
-      shooting: 65,
-      playmaking: 72,
-      rebounding: 95,
-    },
-    description:
-      "Interior dominance paired with elite perimeter shot creation.",
-  },
-  {
-    name: "1996 Bulls",
-    scores: {
-      offense: 89,
-      defense: 97,
-      shooting: 76,
-      playmaking: 82,
-      rebounding: 92,
-    },
-    description: "Elite defense, rebounding, and physical control.",
-  },
-  {
-    name: "All-Time Lakers",
-    scores: {
-      offense: 94,
-      defense: 88,
-      shooting: 75,
-      playmaking: 90,
-      rebounding: 94,
-    },
-    description: "Legendary top-end talent across every position.",
-  },
-];
-
 export type LineupScoutScores = {
   offense: number;
   defense: number;
@@ -163,17 +88,32 @@ export type LineupScoutReport = {
     name: string;
     description: string;
     matchScore: number;
+    tier?: LineupReferenceTier;
+    archetype?: string;
   }[];
   courtBalance: string;
   courtBalanceDescription: string;
   badges: string[];
 };
 
+function getLineupReferenceTierLabel(tier?: LineupReferenceTier) {
+  if (tier === "elite") return "Elite Template";
+  if (tier === "strong") return "Strong Build";
+  if (tier === "balanced") return "Balanced Build";
+  if (tier === "flawed") return "Flawed Build";
+  if (tier === "bad") return "Low-Ceiling Build";
+
+  return "Reference Build";
+}
+
 export function getLineupTierColor(tier: string) {
   if (tier === "Championship Favorite") return "#EFBF04";
   if (tier === "Championship Contender") return "#1bc2ec";
   if (tier === "Playoff Caliber") return "#FFFFFF";
+  if (tier === "Competitive Build") return "#22C55E";
   if (tier === "Specialist Build") return "#94A3B8";
+  if (tier === "Flawed Build") return "#F97316";
+  if (tier === "Developmental Lineup") return "#A855F7";
 
   return "#94A3B8";
 }
@@ -240,12 +180,162 @@ export function getScoutReason(archetype: string) {
 
     "Balanced Core":
       "This lineup has enough talent across categories to avoid relying on only one path to winning.",
+
+    "Guard Creation Overload":
+      "Multiple ball-handlers create pressure, but the lineup may be undersized defensively and on the glass.",
+
+    "Size Over Skill":
+      "The lineup leans into height, rebounding, and interior force while sacrificing spacing and handling.",
+
+    "One-Way Offense":
+      "The scoring profile is dangerous, but defensive coverage and possession control remain pressure points.",
+
+    "Development Core":
+      "This lineup has developmental pieces, but still needs clearer top-end talent and a stronger identity.",
   };
 
   return (
     reasons[archetype] ??
     "This lineup has a strong statistical identity built around its best players."
   );
+}
+
+function getTeamIdentity({
+  archetype,
+  trueBigs,
+  trueGuards,
+  adjustedShootingScore,
+  adjustedPlaymakingScore,
+  adjustedDefenseScore,
+  adjustedReboundingScore,
+  adjustedOffenseScore,
+  starPower,
+  constructionAdjustment,
+}: {
+  archetype: string;
+  trueBigs: number;
+  trueGuards: number;
+  adjustedShootingScore: number;
+  adjustedPlaymakingScore: number;
+  adjustedDefenseScore: number;
+  adjustedReboundingScore: number;
+  adjustedOffenseScore: number;
+  starPower: number;
+  constructionAdjustment: number;
+}) {
+  if (trueBigs >= 3 && adjustedShootingScore < 70) return "Paint Crowding";
+  if (trueGuards >= 3 && adjustedDefenseScore < 72) {
+    return "Small Ball Creation";
+  }
+  if (archetype === "Guard Creation Overload") return "Guard Creation";
+  if (archetype === "Size Over Skill") return "Size Over Skill";
+  if (archetype === "One-Way Offense") return "Scoring Tilt";
+  if (archetype === "Development Core") return "Development Focus";
+  if (constructionAdjustment <= -4) return "Role Stretch";
+  if (starPower < 55) return "Low-Ceiling Depth";
+  if (adjustedShootingScore >= 88) return "Spacing Engine";
+  if (adjustedPlaymakingScore >= 88) return "Advantage Creation";
+  if (adjustedDefenseScore >= 88) return "Defensive Pressure";
+  if (adjustedReboundingScore >= 88) return "Interior Control";
+  if (adjustedOffenseScore >= 88) return "Scoring Pressure";
+
+  const identities: Record<string, string> = {
+    "Two-Way Dynasty": "Championship Control",
+    "Transition Attack": "Open-Floor Pressure",
+    "Point-Center Offense": "Hub Creation",
+    "Iso Superteam": "Mismatch Hunting",
+    "Defensive Juggernaut": "Defensive Suppression",
+    "Floor Spacing Machine": "Maximum Spacing",
+    "Positionless Basketball": "Role Flexibility",
+    "Rim Pressure Unit": "Paint Pressure",
+    "Playmaking Engine": "Five-Man Creation",
+    "Offensive Superteam": "Shot Creation",
+    "Paint Control Unit": "Paint Dominance",
+    "Defensive Powerhouse": "Defensive Control",
+    "Star-Powered Contender": "Star-Powered Balance",
+    "Guard Creation Overload": "Guard Creation",
+    "Size Over Skill": "Size Over Skill",
+    "One-Way Offense": "Scoring Tilt",
+    "Development Core": "Development Focus",
+  };
+
+  return identities[archetype] ?? "Balanced Two-Way Core";
+}
+
+function getLineupSummary({
+  archetype,
+  tier,
+  trueBigs,
+  trueGuards,
+  adjustedShootingScore,
+  adjustedPlaymakingScore,
+  adjustedDefenseScore,
+  constructionAdjustment,
+}: {
+  archetype: string;
+  tier: string;
+  trueBigs: number;
+  trueGuards: number;
+  adjustedShootingScore: number;
+  adjustedPlaymakingScore: number;
+  adjustedDefenseScore: number;
+  constructionAdjustment: number;
+}) {
+  if (tier === "Developmental Lineup") {
+    return "A developmental lineup with limited top-end pressure and several areas that still need a clear identity.";
+  }
+
+  if (tier === "Flawed Build" && constructionAdjustment <= -4) {
+    return "A talented but awkward lineup where several players are stretched outside their cleanest roles.";
+  }
+
+  if (trueBigs >= 3 && adjustedShootingScore < 70) {
+    return "A size-heavy lineup that can control the glass, but may crowd the paint and shrink driving lanes.";
+  }
+
+  if (trueGuards >= 3 && adjustedDefenseScore < 72) {
+    return "A guard-heavy lineup with creation and pace, but clear pressure points on defense and the glass.";
+  }
+
+  if (adjustedPlaymakingScore < 60) {
+    return "A lineup with usable pieces, but no clear engine to organize possessions consistently.";
+  }
+
+  return archetype === "Two-Way Dynasty"
+    ? "A complete championship lineup built around elite two-way control, star power, and matchup answers."
+    : archetype === "Transition Attack"
+      ? "A fast-paced lineup built around rim pressure, open-floor creation, and defensive-to-offensive bursts."
+      : archetype === "Point-Center Offense"
+        ? "A hub-based offense built around a center who can pass, score, and organize the floor."
+        : archetype === "Iso Superteam"
+          ? "A shot-creation lineup built around elite isolation scorers and matchup hunting."
+          : archetype === "Defensive Juggernaut"
+            ? "A suffocating defensive lineup built around size, pressure, and rebounding control."
+            : archetype === "Floor Spacing Machine"
+              ? "A spacing-heavy lineup built around elite shooting gravity and clean driving lanes."
+              : archetype === "Positionless Basketball"
+                ? "A flexible lineup built around interchangeable roles, passing, and two-way versatility."
+                : archetype === "Rim Pressure Unit"
+                  ? "A physical lineup built around paint attacks, rim pressure, and interior dominance."
+                  : archetype === "Playmaking Engine"
+                    ? "A high-IQ creation lineup built around passing, pace control, and easy shot generation."
+                    : archetype === "Offensive Superteam"
+                      ? "A star-powered scoring lineup built around shot creation, isolation pressure, and matchup hunting."
+                      : archetype === "Paint Control Unit"
+                        ? "A physical interior lineup built around rebounding, size, and paint pressure."
+                        : archetype === "Defensive Powerhouse"
+                          ? "A defensive lineup built around physicality, rebounding, and matchup control."
+                          : archetype === "Star-Powered Contender"
+                            ? "A championship-level lineup built around elite talent, versatility, and star power."
+                            : archetype === "Guard Creation Overload"
+                              ? "A guard-heavy lineup with creation and pace, but defensive size and rebounding become clear pressure points."
+                              : archetype === "Size Over Skill"
+                                ? "A size-heavy lineup built around rebounding and interior force, but limited spacing can tighten the floor."
+                                : archetype === "One-Way Offense"
+                                  ? "An offense-first lineup with enough scoring to create pressure, but major defensive tradeoffs."
+                                  : archetype === "Development Core"
+                                    ? "A developmental lineup with low star pressure and a role structure that still needs definition."
+                                    : "A balanced lineup built around two-way production, lineup flexibility, and reliable scoring.";
 }
 
 export function getCourtBalanceDescription(
@@ -306,28 +396,43 @@ export function getRankedScoutScores(scores: LineupScoutScores) {
 }
 
 export function getSimilarLineupMatches(scores: LineupScoutScores) {
-  const categoryKeys: Array<keyof SimilarLineupProfile["scores"]> = [
-    "offense",
-    "defense",
-    "shooting",
-    "playmaking",
-    "rebounding",
+  const categoryWeights: Array<{
+    key: keyof LineupReferenceScores;
+    weight: number;
+  }> = [
+    { key: "offense", weight: 1 },
+    { key: "defense", weight: 1.2 },
+    { key: "shooting", weight: 1.15 },
+    { key: "playmaking", weight: 1.05 },
+    { key: "rebounding", weight: 1.25 },
+    { key: "starPower", weight: 0.7 },
+    { key: "overall", weight: 1.35 },
   ];
 
-  return similarLineupProfiles
+  const totalWeight = categoryWeights.reduce(
+    (total, category) => total + category.weight,
+    0,
+  );
+
+  return lineupReferenceCatalog
     .map((profile) => {
-      const totalDifference = categoryKeys.reduce(
-        (total, key) => total + Math.abs(scores[key] - profile.scores[key]),
+      const weightedDifference = categoryWeights.reduce(
+        (total, category) =>
+          total +
+          Math.abs(scores[category.key] - profile.scores[category.key]) *
+            category.weight,
         0,
       );
 
-      const averageDifference = totalDifference / categoryKeys.length;
+      const averageDifference = weightedDifference / totalWeight;
       const matchScore = Math.max(0, Math.round(100 - averageDifference));
 
       return {
         name: profile.name,
         description: profile.description,
         matchScore,
+        tier: profile.tier,
+        archetype: profile.archetype,
       };
     })
     .toSorted((a, b) => b.matchScore - a.matchScore)
@@ -360,7 +465,8 @@ export function getXFactorDescription(
   if (
     archetype === "Playmaking Engine" ||
     archetype === "Point-Center Offense" ||
-    archetype === "Positionless Basketball"
+    archetype === "Positionless Basketball" ||
+    archetype === "Guard Creation Overload"
   ) {
     return isBig && isElitePlaymaker
       ? "Frontcourt hub who organizes the offense through passing and touch."
@@ -372,7 +478,8 @@ export function getXFactorDescription(
   if (
     archetype === "Offensive Superteam" ||
     archetype === "Iso Superteam" ||
-    archetype === "Transition Attack"
+    archetype === "Transition Attack" ||
+    archetype === "One-Way Offense"
   ) {
     return isPrimaryScorer && isWing
       ? "Primary closer and matchup scorer from the wing."
@@ -383,7 +490,11 @@ export function getXFactorDescription(
           : "Scoring engine who creates pressure across matchups.";
   }
 
-  if (archetype === "Paint Control Unit" || archetype === "Rim Pressure Unit") {
+  if (
+    archetype === "Paint Control Unit" ||
+    archetype === "Rim Pressure Unit" ||
+    archetype === "Size Over Skill"
+  ) {
     return isBig
       ? "Interior force that controls the glass and pressures the rim."
       : "Downhill attacker who adds pressure around the rim.";
@@ -444,14 +555,16 @@ function getXFactorForArchetype(
       if (
         archetype === "Playmaking Engine" ||
         archetype === "Point-Center Offense" ||
-        archetype === "Positionless Basketball"
+        archetype === "Positionless Basketball" ||
+        archetype === "Guard Creation Overload"
       ) {
         fitScore += apg * 5;
       }
 
       if (
         archetype === "Paint Control Unit" ||
-        archetype === "Rim Pressure Unit"
+        archetype === "Rim Pressure Unit" ||
+        archetype === "Size Over Skill"
       ) {
         fitScore += rpg * 4;
       }
@@ -467,7 +580,8 @@ function getXFactorForArchetype(
       if (
         archetype === "Offensive Superteam" ||
         archetype === "Iso Superteam" ||
-        archetype === "Transition Attack"
+        archetype === "Transition Attack" ||
+        archetype === "One-Way Offense"
       ) {
         fitScore += ppg * 2;
       }
@@ -769,6 +883,11 @@ export function getLineupScoutReport(
       ((stats.rpg ?? 0) >= 8 && (stats.bpg ?? 0) >= 0.7),
   ).length;
 
+  const trueGuards = selectedPlayers.filter(
+    (player) =>
+      player.position === "G" || (player.heightInches ?? 99) <= 76,
+  ).length;
+
   const passablePlayers = selectedPlayerStats.filter(
     (stats) => (stats.apg ?? 0) >= 4.5,
   ).length;
@@ -976,27 +1095,54 @@ export function getLineupScoutReport(
     .filter((strength): strength is string => Boolean(strength))
     .slice(0, 4);
 
-  const weaknesses = [
-    adjustedShootingScore < 70 && eliteShooters < 2 ? "Floor Spacing" : null,
+  const weaknesses = Array.from(
+    new Set(
+      [
+        adjustedShootingScore < 70 && eliteShooters < 2
+          ? "Floor Spacing"
+          : null,
 
-    adjustedPlaymakingScore < 68 && elitePlaymakers === 0 ? "Playmaking" : null,
+        adjustedShootingScore < 60 ? "Poor Spacing" : null,
 
-    adjustedOffenseScore < 68 && eliteScorers < 2 ? "Half-Court Offense" : null,
+        adjustedPlaymakingScore < 68 && elitePlaymakers === 0
+          ? "Playmaking"
+          : null,
 
-    adjustedReboundingScore < 68 && eliteRebounders === 0
-      ? "Rim Protection"
-      : null,
+        adjustedPlaymakingScore < 60 ? "No Primary Creator" : null,
 
-    adjustedDefenseScore < 68 ? "Perimeter Defense" : null,
+        adjustedOffenseScore < 68 && eliteScorers < 2
+          ? "Half-Court Offense"
+          : null,
 
-    adjustedOffenseScore < 72 && eliteScorers === 0
-      ? "Isolation Scoring"
-      : null,
+        adjustedReboundingScore < 68 && eliteRebounders === 0
+          ? "Rim Protection"
+          : null,
 
-    selectedPlayers.length < 5 ? "Bench Creation" : null,
+        adjustedReboundingScore < 60 ? "Rebounding Problem" : null,
 
-    constructionAdjustment <= -4 ? "Position Fit" : null,
-  ].filter((weakness): weakness is string => Boolean(weakness));
+        adjustedDefenseScore < 68 ? "Perimeter Defense" : null,
+
+        adjustedDefenseScore < 60 ? "Defensive Liability" : null,
+
+        adjustedOffenseScore < 72 && eliteScorers === 0
+          ? "Isolation Scoring"
+          : null,
+
+        trueGuards >= 3 && adjustedDefenseScore < 72
+          ? "Small Backcourt"
+          : null,
+
+        trueBigs >= 3 && adjustedShootingScore < 70 ? "Crowded Paint" : null,
+
+        selectedPlayers.length < 5 ? "Bench Creation" : null,
+
+        constructionAdjustment <= -4 ? "Position Fit" : null,
+        constructionAdjustment <= -4 ? "Out of Position" : null,
+
+        starPower < 55 ? "Low Star Power" : null,
+      ].filter((weakness): weakness is string => Boolean(weakness)),
+    ),
+  ).slice(0, 4);
 
   const weakestScore = getRankedScoutScores(scores)
     .filter((score) => score.key !== "starPower")
@@ -1005,19 +1151,30 @@ export function getLineupScoutReport(
   const hasClearTradeoff = weakestScore ? weakestScore.value < 72 : false;
 
   const tradeoff =
-    !hasClearTradeoff
+    !hasClearTradeoff && constructionAdjustment > -4
       ? "No major tradeoff."
+      : trueBigs >= 3 && adjustedShootingScore < 70
+        ? "This lineup controls size and rebounding, but the paint may feel crowded without enough spacing."
+        : trueGuards >= 3 &&
+            (adjustedDefenseScore < 72 || adjustedReboundingScore < 65)
+          ? "This lineup has plenty of ball-handling, but defense, size, and rebounding become pressure points."
+          : constructionAdjustment <= -4
+            ? "This lineup has talent, but several players are stretched away from their cleanest roles."
+            : starPower < 55
+              ? "This lineup has structure, but may lack the top-end talent needed to swing difficult matchups."
+              : adjustedPlaymakingScore < 60
+                ? "This lineup can produce in spots, but may struggle to create reliable advantages."
       : weakestScore?.key === "shooting"
-      ? "This lineup sacrifices spacing for size, rebounding, and interior control."
-      : weakestScore?.key === "playmaking"
-        ? "This lineup leans more on individual talent than constant table-setting."
-        : weakestScore?.key === "offense"
-          ? "This lineup wins through structure and defense more than pure scoring pressure."
-          : weakestScore?.key === "defense"
-            ? "This lineup prioritizes offensive talent over defensive coverage."
-            : weakestScore?.key === "rebounding"
-              ? "This lineup trades some glass control for skill, speed, or spacing."
-              : "No major tradeoff.";
+        ? "This lineup sacrifices spacing for size, rebounding, and interior control."
+        : weakestScore?.key === "playmaking"
+          ? "This lineup leans more on individual talent than constant table-setting."
+          : weakestScore?.key === "offense"
+            ? "This lineup wins through structure and defense more than pure scoring pressure."
+            : weakestScore?.key === "defense"
+              ? "This lineup prioritizes offensive talent over defensive coverage."
+              : weakestScore?.key === "rebounding"
+                ? "This lineup trades some glass control for skill, speed, or spacing."
+                : "No major tradeoff.";
 
   const tier =
     finalOverall >= 94
@@ -1026,7 +1183,13 @@ export function getLineupScoutReport(
         ? "Championship Contender"
         : finalOverall >= 86
           ? "Playoff Caliber"
-          : "Specialist Build";
+          : finalOverall >= 80
+            ? "Competitive Build"
+            : finalOverall >= 72
+              ? "Specialist Build"
+              : finalOverall >= 62
+                ? "Flawed Build"
+                : "Developmental Lineup";
 
   let archetype = "Balanced Core";
 
@@ -1054,6 +1217,14 @@ export function getLineupScoutReport(
     adjustedOffenseScore >= 86
   ) {
     archetype = "Transition Attack";
+  } else if (tier === "Developmental Lineup") {
+    archetype = "Development Core";
+  } else if (trueBigs >= 3 && adjustedShootingScore < 70) {
+    archetype = "Size Over Skill";
+  } else if (trueGuards >= 3 && adjustedDefenseScore < 72) {
+    archetype = "Guard Creation Overload";
+  } else if (adjustedOffenseScore >= 82 && adjustedDefenseScore < 65) {
+    archetype = "One-Way Offense";
   } else if (eliteRebounders >= 3 && adjustedOffenseScore >= 82) {
     archetype = "Rim Pressure Unit";
   } else if (
@@ -1082,70 +1253,34 @@ export function getLineupScoutReport(
     statProfileMode,
   );
 
-  const teamIdentity =
-    archetype === "Two-Way Dynasty"
-      ? "Championship Control"
-      : archetype === "Transition Attack"
-        ? "Open-Floor Pressure"
-        : archetype === "Point-Center Offense"
-          ? "Hub Creation"
-          : archetype === "Iso Superteam"
-            ? "Mismatch Hunting"
-            : archetype === "Defensive Juggernaut"
-              ? "Defensive Suppression"
-              : archetype === "Floor Spacing Machine"
-                ? "Maximum Spacing"
-                : archetype === "Positionless Basketball"
-                  ? "Role Flexibility"
-                  : archetype === "Rim Pressure Unit"
-                    ? "Paint Pressure"
-                    : archetype === "Floor Spacing Machine"
-                      ? "Shooting Gravity"
-                      : archetype === "Playmaking Engine"
-                        ? "Five-Man Creation"
-                        : archetype === "Offensive Superteam"
-                          ? "Shot Creation"
-                          : archetype === "Paint Control Unit"
-                            ? "Paint Dominance"
-                            : archetype === "Defensive Powerhouse"
-                              ? "Defensive Control"
-                              : archetype === "Star-Powered Contender"
-                                ? "Star-Powered Balance"
-                                : "Balanced Two-Way Core";
+  const teamIdentity = getTeamIdentity({
+    archetype,
+    trueBigs,
+    trueGuards,
+    adjustedShootingScore,
+    adjustedPlaymakingScore,
+    adjustedDefenseScore,
+    adjustedReboundingScore,
+    adjustedOffenseScore,
+    starPower,
+    constructionAdjustment,
+  });
 
-  const similarTo = `${closestSimilarLineup.name} (${closestSimilarLineup.matchScore}%)`;
+  const similarTo = `${closestSimilarLineup.name} (${getLineupReferenceTierLabel(
+    closestSimilarLineup.tier,
+  )}, ${closestSimilarLineup.matchScore}%)`;
   const similarToDescription = closestSimilarLineup.description;
 
-  const summary =
-    archetype === "Two-Way Dynasty"
-      ? "A complete championship lineup built around elite two-way control, star power, and matchup answers."
-      : archetype === "Transition Attack"
-        ? "A fast-paced lineup built around rim pressure, open-floor creation, and defensive-to-offensive bursts."
-        : archetype === "Point-Center Offense"
-          ? "A hub-based offense built around a center who can pass, score, and organize the floor."
-          : archetype === "Iso Superteam"
-            ? "A shot-creation lineup built around elite isolation scorers and matchup hunting."
-            : archetype === "Defensive Juggernaut"
-              ? "A suffocating defensive lineup built around size, pressure, and rebounding control."
-              : archetype === "Floor Spacing Machine"
-                ? "A spacing-heavy lineup built around elite shooting gravity and clean driving lanes."
-                : archetype === "Positionless Basketball"
-                  ? "A flexible lineup built around interchangeable roles, passing, and two-way versatility."
-                  : archetype === "Rim Pressure Unit"
-                    ? "A physical lineup built around paint attacks, rim pressure, and interior dominance."
-                    : archetype === "Floor Spacing Machine"
-                      ? `An elite spacing lineup built around shooting gravity, ball movement, and offensive versatility.`
-                      : archetype === "Playmaking Engine"
-                        ? `A high-IQ creation lineup built around passing, pace control, and easy shot generation.`
-                        : archetype === "Offensive Superteam"
-                          ? `A star-powered scoring lineup built around shot creation, isolation pressure, and matchup hunting.`
-                          : archetype === "Paint Control Unit"
-                            ? `A physical interior lineup built around rebounding, size, and paint pressure.`
-                            : archetype === "Defensive Powerhouse"
-                              ? `A defensive lineup built around physicality, rebounding, and matchup control.`
-                              : archetype === "Star-Powered Contender"
-                                ? `A championship-level lineup built around elite talent, versatility, and star power.`
-                                : `A balanced lineup built around two-way production, lineup flexibility, and reliable scoring.`;
+  const summary = getLineupSummary({
+    archetype,
+    tier,
+    trueBigs,
+    trueGuards,
+    adjustedShootingScore,
+    adjustedPlaymakingScore,
+    adjustedDefenseScore,
+    constructionAdjustment,
+  });
 
   const scoreValues = [
     adjustedOffenseScore,
@@ -1172,6 +1307,35 @@ export function getLineupScoutReport(
     scores,
     courtBalance,
   );
+
+  const qualityBadges = [
+    finalOverall >= 94 ? "Championship DNA" : null,
+
+    finalOverall >= 90 &&
+    adjustedDefenseScore >= 85 &&
+    adjustedOffenseScore >= 85
+      ? "Elite Two-Way Core"
+      : null,
+
+    finalOverall >= 88 && starPower >= 88 ? "Star-Driven Ceiling" : null,
+
+    adjustedShootingScore >= 85 ? "Spacing Advantage" : null,
+    adjustedPlaymakingScore >= 85 ? "Multiple Advantage Creators" : null,
+    adjustedReboundingScore >= 85 ? "Interior Control" : null,
+
+    finalOverall < 80 && adjustedShootingScore < 65 ? "Spacing Concern" : null,
+    finalOverall < 80 && adjustedPlaymakingScore < 65 ? "No True Creator" : null,
+    finalOverall < 80 && adjustedDefenseScore < 65
+      ? "Defensive Liability"
+      : null,
+    finalOverall < 80 && adjustedReboundingScore < 65
+      ? "Rebounding Problem"
+      : null,
+    constructionAdjustment <= -4 ? "Position Fit Issues" : null,
+    trueBigs >= 3 && adjustedShootingScore < 70 ? "Crowded Paint" : null,
+    trueGuards >= 3 && adjustedDefenseScore < 70 ? "Undersized Defense" : null,
+    starPower < 55 ? "Low Star Ceiling" : null,
+  ].filter((badge): badge is string => Boolean(badge));
 
   const chemistryBadges = [
     superstarCount >= 4 ? "GOAT Collection" : null,
@@ -1217,7 +1381,10 @@ export function getLineupScoutReport(
       : null,
   ].filter((badge): badge is string => Boolean(badge));
 
-  const badges = [...chemistryBadges, ...scoreBadges].slice(0, 3);
+  const badges = [...qualityBadges, ...chemistryBadges, ...scoreBadges].slice(
+    0,
+    4,
+  );
 
   return {
     summary,

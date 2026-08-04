@@ -53,6 +53,8 @@ export type SavedLineup = {
     name: string;
     description: string;
     matchScore: number;
+    tier?: "elite" | "strong" | "balanced" | "flawed" | "bad";
+    archetype?: string;
   }[];
   courtBalance: string;
   courtBalanceDescription: string;
