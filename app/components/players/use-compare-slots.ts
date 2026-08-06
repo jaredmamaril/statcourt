@@ -17,6 +17,32 @@ type CompareSlotsRow = {
   right_player_name: string | null;
 };
 
+async function saveCompareSlotsToAccount(nextSlots: CompareSlots) {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.access_token) {
+    throw new Error("Sign in again to update compare slots.");
+  }
+
+  const response = await fetch("/api/compare-slots", {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(nextSlots),
+  });
+  const result = (await response.json().catch(() => ({}))) as {
+    error?: string;
+  };
+
+  if (!response.ok) {
+    throw new Error(result.error ?? "Could not update compare slots.");
+  }
+}
+
 export function useCompareSlots(user: User | null) {
   const [compareSlots, setCompareSlots] =
     useState<CompareSlots>(emptyCompareSlots);
@@ -92,14 +118,9 @@ export function useCompareSlots(user: User | null) {
 
       if (!user) return;
 
-      const { error } = await supabase.from("user_compare_slots").upsert({
-        user_id: user.id,
-        left_player_name: nextSlots.left,
-        right_player_name: nextSlots.right,
-        updated_at: new Date().toISOString(),
-      });
+      try {
+        await saveCompareSlotsToAccount(nextSlots);
 
-      if (!error) {
         if (comparedPlayer) {
           await logUserActivity({
             user,
@@ -114,10 +135,10 @@ export function useCompareSlots(user: User | null) {
         }
 
         return;
+      } catch (error) {
+        console.error("Failed to update compare slots", error);
+        setCompareSlots(getSavedCompareSlots());
       }
-
-      console.error("Failed to update compare slots", error);
-      setCompareSlots(getSavedCompareSlots());
     },
     [compareSlots.left, compareSlots.right, user],
   );

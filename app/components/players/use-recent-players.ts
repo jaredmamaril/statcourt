@@ -14,6 +14,34 @@ type RecentPlayerRow = {
   player_name: string;
 };
 
+async function updateRecentPlayer(playerName: string) {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.access_token) {
+    throw new Error("Sign in again to update recent players.");
+  }
+
+  const response = await fetch("/api/recent-players", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      playerName,
+    }),
+  });
+  const result = (await response.json().catch(() => ({}))) as {
+    error?: string;
+  };
+
+  if (!response.ok) {
+    throw new Error(result.error ?? "Could not update recent players.");
+  }
+}
+
 export function useRecentPlayers(user: User | null) {
   const [recentPlayers, setRecentPlayers] = useState<string[]>([]);
   const [isLoadingRecentPlayers, setIsLoadingRecentPlayers] = useState(true);
@@ -76,21 +104,13 @@ export function useRecentPlayers(user: User | null) {
 
       if (!user) return;
 
-      const { error } = await supabase.from("recent_players").upsert(
-        {
-          user_id: user.id,
-          player_name: playerName,
-          viewed_at: new Date().toISOString(),
-        },
-        { onConflict: "user_id,player_name" },
-      );
-
-      if (!error) return;
-
-      console.error("Failed to update recent players", error);
-      setRecentPlayers(recentPlayers);
-      saveRecentPlayers(recentPlayers);
-      return;
+      try {
+        await updateRecentPlayer(playerName);
+      } catch (error) {
+        console.error("Failed to update recent players", error);
+        setRecentPlayers(recentPlayers);
+        saveRecentPlayers(recentPlayers);
+      }
     },
     [recentPlayers, user],
   );

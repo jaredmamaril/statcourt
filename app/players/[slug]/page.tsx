@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { getCachedApiPlayers } from "../../lib/player-api-cache";
 import { useAuthUser } from "../../lib/use-auth-user";
 import { useUserSettings } from "../../lib/use-user-settings";
 import { AuthPrompt } from "../../components/auth/auth-prompt";
@@ -129,18 +130,10 @@ export default function PlayerProfilePage() {
         setIsLoadingPlayers(true);
         setPlayerLoadError("");
 
-        const response = await fetch("/api/players");
+        const loadedPlayers = await getCachedApiPlayers();
 
-        if (!response.ok) {
-          throw new Error("Failed to load players");
-        }
-
-        const data = (await response.json()) as {
-          players?: Player[];
-        };
-
-        if (isActive && data.players && data.players.length > 0) {
-          setPlayers(data.players);
+        if (isActive && loadedPlayers.length > 0) {
+          setPlayers(loadedPlayers);
         }
       } catch (error) {
         console.error("Failed to load profile players", error);

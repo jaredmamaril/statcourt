@@ -5,9 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  getPlayerInsights,
   type PlayerInsightDisplay,
-  type Player,
 } from "../components/court-data";
 import {
   Activity,
@@ -25,8 +23,13 @@ import {
 } from "lucide-react";
 import { supabase } from "../components/supabase-client";
 import { getAuthProviderLabel } from "../lib/auth-display";
+import {
+  getCachedApiPlayerProfileLookups,
+  type PlayerProfileLookup,
+} from "../lib/player-api-cache";
+import { updateUserProfile } from "../lib/profile-api-client";
 import { useUserProfile } from "../lib/use-user-profile";
-import { LoadingSpinner } from "../components/loading/loading-spinner";
+import { SkeletonBlock } from "../components/loading/skeleton";
 
 type ProfileStats = {
   savedLineups: number;
@@ -55,6 +58,22 @@ const initialProfileStats: ProfileStats = {
   favoriteArchetype: null,
 };
 
+function ProfileActivitySkeleton() {
+  return (
+    <div className="statcourt-scroll grid max-h-42 gap-1.5 overflow-hidden pr-1 lg:max-h-56 lg:gap-2">
+      {Array.from({ length: 4 }, (_, index) => (
+        <div
+          key={index}
+          className="rounded-md border border-white/10 bg-black/20 p-1.5 lg:p-3"
+        >
+          <SkeletonBlock className="h-2.5 w-4/5 lg:h-3 lg:w-2/3" />
+          <SkeletonBlock className="mt-1.5 h-2 w-1/2 lg:mt-2 lg:h-2.5 lg:w-1/3" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function getAvatarFileExtension(file: File) {
   if (file.type === "image/jpeg") return "jpg";
   if (file.type === "image/png") return "png";
@@ -64,7 +83,7 @@ function getAvatarFileExtension(file: File) {
 }
 
 function getFavoriteArchetype(
-  players: Player[],
+  players: PlayerProfileLookup[],
   favoritePlayerNames: string[],
 ) {
   const favoritePlayerNameSet = new Set(favoritePlayerNames);
@@ -76,7 +95,7 @@ function getFavoriteArchetype(
   players
     .filter((player) => favoritePlayerNameSet.has(player.name))
     .forEach((player) => {
-      const archetype = getPlayerInsights(player, "career").archetype;
+      const archetype = player.archetype;
 
       if (!archetype) return;
 
@@ -245,31 +264,14 @@ export default function ProfilePage() {
     const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
     const publicAvatarUrl = `${data.publicUrl}?v=${Date.now()}`;
 
-    const { error: profileError } = await supabase.from("user_profiles").upsert(
-      {
-        id: user.id,
-        avatar_url: publicAvatarUrl,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "id" },
-    );
+    const { error } = await updateUserProfile({
+      avatarUrl: publicAvatarUrl,
+    });
 
-    if (profileError) {
-      console.warn("Failed to save avatar URL", profileError);
+    if (error) {
       setAvatarStatus("Uploaded, but could not save avatar.");
       setIsUploadingAvatar(false);
       return;
-    }
-
-    const { error: authError } = await supabase.auth.updateUser({
-      data: {
-        avatar_url: publicAvatarUrl,
-        picture: publicAvatarUrl,
-      },
-    });
-
-    if (authError) {
-      console.warn("Failed to update auth avatar metadata", authError);
     }
 
     window.dispatchEvent(new Event("statcourt-profile-updated"));
@@ -283,14 +285,28 @@ export default function ProfilePage() {
     setIsClearingActivity(true);
     setActivityStatus("Clearing...");
 
-    const { error } = await supabase
-      .from("user_activity")
-      .delete()
-      .eq("user_id", user.id);
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
-    if (error) {
-      console.error("Failed to clear recent activity", error);
-      setActivityStatus("Could not clear activity.");
+    if (!session?.access_token) {
+      setActivityStatus("Sign in again to clear activity.");
+      setIsClearingActivity(false);
+      return;
+    }
+
+    const response = await fetch("/api/activity", {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    });
+    const result = (await response.json().catch(() => ({}))) as {
+      error?: string;
+    };
+
+    if (!response.ok) {
+      setActivityStatus(result.error ?? "Could not clear activity.");
       setIsClearingActivity(false);
       return;
     }
@@ -324,7 +340,7 @@ export default function ProfilePage() {
         favoritePlayersResponse,
         recentPlayersResponse,
         activityResponse,
-        playersResponse,
+        loadedPlayers,
       ] = await Promise.all([
         supabase
           .from("saved_lineups")
@@ -342,7 +358,7 @@ export default function ProfilePage() {
           })
           .order("created_at", { ascending: false })
           .limit(20),
-        fetch("/api/players"),
+        getCachedApiPlayerProfileLookups(),
       ]);
 
       if (!isActive) return;
@@ -363,9 +379,6 @@ export default function ProfilePage() {
         return;
       }
 
-      const playersData = playersResponse.ok
-        ? ((await playersResponse.json()) as { players?: Player[] })
-        : { players: [] };
       const favoritePlayerNames = (
         (favoritePlayersResponse.data ?? []) as { player_name: string }[]
       ).map((favoritePlayer) => favoritePlayer.player_name);
@@ -376,7 +389,7 @@ export default function ProfilePage() {
         playersViewed: recentPlayersResponse.count ?? 0,
         recentActivity: activityResponse.count ?? 0,
         favoriteArchetype: getFavoriteArchetype(
-          playersData.players ?? [],
+          loadedPlayers,
           favoritePlayerNames,
         ),
       });
@@ -599,7 +612,7 @@ export default function ProfilePage() {
                   }}
                 >
                   {isLoadingProfileStats ? (
-                    <LoadingSpinner className="h-3 w-3 lg:h-5 lg:w-5" />
+                    <SkeletonBlock className="h-3 w-8 rounded-sm lg:h-5 lg:w-14" />
                   ) : (
                     stat.value
                   )}
@@ -639,13 +652,7 @@ export default function ProfilePage() {
               )}
 
               {isLoadingProfileStats ? (
-                <div className="flex min-h-24 flex-col items-center justify-center rounded-md border border-white/10 bg-black/20 p-2 text-center lg:min-h-44 lg:p-5">
-                  <LoadingSpinner className="h-4 w-4 lg:h-8 lg:w-8" />
-
-                  <p className="mt-2 font-michroma text-[5.5px] uppercase text-white/45 lg:mt-3 lg:text-[9px]">
-                    Loading activity
-                  </p>
-                </div>
+                <ProfileActivitySkeleton />
               ) : displayedRecentActivity.length > 0 ? (
                 <>
                   <div className="statcourt-scroll grid max-h-42 gap-1.5 overflow-y-auto pr-1 lg:max-h-56 lg:gap-2">

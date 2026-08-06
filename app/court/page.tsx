@@ -3,6 +3,7 @@
 import { useDeferredValue, useEffect, useRef, useState } from "react";
 
 import { useAuthUser } from "../lib/use-auth-user";
+import { getCachedApiPlayers } from "../lib/player-api-cache";
 import { useUserSettings } from "../lib/use-user-settings";
 import { DatabaseErrorState } from "../components/loading/database-error-state";
 
@@ -80,18 +81,10 @@ export default function Court() {
         setIsLoadingPlayers(true);
         setPlayerLoadError("");
 
-        const response = await fetch("/api/players");
+        const loadedPlayers = await getCachedApiPlayers();
 
-        if (!response.ok) {
-          throw new Error("Failed to load players");
-        }
-
-        const data = (await response.json()) as {
-          players?: Player[];
-        };
-
-        if (isActive && data.players && data.players.length > 0) {
-          setComparePlayers(data.players);
+        if (isActive && loadedPlayers.length > 0) {
+          setComparePlayers(loadedPlayers);
         }
       } catch (error) {
         console.error("Failed to load court players", error);

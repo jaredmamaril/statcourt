@@ -8,6 +8,17 @@ import {
 
 export const runtime = "nodejs";
 
+const MAX_REPORT_DETAILS_LENGTH = 1_000;
+const MAX_REASON_LENGTH = 120;
+const MAX_USERNAME_LENGTH = 80;
+
+type ReportRequestBody = {
+  reportedUserId?: string;
+  reportedUsername?: string | null;
+  reason?: string;
+  details?: string | null;
+};
+
 function getSupabaseServerConfig() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -24,11 +35,15 @@ function getSupabaseServerConfig() {
   };
 }
 
+function cleanText(value: unknown, maxLength: number) {
+  return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
+}
+
 export async function POST(request: Request) {
   const ipRateLimit = await checkRateLimit(
-    createIpRateLimitRules(request, "account-delete-api", {
+    createIpRateLimitRules(request, "profile-report-api", {
       perHour: 5,
-      perDay: 10,
+      perDay: 20,
     }),
   );
 
@@ -40,7 +55,7 @@ export async function POST(request: Request) {
 
   if (!config) {
     return Response.json(
-      { error: "Delete account is not configured on the server." },
+      { error: "Reports are not configured on the server." },
       { status: 500 },
     );
   }
@@ -50,7 +65,7 @@ export async function POST(request: Request) {
 
   if (!accessToken) {
     return Response.json(
-      { error: "Sign in again before deleting your account." },
+      { error: "Sign in to report this profile." },
       { status: 401 },
     );
   }
@@ -80,9 +95,9 @@ export async function POST(request: Request) {
   }
 
   const userRateLimit = await checkRateLimit(
-    createUserRateLimitRules(user.id, "account-delete-api", {
+    createUserRateLimitRules(user.id, "profile-report-api", {
       perHour: 3,
-      perDay: 3,
+      perDay: 10,
     }),
   );
 
@@ -90,17 +105,30 @@ export async function POST(request: Request) {
     return createRateLimitResponse(userRateLimit);
   }
 
-  let body: { confirm?: string } = {};
+  let body: ReportRequestBody = {};
 
   try {
-    body = (await request.json()) as { confirm?: string };
+    body = (await request.json()) as ReportRequestBody;
   } catch {
     body = {};
   }
 
-  if (body.confirm !== "DELETE") {
+  const reportedUserId = cleanText(body.reportedUserId, 80);
+  const reportedUsername =
+    cleanText(body.reportedUsername, MAX_USERNAME_LENGTH) || null;
+  const reason = cleanText(body.reason, MAX_REASON_LENGTH);
+  const details = cleanText(body.details, MAX_REPORT_DETAILS_LENGTH) || null;
+
+  if (!reportedUserId || !reason) {
     return Response.json(
-      { error: "Type DELETE to confirm account deletion." },
+      { error: "Choose a report reason before submitting." },
+      { status: 400 },
+    );
+  }
+
+  if (reportedUserId === user.id) {
+    return Response.json(
+      { error: "You cannot report your own profile." },
       { status: 400 },
     );
   }
@@ -116,33 +144,18 @@ export async function POST(request: Request) {
     },
   );
 
-  const avatarFilesResponse = await adminClient.storage
-    .from("avatars")
-    .list(user.id);
-  const avatarFilesToRemove =
-    avatarFilesResponse.data?.map((file) => `${user.id}/${file.name}`) ?? [];
+  const { error } = await adminClient.from("user_reports").insert({
+    reporter_id: user.id,
+    reported_user_id: reportedUserId,
+    reported_username: reportedUsername,
+    reason,
+    details,
+    status: "open",
+  });
 
-  await Promise.all([
-    adminClient.from("saved_lineups").delete().eq("user_id", user.id),
-    adminClient.from("favorite_players").delete().eq("user_id", user.id),
-    adminClient.from("recent_players").delete().eq("user_id", user.id),
-    adminClient.from("user_compare_slots").delete().eq("user_id", user.id),
-    adminClient.from("user_activity").delete().eq("user_id", user.id),
-    adminClient.from("user_settings").delete().eq("user_id", user.id),
-    adminClient.from("user_signins").delete().eq("user_id", user.id),
-    adminClient.from("user_devices").delete().eq("user_id", user.id),
-    adminClient.from("user_profiles").delete().eq("id", user.id),
-    avatarFilesToRemove.length
-      ? adminClient.storage.from("avatars").remove(avatarFilesToRemove)
-      : Promise.resolve(),
-  ]);
-
-  const { error: deleteUserError } =
-    await adminClient.auth.admin.deleteUser(user.id);
-
-  if (deleteUserError) {
+  if (error) {
     return Response.json(
-      { error: deleteUserError.message || "Could not delete account." },
+      { error: "Could not send report." },
       { status: 500 },
     );
   }

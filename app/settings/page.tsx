@@ -31,7 +31,7 @@ import {
   getPasswordValidationMessage,
   PasswordRequirements,
 } from "../components/auth/password-requirements";
-import { LoadingSpinner } from "../components/loading/loading-spinner";
+import { SkeletonBlock } from "../components/loading/skeleton";
 import {
   clearPendingAuthProvider,
   getCurrentDeviceId,
@@ -45,6 +45,7 @@ import {
   statcourtThemeOptions,
   type StatCourtThemeId,
 } from "../lib/themes";
+import { updateUserProfile } from "../lib/profile-api-client";
 
 type UserDataCounts = {
   savedLineups: number;
@@ -85,6 +86,22 @@ const defaultCounts: UserDataCounts = {
   recentActivity: 0,
   recentSignins: 0,
 };
+
+function SettingsListSkeleton({ rows = 3 }: { rows?: number }) {
+  return (
+    <div className="statcourt-scroll grid max-h-32 gap-1.5 overflow-hidden pr-1 lg:max-h-40 lg:gap-2">
+      {Array.from({ length: rows }, (_, index) => (
+        <div
+          key={index}
+          className="rounded-md border border-white/10 bg-black/20 px-2 py-1.5 lg:px-3 lg:py-2"
+        >
+          <SkeletonBlock className="ml-auto h-2.5 w-3/4 lg:h-3 lg:w-2/3" />
+          <SkeletonBlock className="ml-auto mt-1.5 h-2 w-1/2 lg:h-2.5 lg:w-1/3" />
+        </div>
+      ))}
+    </div>
+  );
+}
 
 const USERNAME_CHANGE_COOLDOWN_DAYS = 3;
 const USERNAME_CHANGE_COOLDOWN_MS =
@@ -601,42 +618,19 @@ export default function SettingsPage() {
 
     setProfileStatus("Saving...");
 
-    const { error: profileError } = await supabase.from("user_profiles").upsert(
-      {
-        id: user.id,
-        display_name: nextDisplayName,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "id" },
-    );
-
-    if (profileError) {
-      console.warn("Failed to update profile display name", profileError);
-      setProfileStatus("Could not save name.");
-      return;
-    }
-
-    const { error } = await supabase.auth.updateUser({
-      data: {
-        name: nextDisplayName,
-      },
+    const { profile, error } = await updateUserProfile({
+      displayName: nextDisplayName,
     });
 
-    if (error) {
-      console.error("Failed to update display name", error);
-      setProfileStatus("Could not save name.");
+    if (error || !profile) {
+      setProfileStatus(error ?? "Could not save name.");
       return;
     }
 
-    setUserProfile((currentProfile) => ({
-      display_name: nextDisplayName,
-      username: currentProfile?.username ?? null,
-      username_updated_at: currentProfile?.username_updated_at ?? null,
-      avatar_url: currentProfile?.avatar_url ?? getMetadataAvatarUrl(user),
-      public_profile_enabled: currentProfile?.public_profile_enabled ?? false,
-    }));
+    setUserProfile(profile);
     setProfileStatus("Saved");
     setIsEditingDisplayName(false);
+    window.dispatchEvent(new Event("statcourt-profile-updated"));
   }
 
   async function saveUsername() {
@@ -678,58 +672,20 @@ export default function SettingsPage() {
     }
 
     setUsernameStatus("Saving...");
-    const usernameUpdatedAt = new Date().toISOString();
-
-    const { error: profileError } = await supabase.from("user_profiles").upsert(
-      {
-        id: user.id,
-        username: nextUsername,
-        username_updated_at: usernameUpdatedAt,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "id" },
-    );
-
-    if (profileError) {
-      const errorMessage = profileError.message?.toLowerCase() ?? "";
-      const isDuplicateUsername =
-        profileError.code === "23505" ||
-        errorMessage.includes("duplicate") ||
-        errorMessage.includes("unique");
-
-      if (isDuplicateUsername) {
-        setUsernameStatus("Username is already taken.");
-      } else {
-        console.warn("Failed to update profile username", profileError);
-        setUsernameStatus("Could not save username.");
-      }
-
-      return;
-    }
-
-    const { error } = await supabase.auth.updateUser({
-      data: {
-        username: nextUsername,
-      },
+    const { profile, error } = await updateUserProfile({
+      username: nextUsername,
     });
 
-    if (error) {
-      console.error("Failed to update username", error);
-      setUsernameStatus("Could not save username.");
+    if (error || !profile) {
+      setUsernameStatus(error ?? "Could not save username.");
       return;
     }
 
-    setUserProfile((currentProfile) => ({
-      display_name:
-        currentProfile?.display_name ?? getMetadataDisplayName(user) ?? null,
-      username: nextUsername,
-      username_updated_at: usernameUpdatedAt,
-      avatar_url: currentProfile?.avatar_url ?? getMetadataAvatarUrl(user),
-      public_profile_enabled: currentProfile?.public_profile_enabled ?? false,
-    }));
-    setUsernameInput(nextUsername);
+    setUserProfile(profile);
+    setUsernameInput(profile.username ?? nextUsername);
     setUsernameStatus("Saved");
     setIsEditingUsername(false);
+    window.dispatchEvent(new Event("statcourt-profile-updated"));
   }
 
   async function togglePublicProfile() {
@@ -744,32 +700,20 @@ export default function SettingsPage() {
       nextEnabled ? "Making profile public..." : "Making profile private...",
     );
 
-    const { error } = await supabase.from("user_profiles").upsert(
-      {
-        id: user.id,
-        public_profile_enabled: nextEnabled,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "id" },
-    );
+    const { profile, error } = await updateUserProfile({
+      publicProfileEnabled: nextEnabled,
+    });
 
-    if (error) {
-      console.warn("Failed to update public profile visibility", error);
-      setAccountActionStatus("Could not update profile visibility.");
+    if (error || !profile) {
+      setAccountActionStatus(error ?? "Could not update profile visibility.");
       return;
     }
 
-    setUserProfile((currentProfile) => ({
-      display_name:
-        currentProfile?.display_name ?? getMetadataDisplayName(user),
-      username: currentProfile?.username ?? null,
-      username_updated_at: currentProfile?.username_updated_at ?? null,
-      avatar_url: currentProfile?.avatar_url ?? getMetadataAvatarUrl(user),
-      public_profile_enabled: nextEnabled,
-    }));
+    setUserProfile(profile);
     setAccountActionStatus(
       nextEnabled ? "Profile is public." : "Profile is private.",
     );
+    window.dispatchEvent(new Event("statcourt-profile-updated"));
   }
 
   async function copyPublicProfileLink() {
@@ -862,41 +806,17 @@ export default function SettingsPage() {
     const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
     const publicAvatarUrl = `${data.publicUrl}?v=${Date.now()}`;
 
-    const { error: profileError } = await supabase.from("user_profiles").upsert(
-      {
-        id: user.id,
-        avatar_url: publicAvatarUrl,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "id" },
-    );
+    const { profile, error } = await updateUserProfile({
+      avatarUrl: publicAvatarUrl,
+    });
 
-    if (profileError) {
-      console.warn("Failed to save avatar URL", profileError);
-      setAvatarStatus("Uploaded, but could not save avatar.");
+    if (error || !profile) {
+      setAvatarStatus(error ?? "Uploaded, but could not save avatar.");
       setIsUploadingAvatar(false);
       return;
     }
 
-    const { error: authError } = await supabase.auth.updateUser({
-      data: {
-        avatar_url: publicAvatarUrl,
-        picture: publicAvatarUrl,
-      },
-    });
-
-    if (authError) {
-      console.warn("Failed to update auth avatar metadata", authError);
-    }
-
-    setUserProfile((currentProfile) => ({
-      display_name:
-        currentProfile?.display_name ?? getMetadataDisplayName(user),
-      username: currentProfile?.username ?? null,
-      username_updated_at: currentProfile?.username_updated_at ?? null,
-      avatar_url: publicAvatarUrl,
-      public_profile_enabled: currentProfile?.public_profile_enabled ?? false,
-    }));
+    setUserProfile(profile);
     window.dispatchEvent(new Event("statcourt-profile-updated"));
     setAvatarStatus("Avatar updated.");
     setIsUploadingAvatar(false);
@@ -1255,14 +1175,28 @@ export default function SettingsPage() {
     setIsClearingActivity(true);
     setActivityStatus("Clearing...");
 
-    const { error } = await supabase
-      .from("user_activity")
-      .delete()
-      .eq("user_id", user.id);
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
-    if (error) {
-      console.error("Failed to clear recent activity", error);
-      setActivityStatus("Could not clear activity.");
+    if (!session?.access_token) {
+      setActivityStatus("Sign in again to clear activity.");
+      setIsClearingActivity(false);
+      return;
+    }
+
+    const response = await fetch("/api/activity", {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    });
+    const result = (await response.json().catch(() => ({}))) as {
+      error?: string;
+    };
+
+    if (!response.ok) {
+      setActivityStatus(result.error ?? "Could not clear activity.");
       setIsClearingActivity(false);
       return;
     }
@@ -1826,7 +1760,7 @@ export default function SettingsPage() {
                     <div className="mt-1 flex items-center justify-end gap-1.5 font-michroma text-[5px] uppercase text-white/30 lg:text-[7px]">
                       <span>Sign-in entries:</span>
                       {isLoadingDataCounts ? (
-                        <LoadingSpinner className="mx-0 h-3 w-3 lg:h-4 lg:w-4" />
+                        <SkeletonBlock className="h-2.5 w-8 rounded-sm lg:h-3 lg:w-10" />
                       ) : (
                         <span className="text-[var(--court-accent)]">
                           {dataCounts.recentSignins}
@@ -1852,12 +1786,14 @@ export default function SettingsPage() {
                       active Supabase sessions may not appear here.
                     </p>
 
-                    {!isLoadingDataCounts && (
-                      <div>
-                        <p className="mb-1 font-michroma text-[5px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[7px]">
-                          Remembered Devices
-                        </p>
+                    <div>
+                      <p className="mb-1 font-michroma text-[5px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[7px]">
+                        Remembered Devices
+                      </p>
 
+                      {isLoadingDataCounts ? (
+                        <SettingsListSkeleton rows={2} />
+                      ) : (
                         <div className="statcourt-scroll grid max-h-32 gap-1.5 overflow-y-auto pr-1 lg:max-h-40 lg:gap-2">
                           {activeDevices.length > 0 ? (
                             activeDevices.map((device) => {
@@ -1898,19 +1834,15 @@ export default function SettingsPage() {
                             </p>
                           )}
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
 
-                    {!isLoadingDataCounts && (
-                      <p className="font-michroma text-[5px] uppercase text-white/30 lg:text-[7px]">
-                        Recent Sign-ins
-                      </p>
-                    )}
+                    <p className="font-michroma text-[5px] uppercase text-white/30 lg:text-[7px]">
+                      Recent Sign-ins
+                    </p>
 
                     {isLoadingDataCounts ? (
-                      <div className="flex justify-end">
-                        <LoadingSpinner className="mx-0 h-4 w-4 lg:h-5 lg:w-5" />
-                      </div>
+                      <SettingsListSkeleton rows={3} />
                     ) : recentSignins.length > 0 ? (
                       <div className="statcourt-scroll grid max-h-32 gap-1.5 overflow-y-auto pr-1 lg:max-h-40 lg:gap-2">
                         {recentSignins.map((signin) => (
@@ -2343,7 +2275,7 @@ export default function SettingsPage() {
                     </p>
                     <div className="mt-1 font-michroma text-[9px] text-white lg:mt-2 lg:text-sm">
                       {isLoadingDataCounts ? (
-                        <LoadingSpinner className="h-4 w-4 lg:h-5 lg:w-5" />
+                        <SkeletonBlock className="h-3 w-8 rounded-sm lg:h-5 lg:w-12" />
                       ) : (
                         value
                       )}

@@ -3,10 +3,20 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Flag, Share2, Target, Lock, Star, UserPlus } from "lucide-react";
+import {
+  Flag,
+  Share2,
+  Target,
+  Lock,
+  Star,
+  UserCheck,
+  UserPlus,
+  X,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { getPlayerInsights, type Player } from "../../components/court-data";
+import { SkeletonBlock } from "../../components/loading/skeleton";
 import { supabase } from "../../components/supabase-client";
+import { getCachedApiPlayerProfileLookups } from "../../lib/player-api-cache";
 
 type PublicProfile = {
   id: string;
@@ -57,12 +67,23 @@ type PublicSavedLineupRow = {
   players: Record<string, string> | null;
 };
 
+type PublicFollowRow = {
+  follower_id: string;
+};
+
 const PUBLIC_FAVORITE_MOBILE_PREVIEW_LIMIT = 2;
 const PUBLIC_FAVORITE_MOBILE_LOAD_STEP = 2;
 const PUBLIC_FAVORITE_DESKTOP_PREVIEW_LIMIT = 4;
 const PUBLIC_FAVORITE_DESKTOP_LOAD_STEP = 4;
 const MAX_PUBLIC_FAVORITE_PLAYERS = 50;
 const PUBLIC_LINEUP_SLOT_ORDER = ["PG", "SG", "SF", "PF", "C"] as const;
+const reportReasons = [
+  "Spam or misleading profile",
+  "Harassment or abusive content",
+  "Inappropriate public content",
+  "Impersonation",
+  "Other",
+];
 
 function formatMemberSince(createdAt: string | null) {
   if (!createdAt) return "Member";
@@ -195,6 +216,89 @@ function getPublicFavoriteHeadshot(player: PublicFavoritePlayer) {
   return player.fallbackImage;
 }
 
+function PublicProfileSkeleton() {
+  return (
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex min-w-0 items-center gap-2.5 lg:gap-4">
+          <SkeletonBlock className="h-13 w-13 shrink-0 rounded-md lg:h-26 lg:w-26" />
+
+          <div className="min-w-0 flex-1">
+            <SkeletonBlock className="h-2 w-24 lg:h-3 lg:w-36" />
+            <SkeletonBlock className="mt-2 h-5 w-44 lg:h-8 lg:w-72" />
+            <SkeletonBlock className="mt-2 h-2.5 w-28 lg:h-3 lg:w-40" />
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {Array.from({ length: 3 }, (_, index) => (
+                <SkeletonBlock
+                  key={index}
+                  className="h-5 w-24 rounded-md lg:h-7 lg:w-36"
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex gap-1.5 lg:gap-2">
+          <SkeletonBlock className="h-7 w-20 rounded-md lg:h-9 lg:w-28" />
+          <SkeletonBlock className="h-7 w-20 rounded-md lg:h-9 lg:w-28" />
+          <SkeletonBlock className="h-7 w-18 rounded-md lg:h-9 lg:w-24" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2 lg:grid-cols-5 lg:gap-3">
+        {Array.from({ length: 5 }, (_, index) => (
+          <div
+            key={index}
+            className="rounded-md border border-white/10 bg-black/20 p-2 lg:p-3"
+          >
+            <SkeletonBlock className="h-2.5 w-16 lg:h-3 lg:w-24" />
+            <SkeletonBlock className="mt-2 h-4 w-10 lg:h-6 lg:w-14" />
+          </div>
+        ))}
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.22)] bg-black/20 p-3 lg:p-4">
+          <SkeletonBlock className="h-3 w-32 lg:h-4 lg:w-48" />
+          <SkeletonBlock className="mt-4 h-8 w-3/4 lg:h-10" />
+          <div className="mt-4 grid grid-cols-2 gap-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }, (_, index) => (
+              <SkeletonBlock key={index} className="h-14 rounded-md lg:h-20" />
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-md border border-white/10 bg-black/20 p-3 lg:p-4">
+          <SkeletonBlock className="h-3 w-28 lg:h-4 lg:w-40" />
+          <div className="mt-4 grid gap-2">
+            {Array.from({ length: 5 }, (_, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <SkeletonBlock className="h-8 w-8 rounded-md lg:h-11 lg:w-11" />
+                <div className="min-w-0 flex-1">
+                  <SkeletonBlock className="h-2.5 w-36 lg:h-3 lg:w-48" />
+                  <SkeletonBlock className="mt-1.5 h-2 w-20 lg:w-28" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-md border border-[#A855F7]/25 bg-black/20 p-3 lg:p-4">
+        <SkeletonBlock className="h-3 w-32 lg:h-4 lg:w-44" />
+        <div className="mt-3 flex flex-wrap gap-2">
+          {Array.from({ length: 5 }, (_, index) => (
+            <SkeletonBlock
+              key={index}
+              className="h-14 w-[calc((100%_-_0.5rem)/2)] rounded-md lg:h-16 lg:w-44"
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function PublicProfilePage() {
   const params = useParams<{ username: string }>();
   const username = useMemo(
@@ -228,6 +332,15 @@ export default function PublicProfilePage() {
     string | null
   >(null);
   const [profileActionStatus, setProfileActionStatus] = useState("");
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isFollowingProfile, setIsFollowingProfile] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [isUpdatingFollow, setIsUpdatingFollow] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState(reportReasons[0]);
+  const [reportDetails, setReportDetails] = useState("");
+  const [reportStatus, setReportStatus] = useState("");
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
 
   useEffect(() => {
     let isActive = true;
@@ -253,6 +366,9 @@ export default function PublicProfilePage() {
         setFavoritePlayers([]);
         setFavoritePlayerDetails([]);
         setPublicPlayersByName({});
+        setCurrentUserId(null);
+        setFollowerCount(0);
+        setIsFollowingProfile(false);
         setProfileError("Could not load this profile.");
         setIsLoadingProfile(false);
         return;
@@ -265,26 +381,60 @@ export default function PublicProfilePage() {
         setFavoritePlayers([]);
         setFavoritePlayerDetails([]);
         setPublicPlayersByName({});
+        setCurrentUserId(null);
+        setFollowerCount(0);
+        setIsFollowingProfile(false);
         setIsLoadingProfile(false);
         return;
       }
 
-      const { data: favoriteRows, error: favoriteError } = await supabase
-        .from("favorite_players")
-        .select("player_name")
-        .eq("user_id", publicProfile.id)
-        .order("created_at", { ascending: false })
-        .limit(MAX_PUBLIC_FAVORITE_PLAYERS);
+      const [
+        favoriteResponse,
+        lineupResponse,
+        authResponse,
+        followerCountResponse,
+      ] = await Promise.all([
+        supabase
+          .from("favorite_players")
+          .select("player_name")
+          .eq("user_id", publicProfile.id)
+          .order("created_at", { ascending: false })
+          .limit(MAX_PUBLIC_FAVORITE_PLAYERS),
+        supabase
+          .from("saved_lineups")
+          .select(
+            "id, name, stat_profile, overall, archetype, team_identity, x_factor_name, x_factor_description, similar_to, similar_to_description, summary, tier, court_balance, badges, strengths, grades, players",
+          )
+          .eq("user_id", publicProfile.id)
+          .eq("is_public", true)
+          .order("updated_at", { ascending: false })
+          .limit(12),
+        supabase.auth.getUser(),
+        supabase
+          .from("user_follows")
+          .select("follower_id", { count: "exact", head: true })
+          .eq("following_id", publicProfile.id),
+      ]);
 
-      const { data: lineupRows, error: lineupError } = await supabase
-        .from("saved_lineups")
-        .select(
-          "id, name, stat_profile, overall, archetype, team_identity, x_factor_name, x_factor_description, similar_to, similar_to_description, summary, tier, court_balance, badges, strengths, grades, players",
-        )
-        .eq("user_id", publicProfile.id)
-        .eq("is_public", true)
-        .order("updated_at", { ascending: false })
-        .limit(12);
+      const { data: favoriteRows, error: favoriteError } = favoriteResponse;
+      const { data: lineupRows, error: lineupError } = lineupResponse;
+      const {
+        data: { user },
+      } = authResponse;
+      const {
+        count: nextFollowerCount,
+        error: followerCountError,
+      } = followerCountResponse;
+      const currentViewerId = user?.id ?? null;
+
+      const { data: followRows, error: followError } = currentViewerId
+        ? await supabase
+            .from("user_follows")
+            .select("follower_id")
+            .eq("follower_id", currentViewerId)
+            .eq("following_id", publicProfile.id)
+            .limit(1)
+        : { data: [], error: null };
 
       if (!isActive) return;
 
@@ -294,6 +444,14 @@ export default function PublicProfilePage() {
 
       if (lineupError) {
         console.warn("Failed to load public saved lineups", lineupError);
+      }
+
+      if (followerCountError) {
+        console.warn("Failed to load follower count", followerCountError);
+      }
+
+      if (followError) {
+        console.warn("Failed to load follow state", followError);
       }
 
       const favoriteNames = (
@@ -312,16 +470,10 @@ export default function PublicProfilePage() {
       let playerDetailsByName: Record<string, PublicFavoritePlayer> = {};
 
       if (publicPlayerNames.length > 0) {
-        const playerResponse = await fetch("/api/players", {
-          cache: "no-store",
-        });
-
-        const playerData = playerResponse.ok
-          ? ((await playerResponse.json()) as { players?: Player[] })
-          : { players: [] };
+        const loadedPlayers = await getCachedApiPlayerProfileLookups();
 
         const detailsByName = new Map(
-          (playerData.players ?? []).map((favoritePlayer) => [
+          loadedPlayers.map((favoritePlayer) => [
             favoritePlayer.name,
             {
               name: favoritePlayer.name,
@@ -329,9 +481,7 @@ export default function PublicProfilePage() {
               team: favoritePlayer.team,
               position: favoritePlayer.position,
               fallbackImage: favoritePlayer.fallbackImage ?? null,
-              archetype:
-                getPlayerInsights(favoritePlayer, "career").archetype?.label ??
-                null,
+              archetype: favoritePlayer.archetype?.label ?? null,
             },
           ]),
         );
@@ -356,6 +506,11 @@ export default function PublicProfilePage() {
       setFavoritePlayers(favoriteNames);
       setFavoritePlayerDetails(favoriteDetails);
       setPublicPlayersByName(playerDetailsByName);
+      setCurrentUserId(currentViewerId);
+      setFollowerCount(nextFollowerCount ?? 0);
+      setIsFollowingProfile(
+        ((followRows as PublicFollowRow[] | null) ?? []).length > 0,
+      );
       setIsShowingAllFavorites(false);
       setVisibleMobileFavoriteLimit(PUBLIC_FAVORITE_MOBILE_PREVIEW_LIMIT);
       setVisibleDesktopFavoriteLimit(PUBLIC_FAVORITE_DESKTOP_PREVIEW_LIMIT);
@@ -371,6 +526,9 @@ export default function PublicProfilePage() {
         setFavoritePlayers([]);
         setFavoritePlayerDetails([]);
         setPublicPlayersByName({});
+        setCurrentUserId(null);
+        setFollowerCount(0);
+        setIsFollowingProfile(false);
         setIsShowingAllFavorites(false);
         setVisibleMobileFavoriteLimit(PUBLIC_FAVORITE_MOBILE_PREVIEW_LIMIT);
         setVisibleDesktopFavoriteLimit(PUBLIC_FAVORITE_DESKTOP_PREVIEW_LIMIT);
@@ -474,6 +632,159 @@ export default function PublicProfilePage() {
     await copyPublicProfileLink();
   }
 
+  async function toggleFollowProfile() {
+    if (!profile) return;
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setProfileActionStatus("Sign in to follow");
+      window.setTimeout(() => setProfileActionStatus(""), 1800);
+      return;
+    }
+
+    if (user.id === profile.id) {
+      setProfileActionStatus("This is your profile");
+      window.setTimeout(() => setProfileActionStatus(""), 1800);
+      return;
+    }
+
+    setIsUpdatingFollow(true);
+    setProfileActionStatus(isFollowingProfile ? "Unfollowing..." : "Following...");
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.access_token) {
+      setProfileActionStatus("Sign in again to follow");
+      setIsUpdatingFollow(false);
+      window.setTimeout(() => setProfileActionStatus(""), 1800);
+      return;
+    }
+
+    const accessToken = session.access_token;
+    const profileId = profile.id;
+
+    async function updateFollow(nextIsFollowing: boolean) {
+      const response = await fetch("/api/follows", {
+        method: nextIsFollowing ? "POST" : "DELETE",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          followingId: profileId,
+        }),
+      });
+      const result = (await response.json().catch(() => ({}))) as {
+        error?: string;
+      };
+
+      return {
+        ok: response.ok,
+        error: result.error,
+      };
+    }
+
+    if (isFollowingProfile) {
+      const result = await updateFollow(false);
+
+      if (!result.ok) {
+        setProfileActionStatus(result.error ?? "Could not update follow");
+        setIsUpdatingFollow(false);
+        return;
+      }
+
+      setIsFollowingProfile(false);
+      setFollowerCount((currentCount) => Math.max(currentCount - 1, 0));
+      setProfileActionStatus("Unfollowed");
+      setIsUpdatingFollow(false);
+      window.setTimeout(() => setProfileActionStatus(""), 1600);
+      return;
+    }
+
+    const result = await updateFollow(true);
+
+    if (!result.ok) {
+      setProfileActionStatus(result.error ?? "Could not follow");
+      setIsUpdatingFollow(false);
+      return;
+    }
+
+    setCurrentUserId(user.id);
+    setIsFollowingProfile(true);
+    setFollowerCount((currentCount) => currentCount + 1);
+    setProfileActionStatus("Following");
+    setIsUpdatingFollow(false);
+    window.setTimeout(() => setProfileActionStatus(""), 1600);
+  }
+
+  async function submitProfileReport() {
+    if (!profile) return;
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setReportStatus("Sign in to report this profile.");
+      return;
+    }
+
+    if (user.id === profile.id) {
+      setReportStatus("You cannot report your own profile.");
+      return;
+    }
+
+    setIsSubmittingReport(true);
+    setReportStatus("Sending report...");
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.access_token) {
+      setReportStatus("Sign in again to report this profile.");
+      setIsSubmittingReport(false);
+      return;
+    }
+
+    const response = await fetch("/api/reports", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        reportedUserId: profile.id,
+        reportedUsername: profile.username,
+        reason: reportReason,
+        details: reportDetails.trim() || null,
+      }),
+    });
+
+    const result = (await response.json().catch(() => ({}))) as {
+      error?: string;
+    };
+
+    if (!response.ok) {
+      setReportStatus(result.error ?? "Could not send report.");
+      setIsSubmittingReport(false);
+      return;
+    }
+
+    setReportStatus("Report sent.");
+    setReportDetails("");
+    setIsSubmittingReport(false);
+    window.setTimeout(() => {
+      setIsReportOpen(false);
+      setReportStatus("");
+    }, 1200);
+  }
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-[var(--court-panel-alt)] px-4 py-6 text-white lg:px-8 lg:py-10">
       <div
@@ -495,12 +806,7 @@ export default function PublicProfilePage() {
 
         <div className="mt-4 rounded-lg border border-[rgb(var(--court-accent-rgb)/0.25)] bg-[color:color-mix(in_srgb,var(--court-panel)_85%,transparent)] p-3 shadow-[0_0_26px_rgba(0,0,0,0.28)] lg:mt-8 lg:p-7">
           {isLoadingProfile ? (
-            <div className="flex min-h-72 flex-col items-center justify-center text-center">
-              <div className="h-8 w-8 animate-spin rounded-full border border-[rgb(var(--court-accent-rgb)/0.2)] border-t-[var(--court-accent)]" />
-              <p className="mt-4 font-michroma text-[9px] uppercase text-white/45 lg:text-xs">
-                Loading Profile
-              </p>
-            </div>
+            <PublicProfileSkeleton />
           ) : profile ? (
             <>
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -571,31 +877,49 @@ export default function PublicProfilePage() {
 
                   <button
                     type="button"
-                    onClick={() => {
-                      setProfileActionStatus("Coming Soon");
-                      window.setTimeout(() => setProfileActionStatus(""), 1800);
-                    }}
+                    onClick={toggleFollowProfile}
+                    disabled={isUpdatingFollow || currentUserId === profile.id}
                     className="inline-flex items-center gap-1 rounded-md border border-[#A855F7]/35 bg-[#A855F7]/10 px-2 py-1.5 font-michroma text-[6px] uppercase text-[#C084FC] transition hover:bg-[#A855F7]/20 hover:text-white lg:px-3 lg:py-2 lg:text-[8px]"
                   >
-                    <UserPlus className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
-                    {profileActionStatus || "Follow"}
+                    {isFollowingProfile ? (
+                      <UserCheck className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
+                    ) : (
+                      <UserPlus className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
+                    )}
+                    {isFollowingProfile ? "Following" : "Follow"}
                   </button>
 
                   <button
                     type="button"
                     onClick={() => {
-                      setProfileActionStatus("Report coming soon");
-                      window.setTimeout(() => setProfileActionStatus(""), 1800);
+                      setIsReportOpen(true);
+                      setReportStatus("");
                     }}
+                    disabled={currentUserId === profile.id}
                     className="inline-flex items-center gap-1 rounded-md border border-red-400/30 bg-red-400/10 px-2 py-1.5 font-michroma text-[6px] uppercase text-red-300 transition hover:bg-red-400/18 hover:text-white lg:px-3 lg:py-2 lg:text-[8px]"
                   >
                     <Flag className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
                     Report
                   </button>
+
+                  {profileActionStatus && (
+                    <p className="absolute right-0 top-full mt-1 font-michroma text-[5px] uppercase text-[var(--court-accent)] lg:text-[7px]">
+                      {profileActionStatus}
+                    </p>
+                  )}
                 </div>
               </div>
 
-              <div className="mt-5 grid grid-cols-4 gap-1.5 rounded-md border border-[rgb(var(--court-accent-rgb)/0.22)] bg-[rgb(var(--court-accent-rgb)/0.06)] p-1.5 shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.08)] lg:mt-7 lg:gap-3 lg:p-3">
+              <div className="mt-5 grid grid-cols-5 gap-1.5 rounded-md border border-[rgb(var(--court-accent-rgb)/0.22)] bg-[rgb(var(--court-accent-rgb)/0.06)] p-1.5 shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.08)] lg:mt-7 lg:gap-3 lg:p-3">
+                <div className="min-h-14 rounded border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] p-1.5 text-center shadow-[inset_0_0_18px_rgb(var(--court-accent-rgb)/0.08)] lg:min-h-24 lg:p-3">
+                  <p className="font-michroma text-sm text-[var(--court-accent)] lg:text-2xl">
+                    {followerCount}
+                  </p>
+                  <p className="mt-1 font-michroma text-[5px] uppercase leading-tight text-white/35 lg:text-[8px]">
+                    Followers
+                  </p>
+                </div>
+
                 <div className="min-h-14 rounded border border-[#A855F7]/35 bg-[#A855F7]/12 p-1.5 text-center shadow-[inset_0_0_18px_rgba(168,85,247,0.08)] lg:min-h-24 lg:p-3">
                   <p className="font-michroma text-sm text-[#A855F7] lg:text-2xl">
                     {favoritePlayers.length}
@@ -1215,6 +1539,87 @@ export default function PublicProfilePage() {
           )}
         </div>
       </section>
+
+      {isReportOpen && profile && (
+        <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-md rounded-lg border border-red-400/30 bg-[color:color-mix(in_srgb,var(--court-panel)_96%,black)] p-4 shadow-[0_0_28px_rgba(248,113,113,0.18)] lg:p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="font-michroma text-[8px] uppercase text-red-300 lg:text-[10px]">
+                  Report Profile
+                </p>
+
+                <p className="mt-2 font-michroma text-[7px] leading-relaxed text-white/45 lg:text-[9px]">
+                  Tell us what looks wrong with @{profile.username}. Reports
+                  are reviewed as account safety signals.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsReportOpen(false);
+                  setReportStatus("");
+                }}
+                className="rounded border border-white/10 bg-white/5 p-1 text-white/45 transition hover:border-red-300/40 hover:text-red-200"
+                aria-label="Close report profile"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            <div className="mt-4 grid gap-2">
+              <label className="grid gap-1">
+                <span className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                  Reason
+                </span>
+
+                <select
+                  value={reportReason}
+                  onChange={(event) => setReportReason(event.target.value)}
+                  className="rounded-md border border-white/10 bg-black/30 px-2 py-2 font-michroma text-[8px] text-white outline-none transition focus:border-red-300/50 lg:text-[10px]"
+                >
+                  {reportReasons.map((reason) => (
+                    <option key={reason} value={reason}>
+                      {reason}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="grid gap-1">
+                <span className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                  Details
+                </span>
+
+                <textarea
+                  value={reportDetails}
+                  onChange={(event) => setReportDetails(event.target.value)}
+                  maxLength={500}
+                  rows={4}
+                  placeholder="Optional context..."
+                  className="resize-none rounded-md border border-white/10 bg-black/30 px-2 py-2 font-michroma text-[8px] leading-relaxed text-white outline-none transition placeholder:text-white/25 focus:border-red-300/50 lg:text-[10px]"
+                />
+              </label>
+            </div>
+
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <p className="min-w-0 flex-1 font-michroma text-[6px] uppercase text-red-200/70 lg:text-[8px]">
+                {reportStatus}
+              </p>
+
+              <button
+                type="button"
+                onClick={submitProfileReport}
+                disabled={isSubmittingReport}
+                className="rounded-md border border-red-400/40 bg-red-400/10 px-3 py-2 font-michroma text-[7px] uppercase text-red-200 transition hover:bg-red-400/20 hover:text-white disabled:cursor-not-allowed disabled:opacity-45 lg:text-[9px]"
+              >
+                {isSubmittingReport ? "Sending..." : "Submit Report"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

@@ -91,6 +91,31 @@ function savedLineupToRow(lineup: SavedLineup, userId: string) {
   };
 }
 
+async function syncSavedLineupRows(
+  accessToken: string,
+  lineups: ReturnType<typeof savedLineupToRow>[],
+  deletedLineupIds: string[],
+) {
+  const response = await fetch("/api/lineups", {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      lineups,
+      deletedLineupIds,
+    }),
+  });
+  const result = (await response.json().catch(() => ({}))) as {
+    error?: string;
+  };
+
+  if (!response.ok) {
+    throw new Error(result.error ?? "Could not sync saved lineups.");
+  }
+}
+
 export function useSavedLineups() {
   const { user, isLoadingUser } = useAuthUser();
   const [savedLineups, setSavedLineups] = useState<SavedLineup[]>([]);
@@ -165,32 +190,25 @@ export function useSavedLineups() {
         .map((lineup) => lineup.id);
 
       async function syncSavedLineups() {
-        if (deletedLineupIds.length > 0) {
-          const { error } = await supabase
-            .from("saved_lineups")
-            .delete()
-            .in("id", deletedLineupIds);
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-          if (error) {
-            console.error("Failed to delete saved lineups", error);
-          }
+        if (!session?.access_token) {
+          console.error("Failed to save lineups: missing active session");
+          return;
         }
 
-        if (nextLineups.length === 0) return;
-
-        const { error } = await supabase.from("saved_lineups").upsert(
+        await syncSavedLineupRows(
+          session.access_token,
           nextLineups.map((lineup) => savedLineupToRow(lineup, currentUser.id)),
-          {
-            onConflict: "id",
-          },
+          deletedLineupIds,
         );
-
-        if (error) {
-          console.error("Failed to save lineups", error);
-        }
       }
 
-      syncSavedLineups();
+      syncSavedLineups().catch((error) => {
+        console.error("Failed to sync saved lineups", error);
+      });
     },
     [user],
   );

@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { DatabaseErrorState } from "../components/loading/database-error-state";
+import { getCachedApiPlayers } from "../lib/player-api-cache";
 
 import {
   getPlayerRating,
@@ -122,19 +123,7 @@ export default function Rankings() {
         setIsLoadingPlayers(true);
         setPlayerLoadError("");
 
-        const response = await fetch("/api/players", {
-          cache: "no-store",
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to load ranking players");
-        }
-
-        const data = (await response.json()) as {
-          players?: typeof fallbackPlayers;
-        };
-
-        const loadedPlayers = data.players ?? [];
+        const loadedPlayers = await getCachedApiPlayers();
 
         if (isMounted && loadedPlayers.length > 0) {
           setPlayers(loadedPlayers);

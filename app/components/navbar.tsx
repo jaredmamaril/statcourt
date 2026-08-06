@@ -10,6 +10,7 @@ import { resetStatCourtTheme } from "../lib/themes";
 import {
   Activity,
   Bookmark,
+  Globe2,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -37,6 +38,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { label: "court", href: "/court", icon: Activity, color: "#A855F7" },
   { label: "players", href: "/players", icon: Users, color: "#1bc2ec" },
+  { label: "community", href: "/community", icon: Globe2, color: "#14F1D9" },
   { label: "rankings", href: "/rankings", icon: Trophy, color: "#EFBF04" },
   {
     label: "lineups",

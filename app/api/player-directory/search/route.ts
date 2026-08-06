@@ -1,7 +1,23 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/app/components/supabase-client";
+import {
+  checkRateLimit,
+  createIpRateLimitRules,
+  createRateLimitResponse,
+} from "@/app/lib/rate-limit";
 
 export async function GET(request: Request) {
+  const rateLimit = await checkRateLimit(
+    createIpRateLimitRules(request, "player-directory-search-api", {
+      perMinute: 30,
+      perDay: 300,
+    }),
+  );
+
+  if (!rateLimit.allowed) {
+    return createRateLimitResponse(rateLimit);
+  }
+
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("q")?.trim();
 

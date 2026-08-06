@@ -38,6 +38,14 @@ function getAuthEmailErrorMessage(errorMessage: string) {
   return errorMessage;
 }
 
+function getAuthErrorMessage(errorMessage: string) {
+  if (errorMessage.toLowerCase().includes("user already registered")) {
+    return "An account already exists for this email. Sign in instead, or use Forgot Password if you need a reset link.";
+  }
+
+  return errorMessage;
+}
+
 export default function SignInPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -117,7 +125,18 @@ export default function SignInPage() {
     setIsSubmitting(false);
 
     if (authResponse.error) {
-      setAuthError(authResponse.error.message);
+      setAuthError(getAuthErrorMessage(authResponse.error.message));
+      return;
+    }
+
+    if (
+      authMode === "signup" &&
+      authResponse.data.user &&
+      authResponse.data.user.identities?.length === 0
+    ) {
+      setAuthError(
+        "An account already exists for this email. Sign in instead, or use Forgot Password if you need a reset link.",
+      );
       return;
     }
 

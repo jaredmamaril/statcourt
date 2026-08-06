@@ -3,6 +3,7 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthPrompt } from "../components/auth/auth-prompt";
+import { getCachedApiPlayers } from "../lib/player-api-cache";
 import { useAuthUser } from "../lib/use-auth-user";
 import {
   type DefaultPlayerView,
@@ -174,18 +175,10 @@ export default function Lineups() {
         setIsLoadingPlayers(true);
         setPlayerLoadError("");
 
-        const response = await fetch("/api/players");
+        const loadedPlayers = await getCachedApiPlayers();
 
-        if (!response.ok) {
-          throw new Error("Failed to load players");
-        }
-
-        const data = (await response.json()) as {
-          players?: Player[];
-        };
-
-        if (isActive && data.players && data.players.length > 0) {
-          setPlayers(data.players);
+        if (isActive && loadedPlayers.length > 0) {
+          setPlayers(loadedPlayers);
         }
       } catch (error) {
         console.error("Failed to load lineup players", error);
@@ -896,8 +889,7 @@ export default function Lineups() {
           (user ? (
             isLoadingSavedLineups ? (
               <SavedLineupsLoadingSkeleton />
-            ) : (
-            savedLineups.length > 0 ? (
+            ) : savedLineups.length > 0 ? (
               <SavedLineupsSection
                 savedLineups={savedLineups}
                 filteredSavedLineups={filteredSavedLineups}
@@ -945,7 +937,7 @@ export default function Lineups() {
                   setHasStartedBuilder(false);
                 }}
               />
-            ))
+            )
           ) : (
             <div className="mx-auto mt-6 max-w-75 animate-[pageEnter_220ms_ease-out_both] rounded-lg border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-3.5 text-center shadow-[0_0_22px_rgb(var(--court-accent-rgb)/0.14)] lg:mt-16 lg:max-w-md lg:p-6 lg:shadow-[0_0_28px_rgb(var(--court-accent-rgb)/0.16)]">
               <p className="font-michroma text-[10px] uppercase text-white lg:text-lg">

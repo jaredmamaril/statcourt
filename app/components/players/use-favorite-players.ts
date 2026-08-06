@@ -9,6 +9,34 @@ type FavoritePlayerRow = {
   player_name: string;
 };
 
+async function updateFavoritePlayer(playerName: string, wasFavorite: boolean) {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.access_token) {
+    throw new Error("Sign in again to update favorites.");
+  }
+
+  const response = await fetch("/api/favorites", {
+    method: wasFavorite ? "DELETE" : "POST",
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      playerName,
+    }),
+  });
+  const result = (await response.json().catch(() => ({}))) as {
+    error?: string;
+  };
+
+  if (!response.ok) {
+    throw new Error(result.error ?? "Could not update favorite.");
+  }
+}
+
 export function useFavoritePlayers(user: User | null) {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isLoadingFavorites, setIsLoadingFavorites] = useState(true);
@@ -71,20 +99,9 @@ export function useFavoritePlayers(user: User | null) {
         return;
       }
 
-      const { error } = wasFavorite
-        ? await supabase
-            .from("favorite_players")
-            .delete()
-            .eq("player_name", playerName)
-        : await supabase.from("favorite_players").upsert(
-            {
-              user_id: user.id,
-              player_name: playerName,
-            },
-            { onConflict: "user_id,player_name" },
-          );
+      try {
+        await updateFavoritePlayer(playerName, wasFavorite);
 
-      if (!error) {
         await logUserActivity({
           user,
           activityType: wasFavorite ? "unfavorite_player" : "favorite_player",
@@ -96,11 +113,10 @@ export function useFavoritePlayers(user: User | null) {
         });
 
         return;
+      } catch (error) {
+        console.error("Failed to update favorite player", error);
+        setFavorites(favorites);
       }
-
-      console.error("Failed to update favorite player", error);
-      setFavorites(favorites);
-      return;
     },
     [favorites, user],
   );

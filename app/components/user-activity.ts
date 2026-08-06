@@ -1,8 +1,6 @@
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "./supabase-client";
 
-const USER_ACTIVITY_LIMIT = 20;
-
 export type UserActivityType =
   | "view_player"
   | "view_lineup"
@@ -31,41 +29,32 @@ export async function logUserActivity({
 }: UserActivityInput) {
   if (!user) return;
 
-  const { error } = await supabase.from("user_activity").insert({
-    user_id: user.id,
-    activity_type: activityType,
-    label,
-    href,
-    metadata,
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.access_token) return;
+
+  const response = await fetch("/api/activity", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      activityType,
+      label,
+      href,
+      metadata,
+    }),
   });
 
-  if (error) {
-    console.error("Failed to log user activity", error);
+  if (!response.ok) {
+    const result = (await response.json().catch(() => ({}))) as {
+      error?: string;
+    };
+
+    console.error("Failed to log user activity", result.error ?? response.status);
     return;
-  }
-
-  const { data: activityRows, error: loadError } = await supabase
-    .from("user_activity")
-    .select("id")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false })
-    .range(USER_ACTIVITY_LIMIT, USER_ACTIVITY_LIMIT + 99);
-
-  if (loadError) {
-    console.error("Failed to load old user activity", loadError);
-    return;
-  }
-
-  const oldActivityIds = (activityRows ?? []).map((row) => row.id);
-
-  if (oldActivityIds.length === 0) return;
-
-  const { error: deleteError } = await supabase
-    .from("user_activity")
-    .delete()
-    .in("id", oldActivityIds);
-
-  if (deleteError) {
-    console.error("Failed to delete old user activity", deleteError);
   }
 }
