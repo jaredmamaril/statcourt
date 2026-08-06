@@ -22,9 +22,11 @@ import type { PlayerRatingCategory } from "../components/player-ratings";
 import { SelectedPlayerCard } from "../components/players/player-card";
 import { PlayerList } from "../components/players/player-list";
 import { PlayerFilters } from "../components/players/player-filters";
+import { PlayerPageControlsSkeleton } from "../components/players/player-page-skeletons";
 import {
   DatabaseSnapshot,
   FeaturedPlayerPanel,
+  PlayerDashboardSkeleton,
   RecentlyScouted,
 } from "../components/players/side-panels";
 import { PlayerPageHeader } from "../components/players/player-page-header";
@@ -659,6 +661,10 @@ function Players() {
           >
             {isDesktop &&
               !selectedPlayer &&
+              isLoadingPlayers && <PlayerDashboardSkeleton />}
+
+            {isDesktop &&
+              !selectedPlayer &&
               !isLoadingPlayers &&
               featuredPlayer && (
                 <FeaturedPlayerPanel
@@ -692,41 +698,50 @@ function Players() {
                 getRarityColor={getRarityColor}
               />
             )}
-            <PlayerPageHeader
-              playerSearch={playerSearch}
-              onPlayerSearchChange={setPlayerSearch}
-            />
-            <PlayerFilters
-              filtersRef={filtersRef}
-              showFavorites={showFavorites}
-              favoritesCount={favorites.length}
-              filteredTeam={filteredTeam}
-              teamOptions={teamOptions}
-              filteredPosition={filteredPosition}
-              filteredArchetype={filteredArchetype}
-              hasUnclassifiedPlayers={hasUnclassifiedPlayers}
-              archetypeOptions={archetypeOptions}
-              onSelectArchetype={selectArchetypeFilter}
-              sortBy={sortBy}
-              sortDirection={sortDirection}
-              openDropdown={openDropdown}
-              hasActiveFilters={hasActiveFilters}
-              onToggleFavorites={toggleFavoritesFilter}
-              onOpenDropdown={setOpenDropdown}
-              onSelectTeam={selectTeamFilter}
-              onSelectPosition={selectPositionFilter}
-              onSelectSort={selectSortFilter}
-              onResetFilters={resetAllFilters}
-              selectedSkill={selectedRatingView}
-              onSelectSkill={selectSkillFilter}
-              selectedView={playerDisplayView}
-              onSelectView={selectPlayerDisplayView}
-            />
+            {isLoadingPlayers ? (
+              <PlayerPageControlsSkeleton />
+            ) : (
+              <>
+                <PlayerPageHeader
+                  playerSearch={playerSearch}
+                  onPlayerSearchChange={setPlayerSearch}
+                />
+                <PlayerFilters
+                  filtersRef={filtersRef}
+                  showFavorites={showFavorites}
+                  favoritesCount={favorites.length}
+                  filteredTeam={filteredTeam}
+                  teamOptions={teamOptions}
+                  filteredPosition={filteredPosition}
+                  filteredArchetype={filteredArchetype}
+                  hasUnclassifiedPlayers={hasUnclassifiedPlayers}
+                  archetypeOptions={archetypeOptions}
+                  onSelectArchetype={selectArchetypeFilter}
+                  sortBy={sortBy}
+                  sortDirection={sortDirection}
+                  openDropdown={openDropdown}
+                  hasActiveFilters={hasActiveFilters}
+                  onToggleFavorites={toggleFavoritesFilter}
+                  onOpenDropdown={setOpenDropdown}
+                  onSelectTeam={selectTeamFilter}
+                  onSelectPosition={selectPositionFilter}
+                  onSelectSort={selectSortFilter}
+                  onResetFilters={resetAllFilters}
+                  selectedSkill={selectedRatingView}
+                  onSelectSkill={selectSkillFilter}
+                  selectedView={playerDisplayView}
+                  onSelectView={selectPlayerDisplayView}
+                />
+              </>
+            )}
 
             {isLoadingPlayers ? (
               <DatabaseLoadingState
                 title="Loading Players"
                 description="Building player dashboard..."
+                skeleton={
+                  playerDisplayView === "cards" ? "player-cards" : "player-rows"
+                }
               />
             ) : (
               <>

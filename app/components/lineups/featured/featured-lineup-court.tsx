@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import type { LineupSlot, Player } from "../../court-data";
 import type { LineupDetail } from "../shared/lineup-types";
-import { featuredCourtMarkerPositions } from "./featured-lineups";
 import { LineupMarker } from "../featured/lineup-marker";
 
 type FeaturedLineupCourtProps = {
@@ -11,6 +10,20 @@ type FeaturedLineupCourtProps = {
   hoveredLineupPlayer: string;
   onHoverPlayer: (playerName: string) => void;
   onViewCard: (playerName: string) => void;
+};
+
+const featuredCourtMarkerPositions: Record<
+  LineupSlot,
+  {
+    left: string;
+    top: string;
+  }
+> = {
+  PG: { left: "50%", top: "6%" },
+  SG: { left: "22%", top: "22%" },
+  SF: { left: "78%", top: "74%" },
+  PF: { left: "25%", top: "68%" },
+  C: { left: "65%", top: "42%" },
 };
 
 export function FeaturedLineupCourt({
@@ -31,84 +44,105 @@ export function FeaturedLineupCourt({
 
   return (
     <div
-      className="relative min-h-72 overflow-visible rounded-md bg-transparent lg:min-h-96"
+      className="flex justify-center"
       onClick={() => setOpenTooltipPlayer(null)}
     >
-      <div className="absolute inset-x-8 inset-y-6" />
+      <div className="relative h-[19rem] w-full max-w-[22rem] overflow-visible rounded-md bg-transparent lg:h-[30rem] lg:max-w-none">
+        <svg
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-visible"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+        >
+          <path
+            d="M 8 92 L 8 70 A 42 42 0 0 1 92 70 L 92 92"
+            fill="none"
+            stroke={selectedCategoryColor}
+            strokeOpacity="0.55"
+            strokeWidth="0.8"
+            vectorEffect="non-scaling-stroke"
+          />
+          <rect
+            x="40"
+            y="63"
+            width="20"
+            height="29"
+            fill="none"
+            stroke={selectedCategoryColor}
+            strokeOpacity="0.55"
+            strokeWidth="0.8"
+            vectorEffect="non-scaling-stroke"
+          />
+          <path
+            d="M 40 63 A 10 10 0 0 1 60 63"
+            fill="none"
+            stroke={selectedCategoryColor}
+            strokeOpacity="0.55"
+            strokeWidth="0.8"
+            vectorEffect="non-scaling-stroke"
+          />
+          <circle
+            cx="50"
+            cy="86"
+            r="1.4"
+            fill="none"
+            stroke={selectedCategoryColor}
+            strokeOpacity="0.85"
+            strokeWidth="0.8"
+            vectorEffect="non-scaling-stroke"
+          />
+          <line
+            x1="43"
+            x2="57"
+            y1="86"
+            y2="86"
+            stroke={selectedCategoryColor}
+            strokeOpacity="0.85"
+            strokeWidth="0.8"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
 
-      <div
-        className="absolute left-1/2 bottom-12 h-[58%] w-[72%] -translate-x-1/2 rounded-t-full border-t border-l border-r lg:bottom-17 lg:h-[60%] lg:w-[70%]"
-        style={{
-          borderColor: `${selectedCategoryColor}40`,
-        }}
-      />
+        {Object.entries(selectedLineup.players).map(([position, playerName]) => {
+          const lineupPosition = position as LineupSlot;
 
-      <div
-        className="absolute left-1/2 bottom-12 h-28 w-18 -translate-x-1/2 border lg:bottom-17 lg:h-36 lg:w-24"
-        style={{
-          borderColor: `${selectedCategoryColor}40`,
-        }}
-      />
-
-      <div
-        className="absolute left-1/2 bottom-40 h-9 w-18 -translate-x-1/2 rounded-t-full border-t border-l border-r lg:bottom-53 lg:h-12 lg:w-24"
-        style={{
-          borderColor: `${selectedCategoryColor}40`,
-        }}
-      />
-
-      <div
-        className="absolute left-1/2 bottom-18 h-2.5 w-2.5 -translate-x-1/2 rounded-full border lg:bottom-24 lg:h-3 lg:w-3"
-        style={{
-          borderColor: `${selectedCategoryColor}80`,
-        }}
-      />
-
-      <div
-        className="absolute left-1/2 bottom-18 h-px w-10 -translate-x-1/2 lg:bottom-24 lg:w-14"
-        style={{
-          backgroundColor: `${selectedCategoryColor}80`,
-        }}
-      />
-
-      {Object.entries(selectedLineup.players).map(([position, playerName]) => {
-        const lineupPosition = position as LineupSlot;
-
-        return (
-          <div
-            key={`${lineupPosition}-${playerName || "empty"}`}
-            onMouseEnter={() => onHoverPlayer(playerName)}
-            onMouseLeave={() => {
-              onHoverPlayer("");
-              setOpenTooltipPlayer(null);
-            }}
-          >
-            <LineupMarker
-              players={players}
-              player={playersByName.get(playerName)}
-              position={lineupPosition}
-              name={playerName || "Select Player"}
-              color={selectedCategoryColor}
-              isHighlighted={hoveredLineupPlayer === playerName}
-              isTooltipOpen={openTooltipPlayer === playerName}
-              onToggleTooltip={() => {
-                const isAlreadyOpen = openTooltipPlayer === playerName;
-
-                setOpenTooltipPlayer(isAlreadyOpen ? null : playerName);
-                onHoverPlayer(isAlreadyOpen ? "" : playerName);
+          return (
+            <div
+              key={`${lineupPosition}-${playerName || "empty"}`}
+              onMouseEnter={() => onHoverPlayer(playerName)}
+              onMouseLeave={() => {
+                onHoverPlayer("");
+                setOpenTooltipPlayer(null);
               }}
-              onCloseTooltip={() => setOpenTooltipPlayer(null)}
-              onViewCard={onViewCard}
-              tooltipPosition={
-                lineupPosition === "PG" || lineupPosition === "SG"
-                  ? "bottom"
-                  : "top"
-              }
-              className={featuredCourtMarkerPositions[lineupPosition]}
-            />
-          </div>
-        );
-      })}
+            >
+              <LineupMarker
+                players={players}
+                player={playersByName.get(playerName)}
+                position={lineupPosition}
+                name={playerName || "Select Player"}
+                color={selectedCategoryColor}
+                isHighlighted={hoveredLineupPlayer === playerName}
+                isTooltipOpen={openTooltipPlayer === playerName}
+                onToggleTooltip={() => {
+                  const isAlreadyOpen = openTooltipPlayer === playerName;
+
+                  setOpenTooltipPlayer(isAlreadyOpen ? null : playerName);
+                  onHoverPlayer(isAlreadyOpen ? "" : playerName);
+                }}
+                onCloseTooltip={() => setOpenTooltipPlayer(null)}
+                onViewCard={onViewCard}
+                tooltipPosition={
+                  lineupPosition === "PG" || lineupPosition === "SG"
+                    ? "bottom"
+                    : "top"
+                }
+                className=""
+                style={featuredCourtMarkerPositions[lineupPosition]}
+              />
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

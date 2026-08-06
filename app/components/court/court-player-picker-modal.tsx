@@ -1,7 +1,7 @@
 import PlayerImage from "../player-image";
 import { getPlayerHeadshot } from "../player-images";
 import { getReadableTeamColor, type Player } from "../court-data";
-import { LoadingSpinner } from "../loading/loading-spinner";
+import { SkeletonBlock } from "../loading/skeleton";
 
 type CourtPlayerPickerModalProps = {
   isOpen: boolean;
@@ -77,15 +77,22 @@ export function CourtPlayerPickerModal({
 
         <div className="statcourt-scroll mt-4 min-h-0 flex-1 overflow-y-auto pr-1 sm:pr-2">
           {isLoadingPlayers ? (
-            <div className="rounded-lg border border-[rgb(var(--court-accent-rgb)/0.25)] bg-black/20 p-6 text-center sm:p-8">
-              <p className="font-michroma text-[8px] uppercase text-[var(--court-accent)] sm:text-xs">
-                Loading Players
-              </p>
-              <p className="mt-2 font-michroma text-[6px] text-white/35 sm:text-[8px]">
-                Syncing comparison profiles...
-              </p>
-
-              <LoadingSpinner className="mt-3 h-5 w-5 sm:h-6 sm:w-6" />
+            <div className="grid gap-2 sm:grid-cols-2">
+              {Array.from({ length: 8 }, (_, index) => (
+                <div
+                  key={index}
+                  className="flex min-w-0 items-center gap-2 rounded-lg border border-white/10 bg-black/25 p-2.5 sm:gap-3 sm:p-3"
+                >
+                  <SkeletonBlock className="h-12 w-12 shrink-0 rounded-md sm:h-14 sm:w-14" />
+                  <div className="min-w-0 flex-1">
+                    <SkeletonBlock className="h-3 w-32 max-w-full" />
+                    <div className="mt-2 flex items-center gap-2">
+                      <SkeletonBlock className="h-5 w-10" />
+                      <SkeletonBlock className="h-3 w-16" />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="grid gap-2 sm:grid-cols-2">

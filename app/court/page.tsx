@@ -4,7 +4,6 @@ import { useDeferredValue, useEffect, useRef, useState } from "react";
 
 import { useAuthUser } from "../lib/use-auth-user";
 import { useUserSettings } from "../lib/use-user-settings";
-import { DatabaseLoadingState } from "../components/loading/database-loading-state";
 import { DatabaseErrorState } from "../components/loading/database-error-state";
 
 import {
@@ -23,6 +22,10 @@ import { getRadarData } from "../components/court/court-radar-data";
 import { CourtComparisonHeader } from "../components/court/court-comparison-header";
 import { CourtComparisonEdges } from "../components/court/court-comparison-edges";
 import { CourtMatchupSummary } from "../components/court/court-matchup-summary";
+import {
+  CourtComparisonHeaderSkeleton,
+  CourtComparisonSkeleton,
+} from "../components/court/court-comparison-skeleton";
 
 import { CourtPlayerPickerModal } from "../components/court/court-player-picker-modal";
 
@@ -171,19 +174,19 @@ export default function Court() {
       />
 
       <section className="page-enter relative z-10 min-h-screen px-3 pt-2 pb-8 lg:px-10">
-        <CourtComparisonHeader
-          leftPlayer={selectedLeftPlayer}
-          rightPlayer={selectedRightPlayer}
-          isLoadingPlayers={isLoadingPlayers}
-          statMode={statMode}
-          onStatModeChange={setStatMode}
-        />
+        {isLoadingPlayers ? (
+          <CourtComparisonHeaderSkeleton />
+        ) : (
+          <CourtComparisonHeader
+            leftPlayer={selectedLeftPlayer}
+            rightPlayer={selectedRightPlayer}
+            statMode={statMode}
+            onStatModeChange={setStatMode}
+          />
+        )}
 
         {isLoadingPlayers ? (
-          <DatabaseLoadingState
-            title="Loading Court Players"
-            description="Syncing comparison profiles..."
-          />
+          <CourtComparisonSkeleton />
         ) : (
           <>
             {playerLoadError && (

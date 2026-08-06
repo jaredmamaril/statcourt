@@ -10,7 +10,6 @@ import {
 } from "../lib/use-user-settings";
 import { logUserActivity } from "../components/user-activity";
 import { DatabaseErrorState } from "../components/loading/database-error-state";
-import { DatabaseLoadingState } from "../components/loading/database-loading-state";
 import {
   players as fallbackPlayers,
   type LineupSlot,
@@ -24,6 +23,11 @@ import type {
   SavedLineup,
 } from "../components/lineups/shared/lineup-types";
 import { LineupPageHeader } from "../components/lineups/shared/lineup-page-header";
+import {
+  BuilderWorkspaceSkeleton,
+  FeaturedLineupDetailSkeleton,
+  SavedLineupsLoadingSkeleton,
+} from "../components/lineups/shared/lineup-page-skeletons";
 
 import {
   lineupPositions,
@@ -236,7 +240,8 @@ export default function Lineups() {
     useState<SavedLineup | null>(null);
 
   // Saved lineup state
-  const { savedLineups, updateSavedLineups } = useSavedLineups();
+  const { savedLineups, isLoadingSavedLineups, updateSavedLineups } =
+    useSavedLineups();
   const [savedLineupSearch, setSavedLineupSearch] = useState("");
   const [savedLineupSort, setSavedLineupSort] = useState("highestOvr");
   const [savedLineupProfileFilter, setSavedLineupProfileFilter] = useState<
@@ -809,10 +814,7 @@ export default function Lineups() {
                 className="mt-4 min-h-136 scroll-mt-24 lg:mt-8 lg:min-h-168"
               >
                 {isLoadingPlayers ? (
-                  <DatabaseLoadingState
-                    title="Loading Featured Players"
-                    description="Syncing lineup headshots and profiles..."
-                  />
+                  <FeaturedLineupDetailSkeleton />
                 ) : playerLoadError ? (
                   <DatabaseErrorState
                     title="Featured Players Limited"
@@ -850,10 +852,7 @@ export default function Lineups() {
                 onContinueDraft={continueDraft}
               />
             ) : isLoadingPlayers ? (
-              <DatabaseLoadingState
-                title="Loading Lineup Players"
-                description="Syncing draft board profiles..."
-              />
+              <BuilderWorkspaceSkeleton />
             ) : (
               <>
                 {playerLoadError && (
@@ -895,6 +894,9 @@ export default function Lineups() {
 
         {activeTab === "saved" &&
           (user ? (
+            isLoadingSavedLineups ? (
+              <SavedLineupsLoadingSkeleton />
+            ) : (
             savedLineups.length > 0 ? (
               <SavedLineupsSection
                 savedLineups={savedLineups}
@@ -943,7 +945,7 @@ export default function Lineups() {
                   setHasStartedBuilder(false);
                 }}
               />
-            )
+            ))
           ) : (
             <div className="mx-auto mt-6 max-w-75 animate-[pageEnter_220ms_ease-out_both] rounded-lg border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-3.5 text-center shadow-[0_0_22px_rgb(var(--court-accent-rgb)/0.14)] lg:mt-16 lg:max-w-md lg:p-6 lg:shadow-[0_0_28px_rgb(var(--court-accent-rgb)/0.16)]">
               <p className="font-michroma text-[10px] uppercase text-white lg:text-lg">

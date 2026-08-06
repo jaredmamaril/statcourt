@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { Player } from "../../court-data";
 import PlayerImage from "../../player-image";
 import { getPlayerHeadshot } from "../../player-images";
@@ -8,6 +9,7 @@ type LineupMarkerProps = {
   position: string;
   name: string;
   className: string;
+  style?: CSSProperties;
   color: string;
   isHighlighted: boolean;
   onViewCard: (playerName: string) => void;
@@ -24,6 +26,7 @@ export function LineupMarker({
   position,
   name,
   className,
+  style,
   color,
   isHighlighted,
   onViewCard,
@@ -44,6 +47,7 @@ export function LineupMarker({
       className={`absolute -translate-x-1/2 text-center transition-all duration-200 hover:z-999 ${
         isHighlighted ? "z-900 scale-125" : "z-10 scale-100"
       } ${className}`}
+      style={style}
     >
       <div
         className={player ? "player-add-to-court" : ""}

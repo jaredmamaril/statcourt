@@ -1,6 +1,5 @@
 ﻿"use client";
 
-import { DatabaseLoadingState } from "../components/loading/database-loading-state";
 import { DatabaseErrorState } from "../components/loading/database-error-state";
 
 import {
@@ -34,6 +33,10 @@ import { archetypeInfoByLabel } from "../components/rankings/archetype-metadata"
 import { ArchetypesSection } from "../components/rankings/archetypes-section";
 
 import { RemainingRankingList } from "../components/rankings/remaining-ranking-list";
+import {
+  RankingArchetypesSkeleton,
+  RankingLeaderboardSkeleton,
+} from "../components/rankings/ranking-skeletons";
 
 type RankingStatProfile = "career" | "peak" | "current";
 type ArchetypeSort = "rarity" | "name";
@@ -459,10 +462,7 @@ export default function Rankings() {
           <div className="mb-6">
             {activeTab === "archetypes" ? (
               isLoadingPlayers ? (
-                <DatabaseLoadingState
-                  title="Loading Archetypes"
-                  description="Classifying player profiles..."
-                />
+                <RankingArchetypesSkeleton />
               ) : (
                 <>
                   {playerLoadError && (
@@ -503,10 +503,7 @@ export default function Rankings() {
                 </>
               )
             ) : isLoadingPlayers ? (
-              <DatabaseLoadingState
-                title="Loading Rankings"
-                description="Syncing top player ratings..."
-              />
+              <RankingLeaderboardSkeleton displayView={displayView} />
             ) : (
               <RankingLeaderboardSection
                 rankingHeading={rankingHeading}

@@ -1,25 +1,29 @@
-import { LoadingSpinner } from "./loading-spinner";
+import { PlayerListSkeleton, SkeletonBlock } from "./skeleton";
 
 type DatabaseLoadingStateProps = {
   title?: string;
   description?: string;
+  skeleton?: "player-cards" | "player-rows";
 };
 
 export function DatabaseLoadingState({
-  title = "Loading Players",
-  description = "Syncing profiles...",
+  skeleton,
 }: DatabaseLoadingStateProps) {
+  if (skeleton) {
+    return (
+      <div className="mx-auto mt-5 w-full lg:mt-8">
+        <PlayerListSkeleton
+          variant={skeleton === "player-rows" ? "rows" : "cards"}
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className="mx-auto mt-5 w-fit max-w-60 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] px-3 py-2.5 text-center shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.12)] lg:mt-8 lg:max-w-sm lg:px-8 lg:py-5">
-      <p className="font-michroma text-[7px] uppercase text-[var(--court-accent)] lg:text-xs">
-        {title}
-      </p>
-
-      <p className="mt-1 font-michroma text-[5.5px] text-white/35 lg:mt-2 lg:text-[9px]">
-        {description}
-      </p>
-
-      <LoadingSpinner className="mt-2 h-4 w-4 lg:mt-4 lg:h-6 lg:w-6" />
+    <div className="mx-auto mt-5 w-full max-w-sm rounded-md border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] p-3 lg:mt-8 lg:p-5">
+      <SkeletonBlock className="h-3 w-40" />
+      <SkeletonBlock className="mt-3 h-2 w-56 max-w-full" />
+      <SkeletonBlock className="mt-4 h-1.5 w-full" />
     </div>
   );
 }

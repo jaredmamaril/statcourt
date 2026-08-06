@@ -208,6 +208,35 @@ html[data-statcourt-theme="neon-violet"] {
   animation: panelReveal 220ms ease-out both;
 }
 
+@keyframes skeletonShimmer {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.statcourt-skeleton {
+  position: relative;
+  overflow: hidden;
+}
+
+.statcourt-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(var(--court-accent-rgb) / 0.22),
+    transparent
+  );
+  animation: skeletonShimmer 1.4s ease-in-out infinite;
+}
+
 @keyframes cardFaceIn {
   from {
     opacity: 0.35;
