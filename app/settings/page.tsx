@@ -1131,12 +1131,12 @@ export default function SettingsPage() {
 
   async function signOutOtherDevices() {
     if (!user) {
-      setPasswordStatus("Sign in to manage devices.");
+      setPasswordStatus("Sign in to manage session history.");
       return;
     }
 
     setIsSigningOutOtherDevices(true);
-    setPasswordStatus("Signing out other devices...");
+    setPasswordStatus("Signing out other sessions...");
 
     const currentDeviceId = getCurrentDeviceId();
     const { error } = await supabase.auth.signOut({ scope: "others" });
@@ -1161,7 +1161,7 @@ export default function SettingsPage() {
     setActiveDevices((currentDevices) =>
       currentDevices.filter((device) => device.device_id === currentDeviceId),
     );
-    setPasswordStatus("Other devices signed out.");
+    setPasswordStatus("Other sessions signed out.");
     setIsSigningOutOtherDevices(false);
   }
 
@@ -1840,17 +1840,22 @@ export default function SettingsPage() {
                       disabled={!user || isLoadingDataCounts}
                       className="mt-2 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 py-1 font-michroma text-[5px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:text-[7px]"
                     >
-                      {isDevicesOpen ? "Hide Devices" : "Devices"}
+                      {isDevicesOpen ? "Hide History" : "Device History"}
                     </button>
                   </div>
                 </div>
 
                 {isDevicesOpen && (
                   <div className="mt-2 grid gap-1.5 border-t border-white/10 pt-2 lg:mt-3 lg:gap-2 lg:pt-3">
+                    <p className="font-michroma text-[5px] leading-relaxed text-white/30 lg:text-[7px]">
+                      Device history is based on recent StatCourt sign-ins. Some
+                      active Supabase sessions may not appear here.
+                    </p>
+
                     {!isLoadingDataCounts && (
                       <div>
                         <p className="mb-1 font-michroma text-[5px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[7px]">
-                          Active Devices
+                          Remembered Devices
                         </p>
 
                         <div className="statcourt-scroll grid max-h-32 gap-1.5 overflow-y-auto pr-1 lg:max-h-40 lg:gap-2">
@@ -1889,7 +1894,7 @@ export default function SettingsPage() {
                             })
                           ) : (
                             <p className="font-michroma text-[6px] uppercase text-white/30 lg:text-[8px]">
-                              No active devices found.
+                              No remembered devices found.
                             </p>
                           )}
                         </div>
@@ -1954,7 +1959,7 @@ export default function SettingsPage() {
                     >
                       {isSigningOutOtherDevices
                         ? "Signing Out..."
-                        : "Log Out Other Devices"}
+                        : "Sign Out Other Sessions"}
                     </button>
                   </div>
                 )}
@@ -2187,6 +2192,13 @@ export default function SettingsPage() {
                   Your saved lineups, favorite players, and activity are
                   protected by your signed-in account.
                 </p>
+
+                <Link
+                  href="/privacy"
+                  className="mt-2 inline-flex rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.08)] px-2 py-1.5 font-michroma text-[6px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.16)] hover:text-white lg:px-3 lg:text-[8px]"
+                >
+                  View Privacy Summary
+                </Link>
               </div>
             </section>
 
