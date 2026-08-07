@@ -22,9 +22,8 @@ export const revalidate = 300;
 const getCachedCommunityProfiles = unstable_cache(
   async () => {
     const { data, error } = await supabase
-      .from("user_profiles")
+      .from("public_profiles")
       .select("id, display_name, username, avatar_url, created_at")
-      .eq("public_profile_enabled", true)
       .not("username", "is", null)
       .order("created_at", { ascending: false })
       .limit(COMMUNITY_PROFILE_LIMIT);
@@ -37,7 +36,7 @@ const getCachedCommunityProfiles = unstable_cache(
       (profile) => profile.username,
     );
   },
-  ["statcourt-community-profiles-v1"],
+  ["statcourt-community-profiles-v2"],
   {
     revalidate: 300,
     tags: ["statcourt-community-profiles"],

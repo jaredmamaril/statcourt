@@ -350,12 +350,9 @@ export default function PublicProfilePage() {
       setProfileError("");
 
       const { data, error } = await supabase
-        .from("user_profiles")
-        .select(
-          "id, display_name, username, avatar_url, public_profile_enabled, created_at",
-        )
+        .from("public_profiles")
+        .select("id, display_name, username, avatar_url, created_at")
         .eq("username", username)
-        .eq("public_profile_enabled", true)
         .maybeSingle();
 
       if (!isActive) return;
@@ -374,7 +371,12 @@ export default function PublicProfilePage() {
         return;
       }
 
-      const publicProfile = (data as PublicProfile | null) ?? null;
+      const publicProfile = data
+        ? ({
+            ...(data as Omit<PublicProfile, "public_profile_enabled">),
+            public_profile_enabled: true,
+          } satisfies PublicProfile)
+        : null;
 
       if (!publicProfile) {
         setProfile(null);

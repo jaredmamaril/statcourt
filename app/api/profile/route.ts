@@ -1,10 +1,15 @@
-import { createClient } from "@supabase/supabase-js";
 import {
   checkRateLimit,
   createIpRateLimitRules,
   createRateLimitResponse,
   createUserRateLimitRules,
 } from "@/app/lib/rate-limit";
+import {
+  createSupabaseAdminClient,
+  createSupabaseUserClient,
+  getBearerToken,
+  getSupabaseServerConfig,
+} from "@/app/lib/supabase-server";
 
 export const runtime = "nodejs";
 
@@ -24,22 +29,6 @@ type UserProfileRow = {
   username: string | null;
   username_updated_at: string | null;
 };
-
-function getSupabaseServerConfig() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey) {
-    return null;
-  }
-
-  return {
-    supabaseUrl,
-    supabaseAnonKey,
-    supabaseServiceRoleKey,
-  };
-}
 
 function cleanText(value: unknown, maxLength: number) {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : null;
@@ -84,8 +73,7 @@ export async function PATCH(request: Request) {
     );
   }
 
-  const authorization = request.headers.get("authorization");
-  const accessToken = authorization?.replace(/^Bearer\s+/i, "");
+  const accessToken = getBearerToken(request);
 
   if (!accessToken) {
     return Response.json(
@@ -94,17 +82,7 @@ export async function PATCH(request: Request) {
     );
   }
 
-  const userClient = createClient(
-    config.supabaseUrl,
-    config.supabaseAnonKey,
-    {
-      global: {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      },
-    },
-  );
+  const userClient = createSupabaseUserClient(config, accessToken);
 
   const {
     data: { user },
@@ -187,16 +165,7 @@ export async function PATCH(request: Request) {
     updates.public_profile_enabled = body.publicProfileEnabled;
   }
 
-  const adminClient = createClient(
-    config.supabaseUrl,
-    config.supabaseServiceRoleKey,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    },
-  );
+  const adminClient = createSupabaseAdminClient(config);
 
   if (username !== null) {
     const usernameRateLimit = await checkRateLimit(

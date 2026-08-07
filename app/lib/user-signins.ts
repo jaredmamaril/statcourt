@@ -33,24 +33,31 @@ export function getCurrentDeviceId() {
   return nextDeviceId;
 }
 
-function getDeviceLabel(userAgent: string) {
-  if (/iPhone/i.test(userAgent)) return "iPhone";
-  if (/iPad/i.test(userAgent)) return "iPad";
-  if (/Android/i.test(userAgent)) return "Android";
-  if (/Windows/i.test(userAgent)) return "Windows PC";
-  if (/Macintosh|Mac OS X/i.test(userAgent)) return "Mac";
-  if (/Linux/i.test(userAgent)) return "Linux";
+async function postAccountEvent(body: Record<string, unknown>) {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  return "Unknown device";
-}
+  if (!session?.access_token) {
+    throw new Error("Missing signed-in session.");
+  }
 
-function getBrowserLabel(userAgent: string) {
-  if (/Edg/i.test(userAgent)) return "Microsoft Edge";
-  if (/Chrome/i.test(userAgent)) return "Chrome";
-  if (/Firefox/i.test(userAgent)) return "Firefox";
-  if (/Safari/i.test(userAgent)) return "Safari";
+  const response = await fetch("/api/account/events", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
 
-  return "Unknown browser";
+  if (!response.ok) {
+    const data = (await response.json().catch(() => null)) as {
+      error?: string;
+    } | null;
+
+    throw new Error(data?.error ?? "Could not track account event.");
+  }
 }
 
 export async function trackUserSignin(
@@ -87,13 +94,12 @@ export async function trackUserSignin(
   pendingTrackedSignins.add(signInKey);
   window.localStorage.setItem(SIGNIN_TRACKING_STORAGE_KEY, signInKey);
 
-  const { error } = await supabase.from("user_signins").insert({
-    user_id: user.id,
-    provider: signinProvider,
-    user_agent: window.navigator.userAgent,
-  });
-
-  if (error) {
+  try {
+    await postAccountEvent({
+      eventType: "signin",
+      provider: signinProvider,
+    });
+  } catch (error) {
     console.warn("Failed to track sign-in", error);
     window.localStorage.removeItem(SIGNIN_TRACKING_STORAGE_KEY);
     pendingTrackedSignins.delete(signInKey);
@@ -135,26 +141,12 @@ export function clearPendingAuthProvider() {
 export async function upsertCurrentUserDevice(user: User | null) {
   if (!user) return;
 
-  const userAgent = window.navigator.userAgent;
-  const timestamp = new Date().toISOString();
-
-  const { error } = await supabase.from("user_devices").upsert(
-    {
-      user_id: user.id,
-      device_id: getCurrentDeviceId(),
-      device_label: getDeviceLabel(userAgent),
-      browser_label: getBrowserLabel(userAgent),
-      user_agent: userAgent,
-      last_seen_at: timestamp,
-      signed_out_at: null,
-      updated_at: timestamp,
-    },
-    {
-      onConflict: "user_id,device_id",
-    },
-  );
-
-  if (error) {
+  try {
+    await postAccountEvent({
+      eventType: "device_seen",
+      deviceId: getCurrentDeviceId(),
+    });
+  } catch (error) {
     console.warn("Failed to update current device", error);
   }
 }

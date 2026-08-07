@@ -1,10 +1,15 @@
-import { createClient } from "@supabase/supabase-js";
 import {
   checkRateLimit,
   createIpRateLimitRules,
   createRateLimitResponse,
   createUserRateLimitRules,
 } from "@/app/lib/rate-limit";
+import {
+  createSupabaseAdminClient,
+  createSupabaseUserClient,
+  getBearerToken,
+  getSupabaseServerConfig,
+} from "@/app/lib/supabase-server";
 
 export const runtime = "nodejs";
 
@@ -12,22 +17,6 @@ type CompareSlotsRequestBody = {
   left?: string;
   right?: string;
 };
-
-function getSupabaseServerConfig() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey) {
-    return null;
-  }
-
-  return {
-    supabaseUrl,
-    supabaseAnonKey,
-    supabaseServiceRoleKey,
-  };
-}
 
 function cleanPlayerName(value: unknown) {
   return typeof value === "string" ? value.trim().slice(0, 120) : "";
@@ -45,8 +34,7 @@ async function getRequestContext(request: Request) {
     };
   }
 
-  const authorization = request.headers.get("authorization");
-  const accessToken = authorization?.replace(/^Bearer\s+/i, "");
+  const accessToken = getBearerToken(request);
 
   if (!accessToken) {
     return {
@@ -57,17 +45,7 @@ async function getRequestContext(request: Request) {
     };
   }
 
-  const userClient = createClient(
-    config.supabaseUrl,
-    config.supabaseAnonKey,
-    {
-      global: {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      },
-    },
-  );
+  const userClient = createSupabaseUserClient(config, accessToken);
 
   const {
     data: { user },
@@ -83,16 +61,7 @@ async function getRequestContext(request: Request) {
     };
   }
 
-  const adminClient = createClient(
-    config.supabaseUrl,
-    config.supabaseServiceRoleKey,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    },
-  );
+  const adminClient = createSupabaseAdminClient(config);
 
   return {
     adminClient,
@@ -146,12 +115,14 @@ export async function PATCH(request: Request) {
     body = {};
   }
 
-  const { error } = await context.adminClient.from("user_compare_slots").upsert({
-    user_id: context.user.id,
-    left_player_name: cleanPlayerName(body.left),
-    right_player_name: cleanPlayerName(body.right),
-    updated_at: new Date().toISOString(),
-  });
+  const { error } = await context.adminClient
+    .from("user_compare_slots")
+    .upsert({
+      user_id: context.user.id,
+      left_player_name: cleanPlayerName(body.left),
+      right_player_name: cleanPlayerName(body.right),
+      updated_at: new Date().toISOString(),
+    });
 
   if (error) {
     return Response.json(
