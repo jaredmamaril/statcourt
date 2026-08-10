@@ -4,6 +4,7 @@ import {
   createRateLimitResponse,
   createUserRateLimitRules,
 } from "@/app/lib/rate-limit";
+import { cleanMetadata, cleanPath, cleanText } from "@/app/lib/input-validation";
 import {
   createSupabaseAdminClient,
   createSupabaseUserClient,
@@ -34,10 +35,6 @@ type ActivityRequestBody = {
   href?: string | null;
   metadata?: Record<string, unknown>;
 };
-
-function cleanText(value: unknown, maxLength: number) {
-  return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
-}
 
 async function getRequestContext(request: Request) {
   const config = getSupabaseServerConfig();
@@ -134,9 +131,8 @@ export async function POST(request: Request) {
 
   const activityType = cleanText(body.activityType, 40);
   const label = cleanText(body.label, MAX_ACTIVITY_LABEL_LENGTH);
-  const href = cleanText(body.href, MAX_ACTIVITY_HREF_LENGTH) || null;
-  const metadata =
-    body.metadata && typeof body.metadata === "object" ? body.metadata : {};
+  const href = cleanPath(body.href, MAX_ACTIVITY_HREF_LENGTH);
+  const metadata = cleanMetadata(body.metadata);
 
   if (!ALLOWED_ACTIVITY_TYPES.has(activityType) || !label) {
     return Response.json(

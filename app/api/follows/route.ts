@@ -4,6 +4,7 @@ import {
   createRateLimitResponse,
   createUserRateLimitRules,
 } from "@/app/lib/rate-limit";
+import { cleanUuid } from "@/app/lib/input-validation";
 import {
   createSupabaseAdminClient,
   createSupabaseUserClient,
@@ -16,10 +17,6 @@ export const runtime = "nodejs";
 type FollowRequestBody = {
   followingId?: string;
 };
-
-function cleanUserId(value: unknown) {
-  return typeof value === "string" ? value.trim().slice(0, 80) : "";
-}
 
 async function getRequestContext(request: Request) {
   const config = getSupabaseServerConfig();
@@ -77,7 +74,7 @@ async function getFollowingId(request: Request) {
     body = {};
   }
 
-  return cleanUserId(body.followingId);
+  return cleanUuid(body.followingId);
 }
 
 async function checkFollowRateLimit(request: Request, userId: string) {

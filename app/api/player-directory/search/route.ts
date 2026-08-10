@@ -5,6 +5,11 @@ import {
   createIpRateLimitRules,
   createRateLimitResponse,
 } from "@/app/lib/rate-limit";
+import { cleanText } from "@/app/lib/input-validation";
+
+function escapeIlikePattern(value: string) {
+  return value.replace(/[\\%_]/g, "\\$&");
+}
 
 export async function GET(request: Request) {
   const rateLimit = await checkRateLimit(
@@ -19,7 +24,7 @@ export async function GET(request: Request) {
   }
 
   const { searchParams } = new URL(request.url);
-  const query = searchParams.get("q")?.trim();
+  const query = cleanText(searchParams.get("q"), 80);
 
   if (!query || query.length < 2) {
     return NextResponse.json({
@@ -32,11 +37,16 @@ export async function GET(request: Request) {
     .select(
       "nba_id, name, from_year, to_year, roster_status, team, player_code",
     )
-    .ilike("name", `%${query}%`)
+    .ilike("name", `%${escapeIlikePattern(query)}%`)
     .limit(20);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Player directory search failed", error);
+
+    return NextResponse.json(
+      { error: "Could not search player directory." },
+      { status: 500 },
+    );
   }
 
   return NextResponse.json({

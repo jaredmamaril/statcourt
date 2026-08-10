@@ -2,10 +2,13 @@ import type { User } from "@supabase/supabase-js";
 import { supabase } from "../components/supabase-client";
 
 const DEVICE_ID_STORAGE_KEY = "statcourt_device_id";
+const DEVICE_TRACKING_STORAGE_KEY = "statcourt_last_tracked_device";
 const SIGNIN_TRACKING_STORAGE_KEY = "statcourt_last_tracked_signin";
 const SIGNIN_CLEAR_STORAGE_KEY = "statcourt_cleared_signin";
 const PENDING_AUTH_PROVIDER_STORAGE_KEY = "statcourt_pending_auth_provider";
+const DEVICE_TRACKING_INTERVAL_MS = 15 * 60 * 1000;
 const pendingTrackedSignins = new Set<string>();
+const pendingTrackedDevices = new Set<string>();
 
 function getSigninProvider(
   user: User,
@@ -141,12 +144,43 @@ export function clearPendingAuthProvider() {
 export async function upsertCurrentUserDevice(user: User | null) {
   if (!user) return;
 
+  const deviceId = getCurrentDeviceId();
+  const deviceTrackingKey = `${user.id}:${deviceId}`;
+  const lastTrackedDevice = window.localStorage.getItem(
+    DEVICE_TRACKING_STORAGE_KEY,
+  );
+  const [lastTrackedKey, lastTrackedAt] = lastTrackedDevice?.split(":at:") ?? [];
+  const lastTrackedTimestamp = Number(lastTrackedAt ?? 0);
+
+  if (
+    pendingTrackedDevices.has(deviceTrackingKey) ||
+    (lastTrackedKey === deviceTrackingKey &&
+      Date.now() - lastTrackedTimestamp < DEVICE_TRACKING_INTERVAL_MS)
+  ) {
+    return;
+  }
+
+  pendingTrackedDevices.add(deviceTrackingKey);
+  window.localStorage.setItem(
+    DEVICE_TRACKING_STORAGE_KEY,
+    `${deviceTrackingKey}:at:${Date.now()}`,
+  );
+
   try {
     await postAccountEvent({
       eventType: "device_seen",
-      deviceId: getCurrentDeviceId(),
+      deviceId,
     });
   } catch (error) {
+    pendingTrackedDevices.delete(deviceTrackingKey);
+
+    if (error instanceof Error && /too many requests/i.test(error.message)) {
+      return;
+    }
+
     console.warn("Failed to update current device", error);
+    return;
   }
+
+  pendingTrackedDevices.delete(deviceTrackingKey);
 }

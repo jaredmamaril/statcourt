@@ -124,7 +124,7 @@ type OverwriteLineupRequest =
     };
 
 export default function Lineups() {
-  const { user } = useAuthUser();
+  const { user, isLoadingUser } = useAuthUser();
   const { settings, isLoadingSettings } = useUserSettings();
 
   // Refs and routing
@@ -886,7 +886,9 @@ export default function Lineups() {
         )}
 
         {activeTab === "saved" &&
-          (user ? (
+          (isLoadingUser ? (
+            <SavedLineupsLoadingSkeleton />
+          ) : user ? (
             isLoadingSavedLineups ? (
               <SavedLineupsLoadingSkeleton />
             ) : savedLineups.length > 0 ? (
@@ -950,7 +952,11 @@ export default function Lineups() {
 
               <button
                 type="button"
-                onClick={() => router.push("/signin")}
+                onClick={() =>
+                  router.push(
+                    `/signin?next=${encodeURIComponent("/lineups?tab=saved")}`,
+                  )
+                }
                 className="mt-3 rounded-md border border-[rgb(var(--court-accent-rgb)/0.5)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-3 py-2 font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white lg:mt-5 lg:px-4 lg:py-3 lg:text-[10px]"
               >
                 Sign In

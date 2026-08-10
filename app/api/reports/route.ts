@@ -5,6 +5,16 @@ import {
   createUserRateLimitRules,
 } from "@/app/lib/rate-limit";
 import {
+  cleanNullableText,
+  cleanText,
+  cleanUuid,
+} from "@/app/lib/input-validation";
+import {
+  getSecurityClientHash,
+  getSecurityRequestId,
+  logSecurityEvent,
+} from "@/app/lib/security-log";
+import {
   createSupabaseAdminClient,
   createSupabaseUserClient,
   getBearerToken,
@@ -24,10 +34,6 @@ type ReportRequestBody = {
   details?: string | null;
 };
 
-function cleanText(value: unknown, maxLength: number) {
-  return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
-}
-
 export async function POST(request: Request) {
   const ipRateLimit = await checkRateLimit(
     createIpRateLimitRules(request, "profile-report-api", {
@@ -37,7 +43,13 @@ export async function POST(request: Request) {
   );
 
   if (!ipRateLimit.allowed) {
-    return createRateLimitResponse(ipRateLimit);
+    return createRateLimitResponse(ipRateLimit, {
+      request,
+      route: "/api/reports",
+      action: "create_report",
+      severity: "medium",
+      persistent: true,
+    });
   }
 
   const config = getSupabaseServerConfig();
@@ -80,7 +92,14 @@ export async function POST(request: Request) {
   );
 
   if (!userRateLimit.allowed) {
-    return createRateLimitResponse(userRateLimit);
+    return createRateLimitResponse(userRateLimit, {
+      request,
+      route: "/api/reports",
+      action: "create_report",
+      userId: user.id,
+      severity: "medium",
+      persistent: true,
+    });
   }
 
   let body: ReportRequestBody = {};
@@ -91,11 +110,16 @@ export async function POST(request: Request) {
     body = {};
   }
 
-  const reportedUserId = cleanText(body.reportedUserId, 80);
-  const reportedUsername =
-    cleanText(body.reportedUsername, MAX_USERNAME_LENGTH) || null;
+  const reportedUserId = cleanUuid(body.reportedUserId);
+  const reportedUsername = cleanNullableText(
+    body.reportedUsername,
+    MAX_USERNAME_LENGTH,
+  );
   const reason = cleanText(body.reason, MAX_REASON_LENGTH);
-  const details = cleanText(body.details, MAX_REPORT_DETAILS_LENGTH) || null;
+  const details = cleanNullableText(
+    body.details,
+    MAX_REPORT_DETAILS_LENGTH,
+  );
 
   if (!reportedUserId || !reason) {
     return Response.json(
@@ -123,11 +147,47 @@ export async function POST(request: Request) {
   });
 
   if (error) {
+    if (error.code === "23505") {
+      void logSecurityEvent({
+        eventName: "user_report",
+        severity: "medium",
+        userId: user.id,
+        route: "/api/reports",
+        action: "create_report",
+        outcome: "blocked",
+        reasonCode: "duplicate_open_report",
+        requestId: getSecurityRequestId(request),
+        clientHash: getSecurityClientHash(request),
+        metadata: {
+          reason,
+        },
+      });
+
+      return Response.json(
+        { error: "Report already submitted." },
+        { status: 409 },
+      );
+    }
+
     return Response.json(
       { error: "Could not send report." },
       { status: 500 },
     );
   }
+
+  void logSecurityEvent({
+    eventName: "user_report",
+    severity: "medium",
+    userId: user.id,
+    route: "/api/reports",
+    action: "create_report",
+    outcome: "success",
+    requestId: getSecurityRequestId(request),
+    clientHash: getSecurityClientHash(request),
+    metadata: {
+      reason,
+    },
+  });
 
   return Response.json({ ok: true });
 }

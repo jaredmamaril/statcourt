@@ -7,14 +7,7 @@ import {
   consumePendingAuthProvider,
   trackUserSignin,
 } from "../../lib/user-signins";
-
-function getSafeRedirectPath(nextPath: string | null) {
-  if (!nextPath || !nextPath.startsWith("/") || nextPath.startsWith("//")) {
-    return "/profile";
-  }
-
-  return nextPath;
-}
+import { getSafeInternalRedirectPath } from "../../lib/safe-redirect";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -25,7 +18,10 @@ export default function AuthCallbackPage() {
       const params = new URLSearchParams(window.location.search);
       const hashParams = new URLSearchParams(window.location.hash.slice(1));
       const code = params.get("code");
-      const nextPath = getSafeRedirectPath(params.get("next"));
+      const nextPath = getSafeInternalRedirectPath(
+        params.get("next"),
+        "/profile",
+      );
       const provider = params.get("provider") ?? consumePendingAuthProvider();
       const authError =
         params.get("error_description") ??
@@ -34,7 +30,7 @@ export default function AuthCallbackPage() {
         hashParams.get("error");
 
       if (authError) {
-        router.replace(`/signin?error=${encodeURIComponent(authError)}`);
+        router.replace("/signin?error=auth_provider_failed");
         return;
       }
 
@@ -46,8 +42,8 @@ export default function AuthCallbackPage() {
       const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
       if (error) {
-        setStatus(error.message);
-        router.replace(`/signin?error=${encodeURIComponent(error.message)}`);
+        setStatus("Could not complete sign in. Redirecting...");
+        router.replace("/signin?error=auth_callback_failed");
         return;
       }
 

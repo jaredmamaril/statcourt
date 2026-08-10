@@ -29,7 +29,7 @@ const getCachedCommunityProfiles = unstable_cache(
       .limit(COMMUNITY_PROFILE_LIMIT);
 
     if (error) {
-      throw new Error(error.message);
+      throw error;
     }
 
     return ((data ?? []) as CommunityProfileRow[]).filter(
@@ -55,17 +55,26 @@ export async function GET(request: Request) {
     return createRateLimitResponse(rateLimit);
   }
 
-  const profiles = await getCachedCommunityProfiles();
+  try {
+    const profiles = await getCachedCommunityProfiles();
 
-  return NextResponse.json(
-    {
-      count: profiles.length,
-      profiles,
-    },
-    {
-      headers: {
-        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+    return NextResponse.json(
+      {
+        count: profiles.length,
+        profiles,
       },
-    },
-  );
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+        },
+      },
+    );
+  } catch (error) {
+    console.error("Failed to load community profiles", error);
+
+    return NextResponse.json(
+      { error: "Could not load community profiles." },
+      { status: 500 },
+    );
+  }
 }

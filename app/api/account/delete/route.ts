@@ -4,6 +4,12 @@ import {
   createRateLimitResponse,
   createUserRateLimitRules,
 } from "@/app/lib/rate-limit";
+import { cleanText } from "@/app/lib/input-validation";
+import {
+  getSecurityClientHash,
+  getSecurityRequestId,
+  logSecurityEvent,
+} from "@/app/lib/security-log";
 import {
   createSupabaseAdminClient,
   createSupabaseUserClient,
@@ -22,7 +28,13 @@ export async function POST(request: Request) {
   );
 
   if (!ipRateLimit.allowed) {
-    return createRateLimitResponse(ipRateLimit);
+    return createRateLimitResponse(ipRateLimit, {
+      request,
+      route: "/api/account/delete",
+      action: "delete_account",
+      severity: "high",
+      persistent: true,
+    });
   }
 
   const config = getSupabaseServerConfig();
@@ -37,6 +49,17 @@ export async function POST(request: Request) {
   const accessToken = getBearerToken(request);
 
   if (!accessToken) {
+    void logSecurityEvent({
+      eventName: "unauthorized_api_access",
+      severity: "high",
+      route: "/api/account/delete",
+      action: "delete_account",
+      outcome: "blocked",
+      reasonCode: "missing_access_token",
+      requestId: getSecurityRequestId(request),
+      clientHash: getSecurityClientHash(request),
+    });
+
     return Response.json(
       { error: "Sign in again before deleting your account." },
       { status: 401 },
@@ -51,6 +74,17 @@ export async function POST(request: Request) {
   } = await userClient.auth.getUser(accessToken);
 
   if (userError || !user) {
+    void logSecurityEvent({
+      eventName: "unauthorized_api_access",
+      severity: "high",
+      route: "/api/account/delete",
+      action: "delete_account",
+      outcome: "blocked",
+      reasonCode: "invalid_access_token",
+      requestId: getSecurityRequestId(request),
+      clientHash: getSecurityClientHash(request),
+    });
+
     return Response.json(
       { error: "Could not verify your signed-in account." },
       { status: 401 },
@@ -65,7 +99,14 @@ export async function POST(request: Request) {
   );
 
   if (!userRateLimit.allowed) {
-    return createRateLimitResponse(userRateLimit);
+    return createRateLimitResponse(userRateLimit, {
+      request,
+      route: "/api/account/delete",
+      action: "delete_account",
+      userId: user.id,
+      severity: "high",
+      persistent: true,
+    });
   }
 
   let body: { confirm?: string } = {};
@@ -76,7 +117,7 @@ export async function POST(request: Request) {
     body = {};
   }
 
-  if (body.confirm !== "DELETE") {
+  if (cleanText(body.confirm, 20) !== "DELETE") {
     return Response.json(
       { error: "Type DELETE to confirm account deletion." },
       { status: 400 },
@@ -110,11 +151,35 @@ export async function POST(request: Request) {
     await adminClient.auth.admin.deleteUser(user.id);
 
   if (deleteUserError) {
+    console.error("Failed to delete Supabase auth user", deleteUserError);
+    void logSecurityEvent({
+      eventName: "account_deletion",
+      severity: "critical",
+      userId: user.id,
+      route: "/api/account/delete",
+      action: "delete_account",
+      outcome: "failed",
+      reasonCode: "auth_user_delete_failed",
+      requestId: getSecurityRequestId(request),
+      clientHash: getSecurityClientHash(request),
+    });
+
     return Response.json(
-      { error: deleteUserError.message || "Could not delete account." },
+      { error: "Could not delete account." },
       { status: 500 },
     );
   }
+
+  void logSecurityEvent({
+    eventName: "account_deletion",
+    severity: "critical",
+    userId: user.id,
+    route: "/api/account/delete",
+    action: "delete_account",
+    outcome: "success",
+    requestId: getSecurityRequestId(request),
+    clientHash: getSecurityClientHash(request),
+  });
 
   return Response.json({ ok: true });
 }

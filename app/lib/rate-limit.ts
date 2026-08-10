@@ -1,6 +1,11 @@
 import "server-only";
 
 import { createHash } from "crypto";
+import {
+  getSecurityClientHash,
+  getSecurityRequestId,
+  logSecurityEvent,
+} from "./security-log";
 
 type RateLimitRule = {
   id: string;
@@ -19,6 +24,15 @@ type RateLimitResult = {
 type Bucket = {
   count: number;
   resetAt: number;
+};
+
+type RateLimitSecurityLogOptions = {
+  request: Request;
+  route: string;
+  action: string;
+  userId?: string | null;
+  severity?: "low" | "medium" | "high" | "critical";
+  persistent?: boolean;
 };
 
 type RedisPipelineResponse = {
@@ -240,7 +254,24 @@ export async function checkRateLimit(
   return checkMemoryRateLimit(rules);
 }
 
-export function createRateLimitResponse(result: RateLimitResult) {
+export function createRateLimitResponse(
+  result: RateLimitResult,
+  securityLogOptions?: RateLimitSecurityLogOptions,
+) {
+  if (securityLogOptions?.persistent) {
+    void logSecurityEvent({
+      eventName: "rate_limit_exceeded",
+      severity: securityLogOptions.severity ?? "medium",
+      userId: securityLogOptions.userId ?? null,
+      route: securityLogOptions.route,
+      action: securityLogOptions.action,
+      outcome: "blocked",
+      reasonCode: "rate_limit_exceeded",
+      requestId: getSecurityRequestId(securityLogOptions.request),
+      clientHash: getSecurityClientHash(securityLogOptions.request),
+    });
+  }
+
   return Response.json(
     {
       error: result.message ?? "Too many requests. Try again later.",

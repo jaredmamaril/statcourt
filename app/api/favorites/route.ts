@@ -4,6 +4,7 @@ import {
   createRateLimitResponse,
   createUserRateLimitRules,
 } from "@/app/lib/rate-limit";
+import { cleanPlayerName } from "@/app/lib/input-validation";
 import {
   createSupabaseAdminClient,
   createSupabaseUserClient,
@@ -16,10 +17,6 @@ export const runtime = "nodejs";
 type FavoriteRequestBody = {
   playerName?: string;
 };
-
-function cleanPlayerName(value: unknown) {
-  return typeof value === "string" ? value.trim().slice(0, 120) : "";
-}
 
 async function getRequestContext(request: Request) {
   const config = getSupabaseServerConfig();

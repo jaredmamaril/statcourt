@@ -15,6 +15,7 @@ import {
   setPendingAuthProvider,
   trackUserSignin,
 } from "../lib/user-signins";
+import { getSafeInternalRedirectPath } from "../lib/safe-redirect";
 
 function GoogleMark() {
   return (
@@ -35,20 +36,46 @@ function getAuthEmailErrorMessage(errorMessage: string) {
     return "Too many auth emails sent. This project can send 2 auth emails per hour. Try again later.";
   }
 
-  return errorMessage;
+  return "Could not send email. Please try again.";
 }
 
-function getAuthErrorMessage(errorMessage: string) {
-  if (errorMessage.toLowerCase().includes("user already registered")) {
-    return "An account already exists for this email. Sign in instead, or use Forgot Password if you need a reset link.";
+function getAuthErrorMessage(
+  errorMessage: string,
+  authMode: "signin" | "signup" | "forgot-password",
+) {
+  if (errorMessage.toLowerCase().includes("rate limit")) {
+    return "Too many attempts. Please try again later.";
   }
 
-  return errorMessage;
+  if (errorMessage.toLowerCase().includes("user already registered")) {
+    return "Could not create account. Try signing in, or use Forgot Password if needed.";
+  }
+
+  if (authMode === "signup") {
+    return "Could not create account. Please check your details and try again.";
+  }
+
+  return "Could not sign in. Please check your details and try again.";
+}
+
+function getCallbackErrorMessage(errorCode: string) {
+  if (
+    errorCode === "auth_callback_failed" ||
+    errorCode === "auth_provider_failed"
+  ) {
+    return "Could not complete sign in. Please try again.";
+  }
+
+  return "Could not sign in. Please try again.";
 }
 
 export default function SignInPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const nextPath = getSafeInternalRedirectPath(
+    searchParams.get("next"),
+    "/profile",
+  );
   const [authMode, setAuthMode] = useState<
     "signin" | "signup" | "forgot-password"
   >("signin");
@@ -67,7 +94,7 @@ export default function SignInPage() {
       const timeoutId = window.setTimeout(() => {
         if (!isActive) return;
 
-        setAuthError(callbackError);
+        setAuthError(getCallbackErrorMessage(callbackError));
         setAuthMessage("");
       }, 0);
 
@@ -83,7 +110,7 @@ export default function SignInPage() {
       if (!isActive) return;
 
       if (data.user) {
-        router.replace("/profile");
+        router.replace(nextPath);
       }
     }
 
@@ -92,7 +119,7 @@ export default function SignInPage() {
     return () => {
       isActive = false;
     };
-  }, [router, searchParams]);
+  }, [nextPath, router, searchParams]);
 
   async function handleEmailAuth(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -125,7 +152,7 @@ export default function SignInPage() {
     setIsSubmitting(false);
 
     if (authResponse.error) {
-      setAuthError(getAuthErrorMessage(authResponse.error.message));
+      setAuthError(getAuthErrorMessage(authResponse.error.message, authMode));
       return;
     }
 
@@ -135,7 +162,7 @@ export default function SignInPage() {
       authResponse.data.user.identities?.length === 0
     ) {
       setAuthError(
-        "An account already exists for this email. Sign in instead, or use Forgot Password if you need a reset link.",
+        "Could not create account. Try signing in, or use Forgot Password if needed.",
       );
       return;
     }
@@ -147,7 +174,7 @@ export default function SignInPage() {
 
     await trackUserSignin(authResponse.data.user, "email");
 
-    router.push("/profile");
+    router.push(nextPath);
   }
 
   async function handlePasswordReset(event: FormEvent<HTMLFormElement>) {
@@ -179,14 +206,16 @@ export default function SignInPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/profile&provider=google`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
+          nextPath,
+        )}&provider=google`,
       },
     });
 
     if (error) {
       clearPendingAuthProvider();
       setIsSubmitting(false);
-      setAuthError(error.message);
+      setAuthError("Could not continue with Google. Please try again.");
     }
   }
 

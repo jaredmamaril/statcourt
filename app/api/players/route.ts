@@ -6,6 +6,7 @@ import {
   createIpRateLimitRules,
   createRateLimitResponse,
 } from "@/app/lib/rate-limit";
+import { cleanText } from "@/app/lib/input-validation";
 
 export const revalidate = 3600;
 
@@ -22,7 +23,7 @@ export async function GET(request: Request) {
   }
 
   const { searchParams } = new URL(request.url);
-  const view = searchParams.get("view");
+  const view = cleanText(searchParams.get("view"), 40);
   const players = await getAppPlayers();
   const responsePlayers =
     view === "profile-lookup"

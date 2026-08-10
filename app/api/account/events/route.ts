@@ -4,6 +4,7 @@ import {
   createRateLimitResponse,
   createUserRateLimitRules,
 } from "@/app/lib/rate-limit";
+import { cleanText } from "@/app/lib/input-validation";
 import {
   createSupabaseAdminClient,
   createSupabaseUserClient,
@@ -18,10 +19,6 @@ type AccountEventRequestBody = {
   provider?: string | null;
   deviceId?: string | null;
 };
-
-function cleanText(value: unknown, maxLength: number) {
-  return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
-}
 
 function getDeviceLabel(userAgent: string) {
   if (/iPhone/i.test(userAgent)) return "iPhone";
@@ -99,7 +96,15 @@ async function checkAccountEventRateLimit(
     }),
   );
 
-  if (!ipRateLimit.allowed) return createRateLimitResponse(ipRateLimit);
+  if (!ipRateLimit.allowed) {
+    return createRateLimitResponse(ipRateLimit, {
+      request,
+      route: "/api/account/events",
+      action: eventType,
+      severity: "medium",
+      persistent: true,
+    });
+  }
 
   const userRateLimit = await checkRateLimit(
     createUserRateLimitRules(userId, `account-${eventType}-api`, {
@@ -108,7 +113,16 @@ async function checkAccountEventRateLimit(
     }),
   );
 
-  if (!userRateLimit.allowed) return createRateLimitResponse(userRateLimit);
+  if (!userRateLimit.allowed) {
+    return createRateLimitResponse(userRateLimit, {
+      request,
+      route: "/api/account/events",
+      action: eventType,
+      userId,
+      severity: "medium",
+      persistent: true,
+    });
+  }
 
   return null;
 }

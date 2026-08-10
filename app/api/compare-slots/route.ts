@@ -4,6 +4,7 @@ import {
   createRateLimitResponse,
   createUserRateLimitRules,
 } from "@/app/lib/rate-limit";
+import { cleanPlayerName } from "@/app/lib/input-validation";
 import {
   createSupabaseAdminClient,
   createSupabaseUserClient,
@@ -17,10 +18,6 @@ type CompareSlotsRequestBody = {
   left?: string;
   right?: string;
 };
-
-function cleanPlayerName(value: unknown) {
-  return typeof value === "string" ? value.trim().slice(0, 120) : "";
-}
 
 async function getRequestContext(request: Request) {
   const config = getSupabaseServerConfig();

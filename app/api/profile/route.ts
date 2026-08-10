@@ -4,6 +4,12 @@ import {
   createRateLimitResponse,
   createUserRateLimitRules,
 } from "@/app/lib/rate-limit";
+import { cleanNullableText, cleanText } from "@/app/lib/input-validation";
+import {
+  getSecurityClientHash,
+  getSecurityRequestId,
+  logSecurityEvent,
+} from "@/app/lib/security-log";
 import {
   createSupabaseAdminClient,
   createSupabaseUserClient,
@@ -30,14 +36,33 @@ type UserProfileRow = {
   username_updated_at: string | null;
 };
 
-function cleanText(value: unknown, maxLength: number) {
-  return typeof value === "string" ? value.trim().slice(0, maxLength) : null;
+function isAllowedAvatarUrl(value: string, supabaseUrl: string) {
+  try {
+    const avatarUrl = new URL(value);
+    const configuredSupabaseUrl = new URL(supabaseUrl);
+
+    if (
+      avatarUrl.protocol !== "https:" ||
+      configuredSupabaseUrl.protocol !== "https:"
+    ) {
+      return false;
+    }
+
+    const isSupabaseAvatar =
+      avatarUrl.hostname === configuredSupabaseUrl.hostname &&
+      avatarUrl.pathname.startsWith("/storage/v1/object/public/avatars/");
+    const isGoogleAvatar = avatarUrl.hostname === "lh3.googleusercontent.com";
+
+    return isSupabaseAvatar || isGoogleAvatar;
+  } catch {
+    return false;
+  }
 }
 
 function normalizeUsername(value: unknown) {
-  return typeof value === "string"
-    ? value.trim().toLowerCase().slice(0, MAX_USERNAME_LENGTH)
-    : null;
+  const username = cleanText(value, MAX_USERNAME_LENGTH).toLowerCase();
+
+  return username || null;
 }
 
 function getUsernameCooldownDate(updatedAt: string | null) {
@@ -61,7 +86,13 @@ export async function PATCH(request: Request) {
   );
 
   if (!ipRateLimit.allowed) {
-    return createRateLimitResponse(ipRateLimit);
+    return createRateLimitResponse(ipRateLimit, {
+      request,
+      route: "/api/profile",
+      action: "update_profile",
+      severity: "medium",
+      persistent: true,
+    });
   }
 
   const config = getSupabaseServerConfig();
@@ -104,7 +135,14 @@ export async function PATCH(request: Request) {
   );
 
   if (!userRateLimit.allowed) {
-    return createRateLimitResponse(userRateLimit);
+    return createRateLimitResponse(userRateLimit, {
+      request,
+      route: "/api/profile",
+      action: "update_profile",
+      userId: user.id,
+      severity: "medium",
+      persistent: true,
+    });
   }
 
   let body: ProfilePatchBody = {};
@@ -115,13 +153,16 @@ export async function PATCH(request: Request) {
     body = {};
   }
 
-  const updates: Record<string, string | boolean> = {
+  const updates: Record<string, string | boolean | null> = {
     id: user.id,
     updated_at: new Date().toISOString(),
   };
   const authMetadata: Record<string, string | boolean | null> = {};
 
-  const displayName = cleanText(body.displayName, MAX_DISPLAY_NAME_LENGTH);
+  const displayName = cleanNullableText(
+    body.displayName,
+    MAX_DISPLAY_NAME_LENGTH,
+  );
 
   if (displayName !== null) {
     if (displayName.length < 2) {
@@ -153,9 +194,33 @@ export async function PATCH(request: Request) {
     }
   }
 
-  const avatarUrl = cleanText(body.avatarUrl, MAX_AVATAR_URL_LENGTH);
+  const shouldUpdateAvatar = Object.hasOwn(body, "avatarUrl");
+  const avatarUrl = cleanNullableText(body.avatarUrl, MAX_AVATAR_URL_LENGTH);
 
-  if (avatarUrl !== null) {
+  if (shouldUpdateAvatar && avatarUrl === null) {
+    updates.avatar_url = null;
+    authMetadata.avatar_url = null;
+    authMetadata.picture = null;
+  } else if (avatarUrl !== null) {
+    if (!isAllowedAvatarUrl(avatarUrl, config.supabaseUrl)) {
+      void logSecurityEvent({
+        eventName: "profile_security_change",
+        severity: "medium",
+        userId: user.id,
+        route: "/api/profile",
+        action: "update_avatar",
+        outcome: "blocked",
+        reasonCode: "blocked_avatar_url_origin",
+        requestId: getSecurityRequestId(request),
+        clientHash: getSecurityClientHash(request),
+      });
+
+      return Response.json(
+        { error: "Use a StatCourt avatar upload or Google profile image." },
+        { status: 400 },
+      );
+    }
+
     updates.avatar_url = avatarUrl;
     authMetadata.avatar_url = avatarUrl;
     authMetadata.picture = avatarUrl;
@@ -175,7 +240,14 @@ export async function PATCH(request: Request) {
     );
 
     if (!usernameRateLimit.allowed) {
-      return createRateLimitResponse(usernameRateLimit);
+      return createRateLimitResponse(usernameRateLimit, {
+        request,
+        route: "/api/profile",
+        action: "update_username",
+        userId: user.id,
+        severity: "medium",
+        persistent: true,
+      });
     }
 
     const { data: currentProfile, error: currentProfileError } =
@@ -258,6 +330,22 @@ export async function PATCH(request: Request) {
       user_metadata: {
         ...user.user_metadata,
         ...authMetadata,
+      },
+    });
+  }
+
+  if (typeof body.publicProfileEnabled === "boolean") {
+    void logSecurityEvent({
+      eventName: "profile_security_change",
+      severity: "medium",
+      userId: user.id,
+      route: "/api/profile",
+      action: "public_profile_visibility",
+      outcome: "success",
+      requestId: getSecurityRequestId(request),
+      clientHash: getSecurityClientHash(request),
+      metadata: {
+        enabled: body.publicProfileEnabled,
       },
     });
   }
