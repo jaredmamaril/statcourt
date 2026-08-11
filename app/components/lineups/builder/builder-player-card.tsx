@@ -63,6 +63,7 @@ function BuilderPlayerCardComponent({
       data: {
         type: "picker-player",
         playerName: player.name,
+        preferredSlot: activeBuildPosition,
       },
     });
   const positionFit = getPositionFit(
@@ -111,6 +112,9 @@ function BuilderPlayerCardComponent({
       ref={setNodeRef}
       {...listeners}
       {...attributes}
+      aria-label={`${player.name}, ${positionRating.toFixed(
+        1,
+      )} overall for ${activeBuildPosition}, ${positionFit} fit. Press Space or Enter to pick up for keyboard drag, or click to draft to ${activeBuildPosition}.`}
       onClick={() => {
         const isTouchDevice = window.matchMedia("(hover: none)").matches;
 
@@ -120,20 +124,6 @@ function BuilderPlayerCardComponent({
         }
 
         onPickPlayer(player.name);
-      }}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-
-          const isTouchDevice = window.matchMedia("(hover: none)").matches;
-
-          if (isTouchDevice) {
-            onToggleScout(player.id);
-            return;
-          }
-
-          onPickPlayer(player.name);
-        }
       }}
       className={`group relative h-21 touch-none overflow-hidden rounded-md border bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] p-0.75 text-center transition hover:border-[var(--court-accent)] hover:bg-[rgb(var(--court-accent-rgb)/0.14)] lg:h-52 lg:p-3 ${
         isSelected
@@ -151,20 +141,20 @@ function BuilderPlayerCardComponent({
         className="mx-auto h-7.5 w-7.5 rounded-full object-cover lg:h-20 lg:w-20"
       />
 
-      <p className="mt-0.5 flex h-5 items-center justify-center text-center font-michroma text-[5px] leading-tight text-white lg:h-10 lg:text-[11px] lg:leading-4">
+      <p className="mt-0.5 flex h-5 items-center justify-center text-center font-michroma text-[8px] leading-tight text-white lg:h-10 lg:text-[11px] lg:leading-4">
         {player.name}
       </p>
 
-      <p className="font-michroma text-[4.5px] text-white/40 lg:text-[9px]">
+      <p className="font-michroma text-[7px] text-white/60 lg:text-[9px]">
         {player.team} • {player.position}
       </p>
 
-      <p className="mt-0.5 font-michroma text-[5.4px] text-[var(--court-accent)] lg:mt-1 lg:text-[10px]">
+      <p className="mt-0.5 font-michroma text-[8px] text-[var(--court-accent)] lg:mt-1 lg:text-[10px]">
         {positionRating.toFixed(1)} OVR
       </p>
 
       <p
-        className={`mt-0.5 font-michroma text-[4.5px] uppercase lg:mt-2 lg:text-[8px] ${
+        className={`mt-0.5 font-michroma text-[7px] uppercase lg:mt-2 lg:text-[8px] ${
           positionFit === "natural"
             ? "text-emerald-400"
             : positionFit === "flex"

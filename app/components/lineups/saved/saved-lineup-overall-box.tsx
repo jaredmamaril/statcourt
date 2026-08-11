@@ -24,7 +24,7 @@ export function SavedLineupOverallBox({
       }}
     >
       <p
-        className="font-michroma text-[7px] lg:text-lg"
+        className="font-michroma text-[10px] lg:text-lg"
         style={{
           color: archetypeColor,
           textShadow: `0 0 12px ${archetypeColor}99`,
@@ -33,13 +33,13 @@ export function SavedLineupOverallBox({
         {overall.toFixed(1)}
       </p>
 
-      <p className="font-michroma text-[4.5px] uppercase text-white/40 lg:text-[8px]">
+      <p className="font-michroma text-[7px] uppercase text-white/65 lg:text-[8px]">
         OVR
       </p>
 
       {topScore && (
         <p
-          className="mt-0.5 font-michroma text-[4.5px] uppercase lg:mt-1 lg:text-[7px]"
+          className="mt-0.5 font-michroma text-[7px] uppercase lg:mt-1 lg:text-[8px]"
           style={{ color: archetypeColor }}
         >
           {Math.round(topScore.value)} {topScore.label}

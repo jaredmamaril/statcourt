@@ -82,6 +82,10 @@ function getAvatarFileExtension(file: File) {
   return "png";
 }
 
+function isErrorLikeStatus(status: string) {
+  return /could not|failed|sign in|must|use jpg|under 1mb/i.test(status);
+}
+
 function getFavoriteArchetype(
   players: PlayerProfileLookup[],
   favoritePlayerNames: string[],
@@ -256,7 +260,7 @@ export default function ProfilePage() {
 
     if (uploadError) {
       console.warn("Failed to upload avatar", uploadError);
-      setAvatarStatus(uploadError.message || "Could not upload avatar.");
+      setAvatarStatus("Could not upload avatar.");
       setIsUploadingAvatar(false);
       return;
     }
@@ -481,7 +485,7 @@ export default function ProfilePage() {
         <div className="mb-3 rounded-lg border border-[rgb(var(--court-accent-rgb)/0.3)] bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-3 shadow-[0_0_22px_rgb(var(--court-accent-rgb)/0.12)] lg:mb-8 lg:p-6 lg:shadow-[0_0_30px_rgb(var(--court-accent-rgb)/0.14)]">
           <div className="flex items-center justify-between gap-3 lg:gap-5">
             <div>
-              <p className="font-michroma text-[7px] uppercase tracking-wide text-[var(--court-accent)] lg:text-[10px]">
+              <p className="font-michroma text-[8px] uppercase tracking-wide text-[var(--court-accent)] lg:text-[10px]">
                 Court Hub
               </p>
 
@@ -489,7 +493,7 @@ export default function ProfilePage() {
                 Welcome back, {displayName}
               </h1>
 
-              <p className="mt-1.5 font-michroma text-[6px] uppercase tracking-wide text-white/45 lg:mt-3 lg:text-[11px]">
+              <p className="mt-1.5 font-michroma text-[8px] uppercase tracking-wide text-white/65 lg:mt-3 lg:text-[11px]">
                 Your Court is ready.
               </p>
 
@@ -497,7 +501,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={sharePublicProfile}
-                  className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-[rgb(var(--court-accent-rgb)/0.4)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2.5 py-1.5 font-michroma text-[6px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white lg:mt-4 lg:px-3 lg:text-[8px]"
+                  className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-[rgb(var(--court-accent-rgb)/0.4)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2.5 py-1.5 font-michroma text-[8px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white lg:mt-4 lg:px-3 lg:text-[9px]"
                 >
                   <Share2 className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
                   {shareProfileStatus || "Share Profile"}
@@ -543,7 +547,10 @@ export default function ProfilePage() {
               </label>
 
               {avatarStatus && (
-                <p className="mt-1 max-w-24 text-center font-michroma text-[5px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[7px]">
+                <p
+                  role={isErrorLikeStatus(avatarStatus) ? "alert" : "status"}
+                  className="mt-1 max-w-24 text-center font-michroma text-[8px] uppercase text-[rgb(var(--court-accent-rgb)/0.85)] lg:text-[9px]"
+                >
                   {avatarStatus}
                 </p>
               )}
@@ -580,7 +587,7 @@ export default function ProfilePage() {
                 </button>
 
                 <div
-                  className={`pointer-events-none absolute top-6 right-1 left-1 z-30 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-black/95 p-1.5 font-michroma text-[4.5px] leading-relaxed text-white/70 shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.22)] transition lg:top-9 lg:right-3 lg:left-auto lg:w-52 lg:p-2 lg:text-[8px] ${
+                  className={`pointer-events-none absolute top-6 right-1 left-1 z-30 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-black/95 p-1.5 font-michroma text-[7px] leading-relaxed text-white/80 shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.22)] transition lg:top-9 lg:right-3 lg:left-auto lg:w-52 lg:p-2 lg:text-[8px] ${
                     openStatTooltip === stat.label
                       ? "opacity-100"
                       : "opacity-0 peer-hover:opacity-100"
@@ -600,7 +607,7 @@ export default function ProfilePage() {
                   <Icon className="h-2.5 w-2.5 lg:h-4 lg:w-4" />
                 </div>
 
-                <p className="line-clamp-2 font-michroma text-[4.5px] uppercase tracking-wide text-white/35 lg:text-[8px]">
+                <p className="line-clamp-2 font-michroma text-[7px] uppercase tracking-wide text-white/60 lg:text-[8px]">
                   {stat.label}
                 </p>
 
@@ -638,7 +645,7 @@ export default function ProfilePage() {
                     type="button"
                     onClick={clearRecentActivity}
                     disabled={isClearingActivity}
-                    className="rounded-md border border-white/10 bg-white/5 px-1.5 py-0.5 font-michroma text-[4.5px] uppercase text-white/35 transition hover:border-[rgb(var(--court-accent-rgb)/0.35)] hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:opacity-50 lg:px-2 lg:py-1 lg:text-[7px]"
+                  className="rounded-md border border-white/10 bg-white/5 px-1.5 py-0.5 font-michroma text-[7px] uppercase text-white/65 transition hover:border-[rgb(var(--court-accent-rgb)/0.35)] hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:opacity-60 lg:px-2 lg:py-1 lg:text-[8px]"
                   >
                     Clear
                   </button>
@@ -646,7 +653,10 @@ export default function ProfilePage() {
               </div>
 
               {activityStatus && (
-                <p className="mb-1.5 font-michroma text-[4.5px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:mb-2 lg:text-[7px]">
+                <p
+                  role={isErrorLikeStatus(activityStatus) ? "alert" : "status"}
+                  className="mb-1.5 font-michroma text-[8px] uppercase text-[rgb(var(--court-accent-rgb)/0.85)] lg:mb-2 lg:text-[9px]"
+                >
                   {activityStatus}
                 </p>
               )}
@@ -663,7 +673,7 @@ export default function ProfilePage() {
                             {activity.label}
                           </p>
 
-                          <p className="mt-0.5 font-michroma text-[4.5px] uppercase text-white/30 lg:mt-1 lg:text-[7px]">
+                          <p className="mt-0.5 font-michroma text-[7px] uppercase text-white/55 lg:mt-1 lg:text-[8px]">
                             {activity.activity_type.replaceAll("_", " ")}
                             {" / "}
                             {formatActivityTime(activity.created_at)}
@@ -697,21 +707,21 @@ export default function ProfilePage() {
                   <div className="mt-1.5 grid grid-cols-3 gap-1 lg:mt-3 lg:gap-2">
                     <Link
                       href="/players"
-                      className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-1.5 py-1 text-center font-michroma text-[4.5px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white lg:px-3 lg:py-2 lg:text-[7px]"
+                      className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-1.5 py-1 text-center font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white lg:px-3 lg:py-2 lg:text-[8px]"
                     >
                       Scout
                     </Link>
 
                     <Link
                       href="/lineups?tab=builder"
-                      className="rounded-md border border-[#EFBF04]/35 bg-[#EFBF04]/10 px-1.5 py-1 text-center font-michroma text-[4.5px] uppercase text-[#EFBF04] transition hover:bg-[#EFBF04]/20 hover:text-white lg:px-3 lg:py-2 lg:text-[7px]"
+                      className="rounded-md border border-[#EFBF04]/35 bg-[#EFBF04]/10 px-1.5 py-1 text-center font-michroma text-[7px] uppercase text-[#EFBF04] transition hover:bg-[#EFBF04]/20 hover:text-white lg:px-3 lg:py-2 lg:text-[8px]"
                     >
                       Build
                     </Link>
 
                     <Link
                       href="/lineups?tab=saved"
-                      className="rounded-md border border-[#A855F7]/35 bg-[#A855F7]/10 px-1.5 py-1 text-center font-michroma text-[4.5px] uppercase text-[#A855F7] transition hover:bg-[#A855F7]/20 hover:text-white lg:px-3 lg:py-2 lg:text-[7px]"
+                      className="rounded-md border border-[#A855F7]/35 bg-[#A855F7]/10 px-1.5 py-1 text-center font-michroma text-[7px] uppercase text-[#A855F7] transition hover:bg-[#A855F7]/20 hover:text-white lg:px-3 lg:py-2 lg:text-[8px]"
                     >
                       Saved
                     </Link>
@@ -723,7 +733,7 @@ export default function ProfilePage() {
                     No activity yet.
                   </p>
 
-                  <p className="mt-1 font-michroma text-[5px] leading-relaxed text-white/35 lg:mt-2 lg:text-[9px]">
+                  <p className="mt-1 font-michroma text-[8px] leading-relaxed text-white/60 lg:mt-2 lg:text-[9px]">
                     Saved lineups, favorites, and scouting actions will appear
                     here.
                   </p>
@@ -731,21 +741,21 @@ export default function ProfilePage() {
                   <div className="mt-2 grid grid-cols-3 gap-1 lg:mt-4 lg:gap-2">
                     <Link
                       href="/players"
-                      className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-1.5 py-1.5 font-michroma text-[4.5px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white lg:px-3 lg:py-2.5 lg:text-[7px]"
+                      className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-1.5 py-1.5 font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white lg:px-3 lg:py-2.5 lg:text-[8px]"
                     >
                       Scout
                     </Link>
 
                     <Link
                       href="/lineups?tab=builder"
-                      className="rounded-md border border-[#EFBF04]/45 bg-[#EFBF04]/10 px-1.5 py-1.5 font-michroma text-[4.5px] uppercase text-[#EFBF04] transition hover:bg-[#EFBF04]/20 hover:text-white lg:px-3 lg:py-2.5 lg:text-[7px]"
+                      className="rounded-md border border-[#EFBF04]/45 bg-[#EFBF04]/10 px-1.5 py-1.5 font-michroma text-[7px] uppercase text-[#EFBF04] transition hover:bg-[#EFBF04]/20 hover:text-white lg:px-3 lg:py-2.5 lg:text-[8px]"
                     >
                       Build
                     </Link>
 
                     <Link
                       href="/lineups?tab=saved"
-                      className="rounded-md border border-[#A855F7]/45 bg-[#A855F7]/10 px-1.5 py-1.5 font-michroma text-[4.5px] uppercase text-[#A855F7] transition hover:bg-[#A855F7]/20 hover:text-white lg:px-3 lg:py-2.5 lg:text-[7px]"
+                      className="rounded-md border border-[#A855F7]/45 bg-[#A855F7]/10 px-1.5 py-1.5 font-michroma text-[7px] uppercase text-[#A855F7] transition hover:bg-[#A855F7]/20 hover:text-white lg:px-3 lg:py-2.5 lg:text-[8px]"
                     >
                       Saved
                     </Link>

@@ -16,6 +16,7 @@ import {
   getBearerToken,
   getSupabaseServerConfig,
 } from "@/app/lib/supabase-server";
+import { validateRequestOrigin } from "@/app/lib/request-security";
 
 export const runtime = "nodejs";
 
@@ -78,6 +79,10 @@ function getUsernameCooldownDate(updatedAt: string | null) {
 }
 
 export async function PATCH(request: Request) {
+  if (!validateRequestOrigin(request)) {
+    return Response.json({ error: "Invalid request origin." }, { status: 403 });
+  }
+
   const ipRateLimit = await checkRateLimit(
     createIpRateLimitRules(request, "profile-update-api", {
       perHour: 60,

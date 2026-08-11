@@ -250,6 +250,7 @@ export default function Lineups() {
   // Auth
   const [authPromptMessage, setAuthPromptMessage] = useState("");
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const [lineupActionStatus, setLineupActionStatus] = useState("");
 
   // Builder state and derived data
   const {
@@ -539,8 +540,14 @@ export default function Lineups() {
 
   // Builder actions
   function scoutDraftLineup() {
+    setLineupActionStatus("Scouting lineup.");
     setScoutedSavedLineup(null);
     setIsScoutingLineup(true);
+  }
+
+  function announceLineupAction(message: string) {
+    setLineupActionStatus("");
+    window.setTimeout(() => setLineupActionStatus(message), 0);
   }
 
   // Auth
@@ -603,6 +610,9 @@ export default function Lineups() {
         overall: newLineup.overall,
       },
     });
+    announceLineupAction(
+      overwriteLineupId ? "Lineup updated." : "Lineup saved.",
+    );
     clearSavedBuilderDraft();
     resetDraft();
   }
@@ -644,6 +654,7 @@ export default function Lineups() {
           },
         });
       }
+      announceLineupAction("Lineup deleted.");
       onDeleted?.();
     });
   }
@@ -668,6 +679,7 @@ export default function Lineups() {
           },
         });
       }
+      announceLineupAction("Lineup renamed.");
     });
   }
 
@@ -697,6 +709,9 @@ export default function Lineups() {
           isPublic: nextIsPublic,
         },
       });
+      announceLineupAction(
+        nextIsPublic ? "Lineup made public." : "Lineup made private.",
+      );
     });
   }
 
@@ -768,14 +783,17 @@ export default function Lineups() {
     setScoutedSavedLineup(null);
     setIsLoadingSavedLineup(false);
     setLineupPendingLoad(null);
+    announceLineupAction("Lineup loaded.");
   }
 
   function loadSavedLineup(lineup: SavedLineup) {
+    setLineupActionStatus("Loading saved lineup.");
     setLineupPendingLoad(lineup);
     setIsLoadingSavedLineup(true);
   }
 
   function scoutSavedLineup(lineup: SavedLineup) {
+    announceLineupAction("Scouting saved lineup.");
     setScoutedSavedLineup(lineup);
     setBuilderStatProfile(lineup.statProfile ?? "career");
     applySavedLineupPlayers(lineup);
@@ -785,13 +803,33 @@ export default function Lineups() {
   return (
     <main className="relative min-h-screen overflow-x-hidden text-white">
       <section className="relative z-10 mx-auto w-full max-w-7xl px-3 pb-12 lg:px-6">
+        <p
+          aria-atomic="true"
+          aria-live="polite"
+          className="sr-only"
+          role="status"
+        >
+          {lineupActionStatus}
+        </p>
+
         <LineupPageHeader
           activeTab={activeTab}
           shouldShowTopText={shouldShowTopText}
           onTabChange={changeTab}
         />
 
-        {activeTab === "featured" && (
+        <div
+          aria-labelledby={`lineup-tab-${activeTab}`}
+          aria-busy={
+            activeTab === "saved" &&
+            (isLoadingSavedLineups || isLoadingSavedLineup)
+          }
+          className="focus:outline-none"
+          id={`lineup-panel-${activeTab}`}
+          role="tabpanel"
+          tabIndex={0}
+        >
+          {activeTab === "featured" && (
           <section
             key="featured"
             className="min-h-[calc(100vh-140px)] animate-[pageEnter_220ms_ease-out_both]"
@@ -831,9 +869,9 @@ export default function Lineups() {
               </div>
             ) : null}
           </section>
-        )}
+          )}
 
-        {activeTab === "builder" && (
+          {activeTab === "builder" && (
           <section
             key="builder"
             className="min-h-[calc(100vh-140px)] animate-[pageEnter_220ms_ease-out_both]"
@@ -883,9 +921,9 @@ export default function Lineups() {
               </>
             )}
           </section>
-        )}
+          )}
 
-        {activeTab === "saved" &&
+          {activeTab === "saved" &&
           (isLoadingUser ? (
             <SavedLineupsLoadingSkeleton />
           ) : user ? (
@@ -963,6 +1001,7 @@ export default function Lineups() {
               </button>
             </div>
           ))}
+        </div>
       </section>
 
       {isScoutOpen && (

@@ -31,20 +31,19 @@ export function PlayerCardShell({
 
         onToggleFlip();
       }}
-      onKeyDown={(e) => {
-        if (e.target instanceof HTMLElement && e.target.closest("button")) {
-          return;
-        }
-
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onToggleFlip();
-        }
-      }}
-      role="button"
-      tabIndex={0}
-      aria-label={`${player.name} player card - click to flip`}
     >
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          onToggleFlip();
+        }}
+        className="absolute right-2 top-2 z-50 flex min-h-11 min-w-11 items-center justify-center rounded-md border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] px-2 font-michroma text-[7px] uppercase text-[var(--court-accent)] opacity-80 transition hover:opacity-100 lg:right-3 lg:top-3 lg:text-[8px]"
+        aria-label={`${isCardFlipped ? "Show front of" : "Show back of"} ${player.name} player card`}
+      >
+        Flip
+      </button>
+
       <div
         className="relative h-full w-full lg:min-h-134"
         style={{

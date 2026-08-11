@@ -118,37 +118,57 @@ export function RankingRatingFormulaTooltip({
   const [isOpen, setIsOpen] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const formula = getFormulaText(ratingCategory, statProfileFilter);
+  const tooltipId = `ranking-formula-tooltip-${ratingCategory}-${statProfileFilter}`;
 
   useEffect(() => {
-    function closeTooltip(event: PointerEvent) {
-      if (!isOpen || !(event.target instanceof Node)) return;
+    function closeTooltip(event: PointerEvent | KeyboardEvent) {
+      if (!isOpen) return;
+
+      if (event instanceof KeyboardEvent) {
+        if (event.key === "Escape") setIsOpen(false);
+        return;
+      }
+
+      if (!(event.target instanceof Node)) return;
       if (tooltipRef.current?.contains(event.target)) return;
 
       setIsOpen(false);
     }
 
     document.addEventListener("pointerdown", closeTooltip);
+    document.addEventListener("keydown", closeTooltip);
 
-    return () => document.removeEventListener("pointerdown", closeTooltip);
+    return () => {
+      document.removeEventListener("pointerdown", closeTooltip);
+      document.removeEventListener("keydown", closeTooltip);
+    };
   }, [isOpen]);
 
   return (
     <div ref={tooltipRef} className="group relative inline-flex">
       <button
         type="button"
+        aria-describedby={tooltipId}
+        aria-expanded={isOpen}
+        aria-controls={tooltipId}
         aria-label={`${formula.title} calculation info`}
         onPointerDown={(event) => {
-          event.preventDefault();
+          event.stopPropagation();
+        }}
+        onClick={(event) => {
           event.stopPropagation();
           setIsOpen((current) => !current);
         }}
+        onFocus={() => setIsOpen(true)}
         onBlur={() => setIsOpen(false)}
-        className="inline-flex h-5 w-5 cursor-help items-center justify-center rounded-full border border-[rgb(var(--court-accent-rgb)/0.45)] bg-black/35 text-[var(--court-accent)] transition hover:border-[var(--court-accent)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)] lg:h-6 lg:w-6"
+        className="inline-flex min-h-9 min-w-9 cursor-help items-center justify-center rounded-full border border-[rgb(var(--court-accent-rgb)/0.45)] bg-black/35 text-[var(--court-accent)] transition hover:border-[var(--court-accent)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--court-accent)] lg:min-h-10 lg:min-w-10"
       >
-        <Info className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
+        <Info aria-hidden="true" className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
       </button>
 
       <div
+        id={tooltipId}
+        role="tooltip"
         className={`pointer-events-none fixed top-24 left-3 right-3 z-[999] rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-black/95 p-2.5 text-left font-michroma shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.18)] transition-opacity duration-150 sm:absolute sm:top-full sm:right-auto sm:left-1/2 sm:mt-2 sm:w-72 sm:max-w-[calc(100vw-2rem)] sm:-translate-x-1/2 lg:w-76 lg:p-3 ${
           isOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100"
         }`}

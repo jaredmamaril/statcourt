@@ -64,6 +64,11 @@ export function RankingFilterBar({
   onDisplayViewChange,
   onPlayerSearchChange,
 }: RankingFilterBarProps) {
+  const positionMenuId = "ranking-position-menu";
+  const teamMenuId = "ranking-team-menu";
+  const archetypeMenuId = "ranking-archetype-menu";
+  const viewMenuId = "ranking-view-menu";
+
   return (
     <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5 px-3 sm:gap-2 sm:px-0">
       <RankingStatProfileFilter
@@ -84,7 +89,11 @@ export function RankingFilterBar({
           onClick={() =>
             onOpenFilter(openFilter === "position" ? null : "position")
           }
-          className={`flex h-6 cursor-pointer items-center gap-1 rounded-md border px-2 font-michroma text-[9px] transition sm:h-auto sm:gap-3 sm:py-1 sm:text-xs ${
+          aria-label="Filter rankings by position"
+          aria-expanded={openFilter === "position"}
+          aria-controls={positionMenuId}
+          aria-haspopup="true"
+          className={`flex min-h-9 cursor-pointer items-center gap-1 rounded-md border px-2 font-michroma text-[9px] transition sm:min-h-8 sm:gap-3 sm:py-1 sm:text-xs ${
             positionFilter
               ? "w-14 scale-[1.02] border-[var(--court-accent)] bg-[color:color-mix(in_srgb,var(--court-accent)_38%,var(--court-panel-alt))] text-[var(--court-accent)] ring-1 ring-[rgb(var(--court-accent-rgb)/0.45)] sm:w-18 sm:px-3"
               : "w-32 border-white/20 bg-[color:color-mix(in_srgb,var(--court-panel)_86%,black)] text-white/70 hover:border-white/60 sm:w-40 sm:px-3"
@@ -97,7 +106,7 @@ export function RankingFilterBar({
         </button>
 
         {openFilter === "position" && (
-          <div className="absolute left-0 top-full z-80 mt-2 max-h-80 w-34 overflow-y-auto rounded-md border border-white/20 bg-[var(--court-panel-alt)] py-1 animate-[dropdownIn_140ms_ease-out_both]">
+          <div id={positionMenuId} className="absolute left-0 top-full z-80 mt-2 max-h-80 w-34 overflow-y-auto rounded-md border border-white/20 bg-[var(--court-panel-alt)] py-1 animate-[dropdownIn_140ms_ease-out_both]">
             <button
               type="button"
               onClick={() => {
@@ -139,7 +148,11 @@ export function RankingFilterBar({
         <button
           type="button"
           onClick={() => onOpenFilter(openFilter === "team" ? null : "team")}
-          className={`flex h-6 min-w-28 cursor-pointer items-center justify-between rounded-md border px-2 font-michroma text-[9px] transition sm:h-auto sm:min-w-32 sm:px-3 sm:py-1 sm:text-xs ${
+          aria-label="Filter rankings by team"
+          aria-expanded={openFilter === "team"}
+          aria-controls={teamMenuId}
+          aria-haspopup="true"
+          className={`flex min-h-9 min-w-28 cursor-pointer items-center justify-between rounded-md border px-2 font-michroma text-[9px] transition sm:min-h-8 sm:min-w-32 sm:px-3 sm:py-1 sm:text-xs ${
             teamFilter
               ? "scale-[1.02] bg-[var(--court-panel-alt)] ring-1"
               : "border-white/20 bg-[color:color-mix(in_srgb,var(--court-panel)_86%,black)] text-white/70 hover:border-[rgb(var(--court-accent-rgb)/0.6)]"
@@ -168,7 +181,7 @@ export function RankingFilterBar({
         </button>
 
         {openFilter === "team" && (
-          <div className="absolute left-0 top-full z-80 mt-2 max-h-52 w-full overflow-y-auto rounded-md border border-white/20 bg-[var(--court-panel-alt)] py-1 animate-[dropdownIn_140ms_ease-out_both]">
+          <div id={teamMenuId} className="absolute left-0 top-full z-80 mt-2 max-h-52 w-full overflow-y-auto rounded-md border border-white/20 bg-[var(--court-panel-alt)] py-1 animate-[dropdownIn_140ms_ease-out_both]">
             <button
               type="button"
               onClick={() => {
@@ -219,7 +232,11 @@ export function RankingFilterBar({
           onClick={() =>
             onOpenFilter(openFilter === "archetype" ? null : "archetype")
           }
-          className={`flex h-6 min-w-36 cursor-pointer items-center justify-between rounded-md border px-2 font-michroma text-[9px] transition sm:h-auto sm:min-w-40 sm:px-3 sm:py-1 sm:text-xs ${
+          aria-label="Filter rankings by archetype"
+          aria-expanded={openFilter === "archetype"}
+          aria-controls={archetypeMenuId}
+          aria-haspopup="true"
+          className={`flex min-h-9 min-w-36 cursor-pointer items-center justify-between rounded-md border px-2 font-michroma text-[9px] transition sm:min-h-8 sm:min-w-40 sm:px-3 sm:py-1 sm:text-xs ${
             archetypeFilter
               ? "scale-[1.02] bg-[var(--court-panel-alt)] ring-1"
               : "border-white/20 bg-[color:color-mix(in_srgb,var(--court-panel)_86%,black)] text-white/70 hover:border-[rgb(var(--court-accent-rgb)/0.6)]"
@@ -245,7 +262,7 @@ export function RankingFilterBar({
         </button>
 
         {openFilter === "archetype" && (
-          <div className="absolute left-0 top-full z-80 mt-2 max-h-52 w-full overflow-y-auto rounded-md border border-white/20 bg-[var(--court-panel-alt)] py-1 animate-[dropdownIn_140ms_ease-out_both]">
+          <div id={archetypeMenuId} className="absolute left-0 top-full z-80 mt-2 max-h-52 w-full overflow-y-auto rounded-md border border-white/20 bg-[var(--court-panel-alt)] py-1 animate-[dropdownIn_140ms_ease-out_both]">
             <button
               type="button"
               onClick={() => {
@@ -295,14 +312,18 @@ export function RankingFilterBar({
         <button
           type="button"
           onClick={() => onOpenFilter(openFilter === "view" ? null : "view")}
-          className="flex h-6 min-w-20 cursor-pointer items-center justify-between rounded-md border border-white/20 bg-[color:color-mix(in_srgb,var(--court-panel)_86%,black)] px-2 font-michroma text-[9px] text-white/70 transition hover:border-[rgb(var(--court-accent-rgb)/0.6)] hover:text-[var(--court-accent)] sm:h-auto sm:min-w-24 sm:px-3 sm:py-1 sm:text-xs"
+          aria-label="Choose rankings display view"
+          aria-expanded={openFilter === "view"}
+          aria-controls={viewMenuId}
+          aria-haspopup="true"
+          className="flex min-h-9 min-w-20 cursor-pointer items-center justify-between rounded-md border border-white/20 bg-[color:color-mix(in_srgb,var(--court-panel)_86%,black)] px-2 font-michroma text-[9px] text-white/70 transition hover:border-[rgb(var(--court-accent-rgb)/0.6)] hover:text-[var(--court-accent)] sm:min-h-8 sm:min-w-24 sm:px-3 sm:py-1 sm:text-xs"
         >
           <span>{displayView === "cards" ? "Cards" : "List"}</span>
           <span className="text-[var(--court-accent)]">▾</span>
         </button>
 
         {openFilter === "view" && (
-          <div className="absolute left-0 top-full z-80 mt-2 w-full overflow-hidden rounded-md border border-white/20 bg-[var(--court-panel-alt)] py-1 animate-[dropdownIn_140ms_ease-out_both]">
+          <div id={viewMenuId} className="absolute left-0 top-full z-80 mt-2 w-full overflow-hidden rounded-md border border-white/20 bg-[var(--court-panel-alt)] py-1 animate-[dropdownIn_140ms_ease-out_both]">
             {(["cards", "list"] as const).map((view) => (
               <button
                 key={view}
@@ -324,11 +345,16 @@ export function RankingFilterBar({
         )}
       </div>
 
+      <label htmlFor="ranking-player-search" className="sr-only">
+        Search players
+      </label>
       <input
+        id="ranking-player-search"
+        type="search"
         value={playerSearch}
         onChange={(event) => onPlayerSearchChange(event.target.value)}
         placeholder="Search Player..."
-        className="h-6 min-w-40 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] px-2 font-michroma text-[9px] text-white outline-none transition placeholder:text-white/35 focus:border-[rgb(var(--court-accent-rgb)/0.75)] focus:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_90%,black)] sm:h-auto sm:min-w-44 sm:px-3 sm:py-1 sm:text-xs"
+        className="min-h-9 min-w-40 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] px-2 font-michroma text-[9px] text-white outline-none transition placeholder:text-white/55 focus:border-[rgb(var(--court-accent-rgb)/0.75)] focus:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_90%,black)] sm:min-h-8 sm:min-w-44 sm:px-3 sm:py-1 sm:text-xs"
       />
     </div>
   );

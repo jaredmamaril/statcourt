@@ -19,7 +19,12 @@ export function PlayerPageHeader({
           send players to the comparison court.
         </p>
 
+        <label htmlFor="players-page-search" className="sr-only">
+          Search players
+        </label>
         <input
+          id="players-page-search"
+          type="search"
           value={playerSearch}
           onChange={(e) => onPlayerSearchChange(e.target.value)}
           placeholder="Search player..."

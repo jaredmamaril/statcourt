@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AccessibleDialog } from "../../ui/accessible-dialog";
 
 type LineupSavedModalProps = {
   statProfileLabel: string;
@@ -29,13 +30,21 @@ export function LineupSavedModal({
   }
 
   return (
-    <div className="fixed inset-0 z-1000 flex animate-[modalBackdropIn_120ms_ease-out_both] items-center justify-center bg-black/65 px-3">
-      <div className="w-full max-w-[300px] animate-[cardFaceIn_140ms_ease-out_both] rounded-md border border-emerald-400/60 bg-[var(--court-panel-alt)] p-4 text-center shadow-lg lg:max-w-md lg:p-6">
+    <AccessibleDialog
+      titleId="lineup-saved-dialog-title"
+      descriptionId="lineup-saved-dialog-description"
+      onClose={buildAnotherLineup}
+      overlayClassName="fixed inset-0 z-1000 flex animate-[modalBackdropIn_120ms_ease-out_both] items-center justify-center bg-black/65 px-3"
+      dialogClassName="w-full max-w-[300px] animate-[cardFaceIn_140ms_ease-out_both] rounded-md border border-emerald-400/60 bg-[var(--court-panel-alt)] p-4 text-center shadow-lg lg:max-w-md lg:p-6"
+    >
         <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full border border-emerald-400/60 bg-emerald-400/10 font-michroma text-lg text-emerald-400 lg:h-12 lg:w-12 lg:text-2xl">
           &#10003;
         </div>
 
-        <h2 className="mt-3 font-michroma text-sm text-white lg:mt-4 lg:text-xl">
+        <h2
+          id="lineup-saved-dialog-title"
+          className="mt-3 font-michroma text-sm text-white lg:mt-4 lg:text-xl"
+        >
           Lineup Saved
         </h2>
 
@@ -43,7 +52,10 @@ export function LineupSavedModal({
           Saved as {statProfileLabel}
         </p>
 
-        <p className="mt-1.5 font-michroma text-[8px] text-white/50 lg:mt-2 lg:text-xs">
+        <p
+          id="lineup-saved-dialog-description"
+          className="mt-1.5 font-michroma text-[8px] text-white/50 lg:mt-2 lg:text-xs"
+        >
           What would you like to do next?
         </p>
 
@@ -66,7 +78,6 @@ export function LineupSavedModal({
             {isOpeningBuilder ? "Opening" : "Build Another"}
           </button>
         </div>
-      </div>
-    </div>
+    </AccessibleDialog>
   );
 }

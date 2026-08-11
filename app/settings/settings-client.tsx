@@ -46,6 +46,7 @@ import {
   type StatCourtThemeId,
 } from "../lib/themes";
 import { updateUserProfile } from "../lib/profile-api-client";
+import { AccessibleDialog } from "../components/ui/accessible-dialog";
 
 type UserDataCounts = {
   savedLineups: number;
@@ -108,6 +109,29 @@ const USERNAME_CHANGE_COOLDOWN_MS =
   USERNAME_CHANGE_COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
 const MAX_AVATAR_FILE_SIZE = 1 * 1024 * 1024;
 const ALLOWED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+function isErrorLikeStatus(status: string) {
+  if (!status) return false;
+
+  const normalizedStatus = status.toLowerCase();
+
+  return ![
+    "saving",
+    "saved",
+    "uploading",
+    "updated",
+    "checking",
+    "sending",
+    "sent",
+    "copied",
+    "opening",
+    "resending",
+    "resent",
+    "clearing",
+    "cleared",
+    "signed out",
+  ].some((safeStatus) => normalizedStatus.includes(safeStatus));
+}
 
 const statModeOptions: { label: string; value: DefaultStatMode }[] = [
   { label: "Career", value: "career" },
@@ -231,14 +255,54 @@ function getMetadataUsername(
   return typeof value === "string" ? value : "";
 }
 
+function isTrustedAvatarUrl(value: string) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+  if (!supabaseUrl) return false;
+
+  try {
+    const avatarUrl = new URL(value);
+    const configuredSupabaseUrl = new URL(supabaseUrl);
+
+    if (
+      avatarUrl.protocol !== "https:" ||
+      configuredSupabaseUrl.protocol !== "https:"
+    ) {
+      return false;
+    }
+
+    const isSupabaseAvatar =
+      avatarUrl.hostname === configuredSupabaseUrl.hostname &&
+      avatarUrl.pathname.startsWith("/storage/v1/object/public/avatars/");
+    const isGoogleAvatar = avatarUrl.hostname === "lh3.googleusercontent.com";
+
+    return isSupabaseAvatar || isGoogleAvatar;
+  } catch {
+    return false;
+  }
+}
+
 function getMetadataAvatarUrl(
   user: NonNullable<ReturnType<typeof useUserSettings>["user"]>,
 ) {
   const avatarUrl = user.user_metadata?.avatar_url;
   const picture = user.user_metadata?.picture;
 
-  if (typeof avatarUrl === "string" && avatarUrl.trim()) return avatarUrl;
-  if (typeof picture === "string" && picture.trim()) return picture;
+  if (
+    typeof avatarUrl === "string" &&
+    avatarUrl.trim() &&
+    isTrustedAvatarUrl(avatarUrl.trim())
+  ) {
+    return avatarUrl.trim();
+  }
+
+  if (
+    typeof picture === "string" &&
+    picture.trim() &&
+    isTrustedAvatarUrl(picture.trim())
+  ) {
+    return picture.trim();
+  }
 
   return null;
 }
@@ -798,7 +862,7 @@ export default function SettingsPage() {
 
     if (uploadError) {
       console.warn("Failed to upload avatar", uploadError);
-      setAvatarStatus(uploadError.message || "Could not upload avatar.");
+      setAvatarStatus("Could not upload avatar.");
       setIsUploadingAvatar(false);
       return;
     }
@@ -1240,7 +1304,17 @@ export default function SettingsPage() {
                   </p>
                 </div>
 
-                <p className="font-michroma text-[6px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[8px]">
+                <p
+                  id="settings-account-action-status"
+                  role={
+                    accountActionStatus
+                      ? isErrorLikeStatus(accountActionStatus)
+                        ? "alert"
+                        : "status"
+                      : undefined
+                  }
+                  className="font-michroma text-[8px] uppercase text-[rgb(var(--court-accent-rgb)/0.85)] lg:text-[9px]"
+                >
                   {accountActionStatus}
                 </p>
               </div>
@@ -1263,27 +1337,32 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                      <p className="font-michroma text-[8px] uppercase text-white/65 lg:text-[9px]">
                         Avatar
                       </p>
 
-                      <p className="mt-1 truncate font-michroma text-[7px] text-white/45 lg:text-[9px]">
+                      <p className="mt-1 truncate font-michroma text-[8px] text-white/65 lg:text-[9px]">
                         JPG, PNG, or WEBP under 1MB.
                       </p>
                     </div>
 
                     <label
-                      className={`shrink-0 rounded-md border px-2.5 py-1.5 font-michroma text-[6px] uppercase transition lg:px-3 lg:text-[8px] ${
+                      htmlFor="settings-avatar-upload"
+                      className={`shrink-0 rounded-md border px-2.5 py-1.5 font-michroma text-[8px] uppercase transition lg:px-3 lg:text-[9px] ${
                         user && !isUploadingAvatar
                           ? "cursor-pointer border-[rgb(var(--court-accent-rgb)/0.5)] bg-[rgb(var(--court-accent-rgb)/0.1)] text-[var(--court-accent)] hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white"
-                          : "cursor-not-allowed border-white/10 bg-white/5 text-white/25"
+                          : "cursor-not-allowed border-white/10 bg-white/5 text-white/55"
                       }`}
                     >
                       {isUploadingAvatar ? "Uploading" : "Upload"}
                       <input
+                        id="settings-avatar-upload"
                         type="file"
                         accept="image/jpeg,image/png,image/webp"
                         disabled={!user || isUploadingAvatar}
+                        aria-describedby={
+                          avatarStatus ? "settings-avatar-status" : undefined
+                        }
                         className="hidden"
                         onChange={(event) => {
                           void uploadAvatar(event.target.files?.[0]);
@@ -1294,7 +1373,11 @@ export default function SettingsPage() {
                   </div>
 
                   {avatarStatus && (
-                    <p className="mt-1.5 font-michroma text-[5px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[7px]">
+                    <p
+                      id="settings-avatar-status"
+                      role={isErrorLikeStatus(avatarStatus) ? "alert" : "status"}
+                      className="mt-1.5 font-michroma text-[8px] uppercase text-[rgb(var(--court-accent-rgb)/0.85)] lg:text-[9px]"
+                    >
                       {avatarStatus}
                     </p>
                   )}
@@ -1302,7 +1385,7 @@ export default function SettingsPage() {
 
                 <div className="rounded-md border border-white/10 bg-black/20 p-2 lg:p-3">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                    <p className="font-michroma text-[8px] uppercase text-white/65 lg:text-[9px]">
                       Display Name
                     </p>
 
@@ -1317,7 +1400,7 @@ export default function SettingsPage() {
                         setProfileStatus("");
                       }}
                       disabled={!user}
-                      className="shrink-0 rounded-md border border-[rgb(var(--court-accent-rgb)/0.5)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2.5 py-1.5 font-michroma text-[6px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-3 lg:text-[8px]"
+                      className="shrink-0 rounded-md border border-[rgb(var(--court-accent-rgb)/0.5)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2.5 py-1.5 font-michroma text-[8px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/55 lg:px-3 lg:text-[9px]"
                     >
                       {isEditingDisplayName ? "Close" : "Edit Name"}
                     </button>
@@ -1325,7 +1408,14 @@ export default function SettingsPage() {
 
                   {isEditingDisplayName && (
                     <div className="mt-2 grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto_auto]">
+                      <label
+                        htmlFor="settings-display-name"
+                        className="sr-only"
+                      >
+                        Display name
+                      </label>
                       <input
+                        id="settings-display-name"
                         type="text"
                         value={displayNameInput}
                         onChange={(event) => {
@@ -1334,15 +1424,20 @@ export default function SettingsPage() {
                         }}
                         disabled={!user}
                         maxLength={40}
+                        autoComplete="name"
+                        aria-invalid={isErrorLikeStatus(profileStatus)}
+                        aria-describedby={
+                          profileStatus ? "settings-display-name-status" : undefined
+                        }
                         placeholder={displayName}
-                        className="min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-2 font-michroma text-[8px] text-white outline-none transition placeholder:text-white/25 focus:border-[rgb(var(--court-accent-rgb)/0.6)] disabled:cursor-not-allowed disabled:text-white/30 lg:px-3 lg:text-[10px]"
+                        className="min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-2 font-michroma text-[9px] text-white outline-none transition placeholder:text-white/55 focus:border-[rgb(var(--court-accent-rgb)/0.6)] disabled:cursor-not-allowed disabled:text-white/55 lg:px-3 lg:text-[10px]"
                       />
 
                       <button
                         type="button"
                         onClick={saveDisplayName}
                         disabled={!user}
-                        className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.5)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-3 py-2 font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-4 lg:text-[9px]"
+                        className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.5)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-3 py-2 font-michroma text-[8px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/55 lg:px-4 lg:text-[9px]"
                       >
                         Save
                       </button>
@@ -1356,7 +1451,7 @@ export default function SettingsPage() {
                           setProfileStatus("");
                           setIsEditingDisplayName(false);
                         }}
-                        className="rounded-md border border-white/10 bg-white/5 px-3 py-2 font-michroma text-[7px] uppercase text-white/45 transition hover:border-white/25 hover:text-white lg:px-4 lg:text-[9px]"
+                        className="rounded-md border border-white/10 bg-white/5 px-3 py-2 font-michroma text-[8px] uppercase text-white/65 transition hover:border-white/25 hover:text-white lg:px-4 lg:text-[9px]"
                       >
                         Cancel
                       </button>
@@ -1364,7 +1459,11 @@ export default function SettingsPage() {
                   )}
 
                   {profileStatus && (
-                    <p className="mt-1.5 font-michroma text-[5px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[7px]">
+                    <p
+                      id="settings-display-name-status"
+                      role={isErrorLikeStatus(profileStatus) ? "alert" : "status"}
+                      className="mt-1.5 font-michroma text-[8px] uppercase text-[rgb(var(--court-accent-rgb)/0.85)] lg:text-[9px]"
+                    >
                       {profileStatus}
                     </p>
                   )}
@@ -1372,7 +1471,7 @@ export default function SettingsPage() {
 
                 <div className="rounded-md border border-white/10 bg-black/20 p-2 lg:p-3">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                    <p className="font-michroma text-[8px] uppercase text-white/65 lg:text-[9px]">
                       Username
                     </p>
 
@@ -1387,7 +1486,7 @@ export default function SettingsPage() {
                         setUsernameStatus("");
                       }}
                       disabled={!user}
-                      className="shrink-0 rounded-md border border-[rgb(var(--court-accent-rgb)/0.5)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2.5 py-1.5 font-michroma text-[6px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-3 lg:text-[8px]"
+                      className="shrink-0 rounded-md border border-[rgb(var(--court-accent-rgb)/0.5)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2.5 py-1.5 font-michroma text-[8px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/55 lg:px-3 lg:text-[9px]"
                     >
                       {isEditingUsername ? "Close" : "Edit Username"}
                     </button>
@@ -1395,7 +1494,11 @@ export default function SettingsPage() {
 
                   {isEditingUsername && (
                     <div className="mt-2 grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto_auto]">
+                      <label htmlFor="settings-username" className="sr-only">
+                        Username
+                      </label>
                       <input
+                        id="settings-username"
                         type="text"
                         value={usernameInput}
                         onChange={(event) => {
@@ -1404,15 +1507,24 @@ export default function SettingsPage() {
                         }}
                         disabled={!user}
                         maxLength={24}
+                        autoComplete="username"
+                        aria-invalid={isErrorLikeStatus(usernameStatus)}
+                        aria-describedby={
+                          usernameStatus
+                            ? "settings-username-status"
+                            : userProfile?.username
+                              ? "settings-username-helper"
+                              : undefined
+                        }
                         placeholder="statcourt_user"
-                        className="min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-2 font-michroma text-[8px] text-white outline-none transition placeholder:text-white/25 focus:border-[rgb(var(--court-accent-rgb)/0.6)] disabled:cursor-not-allowed disabled:text-white/30 lg:px-3 lg:text-[10px]"
+                        className="min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-2 font-michroma text-[9px] text-white outline-none transition placeholder:text-white/55 focus:border-[rgb(var(--court-accent-rgb)/0.6)] disabled:cursor-not-allowed disabled:text-white/55 lg:px-3 lg:text-[10px]"
                       />
 
                       <button
                         type="button"
                         onClick={saveUsername}
                         disabled={!user}
-                        className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.5)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-3 py-2 font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-4 lg:text-[9px]"
+                        className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.5)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-3 py-2 font-michroma text-[8px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/55 lg:px-4 lg:text-[9px]"
                       >
                         Save
                       </button>
@@ -1424,7 +1536,7 @@ export default function SettingsPage() {
                           setUsernameStatus("");
                           setIsEditingUsername(false);
                         }}
-                        className="rounded-md border border-white/10 bg-white/5 px-3 py-2 font-michroma text-[7px] uppercase text-white/45 transition hover:border-white/25 hover:text-white lg:px-4 lg:text-[9px]"
+                        className="rounded-md border border-white/10 bg-white/5 px-3 py-2 font-michroma text-[8px] uppercase text-white/65 transition hover:border-white/25 hover:text-white lg:px-4 lg:text-[9px]"
                       >
                         Cancel
                       </button>
@@ -1432,13 +1544,20 @@ export default function SettingsPage() {
                   )}
 
                   {usernameStatus && (
-                    <p className="mt-1.5 font-michroma text-[5px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[7px]">
+                    <p
+                      id="settings-username-status"
+                      role={isErrorLikeStatus(usernameStatus) ? "alert" : "status"}
+                      className="mt-1.5 font-michroma text-[8px] uppercase text-[rgb(var(--court-accent-rgb)/0.85)] lg:text-[9px]"
+                    >
                       {usernameStatus}
                     </p>
                   )}
 
                   {!usernameStatus && userProfile?.username && (
-                    <p className="mt-1.5 font-michroma text-[5px] uppercase text-white/25 lg:text-[7px]">
+                    <p
+                      id="settings-username-helper"
+                      className="mt-1.5 font-michroma text-[8px] uppercase text-white/60 lg:text-[9px]"
+                    >
                       Username changes are limited to once every{" "}
                       {USERNAME_CHANGE_COOLDOWN_DAYS} days.
                     </p>
@@ -1448,7 +1567,7 @@ export default function SettingsPage() {
                 <div className="grid gap-1.5 lg:gap-3">
                   <div className="rounded-md border border-white/10 bg-black/20 p-2 lg:p-3">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                      <p className="font-michroma text-[8px] uppercase text-white/65 lg:text-[9px]">
                         Account Status
                       </p>
 
@@ -1456,7 +1575,7 @@ export default function SettingsPage() {
                         {user ? "Signed in" : "Signed out"}
                       </p>
 
-                      <p className="shrink-0 font-michroma text-[5px] uppercase text-white/30 lg:text-[7px]">
+                      <p className="shrink-0 font-michroma text-[8px] uppercase text-white/60 lg:text-[9px]">
                         {memberSince}
                       </p>
                     </div>
@@ -1477,7 +1596,16 @@ export default function SettingsPage() {
                   </p>
                 </div>
 
-                <p className="font-michroma text-[6px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[8px]">
+                <p
+                  role={
+                    shareProfileStatus || accountActionStatus
+                      ? isErrorLikeStatus(shareProfileStatus || accountActionStatus)
+                        ? "alert"
+                        : "status"
+                      : undefined
+                  }
+                  className="font-michroma text-[8px] uppercase text-[rgb(var(--court-accent-rgb)/0.85)] lg:text-[9px]"
+                >
                   {shareProfileStatus || accountActionStatus}
                 </p>
               </div>
@@ -1485,7 +1613,7 @@ export default function SettingsPage() {
               <div className="grid gap-1.5 lg:gap-3">
                 <div className="rounded-md border border-white/10 bg-black/20 p-2 lg:p-3">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                    <p className="font-michroma text-[8px] uppercase text-white/65 lg:text-[9px]">
                       Public Profile
                     </p>
 
@@ -1503,7 +1631,7 @@ export default function SettingsPage() {
                       type="button"
                       onClick={togglePublicProfile}
                       disabled={!user || !userProfile?.username}
-                      className={`shrink-0 rounded-md border px-2.5 py-1.5 font-michroma text-[6px] uppercase transition disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/20 lg:px-3 lg:text-[8px] ${
+                      className={`shrink-0 rounded-md border px-2.5 py-1.5 font-michroma text-[8px] uppercase transition disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/55 lg:px-3 lg:text-[9px] ${
                         isPublicProfileEnabled
                           ? "border-red-500/35 bg-red-500/10 text-red-300 hover:bg-red-500/20 hover:text-white"
                           : "border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] text-[var(--court-accent)] hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white"
@@ -1513,7 +1641,7 @@ export default function SettingsPage() {
                     </button>
                   </div>
 
-                  <p className="mt-1.5 font-michroma text-[5px] uppercase leading-relaxed text-white/25 lg:text-[7px]">
+                  <p className="mt-1.5 font-michroma text-[8px] uppercase leading-relaxed text-white/60 lg:text-[9px]">
                     {userProfile?.username
                       ? "Controls whether your username profile can be viewed publicly."
                       : "Set a username first before making your profile public."}
@@ -1523,7 +1651,7 @@ export default function SettingsPage() {
                 <div className="rounded-md border border-white/10 bg-black/20 p-2 lg:p-3">
                   <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
                     <div className="min-w-0">
-                      <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                      <p className="font-michroma text-[8px] uppercase text-white/65 lg:text-[9px]">
                         Profile Link
                       </p>
 
@@ -1538,13 +1666,13 @@ export default function SettingsPage() {
                       {isPublicProfileEnabled && userProfile?.username ? (
                         <Link
                           href={`/u/${userProfile.username}`}
-                          className="inline-flex items-center justify-center gap-1 rounded-md border border-[#22C55E]/30 bg-[#22C55E]/10 px-2 py-1.5 font-michroma text-[5.5px] uppercase text-[#22C55E] transition hover:bg-[#22C55E]/20 hover:text-white lg:px-3 lg:text-[8px]"
+                          className="inline-flex items-center justify-center gap-1 rounded-md border border-[#22C55E]/30 bg-[#22C55E]/10 px-2 py-1.5 font-michroma text-[8px] uppercase text-[#22C55E] transition hover:bg-[#22C55E]/20 hover:text-white lg:px-3 lg:text-[9px]"
                         >
                           <ExternalLink className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
                           View
                         </Link>
                       ) : (
-                        <span className="inline-flex items-center justify-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 py-1.5 font-michroma text-[5.5px] uppercase text-white/25 lg:px-3 lg:text-[8px]">
+                        <span className="inline-flex items-center justify-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 py-1.5 font-michroma text-[8px] uppercase text-white/60 lg:px-3 lg:text-[9px]">
                           <ExternalLink className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
                           View
                         </span>
@@ -1554,7 +1682,7 @@ export default function SettingsPage() {
                         type="button"
                         onClick={sharePublicProfile}
                         disabled={!isPublicProfileEnabled || !userProfile?.username}
-                        className="inline-flex items-center justify-center gap-1 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 py-1.5 font-michroma text-[5.5px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/20 lg:px-3 lg:text-[8px]"
+                        className="inline-flex items-center justify-center gap-1 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 py-1.5 font-michroma text-[8px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/55 lg:px-3 lg:text-[9px]"
                       >
                         <Share2 className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
                         Share
@@ -1564,11 +1692,11 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="rounded-md border border-white/10 bg-black/20 p-2 lg:p-3">
-                  <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                  <p className="font-michroma text-[8px] uppercase text-white/65 lg:text-[9px]">
                     Public Details
                   </p>
 
-                  <p className="mt-1.5 font-michroma text-[5px] uppercase leading-relaxed text-white/30 lg:text-[7px]">
+                  <p className="mt-1.5 font-michroma text-[8px] uppercase leading-relaxed text-white/60 lg:text-[9px]">
                     Public profiles can show your avatar, display name,
                     username, public lineups, favorite players, and basketball
                     identity.
@@ -1589,7 +1717,17 @@ export default function SettingsPage() {
                   </p>
                 </div>
 
-                <p className="font-michroma text-[6px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[8px]">
+                <p
+                  id="settings-password-status"
+                  role={
+                    passwordStatus
+                      ? isErrorLikeStatus(passwordStatus)
+                        ? "alert"
+                        : "status"
+                      : undefined
+                  }
+                  className="font-michroma text-[6px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[8px]"
+                >
                   {passwordStatus}
                 </p>
               </div>
@@ -1611,7 +1749,7 @@ export default function SettingsPage() {
                       setAccountActionStatus("");
                     }}
                     disabled={!user}
-                    className="shrink-0 rounded-md border border-white/10 bg-white/5 px-2.5 py-1.5 font-michroma text-[6px] uppercase text-white/45 transition hover:border-[rgb(var(--court-accent-rgb)/0.35)] hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:text-white/20 lg:px-3 lg:text-[8px]"
+                    className="shrink-0 rounded-md border border-white/10 bg-white/5 px-2.5 py-1.5 font-michroma text-[8px] uppercase text-white/65 transition hover:border-[rgb(var(--court-accent-rgb)/0.35)] hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:text-white/55 lg:px-3 lg:text-[9px]"
                   >
                     {isChangingEmail ? "Close" : "Change Email"}
                   </button>
@@ -1619,7 +1757,11 @@ export default function SettingsPage() {
 
                 {isChangingEmail && (
                   <div className="mt-1.5 grid gap-1.5 lg:mt-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto] lg:gap-2">
+                    <label htmlFor="settings-new-email" className="sr-only">
+                      New email address
+                    </label>
                     <input
+                      id="settings-new-email"
                       type="email"
                       value={newEmailInput}
                       onChange={(event) => {
@@ -1627,12 +1769,26 @@ export default function SettingsPage() {
                         setAccountActionStatus("");
                       }}
                       disabled={!user}
+                      autoComplete="email"
+                      aria-invalid={isErrorLikeStatus(accountActionStatus)}
+                      aria-describedby={
+                        accountActionStatus
+                          ? "settings-account-action-status"
+                          : undefined
+                      }
                       placeholder="New email"
-                      className="w-full min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-1.5 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/25 focus:border-[rgb(var(--court-accent-rgb)/0.6)] disabled:cursor-not-allowed disabled:text-white/30 lg:px-3 lg:py-2 lg:text-[10px]"
+                      className="w-full min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-1.5 font-michroma text-[9px] text-white outline-none transition placeholder:text-white/55 focus:border-[rgb(var(--court-accent-rgb)/0.6)] disabled:cursor-not-allowed disabled:text-white/55 lg:px-3 lg:py-2 lg:text-[10px]"
                     />
 
                     <div className="relative min-w-0">
+                      <label
+                        htmlFor="settings-email-current-password"
+                        className="sr-only"
+                      >
+                        Current password
+                      </label>
                       <input
+                        id="settings-email-current-password"
                         type={isEmailPasswordVisible ? "text" : "password"}
                         value={emailPasswordInput}
                         onChange={(event) => {
@@ -1640,8 +1796,15 @@ export default function SettingsPage() {
                           setAccountActionStatus("");
                         }}
                         disabled={!user}
+                        autoComplete="current-password"
+                        aria-invalid={isErrorLikeStatus(accountActionStatus)}
+                        aria-describedby={
+                          accountActionStatus
+                            ? "settings-account-action-status"
+                            : undefined
+                        }
                         placeholder="Current password"
-                        className="w-full min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-1.5 pr-7 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/25 focus:border-[rgb(var(--court-accent-rgb)/0.6)] disabled:cursor-not-allowed disabled:text-white/30 lg:px-3 lg:py-2 lg:pr-8 lg:text-[10px]"
+                        className="w-full min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-1.5 pr-7 font-michroma text-[9px] text-white outline-none transition placeholder:text-white/55 focus:border-[rgb(var(--court-accent-rgb)/0.6)] disabled:cursor-not-allowed disabled:text-white/55 lg:px-3 lg:py-2 lg:pr-8 lg:text-[10px]"
                       />
 
                       <button
@@ -1661,7 +1824,7 @@ export default function SettingsPage() {
                       type="button"
                       onClick={updateEmail}
                       disabled={!user}
-                      className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.5)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 py-1.5 font-michroma text-[6px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-4 lg:py-2 lg:text-[9px]"
+                      className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.5)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 py-1.5 font-michroma text-[8px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/55 lg:px-4 lg:py-2 lg:text-[9px]"
                     >
                       Update
                     </button>
@@ -1671,7 +1834,7 @@ export default function SettingsPage() {
                         type="button"
                         onClick={resendEmailChangeConfirmation}
                         disabled={!user}
-                        className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.3)] bg-[rgb(var(--court-accent-rgb)/0.05)] px-2 py-1.5 font-michroma text-[6px] uppercase text-[rgb(var(--court-accent-rgb)/0.75)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.15)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:col-span-2 lg:px-4 lg:py-2 lg:text-[9px]"
+                        className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.3)] bg-[rgb(var(--court-accent-rgb)/0.05)] px-2 py-1.5 font-michroma text-[8px] uppercase text-[rgb(var(--court-accent-rgb)/0.85)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.15)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/55 lg:col-span-2 lg:px-4 lg:py-2 lg:text-[9px]"
                       >
                         Resend Confirmation
                       </button>
@@ -1687,7 +1850,7 @@ export default function SettingsPage() {
                         setAccountActionStatus("");
                         setIsChangingEmail(false);
                       }}
-                      className="rounded-md border border-white/10 bg-white/5 px-2 py-1.5 font-michroma text-[6px] uppercase text-white/45 transition hover:border-white/25 hover:text-white lg:px-4 lg:py-2 lg:text-[9px]"
+                      className="rounded-md border border-white/10 bg-white/5 px-2 py-1.5 font-michroma text-[8px] uppercase text-white/65 transition hover:border-white/25 hover:text-white lg:px-4 lg:py-2 lg:text-[9px]"
                     >
                       Cancel
                     </button>
@@ -1702,12 +1865,12 @@ export default function SettingsPage() {
                       Sign-in Methods
                     </p>
 
-                    <div className="mt-1 grid gap-1 font-michroma text-[5px] uppercase text-white/30 lg:text-[7px]">
+                    <div className="mt-1 grid gap-1 font-michroma text-[8px] uppercase text-white/60 lg:text-[9px]">
                       <div className="flex items-center gap-2">
                         <span>Email/password</span>
                         <span
                           className={
-                            hasEmailProvider ? "text-[#22C55E]" : "text-white/40"
+                            hasEmailProvider ? "text-[#22C55E]" : "text-white/65"
                           }
                         >
                           {hasEmailProvider ? "Connected" : "Not connected"}
@@ -1718,7 +1881,7 @@ export default function SettingsPage() {
                         <span>Google</span>
                         <span
                           className={
-                            hasGoogleProvider ? "text-[#22C55E]" : "text-white/40"
+                            hasGoogleProvider ? "text-[#22C55E]" : "text-white/65"
                           }
                         >
                           {hasGoogleProvider ? "Connected" : "Not connected"}
@@ -1732,7 +1895,7 @@ export default function SettingsPage() {
                       type="button"
                       onClick={connectGoogleProvider}
                       disabled={!user}
-                      className="shrink-0 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2.5 py-1.5 font-michroma text-[6px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/20 lg:px-3 lg:text-[8px]"
+                      className="shrink-0 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2.5 py-1.5 font-michroma text-[8px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/55 lg:px-3 lg:text-[9px]"
                     >
                       Connect Google
                     </button>
@@ -1743,11 +1906,11 @@ export default function SettingsPage() {
               <div className="mb-2 rounded-md border border-white/10 bg-black/20 p-2 lg:mb-3 lg:p-4">
                 <div className="flex items-center justify-between gap-2">
                   <div>
-                    <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                    <p className="font-michroma text-[8px] uppercase text-white/65 lg:text-[9px]">
                       Recent Sign-ins
                     </p>
 
-                    <p className="mt-1 hidden font-michroma text-[5px] uppercase text-white/25 lg:block lg:text-[7px]">
+                    <p className="mt-1 hidden font-michroma text-[8px] uppercase text-white/55 lg:block lg:text-[9px]">
                       Shows successful sign-ins tracked by StatCourt.
                     </p>
                   </div>
@@ -1757,7 +1920,7 @@ export default function SettingsPage() {
                       Last sign-in: {lastSignInLabel}
                     </p>
 
-                    <div className="mt-1 flex items-center justify-end gap-1.5 font-michroma text-[5px] uppercase text-white/30 lg:text-[7px]">
+                    <div className="mt-1 flex items-center justify-end gap-1.5 font-michroma text-[8px] uppercase text-white/60 lg:text-[9px]">
                       <span>Sign-in entries:</span>
                       {isLoadingDataCounts ? (
                         <SkeletonBlock className="h-2.5 w-8 rounded-sm lg:h-3 lg:w-10" />
@@ -1772,7 +1935,7 @@ export default function SettingsPage() {
                       type="button"
                       onClick={() => setIsDevicesOpen((current) => !current)}
                       disabled={!user || isLoadingDataCounts}
-                      className="mt-2 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 py-1 font-michroma text-[5px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:text-[7px]"
+                      className="mt-2 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 py-1 font-michroma text-[8px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/55 lg:text-[9px]"
                     >
                       {isDevicesOpen ? "Hide History" : "Device History"}
                     </button>
@@ -1781,13 +1944,13 @@ export default function SettingsPage() {
 
                 {isDevicesOpen && (
                   <div className="mt-2 grid gap-1.5 border-t border-white/10 pt-2 lg:mt-3 lg:gap-2 lg:pt-3">
-                    <p className="font-michroma text-[5px] leading-relaxed text-white/30 lg:text-[7px]">
+                    <p className="font-michroma text-[8px] leading-relaxed text-white/60 lg:text-[9px]">
                       Device history is based on recent StatCourt sign-ins. Some
                       active Supabase sessions may not appear here.
                     </p>
 
                     <div>
-                      <p className="mb-1 font-michroma text-[5px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[7px]">
+                      <p className="mb-1 font-michroma text-[8px] uppercase text-[rgb(var(--court-accent-rgb)/0.85)] lg:text-[9px]">
                         Remembered Devices
                       </p>
 
@@ -1807,7 +1970,7 @@ export default function SettingsPage() {
                                 >
                                   <div className="flex items-center justify-between gap-2">
                                     {isCurrentDevice && (
-                                      <span className="shrink-0 rounded border border-[#22C55E]/35 bg-[#22C55E]/10 px-1.5 py-0.5 font-michroma text-[5px] uppercase text-[#22C55E] lg:px-2 lg:text-[7px]">
+                                      <span className="shrink-0 rounded border border-[#22C55E]/35 bg-[#22C55E]/10 px-1.5 py-0.5 font-michroma text-[7px] uppercase text-[#22C55E] lg:px-2 lg:text-[8px]">
                                         Current
                                       </span>
                                     )}
@@ -1821,7 +1984,7 @@ export default function SettingsPage() {
                                     </p>
                                   </div>
 
-                                  <p className="mt-1 font-michroma text-[5px] uppercase text-white/30 lg:text-[7px]">
+                                  <p className="mt-1 font-michroma text-[8px] uppercase text-white/60 lg:text-[9px]">
                                     Last seen{" "}
                                     {formatSignInDate(device.last_seen_at)}
                                   </p>
@@ -1829,7 +1992,7 @@ export default function SettingsPage() {
                               );
                             })
                           ) : (
-                            <p className="font-michroma text-[6px] uppercase text-white/30 lg:text-[8px]">
+                            <p className="font-michroma text-[8px] uppercase text-white/60 lg:text-[9px]">
                               No remembered devices found.
                             </p>
                           )}
@@ -1837,7 +2000,7 @@ export default function SettingsPage() {
                       )}
                     </div>
 
-                    <p className="font-michroma text-[5px] uppercase text-white/30 lg:text-[7px]">
+                    <p className="font-michroma text-[8px] uppercase text-white/60 lg:text-[9px]">
                       Recent Sign-ins
                     </p>
 
@@ -1855,7 +2018,7 @@ export default function SettingsPage() {
                               {getBrowserLabel(signin.user_agent)}
                             </p>
 
-                            <p className="mt-1 font-michroma text-[5px] uppercase text-white/30 lg:text-[7px]">
+                            <p className="mt-1 font-michroma text-[8px] uppercase text-white/60 lg:text-[9px]">
                               {formatProviderLabel(signin.provider)} ·{" "}
                               {formatSignInDate(signin.signed_in_at)}
                             </p>
@@ -1863,7 +2026,7 @@ export default function SettingsPage() {
                         ))}
                       </div>
                     ) : (
-                      <p className="font-michroma text-[6px] uppercase text-white/30 lg:text-[8px]">
+                      <p className="font-michroma text-[8px] uppercase text-white/60 lg:text-[9px]">
                         No tracked sign-ins yet.
                       </p>
                     )}
@@ -1877,7 +2040,7 @@ export default function SettingsPage() {
                           isClearingSignins ||
                           dataCounts.recentSignins === 0
                         }
-                        className="rounded-md border border-white/10 bg-white/5 px-2 py-1 font-michroma text-[5px] uppercase text-white/35 transition hover:border-[rgb(var(--court-accent-rgb)/0.35)] hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:opacity-40 lg:text-[7px]"
+                        className="rounded-md border border-white/10 bg-white/5 px-2 py-1 font-michroma text-[8px] uppercase text-white/65 transition hover:border-[rgb(var(--court-accent-rgb)/0.35)] hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:opacity-60 lg:text-[9px]"
                       >
                         {isClearingSignins ? "Clearing..." : "Clear Sign-ins"}
                       </button>
@@ -1887,7 +2050,7 @@ export default function SettingsPage() {
                       type="button"
                       onClick={signOutOtherDevices}
                       disabled={!user || isSigningOutOtherDevices}
-                      className="justify-self-end rounded-md border border-red-500/35 bg-red-500/10 px-2.5 py-1.5 font-michroma text-[6px] uppercase text-red-300 transition hover:bg-red-500/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-3 lg:text-[8px]"
+                      className="justify-self-end rounded-md border border-red-500/35 bg-red-500/10 px-2.5 py-1.5 font-michroma text-[8px] uppercase text-red-300 transition hover:bg-red-500/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/55 lg:px-3 lg:text-[9px]"
                     >
                       {isSigningOutOtherDevices
                         ? "Signing Out..."
@@ -1900,7 +2063,7 @@ export default function SettingsPage() {
               <div className="rounded-md border border-white/10 bg-black/20 p-2 lg:p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
-                  <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                  <p className="font-michroma text-[8px] uppercase text-white/65 lg:text-[9px]">
                     Password
                   </p>
                   <p className="mt-1 font-michroma text-[8px] text-white lg:text-[10px]">
@@ -1915,7 +2078,7 @@ export default function SettingsPage() {
                       setPasswordStatus("");
                     }}
                     disabled={!user}
-                    className="rounded-md border border-[#EFBF04]/50 bg-[#EFBF04]/10 px-3 py-2 font-michroma text-[7px] uppercase text-[#EFBF04] transition hover:bg-[#EFBF04]/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-4 lg:text-[9px]"
+                    className="rounded-md border border-[#EFBF04]/50 bg-[#EFBF04]/10 px-3 py-2 font-michroma text-[8px] uppercase text-[#EFBF04] transition hover:bg-[#EFBF04]/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/55 lg:px-4 lg:text-[9px]"
                 >
                   {isChangingPassword
                     ? "Close"
@@ -1925,7 +2088,7 @@ export default function SettingsPage() {
                 </button>
               </div>
 
-              <p className="mt-1.5 hidden font-michroma text-[5px] leading-relaxed text-white/30 lg:block lg:text-[7px]">
+              <p className="mt-1.5 hidden font-michroma text-[8px] leading-relaxed text-white/60 lg:block lg:text-[9px]">
                 {needsPasswordSetup
                   ? "We will send a secure setup link. This project can send 2 auth emails per hour."
                   : "Use a new password with at least 8 characters. You may need to sign in again on other devices."}
@@ -1935,7 +2098,7 @@ export default function SettingsPage() {
                 <div className="mt-1.5 grid gap-1.5 lg:mt-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto_auto] lg:gap-2">
                   {needsPasswordSetup ? (
                     <>
-                      <p className="font-michroma text-[6px] leading-relaxed text-white/40 lg:col-span-3 lg:text-[8px]">
+                      <p className="font-michroma text-[8px] leading-relaxed text-white/65 lg:col-span-3 lg:text-[9px]">
                         We will email you a secure setup link so you can add an
                         email/password login to this Google account. Supabase
                         allows 2 auth emails per hour on this project.
@@ -1945,7 +2108,7 @@ export default function SettingsPage() {
                         type="button"
                         onClick={sendPasswordResetFromSettings}
                         disabled={!user?.email || isSendingPasswordLink}
-                        className="rounded-md border border-[#EFBF04]/50 bg-[#EFBF04]/10 px-2 py-1.5 font-michroma text-[6px] uppercase text-[#EFBF04] transition hover:bg-[#EFBF04]/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-4 lg:py-2 lg:text-[9px]"
+                        className="rounded-md border border-[#EFBF04]/50 bg-[#EFBF04]/10 px-2 py-1.5 font-michroma text-[8px] uppercase text-[#EFBF04] transition hover:bg-[#EFBF04]/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/55 lg:px-4 lg:py-2 lg:text-[9px]"
                       >
                         {isSendingPasswordLink ? "Sending..." : "Send Setup Link"}
                       </button>
@@ -1956,13 +2119,13 @@ export default function SettingsPage() {
                           setPasswordStatus("");
                           setIsChangingPassword(false);
                         }}
-                        className="rounded-md border border-white/10 bg-white/5 px-2 py-1.5 font-michroma text-[6px] uppercase text-white/45 transition hover:border-white/25 hover:text-white lg:px-4 lg:py-2 lg:text-[9px]"
+                        className="rounded-md border border-white/10 bg-white/5 px-2 py-1.5 font-michroma text-[8px] uppercase text-white/65 transition hover:border-white/25 hover:text-white lg:px-4 lg:py-2 lg:text-[9px]"
                       >
                         Cancel
                       </button>
 
                       {passwordStatus && (
-                        <p className="font-michroma text-[6px] leading-relaxed text-[rgb(var(--court-accent-rgb)/0.8)] lg:col-span-5 lg:text-[8px]">
+                        <p className="font-michroma text-[8px] leading-relaxed text-[rgb(var(--court-accent-rgb)/0.9)] lg:col-span-5 lg:text-[9px]">
                           {passwordStatus}
                         </p>
                       )}
@@ -1970,7 +2133,14 @@ export default function SettingsPage() {
                   ) : (
                     <>
                       <div className="relative min-w-0">
+                      <label
+                        htmlFor="settings-current-password"
+                        className="sr-only"
+                      >
+                        Current password
+                      </label>
                       <input
+                        id="settings-current-password"
                         type={
                           visiblePasswordFields.current ? "text" : "password"
                         }
@@ -1980,8 +2150,13 @@ export default function SettingsPage() {
                           setPasswordStatus("");
                         }}
                         disabled={!user}
+                        autoComplete="current-password"
+                        aria-invalid={isErrorLikeStatus(passwordStatus)}
+                        aria-describedby={
+                          passwordStatus ? "settings-password-status" : undefined
+                        }
                         placeholder="Current password"
-                        className="w-full min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-1.5 pr-7 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/25 focus:border-[rgb(var(--court-accent-rgb)/0.6)] disabled:cursor-not-allowed disabled:text-white/30 lg:px-3 lg:py-2 lg:pr-8 lg:text-[10px]"
+                        className="w-full min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-1.5 pr-7 font-michroma text-[9px] text-white outline-none transition placeholder:text-white/55 focus:border-[rgb(var(--court-accent-rgb)/0.6)] disabled:cursor-not-allowed disabled:text-white/55 lg:px-3 lg:py-2 lg:pr-8 lg:text-[10px]"
                       />
 
                       <button
@@ -2001,7 +2176,11 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="relative min-w-0">
+                      <label htmlFor="settings-new-password" className="sr-only">
+                        New password
+                      </label>
                       <input
+                        id="settings-new-password"
                         type={visiblePasswordFields.new ? "text" : "password"}
                         value={newPasswordInput}
                         onChange={(event) => {
@@ -2009,8 +2188,13 @@ export default function SettingsPage() {
                           setPasswordStatus("");
                         }}
                         disabled={!user}
+                        autoComplete="new-password"
+                        aria-invalid={isErrorLikeStatus(passwordStatus)}
+                        aria-describedby={
+                          passwordStatus ? "settings-password-status" : undefined
+                        }
                         placeholder="New password"
-                        className="w-full min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-1.5 pr-7 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/25 focus:border-[rgb(var(--court-accent-rgb)/0.6)] disabled:cursor-not-allowed disabled:text-white/30 lg:px-3 lg:py-2 lg:pr-8 lg:text-[10px]"
+                        className="w-full min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-1.5 pr-7 font-michroma text-[9px] text-white outline-none transition placeholder:text-white/55 focus:border-[rgb(var(--court-accent-rgb)/0.6)] disabled:cursor-not-allowed disabled:text-white/55 lg:px-3 lg:py-2 lg:pr-8 lg:text-[10px]"
                       />
 
                       <button
@@ -2030,7 +2214,14 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="relative min-w-0">
+                      <label
+                        htmlFor="settings-confirm-password"
+                        className="sr-only"
+                      >
+                        Confirm password
+                      </label>
                       <input
+                        id="settings-confirm-password"
                         type={
                           visiblePasswordFields.confirm ? "text" : "password"
                         }
@@ -2040,8 +2231,13 @@ export default function SettingsPage() {
                           setPasswordStatus("");
                         }}
                         disabled={!user}
+                        autoComplete="new-password"
+                        aria-invalid={isErrorLikeStatus(passwordStatus)}
+                        aria-describedby={
+                          passwordStatus ? "settings-password-status" : undefined
+                        }
                         placeholder="Confirm password"
-                        className="w-full min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-1.5 pr-7 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/25 focus:border-[rgb(var(--court-accent-rgb)/0.6)] disabled:cursor-not-allowed disabled:text-white/30 lg:px-3 lg:py-2 lg:pr-8 lg:text-[10px]"
+                        className="w-full min-w-0 rounded-md border border-white/10 bg-black/30 px-2 py-1.5 pr-7 font-michroma text-[9px] text-white outline-none transition placeholder:text-white/55 focus:border-[rgb(var(--court-accent-rgb)/0.6)] disabled:cursor-not-allowed disabled:text-white/55 lg:px-3 lg:py-2 lg:pr-8 lg:text-[10px]"
                       />
 
                       <button
@@ -2071,7 +2267,7 @@ export default function SettingsPage() {
                       type="button"
                       onClick={updatePassword}
                       disabled={!user}
-                      className="rounded-md border border-[#EFBF04]/50 bg-[#EFBF04]/10 px-2 py-1.5 font-michroma text-[6px] uppercase text-[#EFBF04] transition hover:bg-[#EFBF04]/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-4 lg:py-2 lg:text-[9px]"
+                      className="rounded-md border border-[#EFBF04]/50 bg-[#EFBF04]/10 px-2 py-1.5 font-michroma text-[8px] uppercase text-[#EFBF04] transition hover:bg-[#EFBF04]/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/55 lg:px-4 lg:py-2 lg:text-[9px]"
                     >
                       Update
                     </button>
@@ -2090,7 +2286,7 @@ export default function SettingsPage() {
                         setPasswordStatus("");
                         setIsChangingPassword(false);
                       }}
-                      className="rounded-md border border-white/10 bg-white/5 px-2 py-1.5 font-michroma text-[6px] uppercase text-white/45 transition hover:border-white/25 hover:text-white lg:px-4 lg:py-2 lg:text-[9px]"
+                      className="rounded-md border border-white/10 bg-white/5 px-2 py-1.5 font-michroma text-[8px] uppercase text-white/65 transition hover:border-white/25 hover:text-white lg:px-4 lg:py-2 lg:text-[9px]"
                     >
                       Cancel
                     </button>
@@ -2099,13 +2295,13 @@ export default function SettingsPage() {
                       type="button"
                       onClick={sendPasswordResetFromSettings}
                       disabled={!user?.email || isSendingPasswordLink}
-                      className="justify-self-start font-michroma text-[6px] uppercase text-white/35 transition hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:text-white/15 lg:col-span-5 lg:text-[8px]"
+                      className="justify-self-start font-michroma text-[8px] uppercase text-white/60 transition hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:text-white/55 lg:col-span-5 lg:text-[9px]"
                     >
                       {isSendingPasswordLink ? "Sending..." : "Forgot Password?"}
                     </button>
 
                     {passwordStatus && (
-                      <p className="font-michroma text-[6px] leading-relaxed text-[rgb(var(--court-accent-rgb)/0.8)] lg:col-span-5 lg:text-[8px]">
+                      <p className="font-michroma text-[8px] leading-relaxed text-[rgb(var(--court-accent-rgb)/0.9)] lg:col-span-5 lg:text-[9px]">
                         {passwordStatus}
                       </p>
                     )}
@@ -2116,18 +2312,18 @@ export default function SettingsPage() {
               </div>
 
               <div className="mt-2 rounded-md border border-[rgb(var(--court-accent-rgb)/0.2)] bg-black/20 p-2 lg:mt-3 lg:p-4">
-                <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                <p className="font-michroma text-[8px] uppercase text-white/65 lg:text-[9px]">
                   Privacy
                 </p>
 
-                <p className="mt-1 font-michroma text-[6px] leading-relaxed text-white/40 lg:text-[9px]">
+                <p className="mt-1 font-michroma text-[8px] leading-relaxed text-white/65 lg:text-[9px]">
                   Your saved lineups, favorite players, and activity are
                   protected by your signed-in account.
                 </p>
 
                 <Link
                   href="/privacy"
-                  className="mt-2 inline-flex rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.08)] px-2 py-1.5 font-michroma text-[6px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.16)] hover:text-white lg:px-3 lg:text-[8px]"
+                  className="mt-2 inline-flex rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.08)] px-2 py-1.5 font-michroma text-[8px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.16)] hover:text-white lg:px-3 lg:text-[9px]"
                 >
                   View Privacy Summary
                 </Link>
@@ -2216,7 +2412,16 @@ export default function SettingsPage() {
                   </p>
                 </div>
 
-                <p className="font-michroma text-[6px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[8px]">
+                <p
+                  role={
+                    settingsStatus || isLoadingUserSettings
+                      ? isErrorLikeStatus(settingsStatus)
+                        ? "alert"
+                        : "status"
+                      : undefined
+                  }
+                  className="font-michroma text-[6px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[8px]"
+                >
                   {isLoadingUserSettings ? "Loading" : settingsStatus}
                 </p>
               </div>
@@ -2301,7 +2506,10 @@ export default function SettingsPage() {
               </div>
 
               {activityStatus && (
-                <p className="mt-2 font-michroma text-[6px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[8px]">
+                <p
+                  role={isErrorLikeStatus(activityStatus) ? "alert" : "status"}
+                  className="mt-2 font-michroma text-[6px] uppercase text-[rgb(var(--court-accent-rgb)/0.7)] lg:text-[8px]"
+                >
                   {activityStatus}
                 </p>
               )}
@@ -2324,12 +2532,12 @@ export default function SettingsPage() {
                     user ? "bg-[#22C55E]" : "bg-[#EFBF04]"
                   }`}
                 />
-                <p className="font-michroma text-[6px] uppercase text-[var(--court-accent)] lg:text-[8px]">
+                <p className="font-michroma text-[8px] uppercase text-[var(--court-accent)] lg:text-[9px]">
                   {user ? "Account Synced" : "Local Session"}
                 </p>
               </div>
 
-              <p className="font-michroma text-[6px] leading-relaxed text-white/40 lg:text-[9px]">
+              <p className="font-michroma text-[8px] leading-relaxed text-white/65 lg:text-[9px]">
                 {user
                   ? "Your preferences are connected to this StatCourt account and follow you across players, rankings, court, and lineup tools."
                   : "You can keep browsing locally, but sign in to carry preferences, saved lineups, favorites, and recent activity across sessions."}
@@ -2351,10 +2559,10 @@ export default function SettingsPage() {
                 <div className="rounded-md border border-red-500/15 bg-black/20 p-2 lg:p-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
-                      <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                      <p className="font-michroma text-[8px] uppercase text-white/65 lg:text-[9px]">
                         Sign Out
                       </p>
-                      <p className="mt-1 font-michroma text-[6px] leading-relaxed text-white/40 lg:text-[9px]">
+                      <p className="mt-1 font-michroma text-[8px] leading-relaxed text-white/65 lg:text-[9px]">
                         Sign out of this StatCourt account.
                       </p>
                     </div>
@@ -2362,7 +2570,7 @@ export default function SettingsPage() {
                     <button
                       type="button"
                       onClick={signOut}
-                      className="rounded-md border border-red-500/35 bg-red-500/10 px-2.5 py-1.5 font-michroma text-[6px] uppercase text-red-300 transition hover:bg-red-500/20 hover:text-white lg:px-4 lg:py-3 lg:text-[10px]"
+                      className="rounded-md border border-red-500/35 bg-red-500/10 px-2.5 py-1.5 font-michroma text-[8px] uppercase text-red-300 transition hover:bg-red-500/20 hover:text-white lg:px-4 lg:py-3 lg:text-[10px]"
                     >
                       Sign Out
                     </button>
@@ -2372,10 +2580,10 @@ export default function SettingsPage() {
                 <div className="rounded-md border border-red-500/20 bg-black/20 p-2 lg:p-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
-                      <p className="font-michroma text-[6px] uppercase text-red-300/80 lg:text-[8px]">
+                      <p className="font-michroma text-[8px] uppercase text-red-300/90 lg:text-[9px]">
                         Delete Account
                       </p>
-                      <p className="mt-1 font-michroma text-[6px] leading-relaxed text-white/40 lg:text-[9px]">
+                      <p className="mt-1 font-michroma text-[8px] leading-relaxed text-white/65 lg:text-[9px]">
                         Permanently remove your StatCourt profile, saved data,
                         and account access.
                       </p>
@@ -2392,7 +2600,7 @@ export default function SettingsPage() {
                         setIsDeleteAccountModalOpen(false);
                       }}
                       disabled={!user || isDeletingAccount}
-                      className="inline-flex items-center gap-1.5 rounded-md border border-red-500/35 bg-red-500/10 px-2.5 py-1.5 font-michroma text-[6px] uppercase text-red-300 transition hover:bg-red-500/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-4 lg:py-3 lg:text-[10px]"
+                      className="inline-flex items-center gap-1.5 rounded-md border border-red-500/35 bg-red-500/10 px-2.5 py-1.5 font-michroma text-[8px] uppercase text-red-300 transition hover:bg-red-500/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/55 lg:px-4 lg:py-3 lg:text-[10px]"
                     >
                       <Trash2 className="h-2.5 w-2.5 lg:h-3.5 lg:w-3.5" />
                       {isConfirmingDeleteAccount ? "Close" : "Delete"}
@@ -2401,13 +2609,20 @@ export default function SettingsPage() {
 
                   {isConfirmingDeleteAccount && (
                     <div className="mt-2 grid gap-2 rounded-md border border-red-500/20 bg-red-950/20 p-2 lg:mt-3 lg:p-3">
-                      <p className="font-michroma text-[6px] leading-relaxed text-red-200/70 lg:text-[8px]">
+                      <p className="font-michroma text-[8px] leading-relaxed text-red-200/80 lg:text-[9px]">
                         Type DELETE to confirm. This permanently removes your
                         StatCourt account and saved account data.
                       </p>
 
                       <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto]">
+                        <label
+                          htmlFor="settings-delete-confirmation"
+                          className="sr-only"
+                        >
+                          Type DELETE to confirm account deletion
+                        </label>
                         <input
+                          id="settings-delete-confirmation"
                           value={deleteAccountInput}
                           onChange={(event) => {
                             setDeleteAccountInput(
@@ -2417,7 +2632,14 @@ export default function SettingsPage() {
                           }}
                           placeholder="Type DELETE"
                           disabled={isDeletingAccount}
-                          className="rounded-md border border-red-500/20 bg-black/30 px-2 py-1.5 font-michroma text-[7px] uppercase text-white outline-none transition placeholder:text-white/25 focus:border-red-300/60 lg:px-3 lg:py-2 lg:text-[10px]"
+                          autoComplete="off"
+                          aria-invalid={isErrorLikeStatus(deleteAccountStatus)}
+                          aria-describedby={
+                            deleteAccountStatus
+                              ? "settings-delete-account-status"
+                              : undefined
+                          }
+                          className="rounded-md border border-red-500/20 bg-black/30 px-2 py-1.5 font-michroma text-[9px] uppercase text-white outline-none transition placeholder:text-white/55 focus:border-red-300/60 lg:px-3 lg:py-2 lg:text-[10px]"
                         />
 
                         <button
@@ -2426,14 +2648,22 @@ export default function SettingsPage() {
                           disabled={
                             !canConfirmDeleteAccount || isDeletingAccount
                           }
-                          className="rounded-md border border-red-500/35 bg-red-500/10 px-2.5 py-1.5 font-michroma text-[6px] uppercase text-red-300 transition hover:bg-red-500/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:px-4 lg:py-2 lg:text-[9px]"
+                          className="rounded-md border border-red-500/35 bg-red-500/10 px-2.5 py-1.5 font-michroma text-[8px] uppercase text-red-300 transition hover:bg-red-500/20 hover:text-white disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/55 lg:px-4 lg:py-2 lg:text-[9px]"
                         >
                           Continue
                         </button>
                       </div>
 
                       {deleteAccountStatus && (
-                        <p className="font-michroma text-[6px] uppercase text-red-200/70 lg:text-[8px]">
+                        <p
+                          id="settings-delete-account-status"
+                          role={
+                            isErrorLikeStatus(deleteAccountStatus)
+                              ? "alert"
+                              : "status"
+                          }
+                          className="font-michroma text-[8px] uppercase text-red-200/80 lg:text-[9px]"
+                        >
                           {deleteAccountStatus}
                         </p>
                       )}
@@ -2448,17 +2678,30 @@ export default function SettingsPage() {
       </main>
 
       {isDeleteAccountModalOpen && (
-        <div className="fixed inset-0 z-999999 flex items-center justify-center overflow-y-auto bg-black/75 px-4 py-8">
-          <div className="w-full max-w-sm rounded-lg border border-red-500/35 bg-[var(--court-panel)] p-4 shadow-[0_0_28px_rgba(239,68,68,0.2)] lg:max-w-md lg:p-5">
+        <AccessibleDialog
+          titleId="delete-account-dialog-title"
+          descriptionId="delete-account-dialog-description"
+          onClose={() => setIsDeleteAccountModalOpen(false)}
+          closeOnBackdrop={!isDeletingAccount}
+          closeOnEscape={!isDeletingAccount}
+          overlayClassName="fixed inset-0 z-999999 flex items-center justify-center overflow-y-auto bg-black/75 px-4 py-8"
+          dialogClassName="w-full max-w-sm rounded-lg border border-red-500/35 bg-[var(--court-panel)] p-4 shadow-[0_0_28px_rgba(239,68,68,0.2)] lg:max-w-md lg:p-5"
+        >
             <p className="font-michroma text-[9px] uppercase text-red-300 lg:text-xs">
               Are you sure?
             </p>
 
-            <h2 className="mt-2 font-michroma text-sm uppercase text-white lg:text-lg">
+            <h2
+              id="delete-account-dialog-title"
+              className="mt-2 font-michroma text-sm uppercase text-white lg:text-lg"
+            >
               Delete Account
             </h2>
 
-            <p className="mt-3 font-michroma text-[7px] leading-relaxed text-white/45 lg:text-[9px]">
+            <p
+              id="delete-account-dialog-description"
+              className="mt-3 font-michroma text-[7px] leading-relaxed text-white/45 lg:text-[9px]"
+            >
               This permanently deletes your StatCourt account, saved lineups,
               favorites, recent activity, settings, profile, and avatar files.
               This cannot be undone.
@@ -2483,8 +2726,7 @@ export default function SettingsPage() {
                 {isDeletingAccount ? "Deleting..." : "Yes, Delete"}
               </button>
             </div>
-          </div>
-        </div>
+        </AccessibleDialog>
       )}
     </>
   );

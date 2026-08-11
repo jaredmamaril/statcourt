@@ -8,6 +8,7 @@ import { ScoutBottomSummary } from "./scout-bottom-summary";
 import { ScoutReportHeader } from "./scout-report-header";
 import { ScoutReportSaveButton } from "./scout-report-save-button";
 import { useAnimatedScoutOverall } from "./use-animated-scout-overall";
+import { AccessibleDialog } from "../../ui/accessible-dialog";
 
 type ScoutReportModalProps = {
   players: Player[];
@@ -74,17 +75,22 @@ export function ScoutReportModal({
   );
 
   return (
-    <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 px-2 lg:px-4">
-      <div
-        className="relative w-full max-w-85 animate-[modalIn_260ms_ease-out] rounded-md border bg-[var(--court-panel-alt)] lg:max-w-xl"
-        style={{
-          borderColor: `${scoutArchetypeColor}99`,
-        }}
-      >
+    <AccessibleDialog
+      titleId="scout-report-dialog-title"
+      descriptionId="scout-report-dialog-description"
+      onClose={onClose}
+      overlayClassName="fixed inset-0 z-999 flex items-center justify-center bg-black/70 px-2 lg:px-4"
+      dialogClassName="relative w-full max-w-85 animate-[modalIn_260ms_ease-out] rounded-md border bg-[var(--court-panel-alt)] lg:max-w-xl"
+      dialogStyle={{
+        borderColor: `${scoutArchetypeColor}99`,
+      }}
+    >
         <div className="relative max-h-[78vh] overflow-y-auto p-3 scrollbar-none lg:max-h-[68vh] lg:p-5 [&::-webkit-scrollbar]:hidden">
           <ScoutReportHeader
             scoutSummary={scoutSummary}
             statProfileLabel={statProfileLabel}
+            titleId="scout-report-dialog-title"
+            descriptionId="scout-report-dialog-description"
             onClose={onClose}
           />
 
@@ -135,7 +141,6 @@ export function ScoutReportModal({
           scoutArchetypeColor={scoutArchetypeColor}
           onSaveLineup={onSaveLineup}
         />
-      </div>
-    </div>
+    </AccessibleDialog>
   );
 }

@@ -10,6 +10,7 @@ import {
   getSecurityRequestId,
   logSecurityEvent,
 } from "@/app/lib/security-log";
+import { validateRequestOrigin } from "@/app/lib/request-security";
 import {
   createSupabaseAdminClient,
   createSupabaseUserClient,
@@ -20,6 +21,10 @@ import {
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  if (!validateRequestOrigin(request)) {
+    return Response.json({ error: "Invalid request origin." }, { status: 403 });
+  }
+
   const ipRateLimit = await checkRateLimit(
     createIpRateLimitRules(request, "account-delete-api", {
       perHour: 5,

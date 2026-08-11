@@ -48,7 +48,7 @@ export function RemainingRankingList({
 
   return (
     <>
-      <div className="mb-1.5 flex items-center justify-between px-1.5 font-michroma text-[6px] uppercase tracking-wide text-white/40 lg:mb-2 lg:px-3 lg:text-[9px]">
+      <div className="mb-1.5 flex items-center justify-between px-1.5 font-michroma text-[8px] uppercase tracking-wide text-white/65 lg:mb-2 lg:px-3 lg:text-[9px]">
         <span className="-ml-2">Remaining Rankings</span>
         <span className="-mr-2">Rating</span>
       </div>
@@ -105,20 +105,20 @@ export function RemainingRankingList({
       {players.length > 3 && (
         <div className="mt-2 rounded-md border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_90%,black)] p-1.5 font-michroma lg:mt-3 lg:p-3">
           <div className="flex flex-col gap-1.5 lg:flex-row lg:items-center lg:justify-between lg:gap-2">
-            <p className="text-center text-[5.5px] uppercase text-white/35 lg:text-left lg:text-[9px]">
+            <p className="text-center text-[8px] uppercase text-white/60 lg:text-left lg:text-[9px]">
               Showing {remainingPlayers.length} of {players.length - 3}{" "}
               remaining
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-1.5 lg:gap-2">
-              <label className="flex items-center gap-1 text-[5px] uppercase text-white/35 lg:gap-1.5 lg:text-[8px]">
+              <label className="flex items-center gap-1 text-[8px] uppercase text-white/60 lg:gap-1.5 lg:text-[9px]">
                 Display
                 <select
                   value={displayLimit}
                   onChange={(event) =>
                     onSelectDisplayLimit(Number(event.target.value))
                   }
-                  className="h-6 rounded border border-white/15 bg-[var(--court-panel)] px-1.5 text-[6px] text-white outline-none transition focus:border-[var(--court-accent)] lg:h-8 lg:px-2 lg:text-[9px]"
+                  className="h-6 rounded border border-white/15 bg-[var(--court-panel)] px-1.5 text-[8px] text-white outline-none transition focus:border-[var(--court-accent)] lg:h-8 lg:px-2 lg:text-[9px]"
                 >
                   {RANKING_DISPLAY_OPTIONS.map((option) => (
                     <option key={option} value={option}>
@@ -128,14 +128,14 @@ export function RemainingRankingList({
                 </select>
               </label>
 
-              <label className="flex items-center gap-1 text-[5px] uppercase text-white/35 lg:gap-1.5 lg:text-[8px]">
+              <label className="flex items-center gap-1 text-[8px] uppercase text-white/60 lg:gap-1.5 lg:text-[9px]">
                 Load
                 <select
                   value={loadMoreAmount}
                   onChange={(event) =>
                     onSelectLoadMoreAmount(Number(event.target.value))
                   }
-                  className="h-6 rounded border border-white/15 bg-[var(--court-panel)] px-1.5 text-[6px] text-white outline-none transition focus:border-[var(--court-accent)] lg:h-8 lg:px-2 lg:text-[9px]"
+                  className="h-6 rounded border border-white/15 bg-[var(--court-panel)] px-1.5 text-[8px] text-white outline-none transition focus:border-[var(--court-accent)] lg:h-8 lg:px-2 lg:text-[9px]"
                 >
                   {RANKING_LOAD_MORE_OPTIONS.map((option) => (
                     <option key={option} value={option}>
@@ -149,7 +149,7 @@ export function RemainingRankingList({
                 type="button"
                 onClick={onLoadMore}
                 disabled={!hasMorePlayers}
-                className="h-6 rounded border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 text-[6px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:h-8 lg:px-3 lg:text-[9px]"
+                className="h-6 rounded border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 text-[8px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/55 lg:h-8 lg:px-3 lg:text-[9px]"
               >
                 {hasMorePlayers ? "Load More" : "All Shown"}
               </button>
@@ -211,7 +211,7 @@ function RankingPlayerRow({
 
         {archetype && (
           <span
-            className="inline-flex rounded border px-1.5 py-0.5 font-michroma text-[5.3px] leading-none max-w-32 sm:text-[7px] lg:max-w-full lg:px-2 lg:py-1 lg:text-[9px]"
+            className="inline-flex max-w-32 rounded border px-1.5 py-0.5 font-michroma text-[7px] leading-none sm:text-[8px] lg:max-w-full lg:px-2 lg:py-1 lg:text-[9px]"
             style={getArchetypePillStyle(archetype)}
           >
             <span className="truncate uppercase">{archetype.label}</span>
@@ -219,13 +219,13 @@ function RankingPlayerRow({
         )}
 
         <p
-          className="font-michroma text-[6px] font-semibold sm:hidden"
+          className="font-michroma text-[8px] font-semibold sm:hidden"
           style={{ color: teamColor }}
         >
           {player.team}
         </p>
 
-        <p className="mt-0.5 font-michroma text-[6px] text-white/40 sm:text-[7px] lg:text-[9px]">
+        <p className="mt-0.5 font-michroma text-[7px] text-white/60 sm:text-[8px] lg:text-[9px]">
           {player.position} - #{player.jerseyNumber}
         </p>
       </div>
@@ -289,7 +289,7 @@ function RankingPlayerCard({
       </p>
 
       <p
-        className="mt-1 font-michroma text-[6px] font-semibold lg:text-[8px]"
+        className="mt-1 font-michroma text-[8px] font-semibold lg:text-[9px]"
         style={{ color: teamColor }}
       >
         {player.team} · {player.position}
@@ -297,7 +297,7 @@ function RankingPlayerCard({
 
       {archetype && (
         <span
-          className="mx-auto mt-1.5 inline-flex max-w-full rounded border px-1 py-0.5 font-michroma text-[5px] leading-none lg:mt-2 lg:px-1.5 lg:py-1 lg:text-[9px]"
+          className="mx-auto mt-1.5 inline-flex max-w-full rounded border px-1 py-0.5 font-michroma text-[7px] leading-none lg:mt-2 lg:px-1.5 lg:py-1 lg:text-[9px]"
           style={getArchetypePillStyle(archetype)}
         >
           <span className="truncate uppercase">{archetype.label}</span>

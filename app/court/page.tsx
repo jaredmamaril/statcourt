@@ -45,6 +45,7 @@ export default function Court() {
   const [leftPlayer, setLeftPlayer] = useState("");
   const [rightPlayer, setRightPlayer] = useState("");
   const [statMode, setStatMode] = useState<StatMode>("career");
+  const [compareStatus, setCompareStatus] = useState("");
   const hasAppliedDefaultStatModeRef = useRef(false);
 
   const selectedLeftPlayer = comparePlayers.find(
@@ -136,6 +137,7 @@ export default function Court() {
   function selectModalPlayer(playerName: string) {
     if (activePickerSide === "left") {
       setLeftPlayer(playerName);
+      setCompareStatus(`${playerName} selected as left compare player.`);
       void updateCompareSlots({
         ...compareSlots,
         left: playerName,
@@ -144,6 +146,7 @@ export default function Court() {
 
     if (activePickerSide === "right") {
       setRightPlayer(playerName);
+      setCompareStatus(`${playerName} selected as right compare player.`);
       void updateCompareSlots({
         ...compareSlots,
         right: playerName,
@@ -166,7 +169,19 @@ export default function Court() {
         aria-hidden="true"
       />
 
-      <section className="page-enter relative z-10 min-h-screen px-3 pt-2 pb-8 lg:px-10">
+      <section
+        aria-busy={isLoadingPlayers}
+        className="page-enter relative z-10 min-h-screen px-3 pt-2 pb-8 lg:px-10"
+      >
+        <p
+          aria-atomic="true"
+          aria-live="polite"
+          className="sr-only"
+          role="status"
+        >
+          {compareStatus}
+        </p>
+
         {isLoadingPlayers ? (
           <CourtComparisonHeaderSkeleton />
         ) : (

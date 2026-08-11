@@ -19,7 +19,11 @@ export function RankingPlayerTooltip({
   const playerInsights = getPlayerInsights(player, statProfileFilter);
 
   return (
-    <div className="pointer-events-none absolute left-1/2 top-full z-[999] w-44 -translate-x-1/2 rounded-md border border-[rgb(var(--court-accent-rgb)/0.4)] bg-black/95 p-2 opacity-0 transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 sm:w-64 sm:p-3">
+    <div
+      role="dialog"
+      aria-label={`${player.name} ranking details`}
+      className="pointer-events-none absolute left-1/2 top-full z-[999] w-44 -translate-x-1/2 rounded-md border border-[rgb(var(--court-accent-rgb)/0.4)] bg-black/95 p-2 opacity-0 transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 sm:w-64 sm:p-3"
+    >
       <p className="font-michroma text-[8px] font-bold text-white sm:text-[10px]">
         {player.name}
       </p>

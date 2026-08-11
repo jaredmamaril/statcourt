@@ -1,4 +1,5 @@
 import { Info } from "lucide-react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { Position, PlayerInsightDisplay } from "../../court-data";
 
 type ArchetypeDistributionItem = [
@@ -28,15 +29,64 @@ type SnapshotMetricLabelProps = {
 };
 
 function SnapshotMetricLabel({ label, tooltip }: SnapshotMetricLabelProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const tooltipId = useId();
+  const tooltipRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function closeTooltip(event: PointerEvent | KeyboardEvent) {
+      if (!isOpen) return;
+
+      if (event instanceof KeyboardEvent) {
+        if (event.key === "Escape") setIsOpen(false);
+        return;
+      }
+
+      if (!(event.target instanceof Node)) return;
+      if (tooltipRef.current?.contains(event.target)) return;
+
+      setIsOpen(false);
+    }
+
+    document.addEventListener("pointerdown", closeTooltip);
+    document.addEventListener("keydown", closeTooltip);
+
+    return () => {
+      document.removeEventListener("pointerdown", closeTooltip);
+      document.removeEventListener("keydown", closeTooltip);
+    };
+  }, [isOpen]);
+
   return (
-    <div className="group/metric relative inline-flex items-center justify-center gap-1">
+    <div
+      ref={tooltipRef}
+      className="group/metric relative inline-flex items-center justify-center gap-1"
+    >
       <p className="text-[8px] tracking-wide text-white/25 transition group-hover/metric:text-white/50">
         {label}
       </p>
 
-      <Info className="h-3 w-3 cursor-help text-[rgb(var(--court-accent-rgb)/0.45)] transition group-hover/metric:text-[var(--court-accent)]" />
+      <button
+        type="button"
+        aria-controls={tooltipId}
+        aria-describedby={tooltipId}
+        aria-expanded={isOpen}
+        aria-label={`${label} info`}
+        onClick={() => setIsOpen((current) => !current)}
+        onFocus={() => setIsOpen(true)}
+        onBlur={() => setIsOpen(false)}
+        className="inline-flex min-h-8 min-w-8 items-center justify-center rounded-full text-[rgb(var(--court-accent-rgb)/0.45)] transition group-hover/metric:text-[var(--court-accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--court-accent)]"
+      >
+        <Info aria-hidden="true" className="h-3 w-3 cursor-help" />
+      </button>
 
-      <div className="pointer-events-none absolute left-1/2 top-full z-999 mt-1 w-52 -translate-x-1/2 rounded-md border border-white/15 bg-black/95 p-2 text-left text-[7px] leading-relaxed text-white/50 opacity-0 shadow-[0_0_18px_rgba(0,0,0,0.55)] transition-opacity duration-200 group-hover/metric:opacity-100">
+      <div
+        id={tooltipId}
+        role="tooltip"
+        className={`pointer-events-none absolute left-1/2 top-full z-999 mt-1 w-52 -translate-x-1/2 rounded-md border border-white/15 bg-black/95 p-2 text-left text-[7px] leading-relaxed text-white/50 shadow-[0_0_18px_rgba(0,0,0,0.55)] transition-opacity duration-200 ${
+          isOpen ? "opacity-100" : "opacity-0 group-hover/metric:opacity-100"
+        }`}
+      >
         {tooltip}
       </div>
     </div>
@@ -55,15 +105,69 @@ export function DatabaseSnapshot({
   bestPlaymakerName,
   getRarityColor,
 }: DatabaseSnapshotProps) {
+  const [isSnapshotInfoOpen, setIsSnapshotInfoOpen] = useState(false);
+  const snapshotTooltipId = useId();
+  const snapshotTooltipRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function closeTooltip(event: PointerEvent | KeyboardEvent) {
+      if (!isSnapshotInfoOpen) return;
+
+      if (event instanceof KeyboardEvent) {
+        if (event.key === "Escape") setIsSnapshotInfoOpen(false);
+        return;
+      }
+
+      if (!(event.target instanceof Node)) return;
+      if (snapshotTooltipRef.current?.contains(event.target)) return;
+
+      setIsSnapshotInfoOpen(false);
+    }
+
+    document.addEventListener("pointerdown", closeTooltip);
+    document.addEventListener("keydown", closeTooltip);
+
+    return () => {
+      document.removeEventListener("pointerdown", closeTooltip);
+      document.removeEventListener("keydown", closeTooltip);
+    };
+  }, [isSnapshotInfoOpen]);
+
   return (
     <div className="panel-reveal absolute -left-58 top-4 z-500 hidden w-64 font-michroma uppercase text-center xl:block">
-      <div className="group/database relative inline-block">
-        <p className="flex cursor-help items-center justify-center gap-1 text-[8px] tracking-wide text-white/25 transition group-hover/database:text-white/50">
+      <div
+        ref={snapshotTooltipRef}
+        className="group/database relative inline-block"
+      >
+        <div className="flex items-center justify-center gap-1">
+          <p className="text-[8px] tracking-wide text-white/25 transition group-hover/database:text-white/50">
           Database Snapshot
-          <Info className="h-4 w-4 text-[rgb(var(--court-accent-rgb)/0.6)] transition group-hover/database:text-[var(--court-accent)]" />
-        </p>
+          </p>
 
-        <div className="pointer-events-none absolute left-1/2 top-full z-999 mt-2 w-72 -translate-x-1/2 rounded-md border border-white/15 bg-black/95 p-3 text-left opacity-0 shadow-[0_0_24px_rgba(0,0,0,0.55)] transition-opacity duration-200 group-hover/database:opacity-100">
+          <button
+            type="button"
+            aria-controls={snapshotTooltipId}
+            aria-describedby={snapshotTooltipId}
+            aria-expanded={isSnapshotInfoOpen}
+            aria-label="Database snapshot color legend"
+            onClick={() => setIsSnapshotInfoOpen((current) => !current)}
+            onFocus={() => setIsSnapshotInfoOpen(true)}
+            onBlur={() => setIsSnapshotInfoOpen(false)}
+            className="inline-flex min-h-9 min-w-9 cursor-help items-center justify-center rounded-full text-[rgb(var(--court-accent-rgb)/0.6)] transition group-hover/database:text-[var(--court-accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--court-accent)]"
+          >
+            <Info aria-hidden="true" className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div
+          id={snapshotTooltipId}
+          role="tooltip"
+          className={`pointer-events-none absolute left-1/2 top-full z-999 mt-2 w-72 -translate-x-1/2 rounded-md border border-white/15 bg-black/95 p-3 text-left shadow-[0_0_24px_rgba(0,0,0,0.55)] transition-opacity duration-200 ${
+            isSnapshotInfoOpen
+              ? "opacity-100"
+              : "opacity-0 group-hover/database:opacity-100"
+          }`}
+        >
           <p className="mb-2 text-[8px] uppercase tracking-wide text-white/45">
             Snapshot Colors
           </p>

@@ -28,12 +28,12 @@ export function ScoutOverallSummary({
           {animatedScoutOverall.toFixed(1)}
         </p>
 
-        <p className="font-michroma text-[7px] uppercase text-white/40 lg:text-[10px]">
+        <p className="font-michroma text-[8px] uppercase text-white/65 lg:text-[10px]">
           Scout OVR
         </p>
       </div>
 
-      <p className="mt-0.5 max-w-64 font-michroma text-[5.5px] leading-relaxed text-white/35 lg:text-[7px]">
+      <p className="mt-0.5 max-w-64 font-michroma text-[8px] leading-relaxed text-white/65 lg:text-[9px]">
         Final team rating from player average, position fit, category balance,
         chemistry, and stat profile.
       </p>
@@ -49,7 +49,7 @@ export function ScoutOverallSummary({
         {lineupBadges.map((badge) => (
           <span
             key={badge}
-            className="flex items-center gap-1 rounded-md border px-1 py-0.5 font-michroma text-[5.5px] lg:py-1 lg:text-[6.5px]"
+            className="flex items-center gap-1 rounded-md border px-1 py-0.5 font-michroma text-[7px] lg:py-1 lg:text-[8px]"
             style={{
               color: scoutArchetypeColor,
               borderColor: `${scoutArchetypeColor}55`,

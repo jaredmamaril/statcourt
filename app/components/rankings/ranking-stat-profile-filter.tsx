@@ -19,12 +19,18 @@ export function RankingStatProfileFilter({
   onToggle,
   onSelectProfile,
 }: RankingStatProfileFilterProps) {
+  const dropdownId = "ranking-stat-profile-menu";
+
   return (
     <div className="relative">
       <button
         type="button"
         onClick={onToggle}
-        className="flex h-6 min-w-28 scale-[1.02] cursor-pointer items-center justify-between rounded-md border border-[rgb(var(--court-accent-rgb)/0.95)] bg-[color:color-mix(in_srgb,var(--court-accent)_38%,var(--court-panel-alt))] px-2 font-michroma text-[9px] text-[var(--court-accent)] ring-1 ring-[rgb(var(--court-accent-rgb)/0.45)] transition hover:border-[rgb(var(--court-accent-rgb)/0.95)] sm:h-auto sm:min-w-36 sm:px-3 sm:py-1 sm:text-xs"
+        aria-label="Filter rankings by stat profile"
+        aria-expanded={isOpen}
+        aria-controls={dropdownId}
+        aria-haspopup="true"
+        className="flex min-h-9 min-w-28 scale-[1.02] cursor-pointer items-center justify-between rounded-md border border-[rgb(var(--court-accent-rgb)/0.95)] bg-[color:color-mix(in_srgb,var(--court-accent)_38%,var(--court-panel-alt))] px-2 font-michroma text-[9px] text-[var(--court-accent)] ring-1 ring-[rgb(var(--court-accent-rgb)/0.45)] transition hover:border-[rgb(var(--court-accent-rgb)/0.95)] sm:min-h-8 sm:min-w-36 sm:px-3 sm:py-1 sm:text-xs"
       >
         <span className="truncate">{statProfileLabels[selectedProfile]}</span>
 
@@ -34,7 +40,7 @@ export function RankingStatProfileFilter({
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-full z-80 mt-1.5 w-32 rounded-md border border-white/20 bg-[var(--court-panel-alt)] py-1 animate-[dropdownIn_140ms_ease-out_both] sm:mt-2 sm:w-full">
+        <div id={dropdownId} className="absolute left-0 top-full z-80 mt-1.5 w-32 rounded-md border border-white/20 bg-[var(--court-panel-alt)] py-1 animate-[dropdownIn_140ms_ease-out_both] sm:mt-2 sm:w-full">
           {(["career", "peak", "current"] as const).map((profile) => (
             <button
               key={profile}

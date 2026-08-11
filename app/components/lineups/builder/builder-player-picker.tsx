@@ -125,16 +125,20 @@ export function BuilderPlayerPicker({
   return (
     <div className="flex min-w-0 flex-col gap-2">
       <div className="flex justify-center">
+        <label htmlFor="builder-player-search" className="sr-only">
+          Search players
+        </label>
         <input
-          type="text"
+          id="builder-player-search"
+          type="search"
           value={buildPlayerSearch}
           onChange={(event) => onSearchChange(event.target.value)}
           placeholder="Search Player..."
-          className="h-5 w-51 rounded-md border border-[rgb(var(--court-accent-rgb)/0.22)] bg-[color:color-mix(in_srgb,var(--court-panel)_72%,transparent)] px-3 font-michroma text-[8px] text-white outline-none transition placeholder:text-white/30 focus:border-[rgb(var(--court-accent-rgb)/0.75)] focus:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_78%,transparent)] lg:h-10 lg:w-full lg:text-xs"
+          className="h-5 w-51 rounded-md border border-[rgb(var(--court-accent-rgb)/0.22)] bg-[color:color-mix(in_srgb,var(--court-panel)_72%,transparent)] px-3 font-michroma text-[9px] text-white outline-none transition placeholder:text-white/55 focus:border-[rgb(var(--court-accent-rgb)/0.75)] focus:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_78%,transparent)] lg:h-10 lg:w-full lg:text-xs"
         />
       </div>
 
-      <p className="text-center font-michroma text-[5.5px] uppercase text-white/30 lg:text-[8px]">
+      <p className="text-center font-michroma text-[8px] uppercase text-white/55 lg:text-[9px]">
         {buildPlayerSearch.trim() ? (
           <>
             Showing {displayedBuildPlayers.length} of{" "}
@@ -196,14 +200,15 @@ export function BuilderPlayerPicker({
 
       <div className="rounded border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_90%,black)] p-0.5 font-michroma lg:rounded-md lg:p-2">
         <div className="flex flex-wrap items-center justify-center gap-0.5 lg:gap-2">
-          <label className="flex items-center gap-0.5 text-[4px] uppercase text-white/35 lg:gap-1 lg:text-[7px]">
+          <label className="flex items-center gap-0.5 text-[7px] uppercase text-white/60 lg:gap-1 lg:text-[8px]">
             Show
             <select
+              aria-label="Number of players to show"
               value={baseDisplayLimit}
               onChange={(event) =>
                 setBaseDisplayLimit(Number(event.target.value))
               }
-              className="h-4.5 rounded border border-white/15 bg-[var(--court-panel)] px-0.5 text-[4.8px] text-white outline-none focus:border-[var(--court-accent)] lg:h-7 lg:px-1.5 lg:text-[8px]"
+              className="h-4.5 rounded border border-white/15 bg-[var(--court-panel)] px-0.5 text-[7px] text-white outline-none focus:border-[var(--court-accent)] lg:h-7 lg:px-1.5 lg:text-[8px]"
             >
               {BUILD_PLAYER_DISPLAY_OPTIONS.map((option) => (
                 <option key={option} value={option}>
@@ -213,14 +218,15 @@ export function BuilderPlayerPicker({
             </select>
           </label>
 
-          <label className="flex items-center gap-0.5 text-[4px] uppercase text-white/35 lg:gap-1 lg:text-[7px]">
+          <label className="flex items-center gap-0.5 text-[7px] uppercase text-white/60 lg:gap-1 lg:text-[8px]">
             Load
             <select
+              aria-label="Number of additional players to load"
               value={loadMoreAmount}
               onChange={(event) =>
                 setLoadMoreAmount(Number(event.target.value))
               }
-              className="h-4.5 rounded border border-white/15 bg-[var(--court-panel)] px-0.5 text-[4.8px] text-white outline-none focus:border-[var(--court-accent)] lg:h-7 lg:px-1.5 lg:text-[8px]"
+              className="h-4.5 rounded border border-white/15 bg-[var(--court-panel)] px-0.5 text-[7px] text-white outline-none focus:border-[var(--court-accent)] lg:h-7 lg:px-1.5 lg:text-[8px]"
             >
               {BUILD_PLAYER_LOAD_MORE_OPTIONS.map((option) => (
                 <option key={option} value={option}>
@@ -234,7 +240,7 @@ export function BuilderPlayerPicker({
             type="button"
             onClick={loadMoreBuildPlayers}
             disabled={!hasMoreBuildPlayers}
-            className="h-4.5 rounded border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-1 font-michroma text-[4.8px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:h-7 lg:px-3 lg:text-[8px]"
+            className="h-4.5 rounded border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-1 font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/55 lg:h-7 lg:px-3 lg:text-[8px]"
           >
             {hasMoreBuildPlayers ? "Load More" : "All Shown"}
           </button>
@@ -264,6 +270,7 @@ function BuilderPlayerListRow({
     data: {
       type: "picker-player",
       playerName: player.name,
+      preferredSlot: activeBuildPosition,
     },
   });
   const positionFit = getPositionFit(
@@ -291,6 +298,9 @@ function BuilderPlayerListRow({
       ref={setNodeRef}
       {...listeners}
       {...attributes}
+      aria-label={`${player.name}, ${positionRating.toFixed(
+        1,
+      )} overall for ${activeBuildPosition}, ${fitLabel} fit. Press Space or Enter to pick up for keyboard drag, or click to draft to ${activeBuildPosition}.`}
       type="button"
       onClick={() => onPickPlayer(player.name)}
       className={`grid w-full min-w-0 touch-none grid-cols-[34px_minmax(0,1fr)_52px] items-center gap-2 rounded-md border bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] px-2 py-1.5 text-left transition lg:grid-cols-[46px_minmax(0,1fr)_70px] lg:px-3 lg:py-2 ${
@@ -310,10 +320,10 @@ function BuilderPlayerListRow({
       />
 
       <span className="min-w-0">
-        <span className="block  font-michroma text-[6px] text-white lg:text-[10px]">
+        <span className="block  font-michroma text-[8px] text-white lg:text-[10px]">
           {player.name}
         </span>
-        <span className="mt-0.5 block font-michroma text-[5px] text-white/40 lg:text-[8px]">
+        <span className="mt-0.5 block font-michroma text-[7px] text-white/60 lg:text-[8px]">
           {player.team} · {player.position}
         </span>
       </span>
@@ -323,7 +333,7 @@ function BuilderPlayerListRow({
           {positionRating.toFixed(1)}
         </span>
         <span
-          className={`mt-0.5 block font-michroma text-[4.8px] uppercase lg:text-[7px] ${
+          className={`mt-0.5 block font-michroma text-[7px] uppercase lg:text-[8px] ${
             positionFit === "natural"
               ? "text-emerald-400"
               : positionFit === "flex"

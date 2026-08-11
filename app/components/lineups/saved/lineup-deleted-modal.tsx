@@ -1,16 +1,29 @@
+import { AccessibleDialog } from "../../ui/accessible-dialog";
+
 type LineupDeletedModalProps = {
   onClose: () => void;
 };
 
 export function LineupDeletedModal({ onClose }: LineupDeletedModalProps) {
   return (
-    <div className="fixed inset-0 z-1000 flex animate-[modalBackdropIn_160ms_ease-out_both] items-center justify-center bg-black/70 px-3">
-      <div className="w-full max-w-[300px] animate-[modalIn_180ms_ease-out_both] rounded-md border border-red-500/60 bg-[var(--court-panel-alt)] p-4 text-center shadow-[0_0_35px_rgba(239,68,68,0.25)] lg:max-w-sm lg:p-6">
-        <p className="font-michroma text-sm text-red-400 lg:text-lg">
+    <AccessibleDialog
+      titleId="lineup-deleted-dialog-title"
+      descriptionId="lineup-deleted-dialog-description"
+      onClose={onClose}
+      overlayClassName="fixed inset-0 z-1000 flex animate-[modalBackdropIn_160ms_ease-out_both] items-center justify-center bg-black/70 px-3"
+      dialogClassName="w-full max-w-[300px] animate-[modalIn_180ms_ease-out_both] rounded-md border border-red-500/60 bg-[var(--court-panel-alt)] p-4 text-center shadow-[0_0_35px_rgba(239,68,68,0.25)] lg:max-w-sm lg:p-6"
+    >
+        <p
+          id="lineup-deleted-dialog-title"
+          className="font-michroma text-sm text-red-400 lg:text-lg"
+        >
           Lineup Deleted
         </p>
 
-        <p className="mt-2 font-michroma text-[8px] leading-relaxed text-white/40 lg:mt-3 lg:text-xs">
+        <p
+          id="lineup-deleted-dialog-description"
+          className="mt-2 font-michroma text-[8px] leading-relaxed text-white/40 lg:mt-3 lg:text-xs"
+        >
           This lineup was removed from your saved lineups.
         </p>
 
@@ -21,7 +34,6 @@ export function LineupDeletedModal({ onClose }: LineupDeletedModalProps) {
         >
           Done
         </button>
-      </div>
-    </div>
+    </AccessibleDialog>
   );
 }

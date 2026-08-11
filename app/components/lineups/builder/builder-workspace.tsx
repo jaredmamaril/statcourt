@@ -1,12 +1,18 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
+  closestCenter,
   DndContext,
+  KeyboardCode,
+  KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
+  type Announcements,
   type DragEndEvent,
   type DragStartEvent,
+  type KeyboardCoordinateGetter,
+  type ScreenReaderInstructions,
 } from "@dnd-kit/core";
 import type { LineupSlot } from "../../court-data";
 import type { PlayerRevealMode } from "./builder-lineup-helpers";
@@ -45,6 +51,57 @@ type BuilderWorkspaceProps = {
   onRemovePlayer: (position: LineupSlot) => void;
   onScoutLineup: () => void;
   onViewCard: (playerName: string) => void;
+};
+
+const slotLabels: Record<LineupSlot, string> = {
+  PG: "Point Guard",
+  SG: "Shooting Guard",
+  SF: "Small Forward",
+  PF: "Power Forward",
+  C: "Center",
+};
+
+const builderScreenReaderInstructions: ScreenReaderInstructions = {
+  draggable:
+    "Press Space or Enter to pick up a player. Use arrow keys to choose a lineup position. Press Space or Enter again to place the player, or Escape to cancel.",
+};
+
+function getDragPlayerName(activeData: unknown) {
+  const data = activeData as { playerName?: string } | undefined;
+
+  return data?.playerName ?? "player";
+}
+
+function getOverSlotLabel(overData: unknown) {
+  const data = overData as { slot?: LineupSlot } | undefined;
+  const slot = data?.slot;
+
+  return slot ? `${slotLabels[slot]} slot` : "lineup slot";
+}
+
+const builderAnnouncements: Announcements = {
+  onDragStart({ active }) {
+    return `Picked up ${getDragPlayerName(
+      active.data.current,
+    )}. Use arrow keys to choose a lineup position.`;
+  },
+  onDragOver({ active, over }) {
+    if (!over) return undefined;
+
+    return `${getDragPlayerName(active.data.current)} over ${getOverSlotLabel(
+      over.data.current,
+    )}.`;
+  },
+  onDragEnd({ active, over }) {
+    if (!over) return `${getDragPlayerName(active.data.current)} was not placed.`;
+
+    return `${getDragPlayerName(active.data.current)} placed in ${getOverSlotLabel(
+      over.data.current,
+    )}.`;
+  },
+  onDragCancel({ active }) {
+    return `Move cancelled for ${getDragPlayerName(active.data.current)}.`;
+  },
 };
 
 const positionFitLegend = [
@@ -86,29 +143,48 @@ function PositionFitLegend() {
       }
     }
 
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    }
+
     document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen]);
+
+  const tooltipId = "builder-position-fit-legend-tooltip";
 
   return (
     <div ref={legendRef} className="group/fit relative z-50">
       <button
         type="button"
         aria-label="Position fit legend"
+        aria-controls={tooltipId}
+        aria-describedby={tooltipId}
         aria-expanded={isOpen}
         onClick={() => setIsOpen((current) => !current)}
-        className="flex h-4 items-center gap-1 rounded border border-white/20 bg-[color:color-mix(in_srgb,var(--court-panel)_86%,black)] px-1.5 font-michroma text-[5px] uppercase text-white/55 transition hover:border-[rgb(var(--court-accent-rgb)/0.7)] hover:text-[var(--court-accent)] lg:h-6 lg:px-2 lg:text-[7px]"
+        onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            setIsOpen(false);
+          }
+        }}
+        className="flex min-h-8 min-w-12 items-center justify-center gap-1 rounded border border-white/20 bg-[color:color-mix(in_srgb,var(--court-panel)_86%,black)] px-1.5 font-michroma text-[8px] uppercase text-white/65 transition hover:border-[rgb(var(--court-accent-rgb)/0.7)] hover:text-[var(--court-accent)] lg:min-h-8 lg:px-2 lg:text-[8px]"
       >
         Fit
-        <span className="flex h-2.5 w-2.5 items-center justify-center rounded-full border border-current text-[6px] lg:h-3.5 lg:w-3.5 lg:text-[8px]">
+        <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full border border-current text-[8px]">
           ?
         </span>
       </button>
 
       <div
+        id={tooltipId}
+        role="tooltip"
         className={`pointer-events-none absolute left-1/2 top-full z-50 mt-1 w-40 -translate-x-1/2 rounded border border-[rgb(var(--court-accent-rgb)/0.4)] bg-[#020912] p-1.5 shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.2)] transition lg:w-52 lg:p-2 ${
           isOpen
             ? "opacity-100"
@@ -160,6 +236,14 @@ function getEventPoint(event: Event) {
   return null;
 }
 
+function getSlotFromDroppableId(id: unknown): LineupSlot | null {
+  if (typeof id !== "string" || !id.startsWith("builder-slot-")) {
+    return null;
+  }
+
+  return id.replace("builder-slot-", "") as LineupSlot;
+}
+
 export function BuilderWorkspace({
   players,
   lineupPositions,
@@ -192,11 +276,72 @@ export function BuilderWorkspace({
     x: 0,
     y: 0,
   });
+  const keyboardCoordinateGetter = useMemo<KeyboardCoordinateGetter>(
+    () =>
+      (event, { context }) => {
+        if (
+          event.code !== KeyboardCode.Down &&
+          event.code !== KeyboardCode.Right &&
+          event.code !== KeyboardCode.Up &&
+          event.code !== KeyboardCode.Left
+        ) {
+          return undefined;
+        }
+
+        const activeData = context.active?.data.current as
+          | {
+              slot?: LineupSlot;
+              preferredSlot?: LineupSlot;
+            }
+          | undefined;
+        const overSlot = getSlotFromDroppableId(context.over?.id);
+        const sourceSlot = activeData?.slot ?? activeData?.preferredSlot;
+        const currentSlot = overSlot ?? sourceSlot ?? lineupPositions[0];
+        const currentIndex = Math.max(
+          lineupPositions.indexOf(currentSlot),
+          0,
+        );
+        const lastIndex = lineupPositions.length - 1;
+        const nextIndex =
+          overSlot === null
+            ? currentIndex
+            : event.code === KeyboardCode.Down ||
+                event.code === KeyboardCode.Right
+              ? currentIndex === lastIndex
+                ? 0
+                : currentIndex + 1
+              : currentIndex === 0
+                ? lastIndex
+                : currentIndex - 1;
+        const nextSlot = lineupPositions[nextIndex];
+        const targetRect = context.droppableRects.get(`builder-slot-${nextSlot}`);
+        const activeRect = context.draggingNodeRect;
+
+        if (!targetRect || !activeRect) {
+          return undefined;
+        }
+
+        return {
+          x:
+            targetRect.left +
+            targetRect.width / 2 -
+            (activeRect.left + activeRect.width / 2),
+          y:
+            targetRect.top +
+            targetRect.height / 2 -
+            (activeRect.top + activeRect.height / 2),
+        };
+      },
+    [lineupPositions],
+  );
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 6,
       },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: keyboardCoordinateGetter,
     }),
   );
 
@@ -260,9 +405,10 @@ export function BuilderWorkspace({
 
     if (eventPoint) {
       setDragPreviewPosition(eventPoint);
+      setDragPreviewLabel(activeData?.playerName ?? "");
+    } else {
+      setDragPreviewLabel("");
     }
-
-    setDragPreviewLabel(activeData?.playerName ?? "");
   }
 
   function handleDragEnd(event: DragEndEvent) {
@@ -298,6 +444,11 @@ export function BuilderWorkspace({
 
   return (
     <DndContext
+      accessibility={{
+        announcements: builderAnnouncements,
+        screenReaderInstructions: builderScreenReaderInstructions,
+      }}
+      collisionDetection={closestCenter}
       sensors={sensors}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
@@ -310,7 +461,11 @@ export function BuilderWorkspace({
         <div className="grid grid-cols-[minmax(0,1fr)_122px] items-start gap-1 lg:grid-cols-[400px_300px_1fr] lg:gap-5">
           <div className="min-w-0">
             <div className="mb-3 flex flex-col items-center justify-center gap-1 lg:mb-2 lg:flex-row lg:gap-2">
-              <div className="inline-flex rounded-md border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] p-0.5">
+              <div
+                aria-label="Builder stat profile"
+                className="inline-flex rounded-md border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] p-0.5"
+                role="group"
+              >
                 {(["career", "peak", "current"] as const).map((profile) => {
                   const isActive = builderStatProfile === profile;
                   const label =
@@ -323,9 +478,10 @@ export function BuilderWorkspace({
                   return (
                     <button
                       key={profile}
+                      aria-pressed={isActive}
                       type="button"
                       onClick={() => onStatProfileChange(profile)}
-                      className={`rounded px-1.5 py-0.5 font-michroma text-[5.5px] uppercase transition lg:px-2.5 lg:py-1 lg:text-[8px] ${
+                      className={`min-h-8 rounded px-2 font-michroma text-[8px] uppercase transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--court-accent)] lg:px-2.5 lg:py-1 lg:text-[8px] ${
                         isActive
                           ? "bg-[rgb(var(--court-accent-rgb)/0.34)] text-[var(--court-accent)] shadow-[0_0_12px_rgb(var(--court-accent-rgb)/0.16)]"
                           : "text-white/35 hover:bg-white/5 hover:text-white/70"
@@ -337,16 +493,21 @@ export function BuilderWorkspace({
                 })}
               </div>
 
-              <div className="inline-flex rounded-md border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] p-0.5">
+              <div
+                aria-label="Builder player display"
+                className="inline-flex rounded-md border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] p-0.5"
+                role="group"
+              >
                 {(["cards", "list"] as const).map((view) => {
                   const isActive = displayView === view;
 
                   return (
                     <button
                       key={view}
+                      aria-pressed={isActive}
                       type="button"
                       onClick={() => onDisplayViewChange(view)}
-                      className={`rounded px-1.5 py-0.5 font-michroma text-[5.5px] uppercase transition lg:px-2.5 lg:py-1 lg:text-[8px] ${
+                      className={`min-h-8 rounded px-2 font-michroma text-[8px] uppercase transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--court-accent)] lg:px-2.5 lg:py-1 lg:text-[8px] ${
                         isActive
                           ? "bg-[rgb(var(--court-accent-rgb)/0.34)] text-[var(--court-accent)] shadow-[0_0_12px_rgb(var(--court-accent-rgb)/0.16)]"
                           : "text-white/35 hover:bg-white/5 hover:text-white/70"

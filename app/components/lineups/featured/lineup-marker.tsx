@@ -41,6 +41,7 @@ export function LineupMarker({
   const imageSrc = player ? getPlayerHeadshot(player) : "/blank-player.svg";
   const tooltipClass =
     tooltipPosition === "bottom" ? "top-full" : "bottom-full";
+  const tooltipId = `featured-lineup-marker-${position.toLowerCase()}-tooltip`;
 
   return (
     <div
@@ -53,27 +54,42 @@ export function LineupMarker({
         className={player ? "player-add-to-court" : ""}
         style={{ animationDelay }}
       >
-        <div
-          className="group/headshot relative inline-block"
-          onClick={(event) => {
-            event.stopPropagation();
-            onToggleTooltip();
-          }}
-        >
-          <PlayerImage
-            src={imageSrc}
-            alt={player?.name || name}
-            width={72}
-            height={72}
-            className="mx-auto h-12 w-12 rounded-full object-cover transition-all duration-200 lg:h-20 lg:w-20"
-            style={{
-              boxShadow: isHighlighted
-                ? `0 0 0 3px ${color}, 0 0 24px ${color}`
-                : "none",
+        <div className="group/headshot relative inline-block">
+          <button
+            type="button"
+            aria-controls={tooltipId}
+            aria-expanded={isTooltipOpen}
+            aria-label={`${name} lineup marker`}
+            onClick={(event) => {
+              event.stopPropagation();
+              onToggleTooltip();
             }}
-          />
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                event.stopPropagation();
+                onCloseTooltip();
+              }
+            }}
+            className="rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--court-accent)]"
+          >
+            <PlayerImage
+              src={imageSrc}
+              alt=""
+              width={72}
+              height={72}
+              className="mx-auto h-12 w-12 rounded-full object-cover transition-all duration-200 lg:h-20 lg:w-20"
+              style={{
+                boxShadow: isHighlighted
+                  ? `0 0 0 3px ${color}, 0 0 24px ${color}`
+                  : "none",
+              }}
+            />
+          </button>
 
           <div
+            id={tooltipId}
+            role="dialog"
+            aria-label={`${name} actions`}
             className={`absolute left-1/2 z-100 w-24 -translate-x-1/2 rounded-md border bg-black/95 p-1.5 transition-opacity duration-200 sm:w-28 sm:p-2 lg:w-48 lg:p-3 ${tooltipClass} ${
               isTooltipOpen
                 ? "pointer-events-auto opacity-100"

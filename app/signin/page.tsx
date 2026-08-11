@@ -90,20 +90,6 @@ export default function SignInPage() {
     let isActive = true;
     const callbackError = searchParams.get("error");
 
-    if (callbackError) {
-      const timeoutId = window.setTimeout(() => {
-        if (!isActive) return;
-
-        setAuthError(getCallbackErrorMessage(callbackError));
-        setAuthMessage("");
-      }, 0);
-
-      return () => {
-        isActive = false;
-        window.clearTimeout(timeoutId);
-      };
-    }
-
     async function redirectSignedInUser() {
       const { data } = await supabase.auth.getUser();
 
@@ -111,6 +97,12 @@ export default function SignInPage() {
 
       if (data.user) {
         router.replace(nextPath);
+        return;
+      }
+
+      if (callbackError) {
+        setAuthError(getCallbackErrorMessage(callbackError));
+        setAuthMessage("");
       }
     }
 
@@ -243,18 +235,18 @@ export default function SignInPage() {
               Build your roster identity.
             </h1>
 
-            <p className="mt-2 font-michroma text-[7px] uppercase tracking-wide text-white/45 lg:mt-3 lg:text-[10px]">
+            <p className="mt-2 font-michroma text-[8px] uppercase tracking-wide text-white/65 lg:mt-3 lg:text-[10px]">
               Build. Save. Scout.
             </p>
           </div>
 
           <div className="mb-3 rounded-md border border-white/10 bg-black/20 p-2.5 lg:mb-5 lg:p-3">
-            <div className="flex items-center justify-center gap-1.5 font-michroma text-[6px] uppercase text-white/35 lg:gap-2 lg:text-[8px]">
+            <div className="flex items-center justify-center gap-1.5 font-michroma text-[8px] uppercase text-white/60 lg:gap-2 lg:text-[9px]">
               <Shield className="h-3 w-3 text-[var(--court-accent)] lg:h-3.5 lg:w-3.5" />
               Locker Room Access
             </div>
 
-            <p className="mt-1.5 text-center font-michroma text-[7px] leading-relaxed text-white/45 lg:mt-2 lg:text-[9px]">
+            <p className="mt-1.5 text-center font-michroma text-[8px] leading-relaxed text-white/65 lg:mt-2 lg:text-[10px]">
               Save lineups, track favorites, and keep your scouting history tied
               to your account.
             </p>
@@ -265,13 +257,22 @@ export default function SignInPage() {
               onSubmit={handlePasswordReset}
               className="grid gap-2 lg:gap-3"
             >
+              <label htmlFor="forgot-password-email" className="sr-only">
+                Email address
+              </label>
               <input
+                id="forgot-password-email"
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 required
+                autoComplete="email"
+                aria-invalid={Boolean(authError)}
+                aria-describedby={
+                  authError || authMessage ? "signin-status" : undefined
+                }
                 placeholder="Email"
-                className="rounded-md border border-white/15 bg-black/25 px-3 py-2 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/30 focus:border-[var(--court-accent)] lg:px-4 lg:py-3 lg:text-[10px]"
+                className="rounded-md border border-white/15 bg-black/25 px-3 py-2 font-michroma text-[9px] text-white outline-none transition placeholder:text-white/55 focus:border-[var(--court-accent)] lg:px-4 lg:py-3 lg:text-[10px]"
               />
 
               <button
@@ -307,10 +308,10 @@ export default function SignInPage() {
                       setAuthError("");
                       setAuthMessage("");
                     }}
-                    className={`rounded px-2 py-1.5 font-michroma text-[6px] uppercase transition lg:text-[8px] ${
+                    className={`rounded px-2 py-1.5 font-michroma text-[8px] uppercase transition lg:text-[9px] ${
                       authMode === mode
                         ? "bg-[rgb(var(--court-accent-rgb)/0.2)] text-[var(--court-accent)]"
-                        : "text-white/35 hover:bg-white/5 hover:text-white/70"
+                        : "text-white/60 hover:bg-white/5 hover:text-white/80"
                     }`}
                   >
                     {mode === "signin" ? "Sign In" : "Create Account"}
@@ -318,24 +319,44 @@ export default function SignInPage() {
                 ))}
               </div>
 
+              <label htmlFor="signin-email" className="sr-only">
+                Email address
+              </label>
               <input
+                id="signin-email"
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 required
+                autoComplete="email"
+                aria-invalid={Boolean(authError)}
+                aria-describedby={
+                  authError || authMessage ? "signin-status" : undefined
+                }
                 placeholder="Email"
-                className="rounded-md border border-white/15 bg-black/25 px-3 py-2 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/30 focus:border-[var(--court-accent)] lg:px-4 lg:py-3 lg:text-[10px]"
+                className="rounded-md border border-white/15 bg-black/25 px-3 py-2 font-michroma text-[9px] text-white outline-none transition placeholder:text-white/55 focus:border-[var(--court-accent)] lg:px-4 lg:py-3 lg:text-[10px]"
               />
 
               <div className="relative">
+                <label htmlFor="signin-password" className="sr-only">
+                  Password
+                </label>
                 <input
+                  id="signin-password"
                   type={isPasswordVisible ? "text" : "password"}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   required
                   minLength={6}
+                  autoComplete={
+                    authMode === "signup" ? "new-password" : "current-password"
+                  }
+                  aria-invalid={Boolean(authError)}
+                  aria-describedby={
+                    authError || authMessage ? "signin-status" : undefined
+                  }
                   placeholder="Password"
-                  className="w-full rounded-md border border-white/15 bg-black/25 px-3 py-2 pr-9 font-michroma text-[7px] text-white outline-none transition placeholder:text-white/30 focus:border-[var(--court-accent)] lg:px-4 lg:py-3 lg:pr-11 lg:text-[10px]"
+                  className="w-full rounded-md border border-white/15 bg-black/25 px-3 py-2 pr-9 font-michroma text-[9px] text-white outline-none transition placeholder:text-white/55 focus:border-[var(--court-accent)] lg:px-4 lg:py-3 lg:pr-11 lg:text-[10px]"
                 />
 
                 <button
@@ -372,7 +393,7 @@ export default function SignInPage() {
                         "Email recovery is not available yet. Try the email you used when creating your account.",
                       );
                     }}
-                    className="font-michroma text-[6px] uppercase text-white/35 transition hover:text-[var(--court-accent)] lg:text-[8px]"
+                    className="font-michroma text-[8px] uppercase text-white/60 transition hover:text-[var(--court-accent)] lg:text-[9px]"
                   >
                     Forgot Email?
                   </button>
@@ -384,7 +405,7 @@ export default function SignInPage() {
                       setAuthError("");
                       setAuthMessage("");
                     }}
-                    className="font-michroma text-[6px] uppercase text-white/35 transition hover:text-[var(--court-accent)] lg:text-[8px]"
+                    className="font-michroma text-[8px] uppercase text-white/60 transition hover:text-[var(--court-accent)] lg:text-[9px]"
                   >
                     Forgot Password?
                   </button>
@@ -394,7 +415,7 @@ export default function SignInPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="group flex items-center justify-center gap-2 rounded-md border border-[rgb(var(--court-accent-rgb)/0.55)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-3 py-2 font-michroma text-[7px] uppercase text-[var(--court-accent)] shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.14)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white hover:shadow-[0_0_24px_rgb(var(--court-accent-rgb)/0.28)] disabled:cursor-not-allowed disabled:opacity-60 lg:px-4 lg:py-3 lg:text-[10px]"
+                className="group flex items-center justify-center gap-2 rounded-md border border-[rgb(var(--court-accent-rgb)/0.55)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-3 py-2 font-michroma text-[8px] uppercase text-[var(--court-accent)] shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.14)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white hover:shadow-[0_0_24px_rgb(var(--court-accent-rgb)/0.28)] disabled:cursor-not-allowed disabled:opacity-60 lg:px-4 lg:py-3 lg:text-[10px]"
               >
                 <Mail className="h-3 w-3 transition group-hover:brightness-125 lg:h-4 lg:w-4" />
                 {isSubmitting
@@ -408,7 +429,7 @@ export default function SignInPage() {
                 type="button"
                 onClick={signInWithGoogle}
                 disabled={isSubmitting}
-                className="group flex items-center justify-center gap-2 rounded-md border border-[#4285F4]/45 bg-[#08234f]/70 px-3 py-2 font-michroma text-[7px] uppercase text-[#8ab4f8] shadow-[0_0_16px_rgba(66,133,244,0.12)] transition hover:border-[rgb(var(--court-accent-rgb)/0.7)] hover:bg-[#0b2f69]/80 hover:text-white hover:shadow-[0_0_22px_rgba(66,133,244,0.24)] disabled:cursor-not-allowed disabled:opacity-60 lg:px-4 lg:py-3 lg:text-[10px]"
+                className="group flex items-center justify-center gap-2 rounded-md border border-[#4285F4]/45 bg-[#08234f]/70 px-3 py-2 font-michroma text-[8px] uppercase text-[#8ab4f8] shadow-[0_0_16px_rgba(66,133,244,0.12)] transition hover:border-[rgb(var(--court-accent-rgb)/0.7)] hover:bg-[#0b2f69]/80 hover:text-white hover:shadow-[0_0_22px_rgba(66,133,244,0.24)] disabled:cursor-not-allowed disabled:opacity-60 lg:px-4 lg:py-3 lg:text-[10px]"
               >
                 <GoogleMark />
                 {isSubmitting ? "Opening Google..." : "Continue with Google"}
@@ -418,7 +439,9 @@ export default function SignInPage() {
 
           {(authError || authMessage) && (
             <p
-              className={`mt-2 text-center font-michroma text-[6px] leading-relaxed lg:text-[8px] ${
+              id="signin-status"
+              role={authError ? "alert" : "status"}
+              className={`mt-2 text-center font-michroma text-[8px] leading-relaxed lg:text-[9px] ${
                 authError ? "text-red-300" : "text-[var(--court-accent)]"
               }`}
             >
@@ -426,14 +449,14 @@ export default function SignInPage() {
             </p>
           )}
 
-          <p className="mt-2.5 text-center font-michroma text-[6px] leading-relaxed text-white/30 lg:mt-4 lg:text-[8px]">
+          <p className="mt-2.5 text-center font-michroma text-[8px] leading-relaxed text-white/55 lg:mt-4 lg:text-[9px]">
             Your account keeps saved lineups, favorites, and scouting activity
             connected.
           </p>
 
           <Link
             href="/players"
-            className="mt-2.5 block text-center font-michroma text-[7px] uppercase tracking-[0.2em] text-white/35 transition hover:text-[var(--court-accent)] lg:mt-3 lg:text-[9px] lg:tracking-[0.25em]"
+            className="mt-2.5 block text-center font-michroma text-[8px] uppercase tracking-[0.2em] text-white/60 transition hover:text-[var(--court-accent)] lg:mt-3 lg:text-[9px] lg:tracking-[0.25em]"
           >
             Continue Browsing
           </Link>

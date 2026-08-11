@@ -447,7 +447,13 @@ export default function Rankings() {
 
         <RankingPageDescription activeTab={activeTab} />
 
-        <div className="pt-2">
+        <div
+          aria-labelledby={`ranking-tab-${activeTab}`}
+          className="pt-2 focus:outline-none"
+          id={`ranking-panel-${activeTab}`}
+          role="tabpanel"
+          tabIndex={0}
+        >
           <div className="mb-6">
             {activeTab === "archetypes" ? (
               isLoadingPlayers ? (

@@ -17,6 +17,7 @@ import { useEffect, useMemo, useState } from "react";
 import { SkeletonBlock } from "../../components/loading/skeleton";
 import { supabase } from "../../components/supabase-client";
 import { getCachedApiPlayerProfileLookups } from "../../lib/player-api-cache";
+import { AccessibleDialog } from "../../components/ui/accessible-dialog";
 
 type PublicProfile = {
   id: string;
@@ -214,6 +215,12 @@ function getPublicFavoriteHeadshot(player: PublicFavoritePlayer) {
   }
 
   return player.fallbackImage;
+}
+
+function isPublicProfileErrorStatus(status: string) {
+  return /could not|failed|sign in|try again|choose a reason|cannot/i.test(
+    status,
+  );
 }
 
 function PublicProfileSkeleton() {
@@ -787,6 +794,12 @@ export default function PublicProfilePage() {
     }, 1200);
   }
 
+  const favoritePlayerArchetypeTooltipId =
+    "public-profile-favorite-player-archetype-tooltip";
+  const lineupStyleTooltipId = "public-profile-lineup-style-tooltip";
+  const favoriteArchetypesTooltipId =
+    "public-profile-favorite-archetypes-tooltip";
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-[var(--court-panel-alt)] px-4 py-6 text-white lg:px-8 lg:py-10">
       <div
@@ -830,7 +843,7 @@ export default function PublicProfilePage() {
                   </div>
 
                   <div className="min-w-0">
-                    <p className="font-michroma text-[5.5px] uppercase tracking-wide text-[var(--court-accent)] lg:text-[10px]">
+                    <p className="font-michroma text-[8px] uppercase tracking-wide text-[var(--court-accent)] lg:text-[10px]">
                       Public Profile
                     </p>
 
@@ -838,29 +851,29 @@ export default function PublicProfilePage() {
                       {displayName}
                     </h1>
 
-                    <p className="mt-0.5 font-michroma text-[7px] text-white/45 lg:mt-1 lg:text-xs">
+                    <p className="mt-0.5 font-michroma text-[9px] text-white/65 lg:mt-1 lg:text-xs">
                       @{profile.username}
                     </p>
 
-                    <p className="mt-2 hidden max-w-xl font-michroma text-[8px] leading-relaxed text-white/50 lg:mt-3 lg:block lg:text-[10px]">
+                    <p className="mt-2 hidden max-w-xl font-michroma text-[8px] leading-relaxed text-white/65 lg:mt-3 lg:block lg:text-[10px]">
                       StatCourt profile built around public lineups, favorite
                       players, and scouting identity.
                     </p>
 
                     <div className="statcourt-scroll mt-1.5 flex max-w-[calc(100vw-6.5rem)] flex-nowrap gap-0.5 overflow-x-auto pb-1 lg:mt-2 lg:max-w-2xl lg:gap-1.5 lg:pb-0">
-                      <span className="max-w-24 shrink-0 truncate rounded-md border border-[rgb(var(--court-accent-rgb)/0.25)] bg-[rgb(var(--court-accent-rgb)/0.08)] px-1 py-0.5 font-michroma text-[4.5px] uppercase text-[var(--court-accent)] lg:max-w-44 lg:px-2 lg:py-1 lg:text-[7px]">
+                      <span className="max-w-24 shrink-0 truncate rounded-md border border-[rgb(var(--court-accent-rgb)/0.25)] bg-[rgb(var(--court-accent-rgb)/0.08)] px-1 py-0.5 font-michroma text-[7px] uppercase text-[var(--court-accent)] lg:max-w-44 lg:px-2 lg:py-1 lg:text-[8px]">
                         {lineupStyleBadge}
                       </span>
 
-                      <span className="max-w-24 shrink-0 truncate rounded-md border border-[#A855F7]/25 bg-[#A855F7]/10 px-1 py-0.5 font-michroma text-[4.5px] uppercase text-[#C084FC] lg:max-w-44 lg:px-2 lg:py-1 lg:text-[7px]">
+                      <span className="max-w-24 shrink-0 truncate rounded-md border border-[#A855F7]/25 bg-[#A855F7]/10 px-1 py-0.5 font-michroma text-[7px] uppercase text-[#C084FC] lg:max-w-44 lg:px-2 lg:py-1 lg:text-[8px]">
                         {favoritePlayerBadge}
                       </span>
 
-                      <span className="max-w-24 shrink-0 truncate rounded-md border border-[#22C55E]/25 bg-[#22C55E]/10 px-1 py-0.5 font-michroma text-[4.5px] uppercase text-[#22C55E] lg:max-w-44 lg:px-2 lg:py-1 lg:text-[7px]">
+                      <span className="max-w-24 shrink-0 truncate rounded-md border border-[#22C55E]/25 bg-[#22C55E]/10 px-1 py-0.5 font-michroma text-[7px] uppercase text-[#22C55E] lg:max-w-44 lg:px-2 lg:py-1 lg:text-[8px]">
                         {priorityBadge}
                       </span>
 
-                      <span className="shrink-0 rounded-md border border-white/10 bg-white/5 px-1 py-0.5 font-michroma text-[4.5px] uppercase text-white/45 lg:px-2 lg:py-1 lg:text-[7px]">
+                      <span className="shrink-0 rounded-md border border-white/10 bg-white/5 px-1 py-0.5 font-michroma text-[7px] uppercase text-white/65 lg:px-2 lg:py-1 lg:text-[8px]">
                         {formatMemberSince(profile.created_at)}
                       </span>
                     </div>
@@ -871,7 +884,7 @@ export default function PublicProfilePage() {
                   <button
                     type="button"
                     onClick={sharePublicProfile}
-                    className="inline-flex items-center gap-1 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 py-1.5 font-michroma text-[6px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.18)] hover:text-white lg:px-3 lg:py-2 lg:text-[8px]"
+                    className="inline-flex items-center gap-1 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 py-1.5 font-michroma text-[8px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.18)] hover:text-white lg:px-3 lg:py-2 lg:text-[9px]"
                   >
                     <Share2 className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
                     Share Profile
@@ -881,7 +894,8 @@ export default function PublicProfilePage() {
                     type="button"
                     onClick={toggleFollowProfile}
                     disabled={isUpdatingFollow || currentUserId === profile.id}
-                    className="inline-flex items-center gap-1 rounded-md border border-[#A855F7]/35 bg-[#A855F7]/10 px-2 py-1.5 font-michroma text-[6px] uppercase text-[#C084FC] transition hover:bg-[#A855F7]/20 hover:text-white lg:px-3 lg:py-2 lg:text-[8px]"
+                    aria-pressed={isFollowingProfile}
+                    className="inline-flex items-center gap-1 rounded-md border border-[#A855F7]/35 bg-[#A855F7]/10 px-2 py-1.5 font-michroma text-[8px] uppercase text-[#C084FC] transition hover:bg-[#A855F7]/20 hover:text-white lg:px-3 lg:py-2 lg:text-[9px]"
                   >
                     {isFollowingProfile ? (
                       <UserCheck className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
@@ -898,14 +912,21 @@ export default function PublicProfilePage() {
                       setReportStatus("");
                     }}
                     disabled={currentUserId === profile.id}
-                    className="inline-flex items-center gap-1 rounded-md border border-red-400/30 bg-red-400/10 px-2 py-1.5 font-michroma text-[6px] uppercase text-red-300 transition hover:bg-red-400/18 hover:text-white lg:px-3 lg:py-2 lg:text-[8px]"
+                    className="inline-flex items-center gap-1 rounded-md border border-red-400/30 bg-red-400/10 px-2 py-1.5 font-michroma text-[8px] uppercase text-red-300 transition hover:bg-red-400/18 hover:text-white lg:px-3 lg:py-2 lg:text-[9px]"
                   >
                     <Flag className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
                     Report
                   </button>
 
                   {profileActionStatus && (
-                    <p className="absolute right-0 top-full mt-1 font-michroma text-[5px] uppercase text-[var(--court-accent)] lg:text-[7px]">
+                    <p
+                      role={
+                        isPublicProfileErrorStatus(profileActionStatus)
+                          ? "alert"
+                          : "status"
+                      }
+                      className="absolute right-0 top-full mt-1 font-michroma text-[8px] uppercase text-[var(--court-accent)] lg:text-[9px]"
+                    >
                       {profileActionStatus}
                     </p>
                   )}
@@ -917,7 +938,7 @@ export default function PublicProfilePage() {
                   <p className="font-michroma text-sm text-[var(--court-accent)] lg:text-2xl">
                     {followerCount}
                   </p>
-                  <p className="mt-1 font-michroma text-[5px] uppercase leading-tight text-white/35 lg:text-[8px]">
+                  <p className="mt-1 font-michroma text-[7px] uppercase leading-tight text-white/65 lg:text-[8px]">
                     Followers
                   </p>
                 </div>
@@ -926,7 +947,7 @@ export default function PublicProfilePage() {
                   <p className="font-michroma text-sm text-[#A855F7] lg:text-2xl">
                     {favoritePlayers.length}
                   </p>
-                  <p className="mt-1 font-michroma text-[5px] uppercase leading-tight text-white/35 lg:text-[8px]">
+                  <p className="mt-1 font-michroma text-[7px] uppercase leading-tight text-white/65 lg:text-[8px]">
                     Favorite Players
                   </p>
                 </div>
@@ -935,8 +956,18 @@ export default function PublicProfilePage() {
                   <button
                     type="button"
                     onClick={() => setIsTopArchetypeOpen((current) => !current)}
+                    onFocus={() => setIsTopArchetypeOpen(true)}
+                    onBlur={() => setIsTopArchetypeOpen(false)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Escape") {
+                        setIsTopArchetypeOpen(false);
+                      }
+                    }}
                     className="mx-auto block max-w-18 font-michroma text-[7px] leading-tight text-white transition hover:text-[#A855F7] sm:max-w-30 sm:text-[8px] lg:max-w-36 lg:cursor-default lg:text-xs"
+                    aria-controls={favoritePlayerArchetypeTooltipId}
+                    aria-describedby={favoritePlayerArchetypeTooltipId}
                     aria-expanded={isTopArchetypeOpen}
+                    aria-label={`Most common favorite archetype: ${favoritePlayerArchetype}`}
                   >
                     <span className="line-clamp-2">
                       {favoritePlayerArchetype}
@@ -944,14 +975,18 @@ export default function PublicProfilePage() {
                   </button>
 
                   {isTopArchetypeOpen && (
-                    <div className="absolute left-1/2 z-30 mt-1 w-28 -translate-x-1/2 rounded border border-white/15 bg-black/90 px-1.5 py-1 text-center shadow-[0_0_10px_rgba(168,85,247,0.35)] lg:hidden">
-                      <p className="font-michroma text-[6px] leading-snug text-white/85">
+                    <div
+                      id={favoritePlayerArchetypeTooltipId}
+                      role="tooltip"
+                      className="absolute left-1/2 z-30 mt-1 w-28 -translate-x-1/2 rounded border border-white/15 bg-black/90 px-1.5 py-1 text-center shadow-[0_0_10px_rgba(168,85,247,0.35)] lg:hidden"
+                    >
+                      <p className="font-michroma text-[8px] leading-snug text-white/85">
                         {favoritePlayerArchetype}
                       </p>
                     </div>
                   )}
 
-                  <p className="mt-1 font-michroma text-[5px] uppercase leading-tight text-white/35 lg:text-[8px]">
+                  <p className="mt-1 font-michroma text-[7px] uppercase leading-tight text-white/60 lg:text-[8px]">
                     Most Common
                     <br />
                     Favorite Archetype
@@ -962,7 +997,7 @@ export default function PublicProfilePage() {
                   <p className="font-michroma text-sm text-[var(--court-accent)] lg:text-2xl">
                     {publicLineups.length}
                   </p>
-                  <p className="mt-1 font-michroma text-[5px] uppercase leading-tight text-white/35 lg:text-[8px]">
+                  <p className="mt-1 font-michroma text-[7px] uppercase leading-tight text-white/60 lg:text-[8px]">
                     Public Lineup{publicLineups.length === 1 ? "" : "s"}
                   </p>
                 </div>
@@ -971,8 +1006,18 @@ export default function PublicProfilePage() {
                   <button
                     type="button"
                     onClick={() => setIsLineupStyleOpen((current) => !current)}
+                    onFocus={() => setIsLineupStyleOpen(true)}
+                    onBlur={() => setIsLineupStyleOpen(false)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Escape") {
+                        setIsLineupStyleOpen(false);
+                      }
+                    }}
                     className="mx-auto block max-w-18 font-michroma text-[7px] leading-tight text-white transition hover:text-[var(--court-accent)] sm:max-w-30 sm:text-[8px] lg:max-w-36 lg:cursor-default lg:text-xs"
+                    aria-controls={lineupStyleTooltipId}
+                    aria-describedby={lineupStyleTooltipId}
                     aria-expanded={isLineupStyleOpen}
+                    aria-label={`Most-used lineup style: ${publicLineupArchetype}`}
                   >
                     <span className="line-clamp-2">
                       {publicLineupArchetype}
@@ -980,14 +1025,18 @@ export default function PublicProfilePage() {
                   </button>
 
                   {isLineupStyleOpen && (
-                    <div className="absolute left-1/2 z-30 mt-1 w-28 -translate-x-1/2 rounded border border-white/15 bg-black/90 px-1.5 py-1 text-center shadow-[0_0_10px_rgb(var(--court-accent-rgb)/0.35)] lg:hidden">
-                      <p className="font-michroma text-[6px] leading-snug text-white/85">
+                    <div
+                      id={lineupStyleTooltipId}
+                      role="tooltip"
+                      className="absolute left-1/2 z-30 mt-1 w-28 -translate-x-1/2 rounded border border-white/15 bg-black/90 px-1.5 py-1 text-center shadow-[0_0_10px_rgb(var(--court-accent-rgb)/0.35)] lg:hidden"
+                    >
+                      <p className="font-michroma text-[8px] leading-snug text-white/85">
                         {publicLineupArchetype}
                       </p>
                     </div>
                   )}
 
-                  <p className="mt-1 font-michroma text-[5px] uppercase leading-tight text-white/35 lg:text-[8px]">
+                  <p className="mt-1 font-michroma text-[7px] uppercase leading-tight text-white/60 lg:text-[8px]">
                     Most-Used
                     <br />
                     Lineup Style
@@ -1008,7 +1057,7 @@ export default function PublicProfilePage() {
                       </div>
 
                       <div className="min-w-0">
-                        <p className="font-michroma text-[5px] uppercase text-white/40 lg:text-[8px]">
+                        <p className="font-michroma text-[7px] uppercase text-white/60 lg:text-[8px]">
                           Preferred Style
                         </p>
                         <p className="mt-0.5 line-clamp-2 font-michroma text-[8px] uppercase leading-tight text-[var(--court-accent)] [text-shadow:0_0_14px_rgb(var(--court-accent-rgb)/0.4)] lg:mt-1.5 lg:text-base lg:leading-relaxed">
@@ -1025,25 +1074,25 @@ export default function PublicProfilePage() {
 
                   <div className="grid grid-cols-3 gap-1.5 lg:grid-cols-1 lg:gap-1.5">
                     <div className="min-w-0 rounded-md border border-white/10 bg-black/25 p-1.5 lg:p-2.5">
-                      <p className="font-michroma text-[4.5px] uppercase text-white/35 lg:text-[7px]">
+                      <p className="font-michroma text-[7px] uppercase text-white/60 lg:text-[8px]">
                         Team-Building Priority
                       </p>
-                      <p className="mt-0.5 line-clamp-2 font-michroma text-[6px] uppercase leading-tight text-white lg:mt-1 lg:text-[8px] lg:leading-relaxed">
+                      <p className="mt-0.5 line-clamp-2 font-michroma text-[8px] uppercase leading-tight text-white lg:mt-1 lg:text-[9px] lg:leading-relaxed">
                         {teamBuildingPriority}
                       </p>
                     </div>
 
                     <div className="min-w-0 rounded-md border border-white/10 bg-black/25 p-1.5 lg:p-2.5">
-                      <p className="font-michroma text-[4.5px] uppercase text-white/35 lg:text-[7px]">
+                      <p className="font-michroma text-[7px] uppercase text-white/60 lg:text-[8px]">
                         Most Used Stat Profile
                       </p>
-                      <p className="mt-0.5 truncate font-michroma text-[6px] uppercase text-white lg:mt-1 lg:text-[8px]">
+                      <p className="mt-0.5 truncate font-michroma text-[8px] uppercase text-white lg:mt-1 lg:text-[9px]">
                         {formatStatProfile(preferredStatProfile)}
                       </p>
                     </div>
 
                     <div className="relative min-w-0 rounded-md border border-[#A855F7]/25 bg-[#A855F7]/8 p-1.5 lg:p-2.5">
-                      <p className="font-michroma text-[4.5px] uppercase text-white/35 lg:text-[7px]">
+                      <p className="font-michroma text-[7px] uppercase text-white/60 lg:text-[8px]">
                         Favorite Archetypes
                       </p>
 
@@ -1052,8 +1101,18 @@ export default function PublicProfilePage() {
                         onClick={() =>
                           setIsFavoriteArchetypesOpen((current) => !current)
                         }
+                        onFocus={() => setIsFavoriteArchetypesOpen(true)}
+                        onBlur={() => setIsFavoriteArchetypesOpen(false)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Escape") {
+                            setIsFavoriteArchetypesOpen(false);
+                          }
+                        }}
                         className="mt-1 flex w-full flex-wrap gap-0.5 text-left lg:mt-1.5 lg:cursor-default lg:gap-1"
+                        aria-controls={favoriteArchetypesTooltipId}
+                        aria-describedby={favoriteArchetypesTooltipId}
                         aria-expanded={isFavoriteArchetypesOpen}
+                        aria-label={`Favorite archetypes: ${(favoriteIdentityArchetypes.length ? favoriteIdentityArchetypes : ["Not enough data"]).join(", ")}`}
                       >
                         {(favoriteIdentityArchetypes.length
                           ? favoriteIdentityArchetypes
@@ -1061,7 +1120,7 @@ export default function PublicProfilePage() {
                         ).map((archetype) => (
                           <span
                             key={archetype}
-                            className="max-w-full truncate rounded border border-[#A855F7]/30 bg-[#A855F7]/12 px-1 py-0.5 font-michroma text-[4.5px] uppercase text-white/80 lg:px-1.5 lg:text-[6px]"
+                            className="max-w-full truncate rounded border border-[#A855F7]/30 bg-[#A855F7]/12 px-1 py-0.5 font-michroma text-[7px] uppercase text-white/85 lg:px-1.5 lg:text-[8px]"
                           >
                             {archetype}
                           </span>
@@ -1069,11 +1128,15 @@ export default function PublicProfilePage() {
                       </button>
 
                       {isFavoriteArchetypesOpen && (
-                        <div className="absolute right-0 z-30 mt-1 w-32 rounded border border-[#A855F7]/30 bg-black/90 px-1.5 py-1 text-left shadow-[0_0_10px_rgba(168,85,247,0.35)] lg:hidden">
-                          <p className="font-michroma text-[5px] uppercase text-white/35">
+                        <div
+                          id={favoriteArchetypesTooltipId}
+                          role="tooltip"
+                          className="absolute right-0 z-30 mt-1 w-32 rounded border border-[#A855F7]/30 bg-black/90 px-1.5 py-1 text-left shadow-[0_0_10px_rgba(168,85,247,0.35)] lg:hidden"
+                        >
+                          <p className="font-michroma text-[7px] uppercase text-white/60">
                             Favorite Archetypes
                           </p>
-                          <p className="mt-1 font-michroma text-[6px] leading-snug text-white/85">
+                          <p className="mt-1 font-michroma text-[8px] leading-snug text-white/85">
                             {(favoriteIdentityArchetypes.length
                               ? favoriteIdentityArchetypes
                               : ["Not enough data"]
@@ -1089,7 +1152,7 @@ export default function PublicProfilePage() {
               {featuredPublicLineup && (
                 <div className="mt-3 rounded-lg border border-[#EFBF04]/45 bg-[color:color-mix(in_srgb,var(--court-panel)_92%,black)] p-2 shadow-[0_0_26px_rgba(239,191,4,0.1)] lg:mt-6 lg:grid lg:grid-cols-[1fr_1.1fr] lg:gap-5 lg:p-5">
                   <div>
-                    <p className="font-michroma text-[6px] uppercase tracking-wide text-[#EFBF04] lg:text-[9px]">
+                    <p className="font-michroma text-[8px] uppercase tracking-wide text-[#EFBF04] lg:text-[9px]">
                       Featured Lineup
                     </p>
 
@@ -1099,7 +1162,7 @@ export default function PublicProfilePage() {
                           {featuredPublicLineup.name}
                         </h2>
 
-                        <p className="mt-0.5 line-clamp-1 font-michroma text-[6px] uppercase text-[#EFBF04] lg:mt-1 lg:text-[10px]">
+                        <p className="mt-0.5 line-clamp-1 font-michroma text-[8px] uppercase text-[#EFBF04] lg:mt-1 lg:text-[10px]">
                           {featuredPublicLineup.archetype ??
                             "Public StatCourt Build"}
                         </p>
@@ -1109,25 +1172,25 @@ export default function PublicProfilePage() {
                         <p className="font-michroma text-lg text-[#EFBF04] lg:text-4xl">
                           {featuredPublicLineup.overall?.toFixed(1) ?? "--"}
                         </p>
-                        <p className="font-michroma text-[5px] uppercase text-white/35 lg:text-[8px]">
+                        <p className="font-michroma text-[7px] uppercase text-white/60 lg:text-[8px]">
                           OVR
                         </p>
                       </div>
                     </div>
 
                     <div className="mt-2 flex flex-wrap gap-1 lg:mt-3 lg:gap-1.5">
-                      <span className="rounded border border-white/15 bg-white/8 px-1.5 py-0.5 font-michroma text-[5px] uppercase text-white/55 lg:px-2 lg:py-1 lg:text-[8px]">
+                      <span className="rounded border border-white/15 bg-white/8 px-1.5 py-0.5 font-michroma text-[7px] uppercase text-white/70 lg:px-2 lg:py-1 lg:text-[8px]">
                         {formatStatProfile(featuredPublicLineup.stat_profile)}
                       </span>
 
                       {featuredPublicLineup.tier && (
-                        <span className="rounded border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[color:color-mix(in_srgb,var(--court-accent)_24%,var(--court-panel-alt))] px-1.5 py-0.5 font-michroma text-[5px] uppercase text-[var(--court-accent)] lg:px-2 lg:py-1 lg:text-[8px]">
+                        <span className="rounded border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[color:color-mix(in_srgb,var(--court-accent)_24%,var(--court-panel-alt))] px-1.5 py-0.5 font-michroma text-[7px] uppercase text-[var(--court-accent)] lg:px-2 lg:py-1 lg:text-[8px]">
                           {featuredPublicLineup.tier}
                         </span>
                       )}
                     </div>
 
-                    <p className="mt-2 line-clamp-2 font-michroma text-[5.5px] leading-relaxed text-white/55 lg:mt-3 lg:text-[9px]">
+                    <p className="mt-2 line-clamp-2 font-michroma text-[8px] leading-relaxed text-white/70 lg:mt-3 lg:text-[9px]">
                       {featuredPublicLineup.summary ??
                         featuredPublicLineup.team_identity ??
                         "Public lineup built through StatCourt scouting."}
@@ -1135,7 +1198,7 @@ export default function PublicProfilePage() {
 
                     <div className="mt-2 grid grid-cols-2 gap-1.5 lg:mt-3 lg:gap-2">
                       <div className="rounded-md border border-white/10 bg-black/25 p-1.5 lg:p-2">
-                        <p className="font-michroma text-[5px] uppercase text-white/35 lg:text-[8px]">
+                        <p className="font-michroma text-[7px] uppercase text-white/60 lg:text-[8px]">
                           Strengths
                         </p>
                         <div className="mt-1 grid grid-cols-2 gap-0.5 lg:mt-1.5 lg:gap-1">
@@ -1147,7 +1210,7 @@ export default function PublicProfilePage() {
                             .map((strength) => (
                               <span
                                 key={strength}
-                                className="min-w-0 truncate rounded border border-emerald-400/30 bg-emerald-400/10 px-1 py-0.5 text-center font-michroma text-[4.5px] uppercase text-emerald-300 lg:px-1.5 lg:text-[6px]"
+                                className="min-w-0 truncate rounded border border-emerald-400/30 bg-emerald-400/10 px-1 py-0.5 text-center font-michroma text-[7px] uppercase text-emerald-300 lg:px-1.5 lg:text-[8px]"
                               >
                                 {strength}
                               </span>
@@ -1156,10 +1219,10 @@ export default function PublicProfilePage() {
                       </div>
 
                       <div className="rounded-md border border-white/10 bg-black/25 p-1.5 lg:p-2">
-                        <p className="font-michroma text-[5px] uppercase text-white/35 lg:text-[8px]">
+                        <p className="font-michroma text-[7px] uppercase text-white/60 lg:text-[8px]">
                           Team Grades
                         </p>
-                        <div className="mt-1 grid min-w-0 grid-cols-2 gap-x-1 gap-y-0.5 font-michroma text-[4.5px] uppercase text-white/45 lg:mt-1.5 lg:gap-x-2 lg:gap-y-1 lg:text-[6px]">
+                        <div className="mt-1 grid min-w-0 grid-cols-2 gap-x-1 gap-y-0.5 font-michroma text-[7px] uppercase text-white/65 lg:mt-1.5 lg:gap-x-2 lg:gap-y-1 lg:text-[8px]">
                           {Object.entries(featuredPublicLineup.grades ?? {})
                             .slice(0, 5)
                             .map(([gradeLabel, grade]) => (
@@ -1188,20 +1251,20 @@ export default function PublicProfilePage() {
 
                     <div className="mt-1.5 grid grid-cols-2 gap-1.5 lg:mt-4 lg:gap-2">
                       <div className="min-w-0 rounded-md border border-[rgb(var(--court-accent-rgb)/0.28)] bg-[rgb(var(--court-accent-rgb)/0.08)] p-1.5 lg:p-2">
-                        <p className="font-michroma text-[4.5px] uppercase text-white/35 lg:text-[7px]">
+                        <p className="font-michroma text-[7px] uppercase text-white/60 lg:text-[8px]">
                           Team Identity
                         </p>
-                        <p className="mt-0.5 truncate font-michroma text-[5.5px] uppercase text-[var(--court-accent)] lg:mt-1 lg:text-[8px]">
+                        <p className="mt-0.5 truncate font-michroma text-[8px] uppercase text-[var(--court-accent)] lg:mt-1 lg:text-[9px]">
                           {featuredPublicLineup.team_identity ??
                             "Identity Developing"}
                         </p>
                       </div>
 
                       <div className="min-w-0 rounded-md border border-[rgb(var(--court-accent-rgb)/0.28)] bg-[rgb(var(--court-accent-rgb)/0.08)] p-1.5 lg:p-2">
-                        <p className="font-michroma text-[4.5px] uppercase text-white/35 lg:text-[7px]">
+                        <p className="font-michroma text-[7px] uppercase text-white/60 lg:text-[8px]">
                           X-Factor
                         </p>
-                        <p className="mt-0.5 truncate font-michroma text-[5.5px] uppercase text-[var(--court-accent)] lg:mt-1 lg:text-[8px]">
+                        <p className="mt-0.5 truncate font-michroma text-[8px] uppercase text-[var(--court-accent)] lg:mt-1 lg:text-[9px]">
                           {featuredPublicLineup.x_factor_name ?? "Not Set"}
                         </p>
                         {featuredPublicLineup.x_factor_description && (
@@ -1214,7 +1277,7 @@ export default function PublicProfilePage() {
 
                     <button
                       type="button"
-                      className="mt-2 w-full rounded-md border border-[#EFBF04]/55 bg-[#EFBF04]/10 px-2 py-1.5 font-michroma text-[5.5px] uppercase text-[#EFBF04] transition hover:bg-[#EFBF04]/18 hover:text-white lg:mt-4 lg:px-3 lg:py-2 lg:text-[9px]"
+                      className="mt-2 w-full rounded-md border border-[#EFBF04]/55 bg-[#EFBF04]/10 px-2 py-1.5 font-michroma text-[8px] uppercase text-[#EFBF04] transition hover:bg-[#EFBF04]/18 hover:text-white lg:mt-4 lg:px-3 lg:py-2 lg:text-[9px]"
                       title="Full public scout report view coming soon"
                     >
                       View Full Scout Report
@@ -1222,7 +1285,7 @@ export default function PublicProfilePage() {
                   </div>
 
                   <div className="mt-2 rounded-md border border-white/10 bg-black/25 p-1.5 lg:mt-0 lg:p-3">
-                    <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[9px]">
+                    <p className="font-michroma text-[8px] uppercase text-white/65 lg:text-[9px]">
                       Starting Five
                     </p>
 
@@ -1246,7 +1309,7 @@ export default function PublicProfilePage() {
                             key={slot}
                             className="grid grid-cols-[18px_28px_minmax(0,1fr)] items-center gap-1.5 rounded-md border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] p-1 lg:grid-cols-[30px_44px_minmax(0,1fr)] lg:gap-2 lg:p-2"
                           >
-                            <p className="font-michroma text-[6px] text-[var(--court-accent)] lg:text-[10px]">
+                            <p className="font-michroma text-[8px] text-[var(--court-accent)] lg:text-[10px]">
                               {slot}
                             </p>
 
@@ -1270,10 +1333,10 @@ export default function PublicProfilePage() {
                             </div>
 
                             <div className="min-w-0">
-                              <p className="truncate font-michroma text-[6.5px] text-white lg:text-[10px]">
+                              <p className="truncate font-michroma text-[8px] text-white lg:text-[10px]">
                                 {previewPlayer.name}
                               </p>
-                              <p className="mt-0.5 font-michroma text-[4.5px] uppercase text-white/35 lg:text-[7px]">
+                              <p className="mt-0.5 font-michroma text-[7px] uppercase text-white/60 lg:text-[8px]">
                                 {previewPlayer.team ?? "FA"}{" "}
                                 {previewPlayer.position
                                   ? `- ${previewPlayer.position}`
@@ -1291,7 +1354,7 @@ export default function PublicProfilePage() {
               <div className="mt-3 rounded-md border border-[#A855F7]/25 bg-black/20 p-3 lg:mt-4 lg:p-4">
                 <div className="flex items-center gap-2">
                   <Star className="h-3.5 w-3.5 text-[#A855F7] lg:h-4 lg:w-4" />
-                  <p className="font-michroma text-[8px] uppercase text-white/40 lg:text-[10px]">
+                  <p className="font-michroma text-[8px] uppercase text-white/65 lg:text-[10px]">
                     Favorite Players
                   </p>
                 </div>
@@ -1328,10 +1391,10 @@ export default function PublicProfilePage() {
                           </div>
 
                           <div className="min-w-0">
-                            <p className="max-w-full truncate font-michroma text-[5px] leading-tight text-white lg:text-[9px]">
+                            <p className="max-w-full truncate font-michroma text-[8px] leading-tight text-white lg:text-[9px]">
                               {favoritePlayer.name}
                             </p>
-                            <p className="mt-0.5 truncate font-michroma text-[4px] uppercase text-white/40 lg:text-[7px]">
+                            <p className="mt-0.5 truncate font-michroma text-[7px] uppercase text-white/60 lg:text-[8px]">
                               {favoritePlayer.team ?? "FA"}{" "}
                               {favoritePlayer.position
                                 ? `- ${favoritePlayer.position}`
@@ -1396,7 +1459,7 @@ export default function PublicProfilePage() {
                             PUBLIC_FAVORITE_DESKTOP_PREVIEW_LIMIT,
                           );
                         }}
-                        className="mt-3 rounded-md border border-[#A855F7]/35 bg-[#A855F7]/10 px-3 py-1.5 font-michroma text-[6px] uppercase text-[#A855F7] transition hover:bg-[#A855F7]/20 lg:text-[8px]"
+                        className="mt-3 rounded-md border border-[#A855F7]/35 bg-[#A855F7]/10 px-3 py-1.5 font-michroma text-[8px] uppercase text-[#A855F7] transition hover:bg-[#A855F7]/20 lg:text-[9px]"
                       >
                         Show Fewer
                       </button>
@@ -1416,9 +1479,14 @@ export default function PublicProfilePage() {
                   </p>
 
                   <div className="mt-2 grid gap-2 lg:mt-3 lg:grid-cols-2">
-                    {remainingPublicLineups.map((lineup) => (
-                      <div
-                        key={lineup.id}
+                    {remainingPublicLineups.map((lineup) => {
+                      const identityTooltipId = `public-lineup-identity-${lineup.id}`;
+                      const isIdentityTooltipOpen =
+                        openLineupIdentityTooltip === lineup.id;
+
+                      return (
+                        <div
+                          key={lineup.id}
                         className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.22)] bg-black/20 p-3 transition hover:border-[rgb(var(--court-accent-rgb)/0.5)] hover:bg-[rgb(var(--court-accent-rgb)/0.08)] lg:p-4"
                       >
                         <div className="flex items-start justify-between gap-3">
@@ -1438,7 +1506,7 @@ export default function PublicProfilePage() {
                         </div>
 
                         <div className="mt-2 grid grid-cols-3 gap-1">
-                          <span className="min-w-0 truncate rounded border border-[rgb(var(--court-accent-rgb)/0.25)] bg-[rgb(var(--court-accent-rgb)/0.08)] px-1.5 py-1 text-center font-michroma text-[5px] uppercase text-[var(--court-accent)] lg:px-2 lg:text-[7px]">
+                          <span className="min-w-0 truncate rounded border border-[rgb(var(--court-accent-rgb)/0.25)] bg-[rgb(var(--court-accent-rgb)/0.08)] px-1.5 py-1 text-center font-michroma text-[7px] uppercase text-[var(--court-accent)] lg:px-2 lg:text-[8px]">
                             {lineup.tier ?? "Public Build"}
                           </span>
 
@@ -1449,19 +1517,30 @@ export default function PublicProfilePage() {
                                 current === lineup.id ? null : lineup.id,
                               )
                             }
-                            onBlur={() => setOpenLineupIdentityTooltip(null)}
-                            className="group relative min-w-0 rounded border border-[#A855F7]/25 bg-[#A855F7]/10 px-1.5 py-1 text-center font-michroma text-[5px] uppercase text-[#C084FC] transition hover:bg-[#A855F7]/18 hover:text-white lg:px-2 lg:text-[7px]"
-                            aria-expanded={
-                              openLineupIdentityTooltip === lineup.id
+                            onFocus={() =>
+                              setOpenLineupIdentityTooltip(lineup.id)
                             }
+                            onBlur={() => setOpenLineupIdentityTooltip(null)}
+                            onKeyDown={(event) => {
+                              if (event.key === "Escape") {
+                                setOpenLineupIdentityTooltip(null);
+                              }
+                            }}
+                            className="group relative min-w-0 rounded border border-[#A855F7]/25 bg-[#A855F7]/10 px-1.5 py-1 text-center font-michroma text-[7px] uppercase text-[#C084FC] transition hover:bg-[#A855F7]/18 hover:text-white lg:px-2 lg:text-[8px]"
+                            aria-controls={identityTooltipId}
+                            aria-describedby={identityTooltipId}
+                            aria-expanded={isIdentityTooltipOpen}
+                            aria-label={`Team identity: ${lineup.team_identity ?? "Identity"}`}
                           >
                             <span className="block truncate">
                               {lineup.team_identity ?? "Identity"}
                             </span>
 
                             <span
-                              className={`pointer-events-none absolute left-1/2 top-full z-40 mt-1 w-32 -translate-x-1/2 rounded border border-[#A855F7]/30 bg-black/95 px-1.5 py-1 font-michroma text-[5px] leading-snug text-white/85 shadow-[0_0_12px_rgba(168,85,247,0.3)] transition lg:w-44 lg:text-[7px] ${
-                                openLineupIdentityTooltip === lineup.id
+                              id={identityTooltipId}
+                              role="tooltip"
+                              className={`pointer-events-none absolute left-1/2 top-full z-40 mt-1 w-32 -translate-x-1/2 rounded border border-[#A855F7]/30 bg-black/95 px-1.5 py-1 font-michroma text-[7px] leading-snug text-white/85 shadow-[0_0_12px_rgba(168,85,247,0.3)] transition lg:w-44 lg:text-[8px] ${
+                                isIdentityTooltipOpen
                                   ? "opacity-100"
                                   : "opacity-0 group-hover:opacity-100"
                               }`}
@@ -1470,7 +1549,7 @@ export default function PublicProfilePage() {
                             </span>
                           </button>
 
-                          <span className="min-w-0 truncate rounded border border-white/10 bg-white/5 px-1.5 py-1 text-center font-michroma text-[5px] uppercase text-white/45 lg:px-2 lg:text-[7px]">
+                          <span className="min-w-0 truncate rounded border border-white/10 bg-white/5 px-1.5 py-1 text-center font-michroma text-[7px] uppercase text-white/65 lg:px-2 lg:text-[8px]">
                             {formatStatProfile(lineup.stat_profile)}
                           </span>
                         </div>
@@ -1517,8 +1596,9 @@ export default function PublicProfilePage() {
                             );
                           })}
                         </div>
-                      </div>
-                    ))}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -1543,15 +1623,31 @@ export default function PublicProfilePage() {
       </section>
 
       {isReportOpen && profile && (
-        <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/70 px-4">
-          <div className="w-full max-w-md rounded-lg border border-red-400/30 bg-[color:color-mix(in_srgb,var(--court-panel)_96%,black)] p-4 shadow-[0_0_28px_rgba(248,113,113,0.18)] lg:p-5">
+        <AccessibleDialog
+          titleId="report-profile-dialog-title"
+          descriptionId="report-profile-dialog-description"
+          onClose={() => {
+            setIsReportOpen(false);
+            setReportStatus("");
+          }}
+          closeOnBackdrop={!isSubmittingReport}
+          closeOnEscape={!isSubmittingReport}
+          overlayClassName="fixed inset-0 z-1000 flex items-center justify-center bg-black/70 px-4"
+          dialogClassName="w-full max-w-md rounded-lg border border-red-400/30 bg-[color:color-mix(in_srgb,var(--court-panel)_96%,black)] p-4 shadow-[0_0_28px_rgba(248,113,113,0.18)] lg:p-5"
+        >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="font-michroma text-[8px] uppercase text-red-300 lg:text-[10px]">
+                <p
+                  id="report-profile-dialog-title"
+                  className="font-michroma text-[8px] uppercase text-red-300 lg:text-[10px]"
+                >
                   Report Profile
                 </p>
 
-                <p className="mt-2 font-michroma text-[7px] leading-relaxed text-white/45 lg:text-[9px]">
+                <p
+                  id="report-profile-dialog-description"
+                  className="mt-2 font-michroma text-[7px] leading-relaxed text-white/45 lg:text-[9px]"
+                >
                   Tell us what looks wrong with @{profile.username}. Reports
                   are reviewed as account safety signals.
                 </p>
@@ -1571,14 +1667,18 @@ export default function PublicProfilePage() {
             </div>
 
             <div className="mt-4 grid gap-2">
-              <label className="grid gap-1">
-                <span className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+              <label htmlFor="profile-report-reason" className="grid gap-1">
+                <span className="font-michroma text-[8px] uppercase text-white/65 lg:text-[9px]">
                   Reason
                 </span>
 
                 <select
+                  id="profile-report-reason"
                   value={reportReason}
                   onChange={(event) => setReportReason(event.target.value)}
+                  aria-describedby={
+                    reportStatus ? "profile-report-status" : undefined
+                  }
                   className="rounded-md border border-white/10 bg-black/30 px-2 py-2 font-michroma text-[8px] text-white outline-none transition focus:border-red-300/50 lg:text-[10px]"
                 >
                   {reportReasons.map((reason) => (
@@ -1589,24 +1689,38 @@ export default function PublicProfilePage() {
                 </select>
               </label>
 
-              <label className="grid gap-1">
+              <label htmlFor="profile-report-details" className="grid gap-1">
                 <span className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
                   Details
                 </span>
 
                 <textarea
+                  id="profile-report-details"
                   value={reportDetails}
                   onChange={(event) => setReportDetails(event.target.value)}
                   maxLength={500}
                   rows={4}
+                  aria-describedby={
+                    reportStatus ? "profile-report-status" : undefined
+                  }
                   placeholder="Optional context..."
-                  className="resize-none rounded-md border border-white/10 bg-black/30 px-2 py-2 font-michroma text-[8px] leading-relaxed text-white outline-none transition placeholder:text-white/25 focus:border-red-300/50 lg:text-[10px]"
+                  className="resize-none rounded-md border border-white/10 bg-black/30 px-2 py-2 font-michroma text-[8px] leading-relaxed text-white outline-none transition placeholder:text-white/55 focus:border-red-300/50 lg:text-[10px]"
                 />
               </label>
             </div>
 
             <div className="mt-4 flex items-center justify-between gap-3">
-              <p className="min-w-0 flex-1 font-michroma text-[6px] uppercase text-red-200/70 lg:text-[8px]">
+              <p
+                id="profile-report-status"
+                role={
+                  reportStatus
+                    ? isPublicProfileErrorStatus(reportStatus)
+                      ? "alert"
+                      : "status"
+                    : undefined
+                }
+                className="min-w-0 flex-1 font-michroma text-[8px] uppercase text-red-200/80 lg:text-[9px]"
+              >
                 {reportStatus}
               </p>
 
@@ -1619,8 +1733,7 @@ export default function PublicProfilePage() {
                 {isSubmittingReport ? "Sending..." : "Submit Report"}
               </button>
             </div>
-          </div>
-        </div>
+        </AccessibleDialog>
       )}
     </main>
   );

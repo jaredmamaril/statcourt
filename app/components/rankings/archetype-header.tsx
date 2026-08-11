@@ -1,4 +1,6 @@
 export function ArchetypeHeader() {
+  const tooltipId = "ranking-archetype-rarity-tooltip";
+
   return (
     <div className="flex flex-wrap items-center justify-center gap-2 lg:gap-3">
       <h1 className="font-michroma text-sm uppercase tracking-wide text-white lg:text-lg">
@@ -8,12 +10,18 @@ export function ArchetypeHeader() {
       <div className="group relative">
         <button
           type="button"
-          className="cursor-help rounded border border-white/20 bg-[color:color-mix(in_srgb,var(--court-panel)_86%,black)] px-2 py-1 font-michroma text-[8px] uppercase text-white/60 lg:text-[9px]"
+          aria-describedby={tooltipId}
+          aria-controls={tooltipId}
+          className="min-h-10 cursor-help rounded border border-white/20 bg-[color:color-mix(in_srgb,var(--court-panel)_86%,black)] px-3 py-1 font-michroma text-[8px] uppercase text-white/60 lg:min-h-9 lg:text-[9px]"
         >
           Rarity
         </button>
 
-        <div className="pointer-events-none absolute left-1/2 top-full z-100 mt-2 w-46 -translate-x-1/2 rounded-md border border-[rgb(var(--court-accent-rgb)/0.4)] bg-black/95 p-2.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 lg:left-0 lg:w-56 lg:translate-x-0 lg:p-3">
+        <div
+          id={tooltipId}
+          role="tooltip"
+          className="pointer-events-none absolute left-1/2 top-full z-100 mt-2 w-46 -translate-x-1/2 rounded-md border border-[rgb(var(--court-accent-rgb)/0.4)] bg-black/95 p-2.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 lg:left-0 lg:w-56 lg:translate-x-0 lg:p-3"
+        >
           <p className="font-michroma text-[8px] text-[#EFBF04]">
             Gold - Generational
           </p>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AccessibleDialog } from "../ui/accessible-dialog";
 
 type AuthPromptProps = {
   title: string;
@@ -16,20 +17,31 @@ export function AuthPrompt({
   onClose,
 }: AuthPromptProps) {
   return (
-    <div className="fixed inset-0 z-999999 flex items-center justify-center bg-black/75 px-3">
-      <div
-        className="w-full max-w-[300px] rounded-lg border bg-[var(--court-panel)] p-3.5 lg:max-w-[360px] lg:p-5"
-        style={{
-          borderColor: "rgb(var(--court-accent-rgb) / 0.4)",
-          boxShadow:
-            "0 0 24px rgb(var(--court-accent-rgb) / 0.22), 0 0 30px rgb(var(--court-accent-rgb) / 0.12)",
-        }}
-      >
-        <p className="font-michroma text-[10px] leading-snug text-white lg:text-sm">
+    <AccessibleDialog
+      titleId="auth-prompt-dialog-title"
+      descriptionId="auth-prompt-dialog-description"
+      onClose={onClose ?? (() => {})}
+      closeOnBackdrop={Boolean(onClose)}
+      closeOnEscape={Boolean(onClose)}
+      overlayClassName="fixed inset-0 z-999999 flex items-center justify-center bg-black/75 px-3"
+      dialogClassName="w-full max-w-[300px] rounded-lg border bg-[var(--court-panel)] p-3.5 lg:max-w-[360px] lg:p-5"
+      dialogStyle={{
+        borderColor: "rgb(var(--court-accent-rgb) / 0.4)",
+        boxShadow:
+          "0 0 24px rgb(var(--court-accent-rgb) / 0.22), 0 0 30px rgb(var(--court-accent-rgb) / 0.12)",
+      }}
+    >
+        <p
+          id="auth-prompt-dialog-title"
+          className="font-michroma text-[10px] leading-snug text-white lg:text-sm"
+        >
           {title}
         </p>
 
-        <p className="mt-2 font-michroma text-[7px] leading-relaxed text-white/45 lg:text-[9px]">
+        <p
+          id="auth-prompt-dialog-description"
+          className="mt-2 font-michroma text-[7px] leading-relaxed text-white/45 lg:text-[9px]"
+        >
           {description}
         </p>
 
@@ -55,7 +67,6 @@ export function AuthPrompt({
             </button>
           )}
         </div>
-      </div>
-    </div>
+    </AccessibleDialog>
   );
 }

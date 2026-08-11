@@ -192,6 +192,7 @@ function PlayerListCard({
       <button
         type="button"
         onClick={() => onToggleFavorite(player.name)}
+        aria-pressed={isFavorite}
         aria-label={
           isFavorite
             ? `Remove ${player.name} from favorites`

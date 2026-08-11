@@ -139,7 +139,11 @@ export default function CommunityPage() {
 
             <div className="relative w-full lg:w-80">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--court-accent)]" />
+              <label htmlFor="community-profile-search" className="sr-only">
+                Search community profiles
+              </label>
               <input
+                id="community-profile-search"
                 type="search"
                 value={searchValue}
                 onChange={(event) => setSearchValue(event.target.value)}
@@ -165,7 +169,9 @@ export default function CommunityPage() {
 
         {isLoadingProfiles ? (
           <div aria-busy="true" aria-live="polite">
-            <p className="sr-only">Loading community profiles</p>
+            <p className="sr-only" role="status">
+              Loading community profiles
+            </p>
 
             <div className="mt-3 grid gap-2 lg:grid-cols-3 lg:gap-4">
               {Array.from({ length: 9 }, (_, index) => (
@@ -175,7 +181,10 @@ export default function CommunityPage() {
           </div>
         ) : profileError ? (
           <div className="mt-3 rounded-lg border border-red-400/25 bg-red-400/8 p-5 text-center">
-            <p className="font-michroma text-[9px] uppercase text-red-200 lg:text-xs">
+            <p
+              className="font-michroma text-[9px] uppercase text-red-200 lg:text-xs"
+              role="alert"
+            >
               {profileError}
             </p>
 

@@ -1,19 +1,26 @@
 type ScoutReportHeaderProps = {
   scoutSummary: string;
   statProfileLabel: string;
+  titleId?: string;
+  descriptionId?: string;
   onClose: () => void;
 };
 
 export function ScoutReportHeader({
   scoutSummary,
   statProfileLabel,
+  titleId,
+  descriptionId,
   onClose,
 }: ScoutReportHeaderProps) {
   return (
     <div className="relative">
       <div className="pr-12">
         <div className="-mt-2">
-          <h2 className="font-michroma text-xs text-white lg:text-lg">
+          <h2
+            id={titleId}
+            className="font-michroma text-xs text-white lg:text-lg"
+          >
             Scouting Report
           </h2>
 
@@ -25,7 +32,10 @@ export function ScoutReportHeader({
             className="scout-section-reveal"
             style={{ animationDelay: "80ms" }}
           >
-            <p className="mt-1 max-w-50 font-michroma text-[7px] leading-relaxed text-white/35 lg:max-w-60 lg:text-[10px]">
+            <p
+              id={descriptionId}
+              className="mt-1 max-w-50 font-michroma text-[7px] leading-relaxed text-white/35 lg:max-w-60 lg:text-[10px]"
+            >
               {scoutSummary}
             </p>
           </div>
@@ -35,6 +45,7 @@ export function ScoutReportHeader({
       <button
         type="button"
         onClick={onClose}
+        aria-label="Close dialog"
         className="absolute right-0 top-0 z-100 flex h-6 w-6 items-center justify-center font-michroma text-xs text-white/50 transition hover:text-red-400 lg:h-8 lg:w-8 lg:text-sm"
       >
         x

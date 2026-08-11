@@ -25,7 +25,7 @@ export function SavedLineupCardActions({
         type="button"
         disabled={isLoadingPlayers}
         onClick={() => onLoad(lineup)}
-        className="rounded-md border px-2 py-2 font-michroma text-[6px] uppercase transition disabled:cursor-not-allowed disabled:opacity-35 lg:px-3 lg:text-[8px] lg:hover:scale-105 lg:hover:shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.22)]"
+        className="rounded-md border px-2 py-2 font-michroma text-[8px] uppercase transition disabled:cursor-not-allowed disabled:opacity-60 lg:px-3 lg:text-[9px] lg:hover:scale-105 lg:hover:shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.22)]"
         style={{
           color: archetypeColor,
           borderColor: `${archetypeColor}80`,
@@ -39,7 +39,7 @@ export function SavedLineupCardActions({
         type="button"
         disabled={isLoadingPlayers}
         onClick={() => onScout(lineup)}
-        className="rounded-md border px-2 py-2 font-michroma text-[6px] uppercase transition disabled:cursor-not-allowed disabled:opacity-35 lg:px-3 lg:text-[8px] lg:hover:scale-105 lg:hover:shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.22)]"
+        className="rounded-md border px-2 py-2 font-michroma text-[8px] uppercase transition disabled:cursor-not-allowed disabled:opacity-60 lg:px-3 lg:text-[9px] lg:hover:scale-105 lg:hover:shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.22)]"
         style={{
           color: archetypeColor,
           borderColor: `${archetypeColor}50`,
@@ -52,7 +52,7 @@ export function SavedLineupCardActions({
       <button
         type="button"
         onClick={() => onRename(lineup)}
-        className="rounded-md border bg-white/5 px-2 py-2 font-michroma text-[6px] uppercase text-white/45 transition lg:px-3 lg:text-[8px] lg:hover:scale-105 lg:hover:shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.22)]"
+        className="rounded-md border bg-white/5 px-2 py-2 font-michroma text-[8px] uppercase text-white/70 transition lg:px-3 lg:text-[9px] lg:hover:scale-105 lg:hover:shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.22)]"
         style={{
           borderColor: `${archetypeColor}33`,
         }}
@@ -63,7 +63,7 @@ export function SavedLineupCardActions({
       <button
         type="button"
         onClick={() => onDelete(lineup)}
-        className="rounded-md border border-red-500/30 bg-red-500/10 px-2 py-2 font-michroma text-[6px] uppercase text-red-400 transition lg:ml-auto lg:px-3 lg:text-[8px] lg:hover:scale-105 lg:hover:bg-red-500/20 lg:hover:shadow-[0_0_14px_rgba(239,68,68,0.22)]"
+        className="rounded-md border border-red-500/30 bg-red-500/10 px-2 py-2 font-michroma text-[8px] uppercase text-red-300 transition lg:ml-auto lg:px-3 lg:text-[9px] lg:hover:scale-105 lg:hover:bg-red-500/20 lg:hover:shadow-[0_0_14px_rgba(239,68,68,0.22)]"
       >
         Delete
       </button>

@@ -113,14 +113,14 @@ export function ArchetypeCardGrid({
                     {label}
                   </span>
 
-                  <span className="mt-1 block text-[7px] text-white/40 lg:text-[10px]">
+                  <span className="mt-1 block text-[8px] text-white/60 lg:text-[10px]">
                     {archetypePlayers.length}{" "}
                     {archetypePlayers.length === 1 ? "Player" : "Players"}
                   </span>
 
                   {representative && (
                     <>
-                      <span className="mt-2 block text-[6.5px] uppercase text-white/35 lg:mt-4 lg:text-[9px]">
+                      <span className="mt-2 block text-[8px] uppercase text-white/60 lg:mt-4 lg:text-[9px]">
                         Face of Archetype
                       </span>
                       <span className="mt-1 block truncate text-[7.5px] text-white/75 lg:text-[10px]">
@@ -132,7 +132,7 @@ export function ArchetypeCardGrid({
 
                 {averageRating !== null && (
                   <span className="text-center">
-                    <span className="block text-[6px] uppercase text-white/35 lg:text-[8px]">
+                    <span className="block text-[8px] uppercase text-white/60 lg:text-[9px]">
                       Avg Rating
                     </span>
                     <span className="mt-1 block text-[11px] font-bold text-white lg:text-lg">
@@ -149,7 +149,7 @@ export function ArchetypeCardGrid({
       {archetypeOptionDetails.length > ARCHETYPE_INITIAL_LIMIT && (
         <div className="mt-2 rounded-md border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_90%,black)] p-1.5 font-michroma lg:mt-3 lg:p-3">
           <div className="flex flex-col gap-1.5 lg:flex-row lg:items-center lg:justify-between lg:gap-2">
-            <p className="text-center text-[5.5px] uppercase text-white/35 lg:text-left lg:text-[9px]">
+            <p className="text-center text-[8px] uppercase text-white/60 lg:text-left lg:text-[9px]">
               Showing {displayedArchetypes.length} of{" "}
               {archetypeOptionDetails.length} archetypes
             </p>
@@ -159,7 +159,7 @@ export function ArchetypeCardGrid({
                 <button
                   type="button"
                   onClick={() => setDisplayLimit(ARCHETYPE_INITIAL_LIMIT)}
-                  className="h-6 rounded border border-white/15 bg-white/5 px-2 font-michroma text-[6px] uppercase text-white/55 transition hover:border-[rgb(var(--court-accent-rgb)/0.45)] hover:text-[var(--court-accent)] lg:h-8 lg:px-3 lg:text-[9px]"
+                  className="min-h-9 rounded border border-white/15 bg-white/5 px-2 font-michroma text-[8px] uppercase text-white/70 transition hover:border-[rgb(var(--court-accent-rgb)/0.45)] hover:text-[var(--court-accent)] lg:min-h-8 lg:px-3 lg:text-[9px]"
                 >
                   Show Less
                 </button>
@@ -176,7 +176,7 @@ export function ArchetypeCardGrid({
                   )
                 }
                 disabled={!hasMoreArchetypes}
-                className="h-6 rounded border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 font-michroma text-[6px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/25 lg:h-8 lg:px-3 lg:text-[9px]"
+                className="min-h-9 rounded border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 font-michroma text-[8px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/55 lg:min-h-8 lg:px-3 lg:text-[9px]"
               >
                 {hasMoreArchetypes ? "Load More" : "All Shown"}
               </button>

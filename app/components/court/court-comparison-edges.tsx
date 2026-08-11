@@ -88,16 +88,23 @@ export function CourtComparisonEdges({
   const edgesRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    function closeOpenEdge(event: PointerEvent) {
+    function closeOpenEdge(event: PointerEvent | KeyboardEvent) {
+      if (event instanceof KeyboardEvent) {
+        if (event.key === "Escape") setOpenEdge(null);
+        return;
+      }
+
       if (!edgesRef.current?.contains(event.target as Node)) {
         setOpenEdge(null);
       }
     }
 
     document.addEventListener("pointerdown", closeOpenEdge);
+    document.addEventListener("keydown", closeOpenEdge);
 
     return () => {
       document.removeEventListener("pointerdown", closeOpenEdge);
+      document.removeEventListener("keydown", closeOpenEdge);
     };
   }, []);
 
@@ -166,50 +173,58 @@ export function CourtComparisonEdges({
       key={`${leftPlayer.id}-${rightPlayer.id}-${statMode}`}
       className="relative z-100 mx-auto mt-4 grid w-full max-w-6xl grid-cols-2 gap-2 px-3 sm:grid-cols-2 sm:gap-3 sm:px-0 lg:grid-cols-5"
     >
-      {edges.map((edge, index) => (
+      {edges.map((edge, index) => {
+        const tooltipId = `court-edge-tooltip-${edge.label
+          .toLowerCase()
+          .replaceAll(" ", "-")}`;
+        const isOpen = openEdge === edge.label;
+
+        return (
         <div
           key={edge.label}
-          role="button"
-          tabIndex={0}
           style={{
             animationDelay: `${index * 45}ms`,
             borderColor: `${edge.color}88`,
             boxShadow: `0 0 16px ${edge.color}22`,
           }}
-          onClick={() =>
-            setOpenEdge((current) =>
-              current === edge.label ? null : edge.label,
-            )
-          }
-          onKeyDown={(event) => {
-            if (event.key === "Enter" || event.key === " ") {
-              event.preventDefault();
-              setOpenEdge((current) =>
-                current === edge.label ? null : edge.label,
-              );
-            }
-          }}
           className={`group relative cursor-help rounded-lg border bg-[color:color-mix(in_srgb,var(--court-panel)_94%,black)] px-2.5 py-2 text-center transition hover:z-200 hover:-translate-y-0.5 hover:bg-[var(--court-panel-alt)] focus:z-200 sm:px-4 sm:py-3 ${
             edge.label === "Efficiency Edge" ? "col-span-2 lg:col-span-1" : ""
           } animate-[courtEdgeReveal_220ms_ease-out_both]`}
         >
-          <p className="font-michroma text-[6.5px] uppercase tracking-wide text-white/75 sm:text-[8px]">
-            {edge.label}
-          </p>
-
-          <p
-            className="mt-1 truncate font-michroma text-[10px] brightness-125 sm:mt-2 sm:text-[14px]"
-            style={{
-              color: edge.color,
-              textShadow: `0 0 10px ${edge.color}, 0 0 20px ${edge.color}66`,
-            }}
+          <button
+            type="button"
+            aria-controls={tooltipId}
+            aria-describedby={tooltipId}
+            aria-expanded={isOpen}
+            onClick={() =>
+              setOpenEdge((current) =>
+                current === edge.label ? null : edge.label,
+              )
+            }
+            onFocus={() => setOpenEdge(edge.label)}
+            onBlur={() => setOpenEdge(null)}
+            className="block w-full rounded text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--court-accent)]"
           >
-            {edge.winner}
-          </p>
+            <span className="block font-michroma text-[6.5px] uppercase tracking-wide text-white/75 sm:text-[8px]">
+              {edge.label}
+            </span>
+
+            <span
+              className="mt-1 block truncate font-michroma text-[10px] brightness-125 sm:mt-2 sm:text-[14px]"
+              style={{
+                color: edge.color,
+                textShadow: `0 0 10px ${edge.color}, 0 0 20px ${edge.color}66`,
+              }}
+            >
+              {edge.winner}
+            </span>
+          </button>
 
           <div
+            id={tooltipId}
+            role="tooltip"
             className={`absolute top-[calc(100%+6px)] left-1/2 z-999 w-[min(180px,90vw)] -translate-x-1/2 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[#030910]/95 p-1.5 text-left shadow-[0_0_24px_rgb(var(--court-accent-rgb)/0.18)] transition duration-150 lg:w-72 lg:p-3 ${
-              openEdge === edge.label
+              isOpen
                 ? "pointer-events-auto opacity-100"
                 : "pointer-events-none opacity-0 group-hover:opacity-100"
             }`}
@@ -253,7 +268,8 @@ export function CourtComparisonEdges({
             </p>
           </div>
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

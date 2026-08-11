@@ -11,6 +11,7 @@ import {
   getBearerToken,
   getSupabaseServerConfig,
 } from "@/app/lib/supabase-server";
+import { validateRequestOrigin } from "@/app/lib/request-security";
 
 export const runtime = "nodejs";
 
@@ -104,6 +105,10 @@ async function checkFavoriteRateLimit(request: Request, userId: string) {
 }
 
 export async function POST(request: Request) {
+  if (!validateRequestOrigin(request)) {
+    return Response.json({ error: "Invalid request origin." }, { status: 403 });
+  }
+
   const context = await getRequestContext(request);
 
   if ("error" in context) return context.error;
@@ -143,6 +148,10 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  if (!validateRequestOrigin(request)) {
+    return Response.json({ error: "Invalid request origin." }, { status: 403 });
+  }
+
   const context = await getRequestContext(request);
 
   if ("error" in context) return context.error;

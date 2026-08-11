@@ -22,16 +22,21 @@ export function CourtComparisonHeader({
   ];
 
   const statModeControl = (
-    <div className="mt-1.5 inline-flex rounded-md border border-white/10 bg-black/25 p-0.5">
+    <div
+      aria-label="Comparison stat profile"
+      className="mt-1.5 inline-flex rounded-md border border-white/10 bg-black/25 p-0.5"
+      role="group"
+    >
       {statModeOptions.map((option) => {
         const isActive = statMode === option.value;
 
         return (
           <button
             key={option.value}
+            aria-pressed={isActive}
             type="button"
             onClick={() => onStatModeChange(option.value)}
-            className={`rounded border px-2 py-0.5 font-michroma text-[6px] uppercase tracking-wide transition-all duration-200 sm:px-2.5 sm:py-1 sm:text-[7px] ${
+            className={`rounded border px-2 py-0.5 font-michroma text-[6px] uppercase tracking-wide transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--court-accent)] sm:px-2.5 sm:py-1 sm:text-[7px] ${
               isActive
                 ? "scale-[1.04] border-[rgb(var(--court-accent-rgb)/0.55)] bg-[rgb(var(--court-accent-rgb)/0.22)] text-[var(--court-accent)] shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.28)]"
                 : "border-transparent text-white/35 hover:bg-white/5 hover:text-white/70"

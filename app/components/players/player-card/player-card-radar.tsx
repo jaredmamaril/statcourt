@@ -136,31 +136,33 @@ export function PlayerCardRadar({
         />
       </div>
 
-      <ResponsiveContainer width="100%" height="100%">
-        <RadarChart data={radarData}>
-          <PolarGrid stroke="rgba(255,255,255,0.2)" />
-          <PolarAngleAxis
-            dataKey="stat"
-            tick={{
-              fill: "white",
-              fontSize: 7,
-              fontFamily: "Michroma",
-            }}
-          />
-          <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-          <Radar
-            dataKey="value"
-            stroke={teamColor}
-            strokeWidth={2}
-            fill={teamColor}
-            fillOpacity={0.2}
-            isAnimationActive={true}
-            animationBegin={500}
-            animationDuration={900}
-            animationEasing="ease-out"
-          />
-        </RadarChart>
-      </ResponsiveContainer>
+      <div className="h-full w-full" aria-hidden="true">
+        <ResponsiveContainer width="100%" height="100%">
+          <RadarChart data={radarData}>
+            <PolarGrid stroke="rgba(255,255,255,0.2)" />
+            <PolarAngleAxis
+              dataKey="stat"
+              tick={{
+                fill: "white",
+                fontSize: 7,
+                fontFamily: "Michroma",
+              }}
+            />
+            <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
+            <Radar
+              dataKey="value"
+              stroke={teamColor}
+              strokeWidth={2}
+              fill={teamColor}
+              fillOpacity={0.2}
+              isAnimationActive={true}
+              animationBegin={500}
+              animationDuration={900}
+              animationEasing="ease-out"
+            />
+          </RadarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }

@@ -18,7 +18,7 @@ export function SavedLineupsEmptyState({
         No saved lineups yet.
       </p>
 
-      <p className="mt-1.5 max-w-56 font-michroma text-[7px] leading-relaxed text-white/40 lg:mt-3 lg:max-w-md lg:text-xs">
+      <p className="mt-1.5 max-w-56 font-michroma text-[8px] leading-relaxed text-white/65 lg:mt-3 lg:max-w-md lg:text-xs">
         Build your first team and save it after scouting.
       </p>
 

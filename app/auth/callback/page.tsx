@@ -42,6 +42,14 @@ export default function AuthCallbackPage() {
       const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
       if (error) {
+        const { data: existingSessionData } = await supabase.auth.getUser();
+
+        if (existingSessionData.user) {
+          await trackUserSignin(existingSessionData.user, provider);
+          router.replace(nextPath);
+          return;
+        }
+
         setStatus("Could not complete sign in. Redirecting...");
         router.replace("/signin?error=auth_callback_failed");
         return;

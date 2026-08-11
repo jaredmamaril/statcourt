@@ -166,6 +166,7 @@ function Players() {
   // Auth
   const [authPromptMessage, setAuthPromptMessage] = useState("");
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const [playerActionStatus, setPlayerActionStatus] = useState("");
 
   // Derived player data
   const selectedPlayer = players.find(
@@ -546,6 +547,9 @@ function Players() {
       };
 
       void updateCompareSlots(nextSlots);
+      setPlayerActionStatus(
+        `${selectedPlayer.name} added as ${slot} compare player.`,
+      );
 
       setIsGoingToCourt(true);
 
@@ -758,6 +762,12 @@ function Players() {
                   onLoadMore={loadMorePlayers}
                   onToggleFavorite={(playerName) =>
                     requireAuth("Sign in to save favorite players", () => {
+                      const wasFavorite = favorites.includes(playerName);
+                      setPlayerActionStatus(
+                        wasFavorite
+                          ? `${playerName} removed from favorites.`
+                          : `${playerName} added to favorites.`,
+                      );
                       void toggleFavorite(playerName);
                     })
                   }
@@ -804,6 +814,15 @@ function Players() {
               onClose={() => setShowAuthPrompt(false)}
             />
           )}
+
+          <p
+            aria-atomic="true"
+            aria-live="polite"
+            className="sr-only"
+            role="status"
+          >
+            {playerActionStatus}
+          </p>
         </div>
       </section>
     </main>

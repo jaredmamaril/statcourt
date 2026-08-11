@@ -17,6 +17,9 @@ export function PlayerCardAddToCompare({
 }: PlayerCardAddToCompareProps) {
   const teamColor = getTeamColor(player.team);
   const [isCompareMenuOpen, setIsCompareMenuOpen] = useState(false);
+  const menuId = `compare-menu-${player.id}`;
+  const isLeftComparePlayer = compareSlots.left === player.name;
+  const isRightComparePlayer = compareSlots.right === player.name;
 
   function toggleCompareMenu(event: React.MouseEvent) {
     event.stopPropagation();
@@ -32,6 +35,8 @@ export function PlayerCardAddToCompare({
       <button
         type="button"
         onClick={toggleCompareMenu}
+        aria-controls={menuId}
+        aria-expanded={isCompareMenuOpen}
         className="w-full cursor-pointer rounded-md border bg-black/75 px-3 py-2 font-michroma text-sm uppercase tracking-wide text-white transition-all duration-200 hover:brightness-250 sm:px-4 sm:text-lg"
         style={{
           borderColor: teamColor,
@@ -41,6 +46,7 @@ export function PlayerCardAddToCompare({
       </button>
 
       <div
+        id={menuId}
         className={`absolute bottom-full left-1/2 z-210 w-full -translate-x-1/2 rounded-md border border-white/20 bg-black/95 p-2 transition-opacity duration-200 after:absolute after:left-0 after:top-full after:h-3 after:w-full after:content-[''] sm:p-3 ${
           isCompareMenuOpen
             ? "pointer-events-auto opacity-100"
@@ -54,6 +60,7 @@ export function PlayerCardAddToCompare({
         <div className="flex flex-col gap-1.5 sm:gap-2">
           <button
             type="button"
+            aria-pressed={isLeftComparePlayer}
             onClick={(event) => {
               event.stopPropagation();
               onAddPlayerToCompare("left");
@@ -69,6 +76,7 @@ export function PlayerCardAddToCompare({
 
           <button
             type="button"
+            aria-pressed={isRightComparePlayer}
             onClick={(event) => {
               event.stopPropagation();
               onAddPlayerToCompare("right");

@@ -17,6 +17,7 @@ export function TeamFilterDropdown({
   onSelectTeam,
 }: TeamFilterDropdownProps) {
   const filteredTeamLogo = filteredTeam ? getTeamLogo(filteredTeam) : null;
+  const dropdownId = "players-team-filter-menu";
   const filteredTeamColor = filteredTeam
     ? getReadableTeamColor(filteredTeam)
     : undefined;
@@ -26,7 +27,11 @@ export function TeamFilterDropdown({
       <button
         type="button"
         onClick={onOpenDropdown}
-        className={`flex h-6 cursor-pointer items-center gap-1 rounded-md border px-2 font-michroma text-[9px] transition-all duration-200 sm:h-auto sm:gap-2 sm:py-1 sm:text-xs ${
+        aria-label="Filter players by team"
+        aria-expanded={isOpen}
+        aria-controls={dropdownId}
+        aria-haspopup="true"
+        className={`flex min-h-9 cursor-pointer items-center gap-1 rounded-md border px-2 font-michroma text-[9px] transition-all duration-200 sm:min-h-8 sm:gap-2 sm:py-1 sm:text-xs ${
           filteredTeam
             ? "scale-[1.02] bg-[color:color-mix(in_srgb,var(--court-accent)_38%,var(--court-panel-alt))] ring-1 ring-[rgb(var(--court-accent-rgb)/0.45)]"
             : "border-white/20 bg-[color:color-mix(in_srgb,var(--court-panel)_86%,black)] text-white/70 hover:border-white/60"
@@ -52,7 +57,7 @@ export function TeamFilterDropdown({
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-full z-30 mt-1.5 max-h-36 w-22 overflow-y-auto rounded-md border border-white/20 bg-[var(--court-panel-alt)] py-1 shadow-xl animate-[dropdownIn_140ms_ease-out_both] sm:mt-2 sm:max-h-40 sm:w-36">
+        <div id={dropdownId} className="absolute left-0 top-full z-30 mt-1.5 max-h-36 w-22 overflow-y-auto rounded-md border border-white/20 bg-[var(--court-panel-alt)] py-1 shadow-xl animate-[dropdownIn_140ms_ease-out_both] sm:mt-2 sm:max-h-40 sm:w-36">
           <button
             type="button"
             onClick={() => onSelectTeam("")}

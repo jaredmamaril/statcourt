@@ -4,6 +4,7 @@ import { Michroma } from "next/font/google";
 import { Habibi } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/navbar";
+import { GlobalFooter } from "./components/global-footer";
 import { ReducedMotionSync } from "./components/settings/reduced-motion-sync";
 import { ThemeSync } from "./components/settings/theme-sync";
 import { defaultStatCourtTheme } from "./lib/themes";
@@ -52,6 +53,7 @@ export default function RootLayout({
         <ReducedMotionSync />
         <Navbar />
         {children}
+        <GlobalFooter />
       </body>
     </html>
   );

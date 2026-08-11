@@ -66,6 +66,11 @@ export function SelectedPlayerCard({
   const [openCardTooltip, setOpenCardTooltip] = useState<string | null>(null);
 
   function toggleCardTooltip(id: string) {
+    if (!id) {
+      setOpenCardTooltip(null);
+      return;
+    }
+
     setOpenCardTooltip((current) => (current === id ? null : id));
   }
 

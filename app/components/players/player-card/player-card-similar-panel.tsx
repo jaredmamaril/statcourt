@@ -1,4 +1,4 @@
-import { getTeamColor, type Player } from "../../court-data";
+﻿import { getTeamColor, type Player } from "../../court-data";
 import { Info } from "lucide-react";
 
 export const lineupFitDescriptions: Record<string, string> = {
@@ -121,25 +121,28 @@ export function PlayerCardSimilarPanel({
   getLineupFitStyles,
   onSelectSimilarPlayer,
 }: PlayerCardSimilarPanelProps) {
-  function toggleSimilarInfoOnTouch(event: React.PointerEvent) {
-    if (event.pointerType === "mouse") return;
-
-    event.stopPropagation();
-    onToggleTooltip("similar-info");
+  function getTooltipId(prefix: string, label: string) {
+    return `${prefix}-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   }
 
-  function toggleLineupLegendOnTouch(event: React.PointerEvent) {
+  function stopTouchPropagation(event: React.PointerEvent) {
     if (event.pointerType === "mouse") return;
 
     event.stopPropagation();
-    onToggleTooltip("lineup-legend");
   }
 
-  function toggleLineupFitOnTouch(event: React.PointerEvent, fit: string) {
-    if (event.pointerType === "mouse") return;
+  function handleTooltipKeyDown(event: React.KeyboardEvent, id: string) {
+    if (event.key === "Escape") {
+      event.stopPropagation();
+      onToggleTooltip("");
+      return;
+    }
 
-    event.stopPropagation();
-    onToggleTooltip(`lineup-fit-${fit}`);
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      event.stopPropagation();
+      onToggleTooltip(id);
+    }
   }
 
   return (
@@ -157,15 +160,30 @@ export function PlayerCardSimilarPanel({
           Similar To
         </span>
 
-        <Info
-          className="h-2.5 w-2.5 cursor-help text-[rgb(var(--court-accent-rgb)/0.5)] transition group-hover/similarInfo:text-[var(--court-accent)] sm:h-3 sm:w-3"
-          onPointerDown={toggleSimilarInfoOnTouch}
+        <button
+          type="button"
+          aria-controls="player-card-similar-info-tooltip"
+          aria-describedby="player-card-similar-info-tooltip"
+          aria-expanded={openTooltip === "similar-info"}
+          aria-label="Similar players explanation"
+          onPointerDown={stopTouchPropagation}
           onClick={(event) => {
             event.stopPropagation();
+            onToggleTooltip("similar-info");
           }}
-        />
+          onFocus={() => {
+            if (openTooltip !== "similar-info") onToggleTooltip("similar-info");
+          }}
+          onBlur={() => onToggleTooltip("")}
+          onKeyDown={(event) => handleTooltipKeyDown(event, "similar-info")}
+          className="inline-flex cursor-help rounded-full text-[rgb(var(--court-accent-rgb)/0.5)] transition group-hover/similarInfo:text-[var(--court-accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--court-accent)]"
+        >
+          <Info aria-hidden="true" className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+        </button>
 
         <div
+          id="player-card-similar-info-tooltip"
+          role="tooltip"
           className={`pointer-events-none absolute bottom-full right-0 z-999 mb-1 w-40 rounded-md border border-white/15 bg-black/95 p-2 text-left font-michroma text-[6px] leading-relaxed text-white/80 shadow-[0_0_18px_rgba(0,0,0,0.55)] transition-opacity duration-200 sm:left-1/2 sm:right-auto sm:w-52 sm:-translate-x-1/2 sm:text-[7px] ${
             openTooltip === "similar-info"
               ? "opacity-100"
@@ -217,15 +235,32 @@ export function PlayerCardSimilarPanel({
             Best Lineup Fits
           </span>
 
-          <Info
-            className="h-2.5 w-2.5 cursor-help text-[rgb(var(--court-accent-rgb)/0.5)] transition group-hover/fitLegend:text-[var(--court-accent)] sm:h-3 sm:w-3"
-            onPointerDown={toggleLineupLegendOnTouch}
+          <button
+            type="button"
+            aria-controls="player-card-lineup-legend-tooltip"
+            aria-describedby="player-card-lineup-legend-tooltip"
+            aria-expanded={openTooltip === "lineup-legend"}
+            aria-label="Best lineup fits color legend"
+            onPointerDown={stopTouchPropagation}
             onClick={(event) => {
               event.stopPropagation();
+              onToggleTooltip("lineup-legend");
             }}
-          />
+            onFocus={() => {
+              if (openTooltip !== "lineup-legend") {
+                onToggleTooltip("lineup-legend");
+              }
+            }}
+            onBlur={() => onToggleTooltip("")}
+            onKeyDown={(event) => handleTooltipKeyDown(event, "lineup-legend")}
+            className="inline-flex cursor-help rounded-full text-[rgb(var(--court-accent-rgb)/0.5)] transition group-hover/fitLegend:text-[var(--court-accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--court-accent)]"
+          >
+            <Info aria-hidden="true" className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+          </button>
 
           <div
+            id="player-card-lineup-legend-tooltip"
+            role="tooltip"
             className={`pointer-events-none absolute bottom-full right-0 z-999 mb-1 w-44 rounded-md border border-white/15 bg-black/95 p-2 text-left font-michroma text-[6px] leading-relaxed text-white/80 shadow-[0_0_18px_rgba(0,0,0,0.55)] transition-opacity duration-200 sm:left-1/2 sm:right-auto sm:w-56 sm:-translate-x-1/2 sm:text-[7px] ${
               openTooltip === "lineup-legend"
                 ? "opacity-100"
@@ -263,38 +298,60 @@ export function PlayerCardSimilarPanel({
           </div>
         </div>
 
-        {bestLineupFits.map((fit) => (
-          <div
-            key={fit}
-            className={`group/fit relative cursor-help ${
-              openTooltip === `lineup-fit-${fit}` ? "z-500" : "z-30"
-            }`}
-            onPointerDown={(event) => {
-              toggleLineupFitOnTouch(event, fit);
-            }}
-            onClick={(event) => {
-              event.stopPropagation();
-            }}
-          >
-            <span
-              className="block max-w-36 cursor-help truncate rounded border px-1.5 py-0.5 font-michroma text-[7px] brightness-125 sm:max-w-44 sm:px-2 sm:text-[9px]"
-              style={getLineupFitStyles(fit)}
-            >
-              ✓ {fit}
-            </span>
+        {bestLineupFits.map((fit) => {
+          const fitTooltipKey = `lineup-fit-${fit}`;
+          const fitTooltipId = getTooltipId("player-card-lineup-fit", fit);
 
+          return (
             <div
-              className={`pointer-events-none absolute bottom-full right-0 z-999 mb-1 w-44 rounded-md border border-white/15 bg-black/95 p-2 text-left font-michroma text-[6px] leading-relaxed text-white/80 shadow-[0_0_18px_rgba(0,0,0,0.55)] transition-opacity duration-200 sm:left-1/2 sm:right-auto sm:w-52 sm:-translate-x-1/2 sm:text-[7px] ${
-                openTooltip === `lineup-fit-${fit}`
-                  ? "opacity-100"
-                  : "opacity-0 group-hover/fit:opacity-100"
+              key={fit}
+              className={`group/fit relative cursor-help ${
+                openTooltip === fitTooltipKey ? "z-500" : "z-30"
               }`}
+              onPointerDown={stopTouchPropagation}
+              onClick={(event) => {
+                event.stopPropagation();
+              }}
             >
-              {lineupFitDescriptions[fit] ??
-                "Recommended lineup fit based on this player's statistical profile."}
+              <button
+                type="button"
+                aria-controls={fitTooltipId}
+                aria-describedby={fitTooltipId}
+                aria-expanded={openTooltip === fitTooltipKey}
+                className="block max-w-36 cursor-help truncate rounded border px-1.5 py-0.5 font-michroma text-[7px] brightness-125 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--court-accent)] sm:max-w-44 sm:px-2 sm:text-[9px]"
+                style={getLineupFitStyles(fit)}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onToggleTooltip(fitTooltipKey);
+                }}
+                onFocus={() => {
+                  if (openTooltip !== fitTooltipKey) {
+                    onToggleTooltip(fitTooltipKey);
+                  }
+                }}
+                onBlur={() => onToggleTooltip("")}
+                onKeyDown={(event) =>
+                  handleTooltipKeyDown(event, fitTooltipKey)
+                }
+              >
+                ✓ {fit}
+              </button>
+
+              <div
+                id={fitTooltipId}
+                role="tooltip"
+                className={`pointer-events-none absolute bottom-full right-0 z-999 mb-1 w-44 rounded-md border border-white/15 bg-black/95 p-2 text-left font-michroma text-[6px] leading-relaxed text-white/80 shadow-[0_0_18px_rgba(0,0,0,0.55)] transition-opacity duration-200 sm:left-1/2 sm:right-auto sm:w-52 sm:-translate-x-1/2 sm:text-[7px] ${
+                  openTooltip === fitTooltipKey
+                    ? "opacity-100"
+                    : "opacity-0 group-hover/fit:opacity-100"
+                }`}
+              >
+                {lineupFitDescriptions[fit] ??
+                  "Recommended lineup fit based on this player's statistical profile."}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

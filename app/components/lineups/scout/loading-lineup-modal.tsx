@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { LoadingSpinner } from "../../loading/loading-spinner";
+import { AccessibleDialog } from "../../ui/accessible-dialog";
 
 type LoadingLineupModalProps = {
   steps: string[];
@@ -62,23 +63,32 @@ export function LoadingLineupModal({
   }, [exitDuration, onComplete, progressInterval, steps, totalDuration]);
 
   return (
-    <div
-      className={`fixed inset-0 z-1000 flex items-center justify-center bg-black/75 px-3 transition-opacity duration-300 ${
+    <AccessibleDialog
+      titleId="loading-lineup-dialog-title"
+      descriptionId="loading-lineup-dialog-description"
+      onClose={() => {}}
+      closeOnBackdrop={false}
+      closeOnEscape={false}
+      overlayClassName={`fixed inset-0 z-1000 flex items-center justify-center bg-black/75 px-3 transition-opacity duration-300 ${
         isExiting ? "opacity-0" : "opacity-100"
       }`}
+      dialogClassName={`w-full max-w-72 rounded-md border border-[rgb(var(--court-accent-rgb)/0.6)] bg-[var(--court-panel-alt)] p-4 shadow-[0_0_35px_rgb(var(--court-accent-rgb)/0.25)] transition-all duration-300 sm:max-w-md sm:p-6 ${
+        isExiting
+          ? "translate-y-2 scale-95 opacity-0"
+          : "translate-y-0 scale-100 opacity-100"
+      }`}
     >
-      <div
-        className={`w-full max-w-72 rounded-md border border-[rgb(var(--court-accent-rgb)/0.6)] bg-[var(--court-panel-alt)] p-4 shadow-[0_0_35px_rgb(var(--court-accent-rgb)/0.25)] transition-all duration-300 sm:max-w-md sm:p-6 ${
-          isExiting
-            ? "translate-y-2 scale-95 opacity-0"
-            : "translate-y-0 scale-100 opacity-100"
-        }`}
-      >
-        <p className="font-michroma text-sm text-white sm:text-lg">
+        <p
+          id="loading-lineup-dialog-title"
+          className="font-michroma text-sm text-white sm:text-lg"
+        >
           Loading Lineup
         </p>
 
-        <p className="mt-2 min-h-4 font-michroma text-[10px] text-[var(--court-accent)] sm:mt-3 sm:min-h-5 sm:text-sm">
+        <p
+          id="loading-lineup-dialog-description"
+          className="mt-2 min-h-4 font-michroma text-[10px] text-[var(--court-accent)] sm:mt-3 sm:min-h-5 sm:text-sm"
+        >
           {steps[currentStep]}
         </p>
 
@@ -106,7 +116,6 @@ export function LoadingLineupModal({
             </p>
           ))}
         </div>
-      </div>
-    </div>
+    </AccessibleDialog>
   );
 }

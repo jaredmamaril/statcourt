@@ -40,6 +40,7 @@ import {
   getStarPowerTier,
   type PlayerRatingCategory,
 } from "../../components/player-ratings";
+import { AccessibleDialog } from "../../components/ui/accessible-dialog";
 
 const statModeLabels: Record<StatMode, string> = {
   career: "Career",
@@ -109,6 +110,7 @@ export default function PlayerProfilePage() {
   >(null);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [authPromptMessage, setAuthPromptMessage] = useState("");
+  const [playerActionStatus, setPlayerActionStatus] = useState("");
   const hasAppliedDefaultStatModeRef = useRef(false);
 
   useEffect(() => {
@@ -291,6 +293,9 @@ export default function PlayerProfilePage() {
         ...compareSlots,
         [slot]: player.name,
       });
+      setPlayerActionStatus(
+        `${player.name} added as ${slot} compare player.`,
+      );
 
       router.push("/court");
     });
@@ -300,6 +305,11 @@ export default function PlayerProfilePage() {
     requireAuth("Sign in to save favorite players", () => {
       if (!player) return;
 
+      setPlayerActionStatus(
+        isFavorite
+          ? `${player.name} removed from favorites.`
+          : `${player.name} added to favorites.`,
+      );
       void toggleFavorite(player.name);
     });
   }
@@ -330,6 +340,15 @@ export default function PlayerProfilePage() {
       />
 
       <section className="relative z-10 mx-auto max-w-6xl">
+        <p
+          aria-atomic="true"
+          aria-live="polite"
+          className="sr-only"
+          role="status"
+        >
+          {playerActionStatus}
+        </p>
+
         <div className="mb-3 flex items-center justify-between gap-3 lg:mb-6">
           <button
             type="button"
@@ -429,16 +448,21 @@ export default function PlayerProfilePage() {
                     {player.name}
                   </h1>
 
-                  <div className="mt-2 inline-flex rounded-md border border-white/10 bg-black/25 p-0.5 lg:mt-3">
+                  <div
+                    aria-label="Player stat profile"
+                    className="mt-2 inline-flex rounded-md border border-white/10 bg-black/25 p-0.5 lg:mt-3"
+                    role="group"
+                  >
                     {(["career", "peak", "current"] as const).map((mode) => {
                       const isActive = statMode === mode;
 
                       return (
                         <button
                           key={mode}
+                          aria-pressed={isActive}
                           type="button"
                           onClick={() => setStatMode(mode)}
-                          className={`rounded px-2 py-1 font-michroma text-[7px] uppercase transition lg:px-3 lg:text-[9px] ${
+                          className={`rounded px-2 py-1 font-michroma text-[7px] uppercase transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--court-accent)] lg:px-3 lg:text-[9px] ${
                             isActive
                               ? "bg-[rgb(var(--court-accent-rgb)/0.2)] text-[var(--court-accent)]"
                               : "text-white/35 hover:bg-white/5 hover:text-white/70"
@@ -459,6 +483,7 @@ export default function PlayerProfilePage() {
                       <button
                         type="button"
                         onClick={() => comparePlayer("left")}
+                        aria-pressed={compareSlots.left === player.name}
                         className="px-2.5 py-1.5 font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.24)] lg:px-3 lg:text-[9px]"
                       >
                         Left Compare
@@ -466,6 +491,7 @@ export default function PlayerProfilePage() {
                       <button
                         type="button"
                         onClick={() => comparePlayer("right")}
+                        aria-pressed={compareSlots.right === player.name}
                         className="border-l border-[rgb(var(--court-accent-rgb)/0.35)] px-2.5 py-1.5 font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.24)] lg:px-3 lg:text-[9px]"
                       >
                         Right Compare
@@ -475,6 +501,12 @@ export default function PlayerProfilePage() {
                     <button
                       type="button"
                       onClick={toggleFavoritePlayer}
+                      aria-pressed={isFavorite}
+                      aria-label={
+                        isFavorite
+                          ? `Remove ${player.name} from favorites`
+                          : `Add ${player.name} to favorites`
+                      }
                       className="rounded-md border border-[#EFBF04]/55 bg-[#EFBF04]/12 px-2.5 py-1.5 font-michroma text-[7px] uppercase text-[#EFBF04] shadow-[0_0_14px_rgba(239,191,4,0.12)] transition hover:scale-[1.03] hover:bg-[#EFBF04]/20 lg:px-3 lg:text-[9px]"
                     >
                       {isFavorite ? "Favorited" : "Add Favorite"}
@@ -673,6 +705,9 @@ export default function PlayerProfilePage() {
                   <div className="mt-3 grid gap-2">
                     {bestLineupFits.map((fit) => {
                       const isTooltipOpen = openLineupFitTooltip === fit;
+                      const tooltipId = `player-profile-lineup-fit-${fit
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, "-")}`;
 
                       return (
                         <div
@@ -683,6 +718,9 @@ export default function PlayerProfilePage() {
                         >
                           <button
                             type="button"
+                            aria-controls={tooltipId}
+                            aria-describedby={tooltipId}
+                            aria-expanded={isTooltipOpen}
                             onClick={() =>
                               setOpenLineupFitTooltip((current) =>
                                 current === fit ? null : fit,
@@ -690,6 +728,11 @@ export default function PlayerProfilePage() {
                             }
                             onFocus={() => setOpenLineupFitTooltip(fit)}
                             onBlur={() => setOpenLineupFitTooltip(null)}
+                            onKeyDown={(event) => {
+                              if (event.key === "Escape") {
+                                setOpenLineupFitTooltip(null);
+                              }
+                            }}
                             className="w-full cursor-help rounded-md border bg-black/20 px-3 py-2 text-left font-michroma text-[8px] transition hover:scale-[1.02] lg:text-[10px]"
                             style={getLineupFitStyles(fit)}
                           >
@@ -697,6 +740,8 @@ export default function PlayerProfilePage() {
                           </button>
 
                           <div
+                            id={tooltipId}
+                            role="tooltip"
                             className={`pointer-events-none absolute bottom-full right-10 z-50 mb-1 w-44 max-w-[calc(100vw-2rem)] rounded-md border border-white/15 bg-black/95 p-2 text-left font-michroma text-[6px] leading-relaxed text-white/80 shadow-[0_0_18px_rgba(0,0,0,0.55)] transition-opacity duration-200 lg:w-60 lg:p-3 lg:text-[8px] ${
                               isTooltipOpen
                                 ? "opacity-100"
@@ -718,23 +763,28 @@ export default function PlayerProfilePage() {
       </section>
 
       {player && isBuildSlotModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 px-3 pt-16 lg:pt-24"
-          onMouseDown={() => setIsBuildSlotModalOpen(false)}
+        <AccessibleDialog
+          titleId="build-with-player-dialog-title"
+          descriptionId="build-with-player-dialog-description"
+          onClose={() => setIsBuildSlotModalOpen(false)}
+          overlayClassName="fixed inset-0 z-50 flex items-start justify-center bg-black/70 px-3 pt-16 lg:pt-24"
+          dialogClassName="w-full max-w-82 rounded-lg border border-[rgb(var(--court-accent-rgb)/0.4)] bg-[var(--court-panel)] p-3 shadow-[0_0_26px_rgb(var(--court-accent-rgb)/0.16)] lg:max-w-md lg:p-5"
         >
-          <div
-            className="w-full max-w-82 rounded-lg border border-[rgb(var(--court-accent-rgb)/0.4)] bg-[var(--court-panel)] p-3 shadow-[0_0_26px_rgb(var(--court-accent-rgb)/0.16)] lg:max-w-md lg:p-5"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
             <p className="font-michroma text-[9px] uppercase text-[var(--court-accent)] lg:text-xs">
               Build With Player
             </p>
 
-            <p className="mt-1 font-michroma text-sm uppercase text-white lg:text-xl">
+            <p
+              id="build-with-player-dialog-title"
+              className="mt-1 font-michroma text-sm uppercase text-white lg:text-xl"
+            >
               {player.name}
             </p>
 
-            <p className="mt-2 font-michroma text-[7px] leading-relaxed text-white/45 lg:text-[9px]">
+            <p
+              id="build-with-player-dialog-description"
+              className="mt-2 font-michroma text-[7px] leading-relaxed text-white/45 lg:text-[9px]"
+            >
               Choose where to place this player. If a slot already has someone,
               that player will be replaced.
             </p>
@@ -784,8 +834,7 @@ export default function PlayerProfilePage() {
             >
               Cancel
             </button>
-          </div>
-        </div>
+        </AccessibleDialog>
       )}
 
       {showAuthPrompt && (

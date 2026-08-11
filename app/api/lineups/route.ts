@@ -22,6 +22,7 @@ import {
   getBearerToken,
   getSupabaseServerConfig,
 } from "@/app/lib/supabase-server";
+import { validateRequestOrigin } from "@/app/lib/request-security";
 
 export const runtime = "nodejs";
 
@@ -401,6 +402,10 @@ async function saveOwnedLineups(
 }
 
 export async function PATCH(request: Request) {
+  if (!validateRequestOrigin(request)) {
+    return Response.json({ error: "Invalid request origin." }, { status: 403 });
+  }
+
   const context = await getRequestContext(request);
 
   if ("error" in context) return context.error;

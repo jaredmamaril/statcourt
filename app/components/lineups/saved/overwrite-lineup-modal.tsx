@@ -1,4 +1,5 @@
 import type { SavedLineup } from "../shared/lineup-types";
+import { AccessibleDialog } from "../../ui/accessible-dialog";
 
 type OverwriteLineupModalProps = {
   existingLineup: SavedLineup;
@@ -20,13 +21,24 @@ export function OverwriteLineupModal({
   onConfirm,
 }: OverwriteLineupModalProps) {
   return (
-    <div className="fixed inset-0 z-1000 flex animate-[modalBackdropIn_120ms_ease-out_both] items-center justify-center bg-black/65 px-3">
-      <div className="w-full max-w-75 animate-[cardFaceIn_140ms_ease-out_both] rounded-md border border-[#f4bb44]/50 bg-[var(--court-panel-alt)] p-4 text-center shadow-lg lg:max-w-md lg:p-6">
-        <p className="font-michroma text-sm text-white lg:text-lg">
+    <AccessibleDialog
+      titleId="overwrite-lineup-dialog-title"
+      descriptionId="overwrite-lineup-dialog-description"
+      onClose={onCancel}
+      overlayClassName="fixed inset-0 z-1000 flex animate-[modalBackdropIn_120ms_ease-out_both] items-center justify-center bg-black/65 px-3"
+      dialogClassName="w-full max-w-75 animate-[cardFaceIn_140ms_ease-out_both] rounded-md border border-[#f4bb44]/50 bg-[var(--court-panel-alt)] p-4 text-center shadow-lg lg:max-w-md lg:p-6"
+    >
+        <p
+          id="overwrite-lineup-dialog-title"
+          className="font-michroma text-sm text-white lg:text-lg"
+        >
           Overwrite Lineup?
         </p>
 
-        <p className="mt-3 font-michroma text-[8px] leading-relaxed text-white/50 lg:mt-4 lg:text-xs">
+        <p
+          id="overwrite-lineup-dialog-description"
+          className="mt-3 font-michroma text-[8px] leading-relaxed text-white/50 lg:mt-4 lg:text-xs"
+        >
           A lineup named &quot;{existingLineup.name}&quot; already exists.
           Saving &quot;{nextName}&quot; will replace the previous version.
         </p>
@@ -62,7 +74,6 @@ export function OverwriteLineupModal({
             {actionLabel}
           </button>
         </div>
-      </div>
-    </div>
+    </AccessibleDialog>
   );
 }

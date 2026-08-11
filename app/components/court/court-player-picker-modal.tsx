@@ -2,6 +2,7 @@ import PlayerImage from "../player-image";
 import { getPlayerHeadshot } from "../player-images";
 import { getReadableTeamColor, type Player } from "../court-data";
 import { SkeletonBlock } from "../loading/skeleton";
+import { AccessibleDialog } from "../ui/accessible-dialog";
 
 type CourtPlayerPickerModalProps = {
   isOpen: boolean;
@@ -31,22 +32,22 @@ export function CourtPlayerPickerModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/75 px-3 pt-12 pb-4 animate-[modalBackdropIn_160ms_ease-out_both] sm:items-center sm:py-4">
-      <button
-        type="button"
-        aria-label="Close player picker"
-        onClick={onClose}
-        className="absolute inset-0 cursor-default"
-      />
-
-      <div className="relative z-10 flex max-h-[90vh] w-full max-w-4xl flex-col rounded-xl border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[color:color-mix(in_srgb,var(--court-panel)_95%,transparent)] p-4 shadow-[0_0_44px_rgb(var(--court-accent-rgb)/0.22)] animate-[courtPickerModalIn_180ms_ease-out_both] sm:p-5">
+    <AccessibleDialog
+      titleId="court-player-picker-title"
+      onClose={onClose}
+      overlayClassName="fixed inset-0 z-50 flex items-start justify-center bg-black/75 px-3 pt-12 pb-4 animate-[modalBackdropIn_160ms_ease-out_both] sm:items-center sm:py-4"
+      dialogClassName="relative z-10 flex max-h-[90vh] w-full max-w-4xl flex-col rounded-xl border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[color:color-mix(in_srgb,var(--court-panel)_95%,transparent)] p-4 shadow-[0_0_44px_rgb(var(--court-accent-rgb)/0.22)] animate-[courtPickerModalIn_180ms_ease-out_both] sm:p-5"
+    >
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="font-michroma text-[8px] uppercase tracking-wide text-[var(--court-accent)] sm:text-[9px]">
               Choose Your Player
             </p>
 
-            <h2 className="mt-1 font-michroma text-lg uppercase text-white sm:text-2xl">
+            <h2
+              id="court-player-picker-title"
+              className="mt-1 font-michroma text-lg uppercase text-white sm:text-2xl"
+            >
               {side === "left" ? "Left Player" : "Right Player"}
             </h2>
           </div>
@@ -61,7 +62,12 @@ export function CourtPlayerPickerModal({
           </button>
         </div>
 
+        <label htmlFor="court-player-picker-search" className="sr-only">
+          Search players
+        </label>
         <input
+          id="court-player-picker-search"
+          type="search"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           disabled={isLoadingPlayers}
@@ -158,7 +164,6 @@ export function CourtPlayerPickerModal({
             </div>
           )}
         </div>
-      </div>
-    </div>
+    </AccessibleDialog>
   );
 }

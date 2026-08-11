@@ -20,7 +20,7 @@ export function ScoutTraitsGrid({
     >
       <div className="mt-2 grid grid-cols-2 items-start gap-2 lg:grid-cols-[130px_130px_130px_130px] lg:gap-3">
         <div>
-          <p className="font-michroma text-[6px] lg:text-[9px] uppercase text-emerald-400/60">
+          <p className="font-michroma text-[8px] uppercase text-emerald-300 lg:text-[9px]">
             Strengths
           </p>
 
@@ -28,7 +28,7 @@ export function ScoutTraitsGrid({
             {lineupStrengths.map((strength) => (
               <p
                 key={strength}
-                className="font-michroma text-[6px] lg:text-[9px] text-white"
+                className="font-michroma text-[8px] text-white lg:text-[9px]"
               >
                 <span className="text-emerald-400">✓</span> {strength}
               </p>
@@ -37,7 +37,7 @@ export function ScoutTraitsGrid({
         </div>
 
         <div>
-          <p className="font-michroma text-[6px] lg:text-[9px] uppercase text-red-400/60">
+          <p className="font-michroma text-[8px] uppercase text-red-300 lg:text-[9px]">
             Weaknesses
           </p>
 
@@ -45,7 +45,7 @@ export function ScoutTraitsGrid({
             {lineupWeaknesses.map((weakness) => (
               <p
                 key={weakness}
-                className="font-michroma text-[6px] lg:text-[9px] text-white"
+                className="font-michroma text-[8px] text-white lg:text-[9px]"
               >
                 <span className="text-red-400">!</span> {weakness}
               </p>
@@ -54,44 +54,44 @@ export function ScoutTraitsGrid({
         </div>
 
         <div>
-          <p className="font-michroma text-[6px] lg:text-[9px] uppercase text-[#EFBF04]">
+          <p className="font-michroma text-[8px] uppercase text-[#EFBF04] lg:text-[9px]">
             Tradeoff
           </p>
 
-          <p className="mt-1 max-w-25 font-michroma text-[6px] lg:text-[9px] text-white">
+          <p className="mt-1 max-w-25 font-michroma text-[8px] text-white lg:text-[9px]">
             {lineupTradeoff}
           </p>
         </div>
 
         <div>
-          <p className="font-michroma text-[6px] lg:text-[9px] uppercase text-white/30">
+          <p className="font-michroma text-[8px] uppercase text-white/65 lg:text-[9px]">
             Team Grades
           </p>
 
           <div className="mt-1 grid gap-1">
-            <p className="font-michroma text-[5px] lg:text-[8px] text-white/35">
+            <p className="font-michroma text-[7px] text-white/65 lg:text-[8px]">
               Offense:{" "}
-              <span className="text-white/55">{teamGrades.offense}</span>
+              <span className="text-white/80">{teamGrades.offense}</span>
             </p>
 
-            <p className="font-michroma text-[5px] lg:text-[8px] text-white/35">
+            <p className="font-michroma text-[7px] text-white/65 lg:text-[8px]">
               Defense:{" "}
-              <span className="text-white/55">{teamGrades.defense}</span>
+              <span className="text-white/80">{teamGrades.defense}</span>
             </p>
 
-            <p className="font-michroma text-[5px] lg:text-[8px] text-white/35">
+            <p className="font-michroma text-[7px] text-white/65 lg:text-[8px]">
               Shooting:{" "}
-              <span className="text-white/55">{teamGrades.shooting}</span>
+              <span className="text-white/80">{teamGrades.shooting}</span>
             </p>
 
-            <p className="font-michroma text-[5px] lg:text-[8px] text-white/35">
+            <p className="font-michroma text-[7px] text-white/65 lg:text-[8px]">
               Playmaking:{" "}
-              <span className="text-white/55">{teamGrades.playmaking}</span>
+              <span className="text-white/80">{teamGrades.playmaking}</span>
             </p>
 
-            <p className="font-michroma text-[5px] lg:text-[8px] text-white/35">
+            <p className="font-michroma text-[7px] text-white/65 lg:text-[8px]">
               Rebounding:{" "}
-              <span className="text-white/55">{teamGrades.rebounding}</span>
+              <span className="text-white/80">{teamGrades.rebounding}</span>
             </p>
           </div>
         </div>

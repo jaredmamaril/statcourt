@@ -11,6 +11,7 @@ import {
   getBearerToken,
   getSupabaseServerConfig,
 } from "@/app/lib/supabase-server";
+import { validateRequestOrigin } from "@/app/lib/request-security";
 
 export const runtime = "nodejs";
 
@@ -104,6 +105,10 @@ async function checkFollowRateLimit(request: Request, userId: string) {
 }
 
 export async function POST(request: Request) {
+  if (!validateRequestOrigin(request)) {
+    return Response.json({ error: "Invalid request origin." }, { status: 403 });
+  }
+
   const context = await getRequestContext(request);
 
   if ("error" in context) return context.error;
@@ -128,6 +133,21 @@ export async function POST(request: Request) {
     );
   }
 
+  const { data: followTarget, error: followTargetError } =
+    await context.adminClient
+      .from("user_profiles")
+      .select("id")
+      .eq("id", followingId)
+      .eq("public_profile_enabled", true)
+      .maybeSingle();
+
+  if (followTargetError || !followTarget) {
+    return Response.json(
+      { error: "Could not follow profile." },
+      { status: 400 },
+    );
+  }
+
   const { error } = await context.adminClient.from("user_follows").insert({
     follower_id: context.user.id,
     following_id: followingId,
@@ -147,6 +167,10 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  if (!validateRequestOrigin(request)) {
+    return Response.json({ error: "Invalid request origin." }, { status: 403 });
+  }
+
   const context = await getRequestContext(request);
 
   if ("error" in context) return context.error;

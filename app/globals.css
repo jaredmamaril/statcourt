@@ -363,6 +363,29 @@ a {
   text-decoration: none;
 }
 
+:is(
+    a[href],
+    button:not(:disabled),
+    input:not(:disabled),
+    select:not(:disabled),
+    textarea:not(:disabled),
+    summary,
+    [role="button"],
+    [role="tab"],
+    [role="menuitem"],
+    [tabindex]:not([tabindex="-1"])
+  ):focus-visible {
+  outline: 2px solid var(--court-accent) !important;
+  outline-offset: 3px !important;
+  box-shadow:
+    0 0 0 4px rgb(var(--court-accent-rgb) / 0.26),
+    0 0 18px rgb(var(--court-accent-rgb) / 0.28) !important;
+}
+
+:is(input, select, textarea):not(:disabled):focus-visible {
+  border-color: rgb(var(--court-accent-rgb) / 0.9) !important;
+}
+
 html.statcourt-reduced-motion {
   scroll-behavior: auto !important;
 }
@@ -396,6 +419,36 @@ html.statcourt-reduced-motion {
 
 .statcourt-reduced-motion .home-court-scan {
   display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+
+  .page-enter,
+  .scout-section-reveal,
+  .panel-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .home-court-scan {
+    display: none !important;
+  }
+
+  .statcourt-loading-spinner {
+    animation: spin 1s linear infinite !important;
+  }
 }
 
 /* Dropdowns/Lists */

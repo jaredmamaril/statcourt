@@ -41,7 +41,7 @@ export const ArchetypeDescriptionPanel = forwardRef<
       </p>
 
       <div className="mt-3">
-        <p className="font-michroma text-[8px] uppercase text-white/40 lg:text-[10px]">
+        <p className="font-michroma text-[8px] uppercase text-white/65 lg:text-[10px]">
           Core Traits
         </p>
 
@@ -50,7 +50,7 @@ export const ArchetypeDescriptionPanel = forwardRef<
             (trait) => (
               <span
                 key={trait}
-                className="rounded border px-1.5 py-1 font-michroma text-[6px] lg:px-2 lg:text-[10px]"
+                className="rounded border px-1.5 py-1 font-michroma text-[8px] lg:px-2 lg:text-[10px]"
                 style={{
                   color: archetypeColor,
                   borderColor: archetypeColor,
@@ -77,7 +77,7 @@ export const ArchetypeDescriptionPanel = forwardRef<
                 <span className="font-michroma text-[7px] text-white/50 lg:text-[9px]">
                   {label}
                 </span>
-                <span className="font-michroma text-[7px] text-white/40 lg:text-[9px]">
+                <span className="font-michroma text-[8px] text-white/65 lg:text-[9px]">
                   {value}/10
                 </span>
               </div>

@@ -44,6 +44,14 @@ type BuilderDraftSlotProps = {
   onRemovePlayer: (position: LineupSlot) => void;
 };
 
+const slotLabels: Record<LineupSlot, string> = {
+  PG: "Point Guard",
+  SG: "Shooting Guard",
+  SF: "Small Forward",
+  PF: "Power Forward",
+  C: "Center",
+};
+
 function BuilderDraftSlot({
   position,
   player,
@@ -82,6 +90,10 @@ function BuilderDraftSlot({
   );
   const isHighlighted =
     player && (player.name === hoveredBuildPlayer || isActiveDraftPlayer);
+  const slotLabel = slotLabels[position];
+  const slotAccessibleName = player
+    ? `${slotLabel} slot, occupied by ${player.name}. Press Space or Enter to move this player.`
+    : `${slotLabel} slot, empty.`;
 
   function setNodeRef(node: HTMLDivElement | null) {
     setDroppableNodeRef(node);
@@ -97,7 +109,8 @@ function BuilderDraftSlot({
         animationDelay: getPlayerRevealDelay(playerRevealMode, positionIndex),
       }}
       {...(player ? listeners : {})}
-      {...(player ? attributes : {})}
+      {...(player ? attributes : { role: "group" })}
+      aria-label={slotAccessibleName}
       onClick={() => {
         if (!player) return;
 
@@ -122,19 +135,19 @@ function BuilderDraftSlot({
       }`}
     >
       <span
-        className={`font-michroma text-[6px] lg:text-sm ${
-          player ? "text-emerald-400" : "text-white/40"
+        className={`font-michroma text-[8px] lg:text-sm ${
+          player ? "text-emerald-400" : "text-white/60"
         }`}
       >
         {position}
       </span>
 
       <div>
-        <p className="max-w-13 truncate font-michroma text-[6px] text-white lg:max-w-44 lg:text-sm">
+        <p className="max-w-13 truncate font-michroma text-[8px] text-white lg:max-w-44 lg:text-sm">
           {player ? player.name : "Select Player"}
         </p>
 
-        <p className="mt-0.5 font-michroma text-[5px] text-white/35 lg:mt-1 lg:text-[10px]">
+        <p className="mt-0.5 font-michroma text-[7px] text-white/60 lg:mt-1 lg:text-[10px]">
           {player ? `${player.team} - #${player.jerseyNumber}` : "Empty"}
         </p>
       </div>
@@ -142,6 +155,7 @@ function BuilderDraftSlot({
       {player && (
         <button
           type="button"
+          aria-label={`Remove ${player.name} from ${slotLabel}`}
           onClick={(event) => {
             event.stopPropagation();
             onRemovePlayer(position);
@@ -182,7 +196,7 @@ function BuilderDraftBoardComponent({
     <div className="rounded-md border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_90%,black)] p-1 lg:p-4">
       <div className="flex items-center justify-between">
         <div>
-          <p className="font-michroma text-[6px] uppercase text-white/40 lg:text-[10px]">
+          <p className="font-michroma text-[8px] uppercase text-white/65 lg:text-[10px]">
             Your Lineup
           </p>
 
@@ -193,7 +207,7 @@ function BuilderDraftBoardComponent({
 
         <div className="flex items-center gap-2 text-center">
           <div>
-            <p className="font-michroma text-[5px] uppercase text-white/40 lg:text-[9px]">
+            <p className="font-michroma text-[7px] uppercase text-white/65 lg:text-[9px]">
               Avg
             </p>
 
@@ -207,7 +221,7 @@ function BuilderDraftBoardComponent({
 
           {isLineupComplete && (
             <div>
-              <p className="font-michroma text-[5px] uppercase text-white/40 lg:text-[9px]">
+              <p className="font-michroma text-[7px] uppercase text-white/65 lg:text-[9px]">
                 Scout
               </p>
 
@@ -249,10 +263,10 @@ function BuilderDraftBoardComponent({
           type="button"
           disabled={!isLineupComplete}
           onClick={onScoutLineup}
-          className={`mx-auto rounded-md border px-1.5 py-1 font-michroma text-[5.5px] uppercase transition lg:px-8 lg:py-5 lg:text-[16px] ${
+          className={`mx-auto rounded-md border px-1.5 py-1 font-michroma text-[8px] uppercase transition lg:px-8 lg:py-5 lg:text-[16px] ${
             isLineupComplete
               ? "cursor-pointer border-[rgb(var(--court-accent-rgb)/0.7)] bg-[rgb(var(--court-accent-rgb)/0.1)] font-bold text-[var(--court-accent)] shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.35)] hover:bg-[rgb(var(--court-accent-rgb)/0.2)]"
-              : "cursor-not-allowed border-white/10 bg-white/5 text-white/30"
+              : "cursor-not-allowed border-white/10 bg-white/5 text-white/60"
           }`}
         >
           {isLineupComplete

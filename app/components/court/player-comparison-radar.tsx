@@ -57,46 +57,59 @@ export function PlayerComparisonRadar({
 
   return (
     <div className="relative z-10 mx-auto h-62 w-full max-w-62 sm:h-78 sm:max-w-78 lg:h-108 lg:max-w-125">
+      <p className="sr-only">
+        Radar comparison for {selectedLeftPlayerName || "Player 1"} and{" "}
+        {selectedRightPlayerName || "Player 2"}:{" "}
+        {radarData
+          .map(
+            (row) =>
+              `${row.stat}, ${selectedLeftPlayerName || "Player 1"} ${row.playerOneActual}, ${selectedRightPlayerName || "Player 2"} ${row.playerTwoActual}`,
+          )
+          .join("; ")}
+        .
+      </p>
       <div className="flex h-full w-full items-center justify-center rounded-full bg-black/40 animate-[courtRadarIn_700ms_ease-out_150ms_both]">
-        <ResponsiveContainer width="100%" height="100%">
-          <RadarChart data={radarData}>
-            <PolarGrid stroke="rgba(255,255,255,0.25)" />
-            <PolarAngleAxis
-              dataKey="stat"
-              tick={{ fill: "white", fontSize: 7, fontFamily: "Michroma" }}
-            />
-            <PolarRadiusAxis
-              angle={90}
-              domain={[0, 100]}
-              tick={false}
-              axisLine={false}
-            />
-            <Tooltip content={customTooltip} />
-            <Radar
-              name={selectedLeftPlayerName || "Player One"}
-              dataKey="playerOne"
-              stroke={leftColor}
-              strokeWidth={2}
-              fill={leftColor}
-              fillOpacity={0.14}
-              isAnimationActive={true}
-              animationDuration={900}
-              animationEasing="ease-out"
-            />
+        <div className="h-full w-full" aria-hidden="true">
+          <ResponsiveContainer width="100%" height="100%">
+            <RadarChart data={radarData}>
+              <PolarGrid stroke="rgba(255,255,255,0.25)" />
+              <PolarAngleAxis
+                dataKey="stat"
+                tick={{ fill: "white", fontSize: 7, fontFamily: "Michroma" }}
+              />
+              <PolarRadiusAxis
+                angle={90}
+                domain={[0, 100]}
+                tick={false}
+                axisLine={false}
+              />
+              <Tooltip content={customTooltip} />
+              <Radar
+                name={selectedLeftPlayerName || "Player One"}
+                dataKey="playerOne"
+                stroke={leftColor}
+                strokeWidth={2}
+                fill={leftColor}
+                fillOpacity={0.14}
+                isAnimationActive={true}
+                animationDuration={900}
+                animationEasing="ease-out"
+              />
 
-            <Radar
-              name={selectedRightPlayerName || "Player Two"}
-              dataKey="playerTwo"
-              stroke={rightColor}
-              strokeWidth={2}
-              fill={rightColor}
-              fillOpacity={0.22}
-              isAnimationActive={true}
-              animationDuration={900}
-              animationEasing="ease-out"
-            />
-          </RadarChart>
-        </ResponsiveContainer>
+              <Radar
+                name={selectedRightPlayerName || "Player Two"}
+                dataKey="playerTwo"
+                stroke={rightColor}
+                strokeWidth={2}
+                fill={rightColor}
+                fillOpacity={0.22}
+                isAnimationActive={true}
+                animationDuration={900}
+                animationEasing="ease-out"
+              />
+            </RadarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );

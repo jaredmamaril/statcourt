@@ -89,7 +89,8 @@ export function PlayerFilters({
       <button
         type="button"
         onClick={onToggleFavorites}
-        className={`flex h-6 cursor-pointer items-center gap-1 rounded-md border px-2 font-michroma text-[10px] transition-all duration-200 sm:h-auto sm:gap-1.5 sm:py-1 sm:text-xs ${
+        aria-pressed={showFavorites}
+        className={`flex min-h-9 cursor-pointer items-center gap-1 rounded-md border px-2 font-michroma text-[10px] transition-all duration-200 sm:min-h-8 sm:gap-1.5 sm:py-1 sm:text-xs ${
           showFavorites
             ? "scale-[1.02] border-[rgb(var(--court-accent-rgb)/0.7)] bg-[color:color-mix(in_srgb,var(--court-accent)_38%,var(--court-panel-alt))] text-[var(--court-accent)] ring-1 ring-[rgb(var(--court-accent-rgb)/0.45)]"
             : "border-white/20 bg-[color:color-mix(in_srgb,var(--court-panel)_86%,black)] text-white/70 hover:border-white/60"
@@ -168,7 +169,7 @@ export function PlayerFilters({
           <button
             type="button"
             onClick={onResetFilters}
-            className="cursor-pointer rounded-md border border-white/20 bg-[color:color-mix(in_srgb,var(--court-panel)_86%,black)] px-2 py-1 font-michroma text-[9px] text-white/60 transition-all duration-200 hover:border-red-700/60 hover:text-red-700 sm:text-xs"
+            className="min-h-9 cursor-pointer rounded-md border border-white/20 bg-[color:color-mix(in_srgb,var(--court-panel)_86%,black)] px-2 py-1 font-michroma text-[9px] text-white/60 transition-all duration-200 hover:border-red-700/60 hover:text-red-700 sm:min-h-8 sm:text-xs"
           >
             Reset Filters
           </button>

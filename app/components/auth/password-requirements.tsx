@@ -57,7 +57,7 @@ export function PasswordRequirements({
         compact ? "p-1.5" : "p-2"
       }`}
     >
-      <p className="mb-1 font-michroma text-[5px] uppercase text-white/35 lg:text-[7px]">
+      <p className="mb-1 font-michroma text-[8px] uppercase text-white/65 lg:text-[9px]">
         Password Requirements
       </p>
 
@@ -69,8 +69,8 @@ export function PasswordRequirements({
           return (
             <div
               key={requirement.label}
-              className={`flex items-center gap-1.5 font-michroma text-[5px] uppercase transition lg:text-[7px] ${
-                isMet ? "text-[#22C55E]" : "text-red-300/80"
+              className={`flex items-center gap-1.5 font-michroma text-[8px] uppercase transition lg:text-[9px] ${
+                isMet ? "text-[#22C55E]" : "text-red-200"
               }`}
             >
               <Icon className="h-2.5 w-2.5 shrink-0 lg:h-3 lg:w-3" />
