@@ -5,20 +5,20 @@ const contactItems = [
   {
     title: "General Contact",
     description:
-      "Use this for product questions, feedback, account questions, and StatCourt access issues.",
+      "Use this for product questions, feedback, account access issues, and general StatCourt questions.",
     value: "contact@statcourt.com",
   },
   {
     title: "Privacy Questions",
     description:
-      "Use Settings and Privacy controls first, then contact StatCourt if you need account-data help.",
+      "Need help with account data or privacy settings? Start with your account controls.",
     value: "Privacy controls",
   },
   {
     title: "Reports",
     description:
-      "Public profile reports should be sent through the Report action on the profile page.",
-    value: "In-app reporting",
+      "For public profile concerns or inappropriate content, use the Report action directly on the profile page.",
+    value: "Report a Profile Issue",
   },
 ];
 
@@ -43,7 +43,7 @@ export default function ContactPage() {
 
           <p className="mt-3 font-michroma text-[8px] leading-relaxed text-white/48 lg:max-w-3xl lg:text-xs">
             Reach StatCourt for account support, product feedback, privacy
-            questions, and public-profile concerns.
+            questions, and public profile concerns.
           </p>
         </div>
 
@@ -71,37 +71,39 @@ export default function ContactPage() {
                   {item.description}
                 </p>
 
-                <p className="mt-3 font-michroma text-[7px] uppercase text-[var(--court-accent)] lg:text-[9px]">
-                  {item.value}
-                </p>
+                {item.value === "Privacy controls" ? (
+                  <>
+                    <Link
+                      href="/privacy"
+                      className="mt-3 inline-flex rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2.5 py-1.5 font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white lg:text-[8px]"
+                    >
+                      Privacy Controls
+                    </Link>
+
+                    <p className="mt-2 font-michroma text-[7px] leading-relaxed text-white/58 lg:text-[9px]">
+                      If you still need assistance, contact us at{" "}
+                      <a
+                        href="mailto:contact@statcourt.com"
+                        className="text-[var(--court-accent)] transition hover:text-white"
+                      >
+                        contact@statcourt.com
+                      </a>
+                      .
+                    </p>
+                  </>
+                ) : item.value === "Report a Profile Issue" ? (
+                  <p className="mt-3 font-michroma text-[7px] uppercase text-[var(--court-accent)] lg:text-[9px]">
+                    Report a Profile Issue
+                  </p>
+                ) : (
+                  <p className="mt-3 font-michroma text-[7px] uppercase text-[var(--court-accent)] lg:text-[9px]">
+                    {item.value}
+                  </p>
+                )}
               </section>
             );
           })}
         </div>
-
-        <section className="mt-4 rounded-lg border border-white/10 bg-black/20 p-3 lg:mt-6 lg:p-5">
-          <p className="font-michroma text-[8px] uppercase text-white/35 lg:text-[10px]">
-            Email
-          </p>
-
-          <p className="mt-2 font-michroma text-[7px] leading-relaxed text-white/40 lg:text-[9px]">
-            Send support and feedback to{" "}
-            <a
-              href="mailto:contact@statcourt.com"
-              className="text-[var(--court-accent)] hover:text-white"
-            >
-              contact@statcourt.com
-            </a>
-            .
-          </p>
-
-          <Link
-            href="/privacy"
-            className="mt-4 inline-flex rounded-md border border-[rgb(var(--court-accent-rgb)/0.4)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-3 py-2 font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white lg:text-[9px]"
-          >
-            Privacy Controls
-          </Link>
-        </section>
       </section>
     </main>
   );

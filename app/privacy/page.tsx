@@ -1,37 +1,53 @@
 import Link from "next/link";
-import { Activity, Database, Eye, LockKeyhole, Shield } from "lucide-react";
-
-const dataItems = [
-  {
-    title: "Account Info",
-    description:
-      "Your email, display name, username, avatar, and sign-in method are used to run your StatCourt account.",
-  },
-  {
-    title: "Basketball Data",
-    description:
-      "Saved lineups, favorite players, recent activity, and public profile choices are stored so your court hub works across sessions.",
-  },
-  {
-    title: "Profile Visibility",
-    description:
-      "Public profiles only show the details you choose to make public, such as public lineups, favorite players, and basketball identity.",
-  },
-  {
-    title: "Security Activity",
-    description:
-      "Recent sign-ins and remembered devices help you understand account access and manage stale sessions.",
-  },
-];
+import {
+  Activity,
+  Eye,
+  Shield,
+  UserCog,
+} from "lucide-react";
+import { createSupabaseServerClient } from "../lib/supabase-ssr";
 
 const userControls = [
-  "Change your display name and username from Settings.",
-  "Turn your public profile on or off from Settings.",
-  "Clear recent activity from your Profile page.",
-  "Delete saved lineups, favorites, and account data from your account tools.",
+  {
+    title: "Profile Visibility",
+    description: "Set your StatCourt profile as public or private.",
+    action: "Manage Visibility",
+    href: "/settings",
+  },
+  {
+    title: "Recent Activity",
+    description: "Review recent scouting activity and clear your history.",
+    action: "View Activity",
+    href: "/profile",
+  },
+  {
+    title: "Public Lineups",
+    description: "Choose which saved lineups can appear on your public profile.",
+    action: "Manage Lineups",
+    href: "/lineups?tab=saved",
+  },
+  {
+    title: "Security & Account",
+    description:
+      "Manage your email, password, sign-in providers, devices, and account access.",
+    action: "Account Settings",
+    href: "/settings",
+  },
 ];
 
-export default function PrivacyPage() {
+function getAccountHref(path: string, isSignedIn: boolean) {
+  if (isSignedIn) return path;
+
+  return `/signin?next=${encodeURIComponent(path)}`;
+}
+
+export default async function PrivacyPage() {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const isSignedIn = Boolean(user);
+
   return (
     <main className="page-enter relative min-h-screen overflow-x-hidden px-3 py-8 text-white lg:px-6 lg:py-12">
       <section className="relative z-10 mx-auto w-full max-w-5xl">
@@ -39,8 +55,11 @@ export default function PrivacyPage() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-2xl">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] text-[var(--court-accent)] lg:h-10 lg:w-10">
-                  <Shield className="h-4 w-4 lg:h-5 lg:w-5" />
+                <div className="flex h-7 w-7 items-center justify-center rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] text-[var(--court-accent)] lg:h-8 lg:w-8">
+                  <Shield
+                    aria-hidden="true"
+                    className="h-3.5 w-3.5 lg:h-4 lg:w-4"
+                  />
                 </div>
 
                 <p className="font-michroma text-[8px] uppercase text-[var(--court-accent)] lg:text-[10px]">
@@ -53,14 +72,14 @@ export default function PrivacyPage() {
               </h1>
 
               <p className="mt-3 font-michroma text-[8px] leading-relaxed text-white/48 lg:max-w-3xl lg:text-xs">
-                StatCourt uses your account data to save lineups, remember
-                favorite players, personalize your profile, and keep your
-                scouting activity connected to your signed-in account.
+                Control what StatCourt stores, what appears publicly, and how
+                your account data is used across the app.
               </p>
             </div>
 
             <Link
-              href="/settings"
+              href={getAccountHref("/settings", isSignedIn)}
+              prefetch={isSignedIn ? undefined : false}
               className="inline-flex h-9 items-center justify-center rounded-md border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-4 font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white lg:h-10 lg:text-[9px]"
             >
               Privacy Settings
@@ -68,66 +87,101 @@ export default function PrivacyPage() {
           </div>
         </div>
 
-        <div className="mt-4 grid gap-3 lg:mt-6 lg:grid-cols-2 lg:gap-4">
-          {dataItems.map((item, index) => {
-            const Icon =
-              index === 0
-                ? LockKeyhole
-                : index === 1
-                  ? Database
-                  : index === 2
-                    ? Eye
-                    : Activity;
-
-            return (
-              <section
-                key={item.title}
-                className="rounded-lg border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-3 lg:p-5"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-md border border-[rgb(var(--court-accent-rgb)/0.28)] bg-[rgb(var(--court-accent-rgb)/0.08)] text-[var(--court-accent)] lg:h-9 lg:w-9">
-                    <Icon className="h-3.5 w-3.5 lg:h-4 lg:w-4" />
-                  </div>
-
-                  <h2 className="font-michroma text-[9px] uppercase text-white lg:text-sm">
-                    {item.title}
-                  </h2>
-                </div>
-
-                <p className="mt-3 font-michroma text-[7px] leading-relaxed text-white/42 lg:text-[10px]">
-                  {item.description}
-                </p>
-              </section>
-            );
-          })}
-        </div>
-
         <section className="mt-4 rounded-lg border border-white/10 bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)] p-3 lg:mt-6 lg:p-5">
           <h2 className="font-michroma text-[10px] uppercase text-white lg:text-sm">
-            Your Controls
+            Your Privacy Controls
           </h2>
 
-          <div className="mt-3 grid gap-2 lg:grid-cols-2">
-            {userControls.map((control) => (
-              <div
-                key={control}
-                className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.14)] bg-black/20 p-2 font-michroma text-[7px] leading-relaxed text-white/48 lg:p-3 lg:text-[9px]"
+          <div className="mt-3 grid gap-2 lg:grid-cols-4">
+            {userControls.map((control, index) => {
+              const Icon =
+                index === 0
+                  ? Eye
+                  : index === 1
+                    ? Activity
+                    : index === 2
+                      ? UserCog
+                      : Shield;
+
+              return (
+              <article
+                key={control.title}
+                className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.16)] bg-black/22 p-2.5"
               >
-                {control}
-              </div>
-            ))}
+                <div className="flex items-center gap-2">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-[rgb(var(--court-accent-rgb)/0.24)] bg-[rgb(var(--court-accent-rgb)/0.08)] text-[var(--court-accent)]">
+                    <Icon aria-hidden="true" className="h-3.5 w-3.5" />
+                  </div>
+
+                  <p className="font-michroma text-[8px] uppercase text-white lg:text-[10px]">
+                    {control.title}
+                  </p>
+                </div>
+
+                <p className="mt-1.5 min-h-10 font-michroma text-[7px] leading-relaxed text-white/58 lg:text-[8px]">
+                  {control.description}
+                </p>
+
+                <Link
+                  href={getAccountHref(control.href, isSignedIn)}
+                  prefetch={isSignedIn ? undefined : false}
+                  className="mt-2 inline-flex min-h-8 items-center rounded border border-white/15 bg-white/5 px-2 font-michroma text-[7px] uppercase text-white/75 transition hover:border-[rgb(var(--court-accent-rgb)/0.45)] hover:text-[var(--court-accent)] lg:text-[7px]"
+                >
+                  {control.action}
+                </Link>
+              </article>
+              );
+            })}
           </div>
         </section>
 
-        <section className="mt-4 rounded-lg border border-white/10 bg-black/20 p-3 lg:mt-6 lg:p-5">
-          <p className="font-michroma text-[8px] uppercase text-white/35 lg:text-[10px]">
-            Preview Notice
+        <section className="mt-4 rounded-lg border border-[rgb(var(--court-accent-rgb)/0.22)] bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] p-3 lg:mt-6 lg:p-4">
+          <div className="flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-md border border-[rgb(var(--court-accent-rgb)/0.28)] bg-[rgb(var(--court-accent-rgb)/0.08)] text-[var(--court-accent)]">
+              <UserCog aria-hidden="true" className="h-3.5 w-3.5" />
+            </div>
+
+            <p className="font-michroma text-[8px] uppercase text-white lg:text-[10px]">
+              Privacy & Transparency
+            </p>
+          </div>
+
+          <p className="mt-2 font-michroma text-[7px] leading-relaxed text-white/68 lg:text-[9px]">
+            StatCourt uses account data to power the features you choose to
+            use. Private account information is not shown on your public profile
+            unless you choose to make it visible. For privacy questions or data
+            requests, visit our{" "}
+            <Link
+              href="/contact"
+              className="text-[var(--court-accent)] transition hover:text-white"
+            >
+              Contact page
+            </Link>
+            .
           </p>
 
-          <p className="mt-2 font-michroma text-[7px] leading-relaxed text-white/40 lg:text-[9px]">
-            This page is a product privacy summary for the current StatCourt
-            preview. A formal privacy policy can be added before public launch.
-          </p>
+          <div className="mt-3 flex flex-wrap gap-2 font-michroma text-[7px] uppercase lg:text-[8px]">
+            <Link
+              href="/privacy"
+              className="text-[var(--court-accent)] transition hover:text-white"
+            >
+              Privacy Policy
+            </Link>
+            <span className="text-white/30">•</span>
+            <Link
+              href="/terms"
+              className="text-white/75 transition hover:text-white"
+            >
+              Terms of Service
+            </Link>
+            <span className="text-white/30">•</span>
+            <Link
+              href="/contact"
+              className="text-white/75 transition hover:text-white"
+            >
+              Contact
+            </Link>
+          </div>
         </section>
       </section>
     </main>

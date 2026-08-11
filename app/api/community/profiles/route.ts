@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { unstable_cache } from "next/cache";
 import { supabase } from "@/app/components/supabase-client";
 import {
   checkRateLimit,
@@ -17,31 +16,24 @@ export type CommunityProfileRow = {
 
 const COMMUNITY_PROFILE_LIMIT = 60;
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
-const getCachedCommunityProfiles = unstable_cache(
-  async () => {
-    const { data, error } = await supabase
-      .from("public_profiles")
-      .select("id, display_name, username, avatar_url, created_at")
-      .not("username", "is", null)
-      .order("created_at", { ascending: false })
-      .limit(COMMUNITY_PROFILE_LIMIT);
+async function getCommunityProfiles() {
+  const { data, error } = await supabase
+    .from("public_profiles")
+    .select("id, display_name, username, avatar_url, created_at")
+    .not("username", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(COMMUNITY_PROFILE_LIMIT);
 
-    if (error) {
-      throw error;
-    }
+  if (error) {
+    throw error;
+  }
 
-    return ((data ?? []) as CommunityProfileRow[]).filter(
-      (profile) => profile.username,
-    );
-  },
-  ["statcourt-community-profiles-v2"],
-  {
-    revalidate: 300,
-    tags: ["statcourt-community-profiles"],
-  },
-);
+  return ((data ?? []) as CommunityProfileRow[]).filter(
+    (profile) => profile.username,
+  );
+}
 
 export async function GET(request: Request) {
   const rateLimit = await checkRateLimit(
@@ -56,7 +48,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const profiles = await getCachedCommunityProfiles();
+    const profiles = await getCommunityProfiles();
 
     return NextResponse.json(
       {
@@ -65,7 +57,7 @@ export async function GET(request: Request) {
       },
       {
         headers: {
-          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+          "Cache-Control": "no-store",
         },
       },
     );

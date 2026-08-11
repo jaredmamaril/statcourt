@@ -1682,7 +1682,11 @@ export default function PublicProfilePage() {
                   className="rounded-md border border-white/10 bg-black/30 px-2 py-2 font-michroma text-[8px] text-white outline-none transition focus:border-red-300/50 lg:text-[10px]"
                 >
                   {reportReasons.map((reason) => (
-                    <option key={reason} value={reason}>
+                    <option
+                      key={reason}
+                      value={reason}
+                      className="bg-[#050b14] text-white"
+                    >
                       {reason}
                     </option>
                   ))}

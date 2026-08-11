@@ -1,20 +1,31 @@
-import { BarChart3, Database, Trophy } from "lucide-react";
+import { BarChart3, Database, Gauge, Trophy } from "lucide-react";
 
 const sourceItems = [
   {
-    title: "Player Stats",
-    description:
-      "StatCourt uses NBA statistical data to power career, peak, and latest-season player profiles.",
+    title: "Player Statistics",
+    paragraphs: [
+      "StatCourt uses basketball statistics to power player profiles, including career performance, peak seasons, and recent-season analysis.",
+      "Statistics are used to generate comparisons, rankings, and player evaluations throughout the platform.",
+    ],
   },
   {
-    title: "Awards and History",
-    description:
-      "Career legacy, star power, and historical context use imported award, playoff, and career-resume data.",
+    title: "Awards & Historical Data",
+    paragraphs: [
+      "Career achievements, awards, playoff performance, and historical context are used to provide additional player insights and legacy evaluations.",
+    ],
   },
   {
     title: "StatCourt Models",
-    description:
-      "Ratings, archetypes, lineup fits, and scouting summaries are StatCourt calculations built from the available data.",
+    paragraphs: [
+      "Ratings, archetypes, lineup fits, and scouting summaries are calculated by StatCourt using a combination of statistical data and custom evaluation models.",
+      "These ratings are designed for analysis and comparison purposes and may evolve as StatCourt improves its models and evaluation methods.",
+    ],
+  },
+  {
+    title: "Data & Model Interpretation",
+    paragraphs: [
+      "StatCourt aims to provide meaningful basketball analysis, but some ratings and insights are based on proprietary evaluation methods and may differ from other basketball platforms.",
+    ],
   },
 ];
 
@@ -38,15 +49,22 @@ export default function DataSourcesPage() {
           </h1>
 
           <p className="mt-3 font-michroma text-[8px] leading-relaxed text-white/48 lg:max-w-3xl lg:text-xs">
-            StatCourt combines public basketball data with custom rating,
-            archetype, and lineup-scoring models to create scouting views.
+            StatCourt combines public basketball data with custom analytics
+            models to create player profiles, lineup evaluations, and scouting
+            insights.
           </p>
         </div>
 
-        <div className="mt-4 grid gap-3 lg:mt-6 lg:grid-cols-3 lg:gap-4">
+        <div className="mt-4 grid gap-3 lg:mt-6 lg:grid-cols-2 lg:gap-4">
           {sourceItems.map((item, index) => {
             const Icon =
-              index === 0 ? BarChart3 : index === 1 ? Trophy : Database;
+              index === 0
+                ? BarChart3
+                : index === 1
+                  ? Trophy
+                  : index === 2
+                    ? Database
+                    : Gauge;
 
             return (
               <section
@@ -63,22 +81,34 @@ export default function DataSourcesPage() {
                   </h2>
                 </div>
 
-                <p className="mt-3 font-michroma text-[7px] leading-relaxed text-white/42 lg:text-[10px]">
-                  {item.description}
-                </p>
+                <div className="mt-3 grid gap-2">
+                  {item.paragraphs.map((paragraph) => (
+                    <p
+                      key={paragraph}
+                      className="font-michroma text-[7px] leading-relaxed text-white/58 lg:text-[10px]"
+                    >
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
               </section>
             );
           })}
         </div>
 
-        <section className="mt-4 rounded-lg border border-white/10 bg-black/20 p-3 lg:mt-6 lg:p-5">
-          <p className="font-michroma text-[8px] uppercase text-white/35 lg:text-[10px]">
+        <section className="mt-4 rounded-lg border border-[rgb(var(--court-accent-rgb)/0.22)] bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] p-3 lg:mt-6 lg:p-5">
+          <h2 className="font-michroma text-[9px] uppercase text-white lg:text-sm">
             Independent Project
+          </h2>
+
+          <p className="mt-2 font-michroma text-[7px] leading-relaxed text-white/68 lg:text-[9px]">
+            StatCourt is an independent basketball analytics project and is not
+            affiliated with the NBA, its teams, or its players.
           </p>
 
-          <p className="mt-2 font-michroma text-[7px] leading-relaxed text-white/40 lg:text-[9px]">
-            StatCourt is not affiliated with the NBA, its teams, or its
-            players. Data and imagery belong to their respective owners.
+          <p className="mt-2 font-michroma text-[7px] leading-relaxed text-white/68 lg:text-[9px]">
+            Basketball data, trademarks, logos, and imagery belong to their
+            respective owners.
           </p>
         </section>
       </section>

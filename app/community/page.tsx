@@ -56,7 +56,9 @@ export default function CommunityPage() {
       setIsLoadingProfiles(true);
       setProfileError("");
 
-      const response = await fetch("/api/community/profiles");
+      const response = await fetch("/api/community/profiles", {
+        cache: "no-store",
+      });
 
       if (!isActive) return;
 

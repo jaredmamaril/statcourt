@@ -3,18 +3,23 @@ import { Camera, Database, ImageIcon } from "lucide-react";
 const creditItems = [
   {
     title: "NBA Player Headshots",
-    description:
-      "Player headshots may be loaded from the public NBA CDN when an NBA player ID is available.",
+    paragraphs: [
+      "Player headshots may be provided through publicly accessible basketball data and image resources when an NBA player ID is available.",
+      "These images are used to support player identification and the StatCourt analytics experience.",
+    ],
   },
   {
     title: "Uploaded Avatars",
-    description:
-      "User profile avatars are uploaded by StatCourt users or provided through connected sign-in providers.",
+    paragraphs: [
+      "User profile avatars are provided by users or connected sign-in providers.",
+      "Users are responsible for ensuring they have permission to use uploaded profile images.",
+    ],
   },
   {
-    title: "Local Placeholders",
-    description:
-      "Fallback player silhouettes, interface imagery, and StatCourt background assets are local app assets.",
+    title: "Local Assets",
+    paragraphs: [
+      "StatCourt-created interface graphics, placeholders, backgrounds, and visual elements are original app assets.",
+    ],
   },
 ];
 
@@ -38,9 +43,10 @@ export default function PhotoCreditsPage() {
           </h1>
 
           <p className="mt-3 font-michroma text-[8px] leading-relaxed text-white/48 lg:max-w-3xl lg:text-xs">
-            StatCourt uses a mix of public basketball imagery, user-uploaded
-            avatars, provider profile images, and local interface assets to
-            support player scouting and account profiles.
+            StatCourt uses a combination of third-party basketball imagery,
+            user-provided profile images, and original interface assets to
+            support player profiles, scouting experiences, and account
+            features.
           </p>
         </div>
 
@@ -64,23 +70,34 @@ export default function PhotoCreditsPage() {
                   </h2>
                 </div>
 
-                <p className="mt-3 font-michroma text-[7px] leading-relaxed text-white/42 lg:text-[10px]">
-                  {item.description}
-                </p>
+                <div className="mt-3 grid gap-2">
+                  {item.paragraphs.map((paragraph) => (
+                    <p
+                      key={paragraph}
+                      className="font-michroma text-[7px] leading-relaxed text-white/58 lg:text-[10px]"
+                    >
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
               </section>
             );
           })}
         </div>
 
-        <section className="mt-4 rounded-lg border border-white/10 bg-black/20 p-3 lg:mt-6 lg:p-5">
-          <p className="font-michroma text-[8px] uppercase text-white/35 lg:text-[10px]">
+        <section className="mt-4 rounded-lg border border-[rgb(var(--court-accent-rgb)/0.22)] bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] p-3 lg:mt-6 lg:p-5">
+          <h2 className="font-michroma text-[9px] uppercase text-white lg:text-sm">
             Rights Notice
+          </h2>
+
+          <p className="mt-2 font-michroma text-[7px] leading-relaxed text-white/68 lg:text-[9px]">
+            StatCourt is an independent basketball analytics project and is not
+            affiliated with the NBA, its teams, or its players.
           </p>
 
-          <p className="mt-2 font-michroma text-[7px] leading-relaxed text-white/40 lg:text-[9px]">
-            StatCourt is an independent basketball analytics project. Team,
-            league, and player imagery remain the property of their respective
-            owners.
+          <p className="mt-2 font-michroma text-[7px] leading-relaxed text-white/68 lg:text-[9px]">
+            Team names, logos, player imagery, trademarks, and other
+            third-party assets remain the property of their respective owners.
           </p>
         </section>
       </section>
