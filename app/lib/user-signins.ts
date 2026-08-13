@@ -6,6 +6,7 @@ const DEVICE_TRACKING_STORAGE_KEY = "statcourt_last_tracked_device";
 const SIGNIN_TRACKING_STORAGE_KEY = "statcourt_last_tracked_signin";
 const SIGNIN_CLEAR_STORAGE_KEY = "statcourt_cleared_signin";
 const PENDING_AUTH_PROVIDER_STORAGE_KEY = "statcourt_pending_auth_provider";
+const PENDING_AUTH_REDIRECT_STORAGE_KEY = "statcourt_pending_auth_redirect";
 const DEVICE_TRACKING_INTERVAL_MS = 15 * 60 * 1000;
 const pendingTrackedSignins = new Set<string>();
 const pendingTrackedDevices = new Set<string>();
@@ -127,6 +128,10 @@ export function setPendingAuthProvider(provider: string) {
   window.sessionStorage.setItem(PENDING_AUTH_PROVIDER_STORAGE_KEY, provider);
 }
 
+export function setPendingAuthRedirect(redirectPath: string) {
+  window.sessionStorage.setItem(PENDING_AUTH_REDIRECT_STORAGE_KEY, redirectPath);
+}
+
 export function consumePendingAuthProvider() {
   const provider = window.sessionStorage.getItem(
     PENDING_AUTH_PROVIDER_STORAGE_KEY,
@@ -137,8 +142,22 @@ export function consumePendingAuthProvider() {
   return provider;
 }
 
+export function consumePendingAuthRedirect() {
+  const redirectPath = window.sessionStorage.getItem(
+    PENDING_AUTH_REDIRECT_STORAGE_KEY,
+  );
+
+  window.sessionStorage.removeItem(PENDING_AUTH_REDIRECT_STORAGE_KEY);
+
+  return redirectPath;
+}
+
 export function clearPendingAuthProvider() {
   window.sessionStorage.removeItem(PENDING_AUTH_PROVIDER_STORAGE_KEY);
+}
+
+export function clearPendingAuthRedirect() {
+  window.sessionStorage.removeItem(PENDING_AUTH_REDIRECT_STORAGE_KEY);
 }
 
 export async function upsertCurrentUserDevice(user: User | null) {

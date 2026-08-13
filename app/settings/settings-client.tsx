@@ -34,8 +34,10 @@ import {
 import { SkeletonBlock } from "../components/loading/skeleton";
 import {
   clearPendingAuthProvider,
+  clearPendingAuthRedirect,
   getCurrentDeviceId,
   setPendingAuthProvider,
+  setPendingAuthRedirect,
   suppressCurrentSigninTracking,
 } from "../lib/user-signins";
 import {
@@ -1099,16 +1101,18 @@ export default function SettingsPage() {
 
     setPasswordStatus("Opening Google linking...");
     setPendingAuthProvider("google");
+    setPendingAuthRedirect("/settings");
 
     const { error } = await supabase.auth.linkIdentity({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/settings&provider=google`,
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
 
     if (error) {
       clearPendingAuthProvider();
+      clearPendingAuthRedirect();
       setPasswordStatus("Could not connect Google.");
     }
   }

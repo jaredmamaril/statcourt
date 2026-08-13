@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../components/supabase-client";
 import {
+  consumePendingAuthRedirect,
   consumePendingAuthProvider,
   trackUserSignin,
 } from "../../lib/user-signins";
@@ -19,7 +20,7 @@ export default function AuthCallbackPage() {
       const hashParams = new URLSearchParams(window.location.hash.slice(1));
       const code = params.get("code");
       const nextPath = getSafeInternalRedirectPath(
-        params.get("next"),
+        params.get("next") ?? consumePendingAuthRedirect(),
         "/profile",
       );
       const provider = params.get("provider") ?? consumePendingAuthProvider();

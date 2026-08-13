@@ -12,7 +12,9 @@ import {
 } from "../components/auth/password-requirements";
 import {
   clearPendingAuthProvider,
+  clearPendingAuthRedirect,
   setPendingAuthProvider,
+  setPendingAuthRedirect,
   trackUserSignin,
 } from "../lib/user-signins";
 import { getSafeInternalRedirectPath } from "../lib/safe-redirect";
@@ -194,18 +196,18 @@ function SignInPageContent() {
     setAuthError("");
     setIsSubmitting(true);
     setPendingAuthProvider("google");
+    setPendingAuthRedirect(nextPath);
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
-          nextPath,
-        )}&provider=google`,
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
 
     if (error) {
       clearPendingAuthProvider();
+      clearPendingAuthRedirect();
       setIsSubmitting(false);
       setAuthError("Could not continue with Google. Please try again.");
     }
