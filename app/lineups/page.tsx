@@ -1,6 +1,13 @@
 "use client";
 
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Suspense,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthPrompt } from "../components/auth/auth-prompt";
 import { getCachedApiPlayers } from "../lib/player-api-cache";
@@ -123,7 +130,7 @@ type OverwriteLineupRequest =
       nextName: string;
     };
 
-export default function Lineups() {
+function LineupsContent() {
   const { user, isLoadingUser } = useAuthUser();
   const { settings, isLoadingSettings } = useUserSettings();
 
@@ -1164,5 +1171,21 @@ export default function Lineups() {
         />
       )}
     </main>
+  );
+}
+
+export default function Lineups() {
+  return (
+    <Suspense
+      fallback={
+        <main className="relative min-h-screen overflow-hidden px-3 pb-12 pt-26 sm:px-6 lg:px-8">
+          <section className="relative z-10 mx-auto max-w-7xl">
+            <BuilderWorkspaceSkeleton />
+          </section>
+        </main>
+      }
+    >
+      <LineupsContent />
+    </Suspense>
   );
 }

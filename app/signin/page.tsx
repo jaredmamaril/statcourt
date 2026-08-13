@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, Suspense, useEffect, useState } from "react";
 import { Eye, EyeOff, Mail, Shield } from "lucide-react";
 import { supabase } from "../components/supabase-client";
 import {
@@ -69,7 +69,7 @@ function getCallbackErrorMessage(errorCode: string) {
   return "Could not sign in. Please try again.";
 }
 
-export default function SignInPage() {
+function SignInPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = getSafeInternalRedirectPath(
@@ -463,6 +463,24 @@ export default function SignInPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="page-enter relative min-h-screen overflow-hidden px-4 pb-12 pt-28 sm:px-6 lg:px-8">
+          <section className="relative z-10 mx-auto flex min-h-[calc(100vh-9rem)] max-w-md items-center justify-center">
+            <div className="rounded-lg border border-[rgb(var(--court-accent-rgb)/0.2)] bg-[color:color-mix(in_srgb,var(--court-panel)_82%,black)] p-5 text-center font-michroma text-[8px] uppercase text-white/55 lg:text-[10px]">
+              Loading sign in...
+            </div>
+          </section>
+        </main>
+      }
+    >
+      <SignInPageContent />
+    </Suspense>
   );
 }
 
