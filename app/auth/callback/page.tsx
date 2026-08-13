@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import type { EmailOtpType, User } from "@supabase/supabase-js";
 import { supabase } from "../../components/supabase-client";
 import {
   consumePendingAuthRedirect,
@@ -9,6 +10,21 @@ import {
   trackUserSignin,
 } from "../../lib/user-signins";
 import { getSafeInternalRedirectPath } from "../../lib/safe-redirect";
+
+const allowedEmailOtpTypes = new Set([
+  "signup",
+  "invite",
+  "magiclink",
+  "recovery",
+  "email_change",
+  "email",
+]);
+
+function getEmailOtpType(value: string | null): EmailOtpType | null {
+  if (!value || !allowedEmailOtpTypes.has(value)) return null;
+
+  return value as EmailOtpType;
+}
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -19,6 +35,12 @@ export default function AuthCallbackPage() {
       const params = new URLSearchParams(window.location.search);
       const hashParams = new URLSearchParams(window.location.hash.slice(1));
       const code = params.get("code");
+      const tokenHash = params.get("token_hash") ?? hashParams.get("token_hash");
+      const otpType = getEmailOtpType(
+        params.get("type") ?? hashParams.get("type"),
+      );
+      const accessToken = hashParams.get("access_token");
+      const refreshToken = hashParams.get("refresh_token");
       const nextPath = getSafeInternalRedirectPath(
         params.get("next") ?? consumePendingAuthRedirect(),
         "/profile",
@@ -31,32 +53,78 @@ export default function AuthCallbackPage() {
         hashParams.get("error");
 
       if (authError) {
+        if (provider === "google" && nextPath === "/settings") {
+          router.replace("/settings?account_error=google_link_failed");
+          return;
+        }
+
         router.replace("/signin?error=auth_provider_failed");
         return;
       }
 
-      if (!code) {
-        router.replace(nextPath);
-        return;
-      }
+      let signedInUser: User | null = null;
 
-      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+      if (code) {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-      if (error) {
-        const { data: existingSessionData } = await supabase.auth.getUser();
+        if (error) {
+          const { data: existingSessionData } = await supabase.auth.getUser();
 
-        if (existingSessionData.user) {
-          await trackUserSignin(existingSessionData.user, provider);
-          router.replace(nextPath);
+          if (existingSessionData.user) {
+            await trackUserSignin(existingSessionData.user, provider);
+            router.replace(nextPath);
+            return;
+          }
+
+          setStatus("Could not complete sign in. Redirecting...");
+          router.replace("/signin?error=auth_callback_failed");
           return;
         }
 
-        setStatus("Could not complete sign in. Redirecting...");
+        signedInUser = data.user;
+      } else if (tokenHash && otpType) {
+        const { data, error } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: otpType,
+        });
+
+        if (error) {
+          setStatus("Could not complete sign in. Redirecting...");
+          router.replace("/signin?error=auth_callback_failed");
+          return;
+        }
+
+        signedInUser = data.user;
+      } else if (accessToken && refreshToken) {
+        const { data, error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+
+        if (error) {
+          setStatus("Could not complete sign in. Redirecting...");
+          router.replace("/signin?error=auth_callback_failed");
+          return;
+        }
+
+        signedInUser = data.user;
+      } else {
+        const { data } = await supabase.auth.getUser();
+
+        if (data.user) {
+          signedInUser = data.user;
+        } else {
+          router.replace("/signin?error=auth_callback_failed");
+          return;
+        }
+      }
+
+      if (!signedInUser) {
         router.replace("/signin?error=auth_callback_failed");
         return;
       }
 
-      await trackUserSignin(data.user, provider);
+      await trackUserSignin(signedInUser, provider);
 
       router.replace(nextPath);
     }

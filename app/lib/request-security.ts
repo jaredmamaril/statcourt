@@ -10,17 +10,18 @@ function normalizeOrigin(value: string | undefined) {
   }
 }
 
-function getAllowedOrigins() {
+function getAllowedOrigins(request: Request) {
   const configuredSiteOrigin = normalizeOrigin(
     process.env.NEXT_PUBLIC_SITE_URL,
   );
+  const requestOrigin = normalizeOrigin(request.url);
   const developmentOrigins =
     process.env.NODE_ENV === "development"
       ? ["http://localhost:3000", "http://127.0.0.1:3000"]
       : [];
 
   return new Set(
-    [configuredSiteOrigin, ...developmentOrigins].filter(
+    [configuredSiteOrigin, requestOrigin, ...developmentOrigins].filter(
       (origin): origin is string => Boolean(origin),
     ),
   );
@@ -35,5 +36,5 @@ export function validateRequestOrigin(request: Request) {
 
   if (!normalizedOrigin) return false;
 
-  return getAllowedOrigins().has(normalizedOrigin);
+  return getAllowedOrigins(request).has(normalizedOrigin);
 }

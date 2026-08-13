@@ -397,6 +397,21 @@ export default function SettingsPage() {
   }, [isLoadingUser, router, user]);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get("account_error") !== "google_link_failed") return;
+
+    const timeoutId = window.setTimeout(() => {
+      setPasswordStatus(
+        "Could not connect Google. Use the Google account with the same email as this StatCourt account.",
+      );
+      router.replace("/settings", { scroll: false });
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [router]);
+
+  useEffect(() => {
     let isActive = true;
 
     async function loadUserProfile() {

@@ -91,6 +91,17 @@ function SignInPageContent() {
   useEffect(() => {
     let isActive = true;
     const callbackError = searchParams.get("error");
+    const authCode = searchParams.get("code");
+    const tokenHash = searchParams.get("token_hash");
+
+    if (authCode || tokenHash) {
+      window.location.replace(
+        `/auth/callback${window.location.search}${window.location.hash}`,
+      );
+      return () => {
+        isActive = false;
+      };
+    }
 
     async function redirectSignedInUser() {
       const { data } = await supabase.auth.getUser();
@@ -141,6 +152,11 @@ function SignInPageContent() {
         : await supabase.auth.signUp({
             email,
             password,
+            options: {
+              emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
+                nextPath,
+              )}&provider=email`,
+            },
           });
 
     setIsSubmitting(false);
