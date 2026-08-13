@@ -422,31 +422,31 @@ html.statcourt-reduced-motion {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html {
+  html:not([data-statcourt-reduced-motion="off"]) {
     scroll-behavior: auto !important;
   }
 
-  *,
-  *::before,
-  *::after {
+  html:not([data-statcourt-reduced-motion="off"]) *,
+  html:not([data-statcourt-reduced-motion="off"]) *::before,
+  html:not([data-statcourt-reduced-motion="off"]) *::after {
     animation: none !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
     transition-delay: 0ms !important;
   }
 
-  .page-enter,
-  .scout-section-reveal,
-  .panel-reveal {
+  html:not([data-statcourt-reduced-motion="off"]) .page-enter,
+  html:not([data-statcourt-reduced-motion="off"]) .scout-section-reveal,
+  html:not([data-statcourt-reduced-motion="off"]) .panel-reveal {
     opacity: 1 !important;
     transform: none !important;
   }
 
-  .home-court-scan {
+  html:not([data-statcourt-reduced-motion="off"]) .home-court-scan {
     display: none !important;
   }
 
-  .statcourt-loading-spinner {
+  html:not([data-statcourt-reduced-motion="off"]) .statcourt-loading-spinner {
     animation: spin 1s linear infinite !important;
   }
 }

@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import {
+  EMPTY_BUILDER_DRAFT,
   getSavedBuilderDraft,
   saveBuilderDraft,
 } from "../../players/player-storage";
@@ -40,7 +41,7 @@ export function useLineupBuilder({
     initialHasStartedBuilder,
   );
   const [customLineup, setCustomLineup] =
-    useState<Record<LineupSlot, string>>(getSavedBuilderDraft);
+    useState<Record<LineupSlot, string>>(EMPTY_BUILDER_DRAFT);
   const [activeBuildPosition, setActiveBuildPosition] =
     useState<LineupSlot>("PG");
   const [buildPlayerSearch, setBuildPlayerSearch] = useState("");
@@ -50,8 +51,23 @@ export function useLineupBuilder({
     useState<PlayerRevealMode>("instant");
   const deferredBuildPlayerSearch = useDeferredValue(buildPlayerSearch);
   const hasAppliedDefaultStatProfileRef = useRef(false);
+  const isDraftStorageReadyRef = useRef(false);
 
   useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      if (!initialHasStartedBuilder) {
+        setCustomLineup(getSavedBuilderDraft());
+      }
+
+      isDraftStorageReadyRef.current = true;
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [initialHasStartedBuilder]);
+
+  useEffect(() => {
+    if (!isDraftStorageReadyRef.current) return;
+
     saveBuilderDraft(customLineup);
   }, [customLineup]);
 

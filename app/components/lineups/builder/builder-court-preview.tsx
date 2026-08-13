@@ -37,7 +37,7 @@ function BuilderCourtPreviewComponent({
       className="flex flex-col gap-4"
       onClick={() => setOpenTooltipPlayer(null)}
     >
-      <div className="relative mx-auto h-76 w-full max-w-80 overflow-hidden rounded-md bg-transparent lg:h-120 lg:max-w-none lg:overflow-visible">
+      <div className="relative mx-auto h-76 w-full max-w-80 overflow-hidden rounded-md bg-transparent lg:h-104 lg:max-w-none lg:overflow-visible 2xl:h-120">
         <div className="absolute left-1/2 bottom-8 h-[62%] w-[82%] -translate-x-1/2 rounded-t-full border-t border-l border-r border-[rgb(var(--court-accent-rgb)/0.25)] lg:bottom-10 lg:h-[63%] lg:w-[88%]" />
 
         <div className="absolute left-1/2 bottom-8 h-28 w-20 -translate-x-1/2 border border-[rgb(var(--court-accent-rgb)/0.25)] lg:bottom-10 lg:h-40 lg:w-28" />

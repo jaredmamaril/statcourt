@@ -458,7 +458,7 @@ export function BuilderWorkspace({
         onPointerDownCapture={handleWorkspacePointerDown}
         className="mt-3 animate-[pageEnter_220ms_ease-out_both]"
       >
-        <div className="grid grid-cols-[minmax(0,1fr)_122px] items-start gap-1 lg:grid-cols-[400px_300px_1fr] lg:gap-5">
+        <div className="grid grid-cols-[minmax(0,1fr)_122px] items-start gap-1 lg:grid-cols-[minmax(260px,360px)_minmax(220px,280px)_minmax(0,1fr)] lg:gap-4 2xl:grid-cols-[400px_300px_minmax(0,1fr)] 2xl:gap-5">
           <div className="min-w-0">
             <div className="mb-3 flex flex-col items-center justify-center gap-1 lg:mb-2 lg:flex-row lg:gap-2">
               <div
@@ -566,7 +566,7 @@ export function BuilderWorkspace({
           />
 
           {/* Desktop court */}
-          <div className="hidden lg:block">
+          <div className="hidden min-w-0 lg:block">
             <BuilderCourtPreview
               players={players}
               lineupPositions={lineupPositions}

@@ -11,9 +11,12 @@ export function ReducedMotionSync() {
       "statcourt-reduced-motion",
       settings.reducedMotion,
     );
+    document.documentElement.dataset.statcourtReducedMotion =
+      settings.reducedMotion ? "on" : "off";
 
     return () => {
       document.documentElement.classList.remove("statcourt-reduced-motion");
+      delete document.documentElement.dataset.statcourtReducedMotion;
     };
   }, [settings.reducedMotion]);
 

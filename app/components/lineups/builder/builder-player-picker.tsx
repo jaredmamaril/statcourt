@@ -134,7 +134,7 @@ export function BuilderPlayerPicker({
           value={buildPlayerSearch}
           onChange={(event) => onSearchChange(event.target.value)}
           placeholder="Search Player..."
-          className="h-5 w-51 rounded-md border border-[rgb(var(--court-accent-rgb)/0.22)] bg-[color:color-mix(in_srgb,var(--court-panel)_72%,transparent)] px-3 font-michroma text-[9px] text-white outline-none transition placeholder:text-white/55 focus:border-[rgb(var(--court-accent-rgb)/0.75)] focus:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_78%,transparent)] lg:h-10 lg:w-full lg:text-xs"
+          className="h-5 w-51 rounded-md border border-[rgb(var(--court-accent-rgb)/0.22)] bg-[color:color-mix(in_srgb,var(--court-panel)_72%,transparent)] px-3 font-michroma text-[9px] text-white outline-none transition placeholder:text-white/55 focus:border-[rgb(var(--court-accent-rgb)/0.75)] focus:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_78%,transparent)] lg:h-10 lg:w-full lg:max-w-80 lg:text-xs"
         />
       </div>
 
@@ -152,7 +152,7 @@ export function BuilderPlayerPicker({
         )}
       </p>
 
-      <div className="statcourt-scroll max-h-21 w-full overflow-y-auto pr-1 lg:max-h-84 lg:pr-2">
+      <div className="statcourt-scroll mx-auto max-h-21 w-full overflow-y-auto pr-1 lg:max-h-84 lg:max-w-80 lg:pr-2">
         <div
           key={`${activeBuildPosition}-${builderStatProfile}-${displayView}`}
           className={
@@ -198,7 +198,7 @@ export function BuilderPlayerPicker({
         </div>
       </div>
 
-      <div className="rounded border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_90%,black)] p-0.5 font-michroma lg:rounded-md lg:p-2">
+      <div className="mx-auto w-fit max-w-full rounded border border-white/15 bg-[color:color-mix(in_srgb,var(--court-panel)_90%,black)] p-0.5 font-michroma lg:rounded-md lg:p-1">
         <div className="flex flex-wrap items-center justify-center gap-0.5 lg:gap-2">
           <label className="flex items-center gap-0.5 text-[7px] uppercase text-white/60 lg:gap-1 lg:text-[8px]">
             Show
@@ -208,7 +208,7 @@ export function BuilderPlayerPicker({
               onChange={(event) =>
                 setBaseDisplayLimit(Number(event.target.value))
               }
-              className="h-4.5 rounded border border-white/15 bg-[var(--court-panel)] px-0.5 text-[7px] text-white outline-none focus:border-[var(--court-accent)] lg:h-7 lg:px-1.5 lg:text-[8px]"
+              className="h-4.5 rounded border border-white/15 bg-[var(--court-panel)] px-0.5 text-[7px] text-white outline-none focus:border-[var(--court-accent)] lg:h-6 lg:px-1.5 lg:text-[8px]"
             >
               {BUILD_PLAYER_DISPLAY_OPTIONS.map((option) => (
                 <option key={option} value={option}>
@@ -226,7 +226,7 @@ export function BuilderPlayerPicker({
               onChange={(event) =>
                 setLoadMoreAmount(Number(event.target.value))
               }
-              className="h-4.5 rounded border border-white/15 bg-[var(--court-panel)] px-0.5 text-[7px] text-white outline-none focus:border-[var(--court-accent)] lg:h-7 lg:px-1.5 lg:text-[8px]"
+              className="h-4.5 rounded border border-white/15 bg-[var(--court-panel)] px-0.5 text-[7px] text-white outline-none focus:border-[var(--court-accent)] lg:h-6 lg:px-1.5 lg:text-[8px]"
             >
               {BUILD_PLAYER_LOAD_MORE_OPTIONS.map((option) => (
                 <option key={option} value={option}>
@@ -240,7 +240,7 @@ export function BuilderPlayerPicker({
             type="button"
             onClick={loadMoreBuildPlayers}
             disabled={!hasMoreBuildPlayers}
-            className="h-4.5 rounded border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-1 font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/55 lg:h-7 lg:px-3 lg:text-[8px]"
+            className="h-4.5 rounded border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-1 font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/55 lg:h-6 lg:px-3 lg:text-[8px]"
           >
             {hasMoreBuildPlayers ? "Load More" : "All Shown"}
           </button>
@@ -303,7 +303,7 @@ function BuilderPlayerListRow({
       )} overall for ${activeBuildPosition}, ${fitLabel} fit. Press Space or Enter to pick up for keyboard drag, or click to draft to ${activeBuildPosition}.`}
       type="button"
       onClick={() => onPickPlayer(player.name)}
-      className={`grid w-full min-w-0 touch-none grid-cols-[34px_minmax(0,1fr)_52px] items-center gap-2 rounded-md border bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] px-2 py-1.5 text-left transition lg:grid-cols-[46px_minmax(0,1fr)_70px] lg:px-3 lg:py-2 ${
+      className={`mx-auto grid w-80 max-w-full min-w-0 touch-none grid-cols-[34px_minmax(0,1fr)_52px] items-center gap-2 rounded-md border bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] px-2 py-1.5 text-left transition lg:grid-cols-[38px_minmax(0,1fr)_56px] lg:px-2 lg:py-1.5 ${
         isSelected
           ? "border-[var(--court-accent)] bg-[rgb(var(--court-accent-rgb)/0.15)] shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.35)]"
           : isDragging
@@ -316,11 +316,11 @@ function BuilderPlayerListRow({
         alt={player.name}
         width={120}
         height={120}
-        className="h-8.5 w-8.5 rounded-full object-cover lg:h-11 lg:w-11"
+        className="h-8.5 w-8.5 rounded-full object-cover lg:h-9 lg:w-9"
       />
 
       <span className="min-w-0">
-        <span className="block  font-michroma text-[8px] text-white lg:text-[10px]">
+        <span className="block font-michroma text-[8px] text-white lg:text-[10px]">
           {player.name}
         </span>
         <span className="mt-0.5 block font-michroma text-[7px] text-white/60 lg:text-[8px]">
