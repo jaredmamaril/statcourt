@@ -2,7 +2,7 @@
 
 StatCourt is a full-stack basketball analytics platform for exploring NBA player data, comparing players, building custom lineups, and generating dynamic scouting reports.
 
-**Live App:** https://statcourt.com
+**Live App:** https://statcourt.app
 
 ![StatCourt Preview](./public/readme/statcourt-preview.png)
 
