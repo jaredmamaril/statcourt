@@ -71,6 +71,14 @@ function getCallbackErrorMessage(errorCode: string) {
   return "Could not sign in. Please try again.";
 }
 
+function getSigninNoticeMessage(noticeCode: string) {
+  if (noticeCode === "email_change_confirmed") {
+    return "Email updated. Sign in with your new email to continue.";
+  }
+
+  return "";
+}
+
 function SignInPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -91,6 +99,7 @@ function SignInPageContent() {
   useEffect(() => {
     let isActive = true;
     const callbackError = searchParams.get("error");
+    const callbackNotice = searchParams.get("notice");
     const authCode = searchParams.get("code");
     const tokenHash = searchParams.get("token_hash");
 
@@ -116,6 +125,12 @@ function SignInPageContent() {
       if (callbackError) {
         setAuthError(getCallbackErrorMessage(callbackError));
         setAuthMessage("");
+        return;
+      }
+
+      if (callbackNotice) {
+        setAuthError("");
+        setAuthMessage(getSigninNoticeMessage(callbackNotice));
       }
     }
 

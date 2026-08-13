@@ -124,6 +124,11 @@ export default function AuthCallbackPage() {
         return;
       }
 
+      if (otpType === "email_change") {
+        router.replace("/signin?notice=email_change_confirmed");
+        return;
+      }
+
       await trackUserSignin(signedInUser, provider);
 
       router.replace(nextPath);
