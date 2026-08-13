@@ -1,12 +1,19 @@
 # StatCourt
 
-StatCourt is a full-stack basketball analytics platform for exploring NBA player data, comparing players, building custom lineups, saving account-based basketball activity, and generating StatCourt scouting reports.
+StatCourt is a full-stack basketball analytics platform for exploring NBA player data, comparing players, building custom lineups, and generating dynamic scouting reports.
 
 **Live App:** https://statcourt.com
 
 ![StatCourt Preview](./public/readme/statcourt-preview.png)
 
-The app is built with Next.js, Supabase, PostgreSQL, Redis-backed rate limiting, and a custom basketball-themed interface. It supports public player browsing, authenticated account features, public profiles, saved lineups, favorites, community discovery, and lineup scouting.
+Built with Next.js, TypeScript, Supabase, PostgreSQL, and Redis, StatCourt combines historical and current NBA data with custom rating, archetype, lineup-fit, and scouting models. The platform includes authenticated accounts, public profiles, saved lineups, favorites, community discovery, and player comparison tools.
+
+## Highlights
+
+- Custom multi-era NBA player analytics across Career, Peak, and Current profiles
+- Position-aware lineup builder with keyboard-accessible drag-and-drop
+- Dynamic scouting reports with lineup archetypes, strengths, weaknesses, and player fits
+- Full account and community system with public profiles, saved lineups, favorites, follows, reports, and security controls
 
 ## Features
 
@@ -51,6 +58,18 @@ The app is built with Next.js, Supabase, PostgreSQL, Redis-backed rate limiting,
 - Vercel
 - Supabase
 - Resend or another SMTP provider for production auth email
+
+## Architecture
+
+StatCourt uses a Next.js frontend and API layer backed by Supabase PostgreSQL.
+
+- Supabase Auth manages email/password and Google authentication.
+- Row Level Security protects user-owned database records.
+- Next.js route handlers handle authenticated mutations and server-side validation.
+- Upstash Redis provides distributed API rate limiting.
+- Supabase Storage stores user avatars.
+- Security events are persisted server-side for sensitive account and abuse activity.
+- Vercel hosts the Next.js application.
 
 ### Optional Data Scripts
 
