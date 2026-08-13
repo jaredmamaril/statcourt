@@ -79,6 +79,15 @@ function getSigninNoticeMessage(noticeCode: string) {
   return "";
 }
 
+function trackSigninInBackground(
+  user: Parameters<typeof trackUserSignin>[0],
+  provider: Parameters<typeof trackUserSignin>[1],
+) {
+  void trackUserSignin(user, provider).catch((error) => {
+    console.warn("Failed to track sign-in event", error);
+  });
+}
+
 function SignInPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -94,6 +103,7 @@ function SignInPageContent() {
   const [authMessage, setAuthMessage] = useState("");
   const [authError, setAuthError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   useEffect(() => {
@@ -182,9 +192,8 @@ function SignInPageContent() {
             },
           });
 
-    setIsSubmitting(false);
-
     if (authResponse.error) {
+      setIsSubmitting(false);
       setAuthError(getAuthErrorMessage(authResponse.error.message, authMode));
       return;
     }
@@ -194,6 +203,7 @@ function SignInPageContent() {
       authResponse.data.user &&
       authResponse.data.user.identities?.length === 0
     ) {
+      setIsSubmitting(false);
       setAuthError(
         "Could not create account. Try signing in, or use Forgot Password if needed.",
       );
@@ -201,13 +211,16 @@ function SignInPageContent() {
     }
 
     if (authMode === "signup" && !authResponse.data.session) {
+      setIsSubmitting(false);
       setAuthMessage("Check your email to confirm your StatCourt account.");
       return;
     }
 
-    await trackUserSignin(authResponse.data.user, "email");
-
-    router.push(nextPath);
+    setAuthError("");
+    setAuthMessage("Taking you to your profile...");
+    setIsRedirecting(true);
+    trackSigninInBackground(authResponse.data.user, "email");
+    router.replace(nextPath);
   }
 
   async function handlePasswordReset(event: FormEvent<HTMLFormElement>) {
@@ -256,6 +269,23 @@ function SignInPageContent() {
 
   return (
     <main className="page-enter relative min-h-svh overflow-hidden px-3 py-4 text-white lg:px-6 lg:pt-12">
+      {isRedirecting && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed inset-0 z-50 grid place-items-center bg-background/95 px-4 text-center"
+        >
+          <div className="rounded-lg border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] px-5 py-4 shadow-[0_0_28px_rgb(var(--court-accent-rgb)/0.18)]">
+            <div
+              aria-hidden="true"
+              className="mx-auto mb-3 h-6 w-6 rounded-full border border-[rgb(var(--court-accent-rgb)/0.2)] border-t-[var(--court-accent)] animate-spin"
+            />
+            <p className="font-michroma text-[8px] uppercase text-[var(--court-accent)] lg:text-[10px]">
+              Taking you to your profile...
+            </p>
+          </div>
+        </div>
+      )}
       <section className="relative z-10 mx-auto flex min-h-[calc(100svh-32px)] max-w-[320px] items-center justify-center lg:min-h-[calc(100vh-120px)] lg:max-w-md">
         <div className="w-full rounded-lg border border-[rgb(var(--court-accent-rgb)/0.4)] bg-[color:color-mix(in_srgb,var(--court-panel)_85%,transparent)] p-3.5 shadow-[0_0_24px_rgb(var(--court-accent-rgb)/0.16)] lg:p-6 lg:shadow-[0_0_36px_rgb(var(--court-accent-rgb)/0.2)]">
           <div className="mb-3.5 flex flex-col items-center text-center lg:mb-6">
@@ -320,7 +350,7 @@ function SignInPageContent() {
 
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isRedirecting}
                 className="group flex items-center justify-center gap-2 rounded-md border border-[rgb(var(--court-accent-rgb)/0.55)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-3 py-2 font-michroma text-[7px] uppercase text-[var(--court-accent)] shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.14)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white hover:shadow-[0_0_24px_rgb(var(--court-accent-rgb)/0.28)] disabled:cursor-not-allowed disabled:opacity-60 lg:px-4 lg:py-3 lg:text-[10px]"
               >
                 <Mail className="h-3 w-3 transition group-hover:brightness-125 lg:h-4 lg:w-4" />
@@ -457,11 +487,13 @@ function SignInPageContent() {
 
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isRedirecting}
                 className="group flex items-center justify-center gap-2 rounded-md border border-[rgb(var(--court-accent-rgb)/0.55)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-3 py-2 font-michroma text-[8px] uppercase text-[var(--court-accent)] shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.14)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white hover:shadow-[0_0_24px_rgb(var(--court-accent-rgb)/0.28)] disabled:cursor-not-allowed disabled:opacity-60 lg:px-4 lg:py-3 lg:text-[10px]"
               >
                 <Mail className="h-3 w-3 transition group-hover:brightness-125 lg:h-4 lg:w-4" />
-                {isSubmitting
+                {isRedirecting
+                  ? "Opening Profile..."
+                  : isSubmitting
                   ? "Checking Access..."
                   : authMode === "signin"
                     ? "Continue with Email"
@@ -471,7 +503,7 @@ function SignInPageContent() {
               <button
                 type="button"
                 onClick={signInWithGoogle}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isRedirecting}
                 className="group flex items-center justify-center gap-2 rounded-md border border-[#4285F4]/45 bg-[#08234f]/70 px-3 py-2 font-michroma text-[8px] uppercase text-[#8ab4f8] shadow-[0_0_16px_rgba(66,133,244,0.12)] transition hover:border-[rgb(var(--court-accent-rgb)/0.7)] hover:bg-[#0b2f69]/80 hover:text-white hover:shadow-[0_0_22px_rgba(66,133,244,0.24)] disabled:cursor-not-allowed disabled:opacity-60 lg:px-4 lg:py-3 lg:text-[10px]"
               >
                 <GoogleMark />

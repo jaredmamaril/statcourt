@@ -26,6 +26,15 @@ function getEmailOtpType(value: string | null): EmailOtpType | null {
   return value as EmailOtpType;
 }
 
+function trackSigninInBackground(
+  user: Parameters<typeof trackUserSignin>[0],
+  provider: Parameters<typeof trackUserSignin>[1],
+) {
+  void trackUserSignin(user, provider).catch((error) => {
+    console.warn("Failed to track sign-in event", error);
+  });
+}
+
 export default function AuthCallbackPage() {
   const router = useRouter();
   const [status, setStatus] = useState("Connecting account...");
@@ -72,7 +81,8 @@ export default function AuthCallbackPage() {
           const { data: existingSessionData } = await supabase.auth.getUser();
 
           if (existingSessionData.user) {
-            await trackUserSignin(existingSessionData.user, provider);
+            setStatus("Taking you to StatCourt...");
+            trackSigninInBackground(existingSessionData.user, provider);
             router.replace(nextPath);
             return;
           }
@@ -130,7 +140,8 @@ export default function AuthCallbackPage() {
         return;
       }
 
-      await trackUserSignin(signedInUser, provider);
+      setStatus("Taking you to StatCourt...");
+      trackSigninInBackground(signedInUser, provider);
 
       router.replace(nextPath);
     }
