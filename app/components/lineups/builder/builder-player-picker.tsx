@@ -160,7 +160,7 @@ export function BuilderPlayerPicker({
           key={`${activeBuildPosition}-${builderStatProfile}-${displayView}`}
           className={
             isCardView
-              ? "grid grid-cols-[repeat(2,75px)] justify-center gap-1.5 lg:grid-cols-3 lg:justify-stretch lg:gap-2"
+              ? "grid grid-cols-[repeat(3,75px)] justify-center gap-1 lg:grid-cols-3 lg:justify-stretch lg:gap-2"
               : "grid w-full grid-cols-1 gap-1.5"
           }
         >
