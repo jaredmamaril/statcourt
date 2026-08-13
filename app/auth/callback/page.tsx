@@ -46,6 +46,7 @@ export default function AuthCallbackPage() {
         "/profile",
       );
       const provider = params.get("provider") ?? consumePendingAuthProvider();
+      const authAction = params.get("auth_action") ?? hashParams.get("auth_action");
       const authError =
         params.get("error_description") ??
         params.get("error") ??
@@ -124,7 +125,7 @@ export default function AuthCallbackPage() {
         return;
       }
 
-      if (otpType === "email_change") {
+      if (otpType === "email_change" || authAction === "email_change") {
         router.replace("/signin?notice=email_change_confirmed");
         return;
       }

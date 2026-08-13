@@ -102,8 +102,16 @@ function SignInPageContent() {
     const callbackNotice = searchParams.get("notice");
     const authCode = searchParams.get("code");
     const tokenHash = searchParams.get("token_hash");
+    const hashParams = new URLSearchParams(window.location.hash.slice(1));
+    const hasHashAuthParams =
+      hashParams.has("access_token") ||
+      hashParams.has("refresh_token") ||
+      hashParams.has("token_hash") ||
+      hashParams.has("type") ||
+      hashParams.has("error") ||
+      hashParams.has("error_description");
 
-    if (authCode || tokenHash) {
+    if (authCode || tokenHash || hasHashAuthParams) {
       window.location.replace(
         `/auth/callback${window.location.search}${window.location.hash}`,
       );

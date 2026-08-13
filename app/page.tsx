@@ -13,8 +13,14 @@ export default function Home() {
     const hashParams = new URLSearchParams(window.location.hash.slice(1));
     const hasAuthCallbackParams =
       params.has("code") ||
+      params.has("token_hash") ||
+      params.has("type") ||
       params.has("error") ||
       params.has("error_description") ||
+      hashParams.has("access_token") ||
+      hashParams.has("refresh_token") ||
+      hashParams.has("token_hash") ||
+      hashParams.has("type") ||
       hashParams.has("error") ||
       hashParams.has("error_description");
 
