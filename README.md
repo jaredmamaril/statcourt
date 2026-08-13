@@ -42,7 +42,6 @@ Built with Next.js, TypeScript, Supabase, PostgreSQL, and Redis, StatCourt combi
 - Tailwind CSS
 - Recharts
 - Lucide React
-- dnd-kit
 
 ### Backend
 

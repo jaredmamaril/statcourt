@@ -1,5 +1,4 @@
 import { memo } from "react";
-import { useDraggable } from "@dnd-kit/core";
 import { normalizeStat, type LineupSlot, type PlayerStats } from "../../court-data";
 import PlayerImage from "../../player-image";
 import { getPlayerHeadshot } from "../../player-images";
@@ -57,15 +56,6 @@ function BuilderPlayerCardComponent({
   onToggleScout,
   onPickPlayer,
 }: BuilderPlayerCardProps) {
-  const { attributes, listeners, setNodeRef, isDragging } =
-    useDraggable({
-      id: `builder-player-${player.id}`,
-      data: {
-        type: "picker-player",
-        playerName: player.name,
-        preferredSlot: activeBuildPosition,
-      },
-    });
   const positionFit = getPositionFit(
     player,
     activeBuildPosition,
@@ -109,12 +99,9 @@ function BuilderPlayerCardComponent({
 
   return (
     <div
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
       aria-label={`${player.name}, ${positionRating.toFixed(
         1,
-      )} overall for ${activeBuildPosition}, ${positionFit} fit. Press Space or Enter to pick up for keyboard drag, or click to draft to ${activeBuildPosition}.`}
+      )} overall for ${activeBuildPosition}, ${positionFit} fit. Click to draft to ${activeBuildPosition}.`}
       onClick={() => {
         const isTouchDevice = window.matchMedia("(hover: none)").matches;
 
@@ -125,11 +112,9 @@ function BuilderPlayerCardComponent({
 
         onPickPlayer(player.name);
       }}
-      className={`group relative h-21 touch-none overflow-hidden rounded-md border bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] p-0.75 text-center transition hover:border-[var(--court-accent)] hover:bg-[rgb(var(--court-accent-rgb)/0.14)] lg:h-52 lg:p-3 ${
+      className={`group relative h-21 overflow-hidden rounded-md border bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] p-0.75 text-center transition hover:border-[var(--court-accent)] hover:bg-[rgb(var(--court-accent-rgb)/0.14)] lg:h-52 lg:p-3 ${
         isSelected
           ? "border-[var(--court-accent)] bg-[rgb(var(--court-accent-rgb)/0.15)] shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.35)]"
-          : isDragging
-            ? "border-[var(--court-accent)] bg-[rgb(var(--court-accent-rgb)/0.15)] opacity-45 shadow-[0_0_22px_rgb(var(--court-accent-rgb)/0.35)]"
           : "border-white/15"
       }`}
     >
@@ -141,7 +126,7 @@ function BuilderPlayerCardComponent({
         className="mx-auto h-7.5 w-7.5 rounded-full object-cover lg:h-20 lg:w-20"
       />
 
-      <p className="mt-0.5 flex h-5 items-center justify-center text-center font-michroma text-[8px] leading-tight text-white lg:h-10 lg:text-[11px] lg:leading-4">
+      <p className="mt-0.5 flex h-5 items-center justify-center text-center font-michroma text-[7px] leading-tight text-white lg:h-10 lg:text-[11px] lg:leading-4">
         {player.name}
       </p>
 

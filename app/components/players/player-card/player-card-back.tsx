@@ -19,7 +19,9 @@ export function PlayerCardBack({
       } ${isCardFlipped ? "animate-[cardFaceIn_180ms_ease-out_both]" : ""}`}
       style={{
         backfaceVisibility: "hidden",
+        WebkitBackfaceVisibility: "hidden",
         transform: "rotateY(180deg)",
+        WebkitTransform: "rotateY(180deg)",
         borderColor: teamColor,
       }}
     >

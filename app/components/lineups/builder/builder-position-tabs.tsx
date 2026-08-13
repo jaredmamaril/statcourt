@@ -29,7 +29,7 @@ export function BuilderPositionTabs({
             aria-pressed={isActive}
             type="button"
             onClick={() => onSelectPosition(position)}
-            className={`min-h-9 min-w-9 cursor-pointer rounded border px-0.5 font-michroma text-[8px] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--court-accent)] lg:min-h-10 lg:w-14 lg:text-xs ${
+            className={`min-h-7 min-w-7 cursor-pointer rounded border px-0.5 font-michroma text-[7px] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--court-accent)] lg:min-h-10 lg:w-14 lg:text-xs ${
               isActive
                 ? "border-[var(--court-accent)] bg-[rgb(var(--court-accent-rgb)/0.34)] text-[var(--court-accent)] shadow-[0_0_12px_rgb(var(--court-accent-rgb)/0.16)]"
                 : hasPlayer

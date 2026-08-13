@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useDraggable } from "@dnd-kit/core";
 import type { LineupSlot, Player } from "../../court-data";
 import type { BuilderStatProfileMode } from "./builder-position-helpers";
 import {
@@ -105,6 +104,10 @@ export function BuilderPlayerPicker({
 
   const hasMoreBuildPlayers =
     displayedBuildPlayers.length < availableBuildPlayers.length;
+  const displayTotal = Math.max(
+    availableBuildPlayers.length,
+    displayedBuildPlayers.length,
+  );
 
   const resetDisplayLimitKey = `${activeBuildPosition}-${builderStatProfile}-${buildPlayerSearch}`;
 
@@ -134,7 +137,7 @@ export function BuilderPlayerPicker({
           value={buildPlayerSearch}
           onChange={(event) => onSearchChange(event.target.value)}
           placeholder="Search Player..."
-          className="h-5 w-51 rounded-md border border-[rgb(var(--court-accent-rgb)/0.22)] bg-[color:color-mix(in_srgb,var(--court-panel)_72%,transparent)] px-3 font-michroma text-[9px] text-white outline-none transition placeholder:text-white/55 focus:border-[rgb(var(--court-accent-rgb)/0.75)] focus:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_78%,transparent)] lg:h-10 lg:w-full lg:max-w-80 lg:text-xs"
+          className="h-5 w-51 rounded-md border border-[rgb(var(--court-accent-rgb)/0.22)] bg-[color:color-mix(in_srgb,var(--court-panel)_72%,transparent)] px-3 font-michroma text-[9px] text-white outline-none transition placeholder:text-white/55 focus:border-[rgb(var(--court-accent-rgb)/0.75)] focus:bg-[color:color-mix(in_srgb,var(--court-panel-alt)_78%,transparent)] lg:h-10 lg:w-full lg:max-w-96 lg:text-xs"
         />
       </div>
 
@@ -142,17 +145,17 @@ export function BuilderPlayerPicker({
         {buildPlayerSearch.trim() ? (
           <>
             Showing {displayedBuildPlayers.length} of{" "}
-            {availableBuildPlayers.length} results
+            {displayTotal} results
           </>
         ) : (
           <>
             Showing top {displayedBuildPlayers.length} of{" "}
-            {availableBuildPlayers.length}
+            {displayTotal}
           </>
         )}
       </p>
 
-      <div className="statcourt-scroll mx-auto max-h-21 w-full overflow-y-auto pr-1 lg:max-h-84 lg:max-w-80 lg:pr-2">
+      <div className="statcourt-scroll mx-auto max-h-21 w-full overflow-y-auto pr-1 lg:max-h-84 lg:max-w-96 lg:pr-2">
         <div
           key={`${activeBuildPosition}-${builderStatProfile}-${displayView}`}
           className={
@@ -265,14 +268,6 @@ function BuilderPlayerListRow({
   isSelected,
   onPickPlayer,
 }: BuilderPlayerListRowProps) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: `builder-player-${player.id}`,
-    data: {
-      type: "picker-player",
-      playerName: player.name,
-      preferredSlot: activeBuildPosition,
-    },
-  });
   const positionFit = getPositionFit(
     player,
     activeBuildPosition,
@@ -295,20 +290,15 @@ function BuilderPlayerListRow({
 
   return (
     <button
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
       aria-label={`${player.name}, ${positionRating.toFixed(
         1,
-      )} overall for ${activeBuildPosition}, ${fitLabel} fit. Press Space or Enter to pick up for keyboard drag, or click to draft to ${activeBuildPosition}.`}
+      )} overall for ${activeBuildPosition}, ${fitLabel} fit. Click to draft to ${activeBuildPosition}.`}
       type="button"
       onClick={() => onPickPlayer(player.name)}
-      className={`mx-auto grid w-80 max-w-full min-w-0 touch-none grid-cols-[34px_minmax(0,1fr)_52px] items-center gap-2 rounded-md border bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] px-2 py-1.5 text-left transition lg:grid-cols-[38px_minmax(0,1fr)_56px] lg:px-2 lg:py-1.5 ${
+      className={`mx-auto grid w-80 max-w-full min-w-0 grid-cols-[34px_minmax(0,1fr)_52px] items-center gap-2 rounded-md border bg-[color:color-mix(in_srgb,var(--court-panel)_88%,black)] px-2 py-1.5 text-left transition lg:grid-cols-[38px_minmax(0,1fr)_56px] lg:px-2 lg:py-1.5 ${
         isSelected
           ? "border-[var(--court-accent)] bg-[rgb(var(--court-accent-rgb)/0.15)] shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.35)]"
-          : isDragging
-            ? "border-[var(--court-accent)] bg-[rgb(var(--court-accent-rgb)/0.15)] opacity-45 shadow-[0_0_22px_rgb(var(--court-accent-rgb)/0.35)]"
-            : "border-white/15 hover:border-[var(--court-accent)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)]"
+          : "border-white/15 hover:border-[var(--court-accent)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)]"
       }`}
     >
       <PlayerImage
@@ -320,7 +310,7 @@ function BuilderPlayerListRow({
       />
 
       <span className="min-w-0">
-        <span className="block font-michroma text-[8px] text-white lg:text-[10px]">
+        <span className="block font-michroma text-[7px] text-white lg:text-[10px]">
           {player.name}
         </span>
         <span className="mt-0.5 block font-michroma text-[7px] text-white/60 lg:text-[8px]">

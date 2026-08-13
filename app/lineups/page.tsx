@@ -282,8 +282,6 @@ function LineupsContent() {
     isLineupComplete,
     hasExistingDraft,
     pickBuildPlayer,
-    placeBuildPlayer,
-    moveBuildPlayer,
     removeBuildPlayer,
     resetDraft,
     startNewDraft,
@@ -919,8 +917,6 @@ function LineupsContent() {
                   onStatProfileChange={setBuilderStatProfile}
                   onDisplayViewChange={setBuilderDisplayView}
                   onPickPlayer={pickBuildPlayer}
-                  onPlacePlayer={placeBuildPlayer}
-                  onMovePlayer={moveBuildPlayer}
                   onRemovePlayer={removeBuildPlayer}
                   onScoutLineup={scoutDraftLineup}
                   onViewCard={viewPlayerCard}

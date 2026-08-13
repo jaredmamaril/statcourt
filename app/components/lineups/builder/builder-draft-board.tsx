@@ -1,5 +1,4 @@
 import { memo, useMemo } from "react";
-import { useDraggable, useDroppable } from "@dnd-kit/core";
 import type { LineupSlot, Player } from "../../court-data";
 import {
   getPlayerRevealDelay,
@@ -64,27 +63,6 @@ function BuilderDraftSlot({
   onSelectDraftPlayer,
   onRemovePlayer,
 }: BuilderDraftSlotProps) {
-  const { setNodeRef: setDroppableNodeRef, isOver } = useDroppable({
-    id: `builder-slot-${position}`,
-    data: {
-      type: "builder-slot",
-      slot: position,
-    },
-  });
-  const {
-    attributes,
-    listeners,
-    setNodeRef: setDraggableNodeRef,
-    isDragging,
-  } = useDraggable({
-    id: `builder-slot-player-${position}`,
-    disabled: !player,
-    data: {
-      type: "slot-player",
-      slot: position,
-      playerName,
-    },
-  });
   const isActiveDraftPlayer = Boolean(
     player && player.name === activeDraftPlayerName,
   );
@@ -92,24 +70,17 @@ function BuilderDraftSlot({
     player && (player.name === hoveredBuildPlayer || isActiveDraftPlayer);
   const slotLabel = slotLabels[position];
   const slotAccessibleName = player
-    ? `${slotLabel} slot, occupied by ${player.name}. Press Space or Enter to move this player.`
+    ? `${slotLabel} slot, occupied by ${player.name}.`
     : `${slotLabel} slot, empty.`;
-
-  function setNodeRef(node: HTMLDivElement | null) {
-    setDroppableNodeRef(node);
-    setDraggableNodeRef(node);
-  }
 
   return (
     <div
-      ref={setNodeRef}
       data-builder-draft-slot="true"
       key={`${position}-${playerName || "empty"}`}
       style={{
         animationDelay: getPlayerRevealDelay(playerRevealMode, positionIndex),
       }}
-      {...(player ? listeners : {})}
-      {...(player ? attributes : { role: "group" })}
+      role="group"
       aria-label={slotAccessibleName}
       onClick={() => {
         if (!player) return;
@@ -122,12 +93,8 @@ function BuilderDraftSlot({
         }
       }}
       onMouseLeave={() => onHoverPlayer("")}
-      className={`animate-[loadedPlayerReveal_360ms_ease-out_both] grid h-fit touch-none grid-cols-[15px_1fr_auto] items-center gap-0.5 rounded-md border px-1 py-2 transition lg:grid-cols-[44px_1fr_auto] lg:gap-2 lg:px-3 lg:py-2 ${
-        isDragging
-          ? "border-[rgb(var(--court-accent-rgb)/0.9)] bg-[rgb(var(--court-accent-rgb)/0.2)] opacity-45 shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.45)]"
-          : isOver
-            ? "border-[rgb(var(--court-accent-rgb)/0.9)] bg-[rgb(var(--court-accent-rgb)/0.2)] shadow-[0_0_16px_rgb(var(--court-accent-rgb)/0.35)]"
-            : isHighlighted
+      className={`animate-[loadedPlayerReveal_360ms_ease-out_both] grid h-fit grid-cols-[15px_1fr_auto] items-center gap-0.5 rounded-md border px-1 py-2 transition lg:grid-cols-[44px_1fr_auto] lg:gap-2 lg:px-3 lg:py-2 ${
+        isHighlighted
               ? "border-[rgb(var(--court-accent-rgb)/0.8)] bg-[rgb(var(--court-accent-rgb)/0.15)] shadow-[0_0_16px_rgb(var(--court-accent-rgb)/0.35)]"
               : player
                 ? "border-emerald-400/50 bg-emerald-400/10 hover:border-[rgb(var(--court-accent-rgb)/0.7)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)]"

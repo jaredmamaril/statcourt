@@ -172,33 +172,6 @@ export function useLineupBuilder({
     }));
   }, [activeBuildPosition]);
 
-  const placeBuildPlayer = useCallback(
-    (playerName: string, position: LineupSlot) => {
-      setPlayerRevealMode("instant");
-
-      setCustomLineup((prev) => ({
-        ...prev,
-        [position]: playerName,
-      }));
-    },
-    [],
-  );
-
-  const moveBuildPlayer = useCallback(
-    (fromPosition: LineupSlot, toPosition: LineupSlot) => {
-      if (fromPosition === toPosition) return;
-
-      setPlayerRevealMode("instant");
-
-      setCustomLineup((prev) => ({
-        ...prev,
-        [fromPosition]: prev[toPosition],
-        [toPosition]: prev[fromPosition],
-      }));
-    },
-    [],
-  );
-
   const removeBuildPlayer = useCallback((position: LineupSlot) => {
     setCustomLineup((prev) => ({
       ...prev,
@@ -245,8 +218,6 @@ export function useLineupBuilder({
     isLineupComplete,
     hasExistingDraft,
     pickBuildPlayer,
-    placeBuildPlayer,
-    moveBuildPlayer,
     removeBuildPlayer,
     resetDraft,
     startNewDraft,

@@ -24,7 +24,12 @@ export function PlayerCardFront({
       className={`absolute inset-0 h-full rounded-2xl border border-[rgb(var(--court-accent-rgb)/0.25)] bg-[color:color-mix(in_srgb,var(--court-panel)_90%,black)] p-4 lg:min-h-134 lg:rounded-3xl lg:p-6 ${
         isCardFlipped ? "pointer-events-none" : "pointer-events-auto"
       } ${isCardFlipped ? "" : "animate-[cardFaceIn_180ms_ease-out_both]"}`}
-      style={{ backfaceVisibility: "hidden" }}
+      style={{
+        backfaceVisibility: "hidden",
+        WebkitBackfaceVisibility: "hidden",
+        transform: "rotateY(0deg)",
+        WebkitTransform: "rotateY(0deg)",
+      }}
     >
       <svg
         className="pointer-events-none absolute inset-0 z-20 h-full w-full"
