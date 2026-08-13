@@ -18,7 +18,7 @@ export function PlayerCardShell({
   return (
     <div
       key={player.id}
-      className={`relative h-[540px] max-h-[calc(100svh-155px)] min-h-0 w-full max-w-71.25 overflow-hidden rounded-2xl animate-[cardIn_500ms_ease-out] transition-all duration-500 sm:h-[620px] sm:max-w-md lg:h-auto lg:max-h-none lg:min-h-134 lg:rounded-3xl ${
+      className={`relative h-[430px] max-h-[calc(100svh-210px)] min-h-0 w-full max-w-71.25 overflow-hidden rounded-2xl animate-[cardIn_500ms_ease-out] transition-all duration-500 sm:h-[620px] sm:max-w-md lg:h-auto lg:max-h-none lg:min-h-134 lg:rounded-3xl ${
         isGoingToCourt
           ? "scale-90 translate-y-20 opacity-0"
           : "scale-100 translate-y-0 opacity-100"
