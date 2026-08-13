@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
-import { Eye, KeyRound } from "lucide-react";
+import { Eye, EyeOff, KeyRound } from "lucide-react";
 import { supabase } from "../components/supabase-client";
 
 function getPasswordValidationMessage(password: string) {
@@ -236,9 +236,13 @@ export default function ResetPasswordPage() {
                   }))
                 }
                 aria-label="Toggle new password visibility"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-white/35 transition hover:text-[var(--court-accent)] lg:right-3"
+                className="absolute right-1.5 top-1/2 z-10 flex min-h-8 min-w-8 -translate-y-1/2 items-center justify-center rounded text-white/35 transition hover:text-[var(--court-accent)] lg:right-2 lg:min-h-9 lg:min-w-9"
               >
-                <Eye className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
+                {visiblePasswordFields.new ? (
+                  <EyeOff className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
+                ) : (
+                  <Eye className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
+                )}
               </button>
             </div>
 
@@ -275,9 +279,13 @@ export default function ResetPasswordPage() {
                   }))
                 }
                 aria-label="Toggle confirm password visibility"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-white/35 transition hover:text-[var(--court-accent)] lg:right-3"
+                className="absolute right-1.5 top-1/2 z-10 flex min-h-8 min-w-8 -translate-y-1/2 items-center justify-center rounded text-white/35 transition hover:text-[var(--court-accent)] lg:right-2 lg:min-h-9 lg:min-w-9"
               >
-                <Eye className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
+                {visiblePasswordFields.confirm ? (
+                  <EyeOff className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
+                ) : (
+                  <Eye className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
+                )}
               </button>
             </div>
 

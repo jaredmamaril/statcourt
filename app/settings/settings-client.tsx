@@ -5,6 +5,7 @@ import {
   Database,
   ExternalLink,
   Eye,
+  EyeOff,
   Globe2,
   KeyRound,
   LogOut,
@@ -343,6 +344,7 @@ export default function SettingsPage() {
   const [profileStatus, setProfileStatus] = useState("");
   const [usernameStatus, setUsernameStatus] = useState("");
   const [accountActionStatus, setAccountActionStatus] = useState("");
+  const [emailActionStatus, setEmailActionStatus] = useState("");
   const [shareProfileStatus, setShareProfileStatus] = useState("");
   const [avatarStatus, setAvatarStatus] = useState("");
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -905,28 +907,29 @@ export default function SettingsPage() {
 
   async function updateEmail() {
     const nextEmail = newEmailInput.trim();
+    setPasswordStatus("");
 
     if (!user?.email) {
-      setAccountActionStatus("Email sign-in is required.");
+      setEmailActionStatus("Email sign-in is required.");
       return;
     }
 
     if (!nextEmail) {
-      setAccountActionStatus("Enter a new email.");
+      setEmailActionStatus("Enter a new email.");
       return;
     }
 
     if (nextEmail.toLowerCase() === user.email.toLowerCase()) {
-      setAccountActionStatus("Use a different email.");
+      setEmailActionStatus("Use a different email.");
       return;
     }
 
     if (!emailPasswordInput) {
-      setAccountActionStatus("Enter your password.");
+      setEmailActionStatus("Enter your password.");
       return;
     }
 
-    setAccountActionStatus("Checking password...");
+    setEmailActionStatus("Checking password...");
 
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email: user.email,
@@ -934,13 +937,15 @@ export default function SettingsPage() {
     });
 
     if (signInError) {
-      setAccountActionStatus("Password is incorrect.");
+      setEmailActionStatus("Password is incorrect.");
       return;
     }
 
-    setAccountActionStatus("Sending confirmation...");
+    setEmailActionStatus("Sending confirmation...");
 
-    const emailRedirectTo = `${window.location.origin}/settings`;
+    const emailRedirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(
+      "/settings",
+    )}&provider=email`;
 
     const { error } = await supabase.auth.updateUser(
       {
@@ -958,11 +963,11 @@ export default function SettingsPage() {
         errorMessage.includes("same email") ||
         errorMessage.includes("different from the old email")
       ) {
-        setAccountActionStatus("Use a different email.");
+        setEmailActionStatus("Use a different email.");
       } else if (errorMessage.includes("already")) {
-        setAccountActionStatus("Email is already in use.");
+        setEmailActionStatus("Email is already in use.");
       } else {
-        setAccountActionStatus("Could not update email.");
+        setEmailActionStatus("Could not update email.");
       }
       return;
     }
@@ -970,32 +975,36 @@ export default function SettingsPage() {
     setPendingEmailAddress(nextEmail);
     setEmailPasswordInput("");
     setIsEmailPasswordVisible(false);
-    setAccountActionStatus("Check your inbox to confirm.");
+    setEmailActionStatus("Check your inbox to confirm.");
   }
 
   async function resendEmailChangeConfirmation() {
+    setPasswordStatus("");
+
     if (!pendingEmailAddress) {
-      setAccountActionStatus("Enter a new email first.");
+      setEmailActionStatus("Enter a new email first.");
       return;
     }
 
-    setAccountActionStatus("Resending confirmation...");
+    setEmailActionStatus("Resending confirmation...");
 
     const { error } = await supabase.auth.updateUser(
       {
         email: pendingEmailAddress,
       },
       {
-        emailRedirectTo: `${window.location.origin}/settings`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
+          "/settings",
+        )}&provider=email`,
       },
     );
 
     if (error) {
-      setAccountActionStatus("Could not send confirmation.");
+      setEmailActionStatus("Could not send confirmation.");
       return;
     }
 
-    setAccountActionStatus("Confirmation resent.");
+    setEmailActionStatus("Confirmation resent.");
   }
 
   async function updatePassword() {
@@ -1121,7 +1130,9 @@ export default function SettingsPage() {
     const { error } = await supabase.auth.linkIdentity({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
+          "/settings",
+        )}&provider=google`,
       },
     });
 
@@ -1765,7 +1776,8 @@ export default function SettingsPage() {
                     type="button"
                     onClick={() => {
                       setIsChangingEmail((current) => !current);
-                      setAccountActionStatus("");
+                      setEmailActionStatus("");
+                      setPasswordStatus("");
                     }}
                     disabled={!user}
                     className="shrink-0 rounded-md border border-white/10 bg-white/5 px-2.5 py-1.5 font-michroma text-[8px] uppercase text-white/65 transition hover:border-[rgb(var(--court-accent-rgb)/0.35)] hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:text-white/55 lg:px-3 lg:text-[9px]"
@@ -1785,14 +1797,15 @@ export default function SettingsPage() {
                       value={newEmailInput}
                       onChange={(event) => {
                         setNewEmailInput(event.target.value);
-                        setAccountActionStatus("");
+                        setEmailActionStatus("");
+                        setPasswordStatus("");
                       }}
                       disabled={!user}
                       autoComplete="email"
-                      aria-invalid={isErrorLikeStatus(accountActionStatus)}
+                      aria-invalid={isErrorLikeStatus(emailActionStatus)}
                       aria-describedby={
-                        accountActionStatus
-                          ? "settings-account-action-status"
+                        emailActionStatus
+                          ? "settings-email-action-status"
                           : undefined
                       }
                       placeholder="New email"
@@ -1812,14 +1825,15 @@ export default function SettingsPage() {
                         value={emailPasswordInput}
                         onChange={(event) => {
                           setEmailPasswordInput(event.target.value);
-                          setAccountActionStatus("");
+                          setEmailActionStatus("");
+                          setPasswordStatus("");
                         }}
                         disabled={!user}
                         autoComplete="current-password"
-                        aria-invalid={isErrorLikeStatus(accountActionStatus)}
+                        aria-invalid={isErrorLikeStatus(emailActionStatus)}
                         aria-describedby={
-                          accountActionStatus
-                            ? "settings-account-action-status"
+                          emailActionStatus
+                            ? "settings-email-action-status"
                             : undefined
                         }
                         placeholder="Current password"
@@ -1833,9 +1847,13 @@ export default function SettingsPage() {
                         }
                         disabled={!user}
                         aria-label="Toggle email password visibility"
-                        className="absolute right-1.5 top-1/2 -translate-y-1/2 text-white/35 transition hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:text-white/15 lg:right-2"
+                        className="absolute right-1 top-1/2 z-10 flex min-h-7 min-w-7 -translate-y-1/2 items-center justify-center rounded text-white/35 transition hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:text-white/15 lg:right-1.5 lg:min-h-8 lg:min-w-8"
                       >
-                        <Eye className="h-2.5 w-2.5 lg:h-3.5 lg:w-3.5" />
+                        {isEmailPasswordVisible ? (
+                          <EyeOff className="h-2.5 w-2.5 lg:h-3.5 lg:w-3.5" />
+                        ) : (
+                          <Eye className="h-2.5 w-2.5 lg:h-3.5 lg:w-3.5" />
+                        )}
                       </button>
                     </div>
 
@@ -1866,13 +1884,28 @@ export default function SettingsPage() {
                         setPendingEmailAddress("");
                         setEmailPasswordInput("");
                         setIsEmailPasswordVisible(false);
-                        setAccountActionStatus("");
+                        setEmailActionStatus("");
+                        setPasswordStatus("");
                         setIsChangingEmail(false);
                       }}
                       className="rounded-md border border-white/10 bg-white/5 px-2 py-1.5 font-michroma text-[8px] uppercase text-white/65 transition hover:border-white/25 hover:text-white lg:px-4 lg:py-2 lg:text-[9px]"
                     >
                       Cancel
                     </button>
+
+                    {emailActionStatus && (
+                      <p
+                        id="settings-email-action-status"
+                        role={
+                          isErrorLikeStatus(emailActionStatus)
+                            ? "alert"
+                            : "status"
+                        }
+                        className="font-michroma text-[8px] uppercase text-[rgb(var(--court-accent-rgb)/0.85)] lg:col-span-4 lg:text-[9px]"
+                      >
+                        {emailActionStatus}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
@@ -2188,9 +2221,13 @@ export default function SettingsPage() {
                         }
                         disabled={!user}
                         aria-label="Toggle current password visibility"
-                        className="absolute right-1.5 top-1/2 -translate-y-1/2 text-white/35 transition hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:text-white/15 lg:right-2"
+                        className="absolute right-1 top-1/2 z-10 flex min-h-7 min-w-7 -translate-y-1/2 items-center justify-center rounded text-white/35 transition hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:text-white/15 lg:right-1.5 lg:min-h-8 lg:min-w-8"
                       >
-                        <Eye className="h-2.5 w-2.5 lg:h-3.5 lg:w-3.5" />
+                        {visiblePasswordFields.current ? (
+                          <EyeOff className="h-2.5 w-2.5 lg:h-3.5 lg:w-3.5" />
+                        ) : (
+                          <Eye className="h-2.5 w-2.5 lg:h-3.5 lg:w-3.5" />
+                        )}
                       </button>
                     </div>
 
@@ -2226,9 +2263,13 @@ export default function SettingsPage() {
                         }
                         disabled={!user}
                         aria-label="Toggle new password visibility"
-                        className="absolute right-1.5 top-1/2 -translate-y-1/2 text-white/35 transition hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:text-white/15 lg:right-2"
+                        className="absolute right-1 top-1/2 z-10 flex min-h-7 min-w-7 -translate-y-1/2 items-center justify-center rounded text-white/35 transition hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:text-white/15 lg:right-1.5 lg:min-h-8 lg:min-w-8"
                       >
-                        <Eye className="h-2.5 w-2.5 lg:h-3.5 lg:w-3.5" />
+                        {visiblePasswordFields.new ? (
+                          <EyeOff className="h-2.5 w-2.5 lg:h-3.5 lg:w-3.5" />
+                        ) : (
+                          <Eye className="h-2.5 w-2.5 lg:h-3.5 lg:w-3.5" />
+                        )}
                       </button>
                     </div>
 
@@ -2269,9 +2310,13 @@ export default function SettingsPage() {
                         }
                         disabled={!user}
                         aria-label="Toggle confirm password visibility"
-                        className="absolute right-1.5 top-1/2 -translate-y-1/2 text-white/35 transition hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:text-white/15 lg:right-2"
+                        className="absolute right-1 top-1/2 z-10 flex min-h-7 min-w-7 -translate-y-1/2 items-center justify-center rounded text-white/35 transition hover:text-[var(--court-accent)] disabled:cursor-not-allowed disabled:text-white/15 lg:right-1.5 lg:min-h-8 lg:min-w-8"
                       >
-                        <Eye className="h-2.5 w-2.5 lg:h-3.5 lg:w-3.5" />
+                        {visiblePasswordFields.confirm ? (
+                          <EyeOff className="h-2.5 w-2.5 lg:h-3.5 lg:w-3.5" />
+                        ) : (
+                          <Eye className="h-2.5 w-2.5 lg:h-3.5 lg:w-3.5" />
+                        )}
                       </button>
                     </div>
 
