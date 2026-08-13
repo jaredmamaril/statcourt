@@ -14,7 +14,7 @@ export function PlayerCardBack({
   const teamColor = getReadableTeamColor(player.team);
   return (
     <div
-      className={`absolute inset-0 h-full rounded-2xl border bg-[color:color-mix(in_srgb,var(--court-panel)_90%,black)] lg:min-h-134 lg:rounded-3xl ${
+      className={`statcourt-scroll absolute inset-0 h-full overflow-y-auto overflow-x-hidden overscroll-contain rounded-2xl border bg-[color:color-mix(in_srgb,var(--court-panel)_90%,black)] [-webkit-overflow-scrolling:touch] lg:min-h-134 lg:overflow-visible lg:rounded-3xl ${
         isCardFlipped ? "pointer-events-auto" : "pointer-events-none"
       } ${isCardFlipped ? "animate-[cardFaceIn_180ms_ease-out_both]" : ""}`}
       style={{
