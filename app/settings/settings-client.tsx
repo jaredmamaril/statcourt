@@ -943,9 +943,7 @@ export default function SettingsPage() {
 
     setEmailActionStatus("Sending confirmation...");
 
-    const emailRedirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(
-      "/settings",
-    )}&provider=email&auth_action=email_change`;
+    const emailRedirectTo = `${window.location.origin}/signin?notice=email_change_confirmed`;
 
     const { error } = await supabase.auth.updateUser(
       {
@@ -993,9 +991,7 @@ export default function SettingsPage() {
         email: pendingEmailAddress,
       },
       {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
-          "/settings",
-        )}&provider=email&auth_action=email_change`,
+        emailRedirectTo: `${window.location.origin}/signin?notice=email_change_confirmed`,
       },
     );
 
