@@ -1,232 +1,279 @@
 # StatCourt
 
-StatCourt is a full-stack NBA analytics platform that allows users to explore player data, compare current and historical players, build custom lineups, and generate data-driven scouting reports.
+StatCourt is a full-stack basketball analytics platform...
 
-The application combines a basketball-themed interface with a PostgreSQL database hosted on Supabase. It also includes optional Python scripts that developers can use to retrieve, process, and prepare NBA player statistics using the `nba_api` library.
+**Live App:** https://statcourt.com
+
+![StatCourt Preview](./public/readme/statcourt-preview.png)
+
+The app is built with Next.js, Supabase, PostgreSQL, Redis-backed rate limiting, and a custom basketball-themed interface. It supports public player browsing, authenticated account features, public profiles, saved lineups, favorites, community discovery, and lineup scouting.
 
 ## Features
 
-* Browse current and historical NBA players
-* Search and filter the player database
-* View player profiles and career statistics
-* Compare two players side by side
-* Switch between supported statistical profiles
-* Visualize player strengths with radar charts
-* Review category-by-category comparison advantages
-* Generate player matchup summaries
-* Build custom starting lineups
-* Generate data-driven lineup scouting reports
-* Save player selections and user preferences
-* Use fallback player data when Supabase is unavailable
-* Access responsive layouts across desktop and mobile devices
+- Browse, search, and filter current and historical NBA players
+- View full player profiles with ratings, traits, similar players, and lineup fits
+- Compare two players across Career, Peak, and Current stat profiles
+- Explore rankings by overall, scoring, shooting, playmaking, rebounding, defense, efficiency, and archetypes
+- Build custom lineups with position-fit logic and drag-and-drop drafting
+- Generate lineup scouting reports with archetypes, strengths, weaknesses, grades, X-Factors, and similar lineup matches
+- Save, rename, load, scout, and delete lineups
+- Favorite players and track recent activity
+- Create public profiles with public lineups, favorite players, and basketball identity
+- Follow and report public profiles
+- Use Supabase Auth with email/password and Google OAuth
+- Upload profile avatars through Supabase Storage
+- Support protected account pages, RLS, API validation, rate limiting, and security-event logging
+- Use fallback player data when Supabase player loading is disabled or unavailable
 
-## Player Comparison
+## Tech Stack
 
-StatCourt includes an interactive comparison court where users can select two players and analyze their performance.
+### App
 
-Comparison features include:
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS
+- Recharts
+- Lucide React
+- dnd-kit
 
-* Career and alternate statistical profiles
-* Scoring, rebounding, playmaking, shooting, and defensive analysis
-* Interactive radar-chart visualizations
-* Searchable player-selection menus
-* Category comparison results
-* Matchup summaries
-* Saved comparison selections
-* Loading and database error states
+### Backend
 
-## Data Architecture
+- Next.js Route Handlers
+- Supabase Auth
+- Supabase PostgreSQL
+- Supabase Storage
+- Upstash Redis
+- Row Level Security
 
-StatCourt uses a PostgreSQL database hosted on Supabase to store player information and statistical profiles.
+### Deployment
 
-Stored player data includes:
+- Vercel
+- Supabase
+- Resend or another SMTP provider for production auth email
 
-* NBA player IDs
-* Player names
-* Teams and positions
-* Jersey numbers
-* Height and weight
-* Career games played
-* Points, rebounds, and assists per game
-* Steals and blocks per game
-* Field-goal percentage
-* Three-point percentage
-* Free-throw percentage
-* Career and playoff statistical profiles
-* Defensive ratings
-* Star-power ratings
-* Career-legacy ratings
-* Player images and metadata
+### Optional Data Scripts
 
-The application retrieves player data through a Next.js API route and maps database records into TypeScript objects used throughout the interface.
-
-If Supabase is disabled or unavailable, StatCourt can fall back to a local player dataset so the core application remains usable.
-
-## Technology Stack
-
-### Front End
-
-* Next.js
-* React
-* TypeScript
-* Tailwind CSS
-* Recharts
-* Lucide React
-* `dnd-kit`
-
-### Backend and Database
-
-* Next.js Route Handlers
-* Supabase
-* PostgreSQL
-* Supabase JavaScript Client
-
-### Optional Data Processing
-
-* Python
-* `nba_api`
-
-### Development Tools
-
-* Git
-* GitHub
-* Visual Studio Code
-* ESLint
+- Python
+- nba_api
+- pandas
+- requests
 
 ## Project Structure
 
 ```text
 statcourt/
 ├── app/
-│   ├── api/                  # Next.js API routes
-│   ├── components/           # React components, player logic, and shared types
-│   ├── court/                # Player comparison experience
-│   ├── lib/                  # Authentication, settings, and utilities
-│   └── page.tsx              # Landing page
-├── public/                   # Images, videos, icons, and static assets
-├── scripts/                  # Optional Python data-ingestion scripts
+│   ├── api/                 # Next.js route handlers
+│   ├── auth/                # Auth callback flow
+│   ├── community/           # Community profile discovery
+│   ├── components/          # UI, basketball logic, auth, lineups, players
+│   ├── court/               # Player comparison court
+│   ├── lib/                 # Auth, Supabase, rate limit, security utilities
+│   ├── lineups/             # Featured, builder, and saved lineup page
+│   ├── players/             # Player list and profile routes
+│   ├── profile/             # Private account profile hub
+│   ├── rankings/            # Player rankings and archetype rankings
+│   ├── settings/            # Account, security, privacy, and preferences
+│   └── u/[username]/        # Public profile pages
+├── public/                  # Static assets, icons, videos, backgrounds
+├── scripts/                 # SQL and optional player data scripts
+├── next.config.ts
 ├── package.json
 └── README.md
 ```
-
-The project structure may change as development continues.
 
 ## Getting Started
 
 ### Requirements
 
-To run the StatCourt web application:
+- Node.js
+- npm
+- Git
+- Supabase project
+- Upstash Redis database for rate limiting
 
-* Node.js
-* npm
-* Git
+Optional, only for running player data scripts:
 
-Optional requirements for retrieving player statistics yourself:
+- Python 3
+- nba_api
+- pandas
+- requests
 
-* Python 3
-* A Supabase or PostgreSQL database
-* Access to the NBA statistics endpoints
-
-Python is not required when you only want to run the web application using the existing player data.
-
-### Clone the Repository
+### Install
 
 ```bash
 git clone https://github.com/jaredmamaril/statcourt.git
 cd statcourt
-```
-
-### Install JavaScript Dependencies
-
-```bash
 npm install
 ```
 
-This installs all dependencies listed in `package.json`, including Next.js, React, Supabase, Recharts, Tailwind CSS, drag-and-drop tools, TypeScript, and ESLint.
+### Environment Variables
 
-### Configure Environment Variables
-
-Create a `.env.local` file in the project root:
+Create `.env.local` in the project root.
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
 NEXT_PUBLIC_USE_SUPABASE_PLAYERS=true
+
+SUPABASE_SERVICE_ROLE_KEY=
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+SECURITY_EVENT_SALT=
 ```
 
-Do not commit `.env.local`, database passwords, service-role keys, or other private credentials.
+Notes:
 
-The Supabase anonymous key may be used by the client application, but database access should still be protected with properly configured Row Level Security policies.
+- `NEXT_PUBLIC_*` values are exposed to the browser.
+- `SUPABASE_SERVICE_ROLE_KEY`, Redis credentials, and `SECURITY_EVENT_SALT` must stay server-only.
+- Do not commit `.env.local` or private credentials.
+- Keep `.env.example` updated when deployment-required variables change.
 
-### Run the Development Server
+### Development
 
 ```bash
 npm run dev
 ```
 
-Open `http://localhost:3000` in your browser.
+Open `http://localhost:3000`.
 
-### Create a Production Build
-
-```bash
-npm run build
-npm run start
-```
-
-### Run ESLint
+### Validation
 
 ```bash
+npx tsc --noEmit
 npm run lint
+npm run build
 ```
+
+The production build may need network access because `next/font` fetches Google Fonts during build.
+
+## Deployment
+
+StatCourt is intended to deploy on Vercel.
+
+Before deploying:
+
+1. Connect the GitHub repo to Vercel.
+2. Add all required environment variables in Vercel.
+3. Set `NEXT_PUBLIC_SITE_URL` to the production domain.
+4. Configure Supabase Auth redirect URLs for the production domain.
+5. Configure Google OAuth redirect URLs.
+6. Configure custom SMTP in Supabase Auth, preferably with Resend.
+7. Verify Supabase RLS policies are active.
+8. Verify the `avatars` storage bucket policies and file limits.
+9. Run `npm run build`.
+
+Recommended production auth URLs:
+
+```text
+https://your-domain.com/auth/callback
+https://your-domain.com/reset-password
+```
+
+Keep localhost redirect URLs available for development if needed.
+
+## Supabase
+
+StatCourt uses Supabase for:
+
+- Authentication
+- User profiles
+- Public profiles
+- Saved lineups
+- Favorite players
+- Recent players
+- User activity
+- Compare slots
+- Follows
+- Reports
+- Devices
+- Sign-in history
+- Security events
+- Player data
+- Player stat profiles
+- Player awards
+- Avatar storage
+
+### Security Model
+
+- Public basketball data is read-only.
+- `user_profiles` is owner-only.
+- `public_profiles` exposes only public-safe profile fields.
+- Public saved lineups, favorites, and follows obey profile visibility.
+- Saved lineups are scoped by authenticated user ownership.
+- User activity, recent players, compare slots, settings, devices, and sign-ins are owner-scoped.
+- Reports are authenticated and do not expose other users' reports.
+- Security events are written server-side only.
+- Avatar writes are restricted to the authenticated user's storage folder.
+
+## Authentication
+
+Supported auth flows:
+
+- Email/password sign up and sign in
+- Password reset
+- Password setup for OAuth users
+- Email change flow
+- Google OAuth
+- Account deletion
+
+For production, configure custom SMTP in Supabase Auth. Supabase's built-in email sender is intended for testing and has strict limits.
+
+Recommended SMTP setup:
+
+- Resend or another SMTP provider
+- Verified sending domain
+- SPF, DKIM, and DMARC records
+- Sender such as `no-reply@your-domain.com`
+
+## Security
+
+StatCourt includes:
+
+- Supabase RLS policies
+- Server-side API authorization
+- Shared input validation
+- Origin checks for mutation routes
+- Redis-backed rate limiting
+- IDOR protection on user-owned resources
+- Safe redirect validation
+- Generic user-facing server errors
+- Security headers and CSP
+- Persistent security-event logging
+- Server-only service-role usage
+
+Never expose or commit:
+
+- Supabase service-role keys
+- Redis tokens
+- database passwords
+- OAuth secrets
+- SMTP credentials
+- security salts
+- access tokens or refresh tokens
 
 ## Optional Player Data Scripts
 
-The Python scripts in the `scripts/` directory are optional.
+The `scripts/` directory contains optional Python and SQL utilities for player data imports, stat profile generation, backfills, RLS setup, and security-event setup.
 
-They are intended for developers who want to retrieve, process, and prepare NBA player statistics themselves instead of relying only on the existing player data.
+These scripts are not required to run the web app if the database is already populated or fallback data is used.
 
-These scripts may be used to:
+Before running a script:
 
-* Retrieve current and historical NBA player information
-* Collect career and playoff statistics
-* Calculate per-game averages
-* Clean incomplete or inconsistent API responses
-* Generate SQL or import-ready player records
-* Populate a separate PostgreSQL or Supabase database
-* Track skipped players and failed API requests
-* Retry requests when NBA endpoints disconnect or time out
+1. Read the script.
+2. Confirm required environment variables.
+3. Confirm whether it writes to Supabase.
+4. Run it against the intended database only.
 
-### Python Setup
-
-Create a virtual environment:
+Example Python setup:
 
 ```bash
 python -m venv .venv
-```
-
-Activate it on Windows:
-
-```bash
 .venv\Scripts\activate
-```
-
-Activate it on macOS or Linux:
-
-```bash
-source .venv/bin/activate
-```
-
-Install the packages required by the selected script:
-
-```bash
 pip install nba_api pandas requests python-dotenv
 ```
-
-Some scripts may require additional packages depending on whether they generate SQL files or connect directly to a database.
-
-Review the imports and configuration at the top of the selected script before running it.
-
-### Run a Data Script
 
 Run a script from the project root:
 
@@ -234,110 +281,40 @@ Run a script from the project root:
 python scripts/<script-name>.py
 ```
 
-Replace `<script-name>.py` with the script you want to run.
-
-Some scripts may output SQL files, error logs, skipped-player lists, or import-ready records instead of writing directly to the database.
-
-NBA statistics endpoints may occasionally reject requests, disconnect, or time out. Some scripts include retry logic, delays, fallback handling, or skipped-player reporting to manage these issues.
-
-## Database Configuration
-
-StatCourt currently uses database tables including:
-
-* `players`
-* `player_stat_profiles`
-
-The `players` table stores primary player information and career-level values.
-
-The `player_stat_profiles` table stores additional statistical profiles, including career and playoff performance associated with each player.
-
-The database schema and import process may change as development continues.
-
 ## Fallback Data
 
-StatCourt can use local fallback player data when Supabase is disabled or unavailable.
-
-The application checks the following environment variable:
+StatCourt can use local fallback player data when Supabase player loading is disabled or unavailable.
 
 ```env
 NEXT_PUBLIC_USE_SUPABASE_PLAYERS=true
 ```
 
-When this value is not set to `true`, the application uses its local player dataset.
+When this is not set to `true`, the app uses local fallback data for core player experiences.
 
-If Supabase is enabled but a database request fails, the application can also return fallback data so the main player experience remains available.
+## Legal and Transparency Pages
 
-## Screenshots
+The app includes user-facing pages for:
 
-Screenshots will be added as the main interfaces are finalized.
+- Privacy
+- Terms
+- Contact
+- Data Sources
+- Photo Credits
 
-Recommended screenshots include:
-
-* Landing page
-* Player database
-* Player profile
-* Player comparison court
-* Lineup builder
-* Generated scouting report
-
-Example:
-
-```markdown
-![StatCourt player comparison](docs/player-comparison.png)
-```
-
-## Current Development Priorities
-
-* Expand current and historical player coverage
-* Improve statistical data validation
-* Refine player ratings and lineup calculations
-* Improve scouting-report explanations
-* Strengthen authentication and account-based persistence
-* Optimize Supabase queries and loading performance
-* Add automated tests
-* Improve accessibility
-* Deploy a public production version
-
-## Security
-
-Sensitive credentials must not be committed to the repository.
-
-Keep the following values in local or deployment environment variables:
-
-* Supabase service-role keys
-* Database passwords
-* Private API credentials
-* Administrative tokens
-
-Do not commit:
-
-* `.env`
-* `.env.local`
-* Generated credential files
-* Private database URLs
-* Supabase service-role keys
-* Import logs containing sensitive data
-
-Public Supabase access should be protected with Row Level Security policies and limited database permissions.
-
-## Project Status
-
-StatCourt is under active development.
-
-Features, statistical formulas, database structures, player ratings, and interface designs may change as the project continues to grow.
+These pages explain account data, public profile visibility, analytics sources, model interpretation, image credits, and how users can contact or report issues.
 
 ## Author
 
-**Matt Jared Mamaril**
+**Matt Jared Mamaril**  
 Computer Science student at the University of Illinois Chicago
 
-* [LinkedIn](https://linkedin.com/in/mattjaredmamaril)
-* [GitHub](https://github.com/jaredmamaril)
+- [LinkedIn](https://linkedin.com/in/mattjaredmamaril)
+- [GitHub](https://github.com/jaredmamaril)
 
 ## Disclaimer
 
-StatCourt is an independent educational and portfolio project.
+StatCourt is an independent basketball analytics project.
 
-It is not affiliated with, endorsed by, or sponsored by the National Basketball Association or any NBA team.
+It is not affiliated with, endorsed by, or sponsored by the NBA, its teams, or its players.
 
-NBA names, team names, statistics, logos, and related materials belong to their respective owners.
+Basketball data, team names, logos, player imagery, trademarks, and other third-party assets belong to their respective owners.
