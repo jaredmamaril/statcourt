@@ -109,7 +109,7 @@ export function SelectedPlayerCard({
 
         <PlayerCardBack player={player} isCardFlipped={isCardFlipped}>
           <div className="relative z-20 flex h-full flex-col">
-            <div className="statcourt-scroll min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-2 pb-4">
+            <div className="statcourt-scroll min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-2 pb-4 [-webkit-overflow-scrolling:touch]">
               <PlayerCardBackHeader
                 player={player}
                 getPlayerNameTextClass={getPlayerNameTextClass}
