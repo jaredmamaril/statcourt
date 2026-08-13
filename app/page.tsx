@@ -9,6 +9,21 @@ export default function Home() {
   const [showEnterButton, setShowEnterButton] = useState(false);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.slice(1));
+    const hasAuthCallbackParams =
+      params.has("code") ||
+      params.has("error") ||
+      params.has("error_description") ||
+      hashParams.has("error") ||
+      hashParams.has("error_description");
+
+    if (!hasAuthCallbackParams) return;
+
+    router.replace(`/auth/callback${window.location.search}${window.location.hash}`);
+  }, [router]);
+
+  useEffect(() => {
     const timer = window.setTimeout(() => {
       setShowEnterButton(true);
     }, 3000);
