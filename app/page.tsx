@@ -11,6 +11,11 @@ export default function Home() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const hashParams = new URLSearchParams(window.location.hash.slice(1));
+    const authMessage = (
+      params.get("message") ??
+      hashParams.get("message") ??
+      ""
+    ).toLowerCase();
     const hasAuthCallbackParams =
       params.has("code") ||
       params.has("token_hash") ||
@@ -23,6 +28,11 @@ export default function Home() {
       hashParams.has("type") ||
       hashParams.has("error") ||
       hashParams.has("error_description");
+
+    if (authMessage.includes("confirmation link accepted")) {
+      router.replace("/signin?notice=email_change_needs_second_confirmation");
+      return;
+    }
 
     if (!hasAuthCallbackParams) return;
 

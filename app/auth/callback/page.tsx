@@ -56,11 +56,21 @@ export default function AuthCallbackPage() {
       );
       const provider = params.get("provider") ?? consumePendingAuthProvider();
       const authAction = params.get("auth_action") ?? hashParams.get("auth_action");
+      const authMessage = (
+        params.get("message") ??
+        hashParams.get("message") ??
+        ""
+      ).toLowerCase();
       const authError =
         params.get("error_description") ??
         params.get("error") ??
         hashParams.get("error_description") ??
         hashParams.get("error");
+
+      if (authMessage.includes("confirmation link accepted")) {
+        router.replace("/signin?notice=email_change_needs_second_confirmation");
+        return;
+      }
 
       if (authError) {
         if (provider === "google" && nextPath === "/settings") {

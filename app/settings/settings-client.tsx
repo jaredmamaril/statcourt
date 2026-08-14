@@ -310,6 +310,17 @@ function getMetadataAvatarUrl(
   return null;
 }
 
+function getAuthRedirectBaseUrl() {
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
+    window.location.origin
+  );
+}
+
+function getEmailChangeRedirectUrl() {
+  return `${getAuthRedirectBaseUrl()}/auth/callback?auth_action=email_change`;
+}
+
 function getAvatarFileExtension(file: File) {
   if (file.type === "image/jpeg") return "jpg";
   if (file.type === "image/png") return "png";
@@ -943,7 +954,7 @@ export default function SettingsPage() {
 
     setEmailActionStatus("Sending confirmation...");
 
-    const emailRedirectTo = `${window.location.origin}/signin?notice=email_change_confirmed`;
+    const emailRedirectTo = getEmailChangeRedirectUrl();
 
     const { error } = await supabase.auth.updateUser(
       {
@@ -991,7 +1002,7 @@ export default function SettingsPage() {
         email: pendingEmailAddress,
       },
       {
-        emailRedirectTo: `${window.location.origin}/signin?notice=email_change_confirmed`,
+        emailRedirectTo: getEmailChangeRedirectUrl(),
       },
     );
 

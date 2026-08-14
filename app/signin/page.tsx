@@ -76,6 +76,10 @@ function getSigninNoticeMessage(noticeCode: string) {
     return "Email updated. Sign in with your new email to continue.";
   }
 
+  if (noticeCode === "email_change_needs_second_confirmation") {
+    return "First confirmation accepted. Check the other email to finish changing your email.";
+  }
+
   return "";
 }
 
