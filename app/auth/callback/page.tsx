@@ -35,6 +35,14 @@ function trackSigninInBackground(
   });
 }
 
+async function signOutAfterEmailChange() {
+  const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    console.warn("Failed to clear session after email change", error);
+  }
+}
+
 export default function AuthCallbackPage() {
   const router = useRouter();
   const [status, setStatus] = useState("Connecting account...");
@@ -67,8 +75,16 @@ export default function AuthCallbackPage() {
         hashParams.get("error_description") ??
         hashParams.get("error");
 
+      async function redirectAfterEmailChange(noticeCode: string) {
+        setStatus("Email confirmation accepted. Redirecting...");
+        await signOutAfterEmailChange();
+        router.replace(`/signin?notice=${noticeCode}`);
+      }
+
       if (authMessage.includes("confirmation link accepted")) {
-        router.replace("/signin?notice=email_change_needs_second_confirmation");
+        await redirectAfterEmailChange(
+          "email_change_needs_second_confirmation",
+        );
         return;
       }
 
@@ -146,7 +162,7 @@ export default function AuthCallbackPage() {
       }
 
       if (otpType === "email_change" || authAction === "email_change") {
-        router.replace("/signin?notice=email_change_confirmed");
+        await redirectAfterEmailChange("email_change_confirmed");
         return;
       }
 
