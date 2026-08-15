@@ -1803,6 +1803,14 @@ export default function SettingsPage() {
 
                 {isChangingEmail && (
                   <div className="mt-1.5 grid gap-1.5 lg:mt-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto] lg:gap-2">
+                    {hasGoogleProvider && (
+                      <p className="rounded-md border border-[#4285F4]/25 bg-[#4285F4]/8 px-2 py-1.5 font-michroma text-[8px] leading-relaxed text-[#8ab4f8] lg:col-span-4 lg:px-3 lg:py-2 lg:text-[9px]">
+                        Google sign-in stays connected to your current Google
+                        account. Changing email only updates email/password
+                        sign-in.
+                      </p>
+                    )}
+
                     <label htmlFor="settings-new-email" className="sr-only">
                       New email address
                     </label>
