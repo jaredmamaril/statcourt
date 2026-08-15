@@ -2,35 +2,14 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSafeInternalRedirectPath } from "./app/lib/safe-redirect";
 
-const protectedRoutes = ["/profile", "/settings"];
-const canonicalHost = "statcourt.app";
-const wwwHost = "www.statcourt.app";
-
-function isProtectedRoute(pathname: string) {
-  return protectedRoutes.some(
-    (route) => pathname === route || pathname.startsWith(`${route}/`),
-  );
-}
-
 function getRequestDestination(request: NextRequest) {
   return `${request.nextUrl.pathname}${request.nextUrl.search}`;
 }
 
 export async function proxy(request: NextRequest) {
-  if (request.nextUrl.hostname === wwwHost) {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.hostname = canonicalHost;
-
-    return NextResponse.redirect(redirectUrl);
-  }
-
   let response = NextResponse.next({
     request,
   });
-
-  if (!isProtectedRoute(request.nextUrl.pathname)) {
-    return response;
-  }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -80,7 +59,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|mp4|webm)$).*)",
-  ],
+  matcher: ["/profile/:path*", "/settings/:path*"],
 };
