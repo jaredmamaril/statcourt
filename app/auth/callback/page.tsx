@@ -74,6 +74,13 @@ export default function AuthCallbackPage() {
         params.get("error") ??
         hashParams.get("error_description") ??
         hashParams.get("error");
+      const isEmailChangeFlow =
+        otpType === "email_change" ||
+        authAction === "email_change" ||
+        authMessage.includes("email change") ||
+        authMessage.includes("email updated") ||
+        authMessage.includes("email address changed") ||
+        authMessage.includes("confirm link sent to the other email");
 
       async function redirectAfterEmailChange(noticeCode: string) {
         setStatus("Email confirmation accepted. Redirecting...");
@@ -89,6 +96,15 @@ export default function AuthCallbackPage() {
       }
 
       if (authError) {
+        if (
+          isEmailChangeFlow &&
+          !authError.toLowerCase().includes("expired") &&
+          !authError.toLowerCase().includes("invalid")
+        ) {
+          await redirectAfterEmailChange("email_change_confirmed");
+          return;
+        }
+
         if (provider === "google" && nextPath === "/settings") {
           router.replace("/settings?account_error=google_link_failed");
           return;
@@ -161,7 +177,7 @@ export default function AuthCallbackPage() {
         return;
       }
 
-      if (otpType === "email_change" || authAction === "email_change") {
+      if (isEmailChangeFlow) {
         await redirectAfterEmailChange("email_change_confirmed");
         return;
       }
