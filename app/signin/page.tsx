@@ -18,6 +18,7 @@ import {
   trackUserSignin,
 } from "../lib/user-signins";
 import { getSafeInternalRedirectPath } from "../lib/safe-redirect";
+import { getEmailValidationMessage } from "../lib/email-validation";
 
 function GoogleMark() {
   return (
@@ -170,6 +171,15 @@ function SignInPageContent() {
     setIsSubmitting(true);
     clearPendingAuthProvider();
 
+    const emailAddress = email.trim();
+    const emailValidationMessage = getEmailValidationMessage(emailAddress);
+
+    if (emailValidationMessage) {
+      setIsSubmitting(false);
+      setAuthError(emailValidationMessage);
+      return;
+    }
+
     if (authMode === "signup") {
       const passwordValidationMessage = getPasswordValidationMessage(password);
 
@@ -183,11 +193,11 @@ function SignInPageContent() {
     const authResponse =
       authMode === "signin"
         ? await supabase.auth.signInWithPassword({
-            email,
+            email: emailAddress,
             password,
           })
         : await supabase.auth.signUp({
-            email,
+            email: emailAddress,
             password,
             options: {
               emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
@@ -233,7 +243,16 @@ function SignInPageContent() {
     setAuthError("");
     setIsSubmitting(true);
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const emailAddress = email.trim();
+    const emailValidationMessage = getEmailValidationMessage(emailAddress);
+
+    if (emailValidationMessage) {
+      setIsSubmitting(false);
+      setAuthError(emailValidationMessage);
+      return;
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(emailAddress, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
 
@@ -332,6 +351,7 @@ function SignInPageContent() {
           {authMode === "forgot-password" ? (
             <form
               onSubmit={handlePasswordReset}
+              noValidate
               className="grid gap-2 lg:gap-3"
             >
               <label htmlFor="forgot-password-email" className="sr-only">
@@ -374,7 +394,11 @@ function SignInPageContent() {
               </button>
             </form>
           ) : (
-            <form onSubmit={handleEmailAuth} className="grid gap-2 lg:gap-3">
+            <form
+              onSubmit={handleEmailAuth}
+              noValidate
+              className="grid gap-2 lg:gap-3"
+            >
               <div className="grid grid-cols-2 rounded-md border border-white/10 bg-black/25 p-0.5">
                 {(["signin", "signup"] as const).map((mode) => (
                   <button

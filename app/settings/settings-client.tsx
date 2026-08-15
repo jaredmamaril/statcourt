@@ -50,6 +50,7 @@ import {
 } from "../lib/themes";
 import { updateUserProfile } from "../lib/profile-api-client";
 import { AccessibleDialog } from "../components/ui/accessible-dialog";
+import { getEmailValidationMessage } from "../lib/email-validation";
 
 type UserDataCounts = {
   savedLineups: number;
@@ -927,6 +928,13 @@ export default function SettingsPage() {
 
     if (!nextEmail) {
       setEmailActionStatus("Enter a new email.");
+      return;
+    }
+
+    const emailValidationMessage = getEmailValidationMessage(nextEmail);
+
+    if (emailValidationMessage) {
+      setEmailActionStatus(emailValidationMessage);
       return;
     }
 
