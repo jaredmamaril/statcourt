@@ -794,6 +794,30 @@ export default function PublicProfilePage() {
     }, 1200);
   }
 
+  async function openProfileReport() {
+    if (!profile) return;
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setProfileActionStatus("Sign in to report");
+      window.setTimeout(() => setProfileActionStatus(""), 1800);
+      return;
+    }
+
+    if (user.id === profile.id) {
+      setProfileActionStatus("This is your profile");
+      window.setTimeout(() => setProfileActionStatus(""), 1800);
+      return;
+    }
+
+    setCurrentUserId(user.id);
+    setReportStatus("");
+    setIsReportOpen(true);
+  }
+
   const favoritePlayerArchetypeTooltipId =
     "public-profile-favorite-player-archetype-tooltip";
   const lineupStyleTooltipId = "public-profile-lineup-style-tooltip";
@@ -907,10 +931,7 @@ export default function PublicProfilePage() {
 
                   <button
                     type="button"
-                    onClick={() => {
-                      setIsReportOpen(true);
-                      setReportStatus("");
-                    }}
+                    onClick={openProfileReport}
                     disabled={currentUserId === profile.id}
                     className="inline-flex items-center gap-1 rounded-md border border-red-400/30 bg-red-400/10 px-2 py-1.5 font-michroma text-[8px] uppercase text-red-300 transition hover:bg-red-400/18 hover:text-white lg:px-3 lg:py-2 lg:text-[9px]"
                   >
