@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, Suspense, useEffect, useState } from "react";
-import { Eye, EyeOff, Mail, Shield } from "lucide-react";
+import { Eye, EyeOff, Mail, Shield, X } from "lucide-react";
 import { supabase } from "../components/supabase-client";
 import {
   getPasswordValidationMessage,
@@ -19,6 +19,7 @@ import {
 } from "../lib/user-signins";
 import { getSafeInternalRedirectPath } from "../lib/safe-redirect";
 import { getEmailValidationMessage } from "../lib/email-validation";
+import { AccessibleDialog } from "../components/ui/accessible-dialog";
 
 function GoogleMark() {
   return (
@@ -42,10 +43,39 @@ function getAuthEmailErrorMessage(errorMessage: string) {
   return "Could not send email. Please try again.";
 }
 
+type SafeAuthErrorInput = {
+  message?: string;
+  status?: number;
+  code?: string;
+  name?: string;
+};
+
+function isAuthRateLimitError(error: SafeAuthErrorInput) {
+  const status = error.status;
+  const code = error.code?.toLowerCase() ?? "";
+  const message = error.message?.toLowerCase() ?? "";
+
+  return (
+    status === 429 ||
+    code.includes("rate") ||
+    code.includes("too_many") ||
+    code.includes("over_") ||
+    message.includes("rate limit") ||
+    message.includes("too many requests") ||
+    message.includes("too many attempts")
+  );
+}
+
 function getAuthErrorMessage(
-  errorMessage: string,
+  error: SafeAuthErrorInput,
   authMode: "signin" | "signup" | "forgot-password",
 ) {
+  if (isAuthRateLimitError(error)) {
+    return "Too many sign-in attempts. Please wait a few minutes and try again, or reset your password.";
+  }
+
+  const errorMessage = error.message ?? "";
+
   if (errorMessage.toLowerCase().includes("rate limit")) {
     return "Too many attempts. Please try again later.";
   }
@@ -110,6 +140,7 @@ function SignInPageContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isForgotEmailOpen, setIsForgotEmailOpen] = useState(false);
 
   useEffect(() => {
     let isActive = true;
@@ -166,6 +197,9 @@ function SignInPageContent() {
 
   async function handleEmailAuth(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (isSubmitting || isRedirecting) return;
+
     setAuthMessage("");
     setAuthError("");
     setIsSubmitting(true);
@@ -208,7 +242,7 @@ function SignInPageContent() {
 
     if (authResponse.error) {
       setIsSubmitting(false);
-      setAuthError(getAuthErrorMessage(authResponse.error.message, authMode));
+      setAuthError(getAuthErrorMessage(authResponse.error, authMode));
       return;
     }
 
@@ -239,6 +273,9 @@ function SignInPageContent() {
 
   async function handlePasswordReset(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (isSubmitting || isRedirecting) return;
+
     setAuthMessage("");
     setAuthError("");
     setIsSubmitting(true);
@@ -267,6 +304,8 @@ function SignInPageContent() {
   }
 
   async function signInWithGoogle() {
+    if (isSubmitting || isRedirecting) return;
+
     setAuthMessage("");
     setAuthError("");
     setIsSubmitting(true);
@@ -490,9 +529,8 @@ function SignInPageContent() {
                     type="button"
                     onClick={() => {
                       setAuthError("");
-                      setAuthMessage(
-                        "Email recovery is not available yet. Try the email you used when creating your account.",
-                      );
+                      setAuthMessage("");
+                      setIsForgotEmailOpen(true);
                     }}
                     className="font-michroma text-[8px] uppercase text-white/60 transition hover:text-[var(--court-accent)] lg:text-[9px]"
                   >
@@ -565,6 +603,79 @@ function SignInPageContent() {
           </Link>
         </div>
       </section>
+
+      {isForgotEmailOpen && (
+        <AccessibleDialog
+          titleId="forgot-email-dialog-title"
+          descriptionId="forgot-email-dialog-description"
+          onClose={() => setIsForgotEmailOpen(false)}
+          overlayClassName="fixed inset-0 z-1000 flex animate-[modalBackdropIn_120ms_ease-out_both] items-center justify-center bg-black/70 px-3"
+          dialogClassName="w-full max-w-[320px] animate-[cardFaceIn_140ms_ease-out_both] rounded-md border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[var(--court-panel-alt)] p-4 shadow-[0_0_28px_rgb(var(--court-accent-rgb)/0.16)] lg:max-w-md lg:p-5"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="font-michroma text-[8px] uppercase text-[var(--court-accent)] lg:text-[9px]">
+                Account Help
+              </p>
+              <h2
+                id="forgot-email-dialog-title"
+                className="mt-1 font-michroma text-sm uppercase text-white lg:text-lg"
+              >
+                Forgot Email?
+              </h2>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsForgotEmailOpen(false)}
+              aria-label="Close forgot email help"
+              className="rounded-md border border-white/10 bg-white/5 p-2 text-white/55 transition hover:border-[rgb(var(--court-accent-rgb)/0.4)] hover:text-white"
+            >
+              <X className="h-3 w-3 lg:h-4 lg:w-4" />
+            </button>
+          </div>
+
+          <p
+            id="forgot-email-dialog-description"
+            className="mt-3 font-michroma text-[8px] leading-relaxed text-white/65 lg:text-[10px]"
+          >
+            For privacy, StatCourt cannot reveal which email is connected to an
+            account. Try any email you may have used, or continue with Google if
+            your account was created that way.
+          </p>
+
+          <div className="mt-4 grid gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setIsForgotEmailOpen(false);
+                void signInWithGoogle();
+              }}
+              disabled={isSubmitting || isRedirecting}
+              className="flex items-center justify-center gap-2 rounded-md border border-[#4285F4]/45 bg-[#08234f]/70 px-3 py-2 font-michroma text-[8px] uppercase text-[#8ab4f8] transition hover:border-[rgb(var(--court-accent-rgb)/0.7)] hover:bg-[#0b2f69]/80 hover:text-white disabled:cursor-not-allowed disabled:opacity-60 lg:text-[10px]"
+            >
+              <GoogleMark />
+              Continue with Google
+            </button>
+
+            <Link
+              href="/contact"
+              onClick={() => setIsForgotEmailOpen(false)}
+              className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.08)] px-3 py-2 text-center font-michroma text-[8px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.16)] hover:text-white lg:text-[10px]"
+            >
+              Contact Support
+            </Link>
+
+            <button
+              type="button"
+              onClick={() => setIsForgotEmailOpen(false)}
+              className="rounded-md border border-white/10 bg-white/5 px-3 py-2 font-michroma text-[8px] uppercase text-white/55 transition hover:border-white/25 hover:text-white lg:text-[10px]"
+            >
+              Back to Sign In
+            </button>
+          </div>
+        </AccessibleDialog>
+      )}
     </main>
   );
 }

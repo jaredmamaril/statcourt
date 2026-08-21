@@ -8,6 +8,13 @@ import { GlobalFooter } from "./components/global-footer";
 import { ReducedMotionSync } from "./components/settings/reduced-motion-sync";
 import { ThemeSync } from "./components/settings/theme-sync";
 import { defaultStatCourtTheme } from "./lib/themes";
+import {
+  defaultOgImage,
+  defaultSeoDescription,
+  defaultSeoTitle,
+  siteName,
+  siteUrl,
+} from "./lib/seo";
 
 const michroma = Michroma({
   variable: "--font-michroma",
@@ -32,8 +39,49 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "StatCourt",
-  description: "NBA analytics, player comparisons, and custom rankings.",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: defaultSeoTitle,
+    template: `%s | ${siteName}`,
+  },
+  description: defaultSeoDescription,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: defaultSeoTitle,
+    description: defaultSeoDescription,
+    url: "/",
+    siteName,
+    images: [
+      {
+        url: defaultOgImage,
+        width: 2048,
+        height: 1024,
+        alt: "StatCourt NBA player comparison preview",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: defaultSeoTitle,
+    description: defaultSeoDescription,
+    images: [defaultOgImage],
+  },
+  applicationName: siteName,
+};
+
+const statCourtJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: siteName,
+  applicationCategory: "SportsApplication",
+  operatingSystem: "Web",
+  url: siteUrl,
+  description: defaultSeoDescription,
+  isAccessibleForFree: true,
 };
 
 export default function RootLayout({
@@ -52,6 +100,13 @@ export default function RootLayout({
         <ThemeSync />
         <ReducedMotionSync />
         <Navbar />
+        <script
+          id="statcourt-json-ld"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(statCourtJsonLd),
+          }}
+        />
         {children}
         <GlobalFooter />
       </body>

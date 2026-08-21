@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Search, Shield, UserCircle, Users } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { SkeletonBlock } from "../components/loading/skeleton";
+import { supabase } from "../components/supabase-client";
 
 type CommunityProfileRow = {
   id: string;
@@ -18,6 +19,8 @@ type CommunityProfileRow = {
   top_favorite_archetype: string | null;
   top_strengths: string[];
 };
+
+type CommunityTab = "discover" | "following";
 
 function formatJoinedDate(createdAt: string | null) {
   if (!createdAt) return "Member";
@@ -81,19 +84,77 @@ export default function CommunityPage() {
   const [profiles, setProfiles] = useState<CommunityProfileRow[]>([]);
   const [searchValue, setSearchValue] = useState("");
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
+  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
+  const [isSignedIn, setIsSignedIn] = useState(false);
   const [profileError, setProfileError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
+  const [activeTab, setActiveTab] = useState<CommunityTab>("discover");
+
+  useEffect(() => {
+    let isActive = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!isActive) return;
+
+      setIsSignedIn(Boolean(data.session?.access_token));
+      setIsLoadingAuth(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!isActive) return;
+
+      setIsSignedIn(Boolean(session?.access_token));
+      setIsLoadingAuth(false);
+    });
+
+    return () => {
+      isActive = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     let isActive = true;
 
     async function loadCommunityProfiles() {
+      if (activeTab === "following" && isLoadingAuth) return;
+
+      if (activeTab === "following" && !isSignedIn) {
+        setProfiles([]);
+        setProfileError("");
+        setIsLoadingProfiles(false);
+        return;
+      }
+
       setIsLoadingProfiles(true);
       setProfileError("");
 
-      const response = await fetch("/api/community/profiles", {
+      const sessionResponse =
+        activeTab === "following" ? await supabase.auth.getSession() : null;
+      const accessToken = sessionResponse?.data.session?.access_token;
+
+      if (activeTab === "following" && !accessToken) {
+        if (!isActive) return;
+
+        setProfiles([]);
+        setProfileError("");
+        setIsLoadingProfiles(false);
+        return;
+      }
+
+      const response = await fetch(
+        `/api/community/profiles?scope=${activeTab}`,
+        {
         cache: "no-store",
-      });
+          headers: accessToken
+            ? {
+                Authorization: `Bearer ${accessToken}`,
+              }
+            : undefined,
+        },
+      );
 
       if (!isActive) return;
 
@@ -124,7 +185,7 @@ export default function CommunityPage() {
     return () => {
       isActive = false;
     };
-  }, [reloadKey]);
+  }, [activeTab, isLoadingAuth, isSignedIn, reloadKey]);
 
   const filteredProfiles = useMemo(() => {
     const search = searchValue.trim().toLowerCase();
@@ -140,6 +201,7 @@ export default function CommunityPage() {
   }, [profiles, searchValue]);
 
   const hasActiveSearch = searchValue.trim().length > 0;
+  const isFollowingTab = activeTab === "following";
   const resultCountLabel = isLoadingProfiles
     ? "Loading"
     : hasActiveSearch
@@ -151,9 +213,9 @@ export default function CommunityPage() {
         : "";
 
   return (
-    <main className="page-enter relative min-h-screen overflow-hidden bg-[var(--court-panel-alt)] px-3 py-6 text-white lg:px-6 lg:py-10">
+    <main className="page-enter relative min-h-screen overflow-hidden bg-background px-3 py-6 text-white lg:px-6 lg:py-10">
       <div
-        className="pointer-events-none fixed inset-0 opacity-[0.2]"
+        className="pointer-events-none fixed inset-0 opacity-[0.32]"
         style={{
           backgroundImage: "var(--court-pattern)",
           backgroundPosition: "top left",
@@ -203,9 +265,73 @@ export default function CommunityPage() {
           </div>
         </div>
 
-        <div className="mt-4 flex items-center justify-between gap-3 px-1 lg:mt-6">
+        <div className="mt-4 flex flex-col gap-3 px-1 lg:mt-6 lg:flex-row lg:items-center lg:justify-between">
+          <div
+            role="tablist"
+            aria-label="Community profile sections"
+            className="flex w-full rounded-md border border-[rgb(var(--court-accent-rgb)/0.25)] bg-black/24 p-1 lg:w-auto"
+          >
+            {(["discover", "following"] as CommunityTab[]).map((tab) => {
+              const isActive = activeTab === tab;
+              const label = tab === "discover" ? "Discover" : "Following";
+
+              return (
+                <button
+                  key={tab}
+                  id={`community-tab-${tab}`}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-controls={`community-panel-${tab}`}
+                  tabIndex={isActive ? 0 : -1}
+                  onClick={() => {
+                    setActiveTab(tab);
+                    setSearchValue("");
+                  }}
+                  onKeyDown={(event) => {
+                    const tabs: CommunityTab[] = ["discover", "following"];
+                    const currentIndex = tabs.indexOf(activeTab);
+
+                    if (event.key === "ArrowRight") {
+                      event.preventDefault();
+                      setActiveTab(tabs[(currentIndex + 1) % tabs.length]);
+                      setSearchValue("");
+                    }
+
+                    if (event.key === "ArrowLeft") {
+                      event.preventDefault();
+                      setActiveTab(
+                        tabs[(currentIndex - 1 + tabs.length) % tabs.length],
+                      );
+                      setSearchValue("");
+                    }
+
+                    if (event.key === "Home") {
+                      event.preventDefault();
+                      setActiveTab("discover");
+                      setSearchValue("");
+                    }
+
+                    if (event.key === "End") {
+                      event.preventDefault();
+                      setActiveTab("following");
+                      setSearchValue("");
+                    }
+                  }}
+                  className={`h-8 flex-1 rounded px-3 font-michroma text-[7px] uppercase transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--court-accent-rgb)/0.75)] focus-visible:ring-offset-2 focus-visible:ring-offset-black lg:min-w-28 lg:text-[9px] ${
+                    isActive
+                      ? "bg-[rgb(var(--court-accent-rgb)/0.22)] text-[var(--court-accent)]"
+                      : "text-white/45 hover:bg-white/6 hover:text-white"
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+
           <p className="font-michroma text-[7px] uppercase text-white/45 lg:text-[9px]">
-            Community Members
+            {isFollowingTab ? "Following" : "Community Members"}
           </p>
 
           {resultCountLabel && (
@@ -215,7 +341,13 @@ export default function CommunityPage() {
           )}
         </div>
 
-        {isLoadingProfiles ? (
+        <div
+          id={`community-panel-${activeTab}`}
+          role="tabpanel"
+          aria-labelledby={`community-tab-${activeTab}`}
+          className="focus:outline-none"
+        >
+        {isLoadingProfiles || (isFollowingTab && isLoadingAuth) ? (
           <div aria-busy="true" aria-live="polite">
             <p className="sr-only" role="status">
               Loading community profiles
@@ -226,6 +358,27 @@ export default function CommunityPage() {
                 <CommunityProfileSkeleton key={index} />
               ))}
             </div>
+          </div>
+        ) : isFollowingTab && !isSignedIn ? (
+          <div className="mt-3 rounded-lg border border-[rgb(var(--court-accent-rgb)/0.25)] bg-[color:color-mix(in_srgb,var(--court-panel)_86%,black)] p-6 text-center lg:p-10">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md border border-[rgb(var(--court-accent-rgb)/0.28)] bg-[rgb(var(--court-accent-rgb)/0.08)] text-[var(--court-accent)]">
+              <Users className="h-5 w-5" />
+            </div>
+
+            <p className="mt-4 font-michroma text-[10px] uppercase text-white lg:text-sm">
+              Sign in to see creators you follow.
+            </p>
+
+            <p className="mx-auto mt-2 max-w-md font-michroma text-[7px] leading-relaxed text-white/45 lg:text-[10px]">
+              Your followed profiles are tied to your StatCourt account.
+            </p>
+
+            <Link
+              href="/signin?next=/community"
+              className="mt-4 inline-flex h-9 items-center justify-center rounded-md border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[rgb(var(--court-accent-rgb)/0.12)] px-4 font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white lg:text-[9px]"
+            >
+              Sign In
+            </Link>
           </div>
         ) : profileError ? (
           <div className="mt-3 rounded-lg border border-red-400/25 bg-red-400/8 p-5 text-center">
@@ -253,13 +406,17 @@ export default function CommunityPage() {
             <p className="mt-4 font-michroma text-[10px] uppercase text-white lg:text-sm">
               {searchValue.trim()
                 ? "No matching public profiles."
-                : "No public profiles found."}
+                : isFollowingTab
+                  ? "You are not following anyone yet."
+                  : "No public profiles found."}
             </p>
 
             <p className="mx-auto mt-2 max-w-md font-michroma text-[7px] leading-relaxed text-white/40 lg:text-[10px]">
               {searchValue.trim()
                 ? "Try a different username or display name."
-                : "Check back after more users make their profiles public."}
+                : isFollowingTab
+                  ? "Follow public StatCourt profiles to build your community list."
+                  : "Check back after more users make their profiles public."}
             </p>
 
             {searchValue.trim() && (
@@ -269,6 +426,16 @@ export default function CommunityPage() {
                 className="mt-4 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.08)] px-4 py-2 font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.16)] lg:text-[9px]"
               >
                 Clear Search
+              </button>
+            )}
+
+            {isFollowingTab && !searchValue.trim() && (
+              <button
+                type="button"
+                onClick={() => setActiveTab("discover")}
+                className="mt-4 rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.08)] px-4 py-2 font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.16)] lg:text-[9px]"
+              >
+                Browse Discover
               </button>
             )}
           </div>
@@ -386,6 +553,7 @@ export default function CommunityPage() {
             )}
           </div>
         )}
+        </div>
       </section>
     </main>
   );

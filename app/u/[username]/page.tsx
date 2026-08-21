@@ -837,10 +837,10 @@ export default function PublicProfilePage() {
 
       <section className="relative z-10 mx-auto max-w-4xl">
         <Link
-          href="/players"
+          href="/community"
           className="inline-flex rounded-md border border-[rgb(var(--court-accent-rgb)/0.4)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-3 py-2 font-michroma text-[8px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] hover:text-white lg:text-[10px]"
         >
-          Browse Players
+          Back to Community
         </Link>
 
         <div className="mt-4 rounded-lg border border-[rgb(var(--court-accent-rgb)/0.25)] bg-[color:color-mix(in_srgb,var(--court-panel)_85%,transparent)] p-3 shadow-[0_0_26px_rgba(0,0,0,0.28)] lg:mt-8 lg:p-7">
@@ -956,19 +956,19 @@ export default function PublicProfilePage() {
 
               <div className="mt-5 grid grid-cols-5 gap-1.5 rounded-md border border-[rgb(var(--court-accent-rgb)/0.22)] bg-[rgb(var(--court-accent-rgb)/0.06)] p-1.5 shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.08)] lg:mt-7 lg:gap-3 lg:p-3">
                 <div className="min-h-14 rounded border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.1)] p-1.5 text-center shadow-[inset_0_0_18px_rgb(var(--court-accent-rgb)/0.08)] lg:min-h-24 lg:p-3">
-                  <p className="font-michroma text-sm text-[var(--court-accent)] lg:text-2xl">
+                  <p className="font-michroma text-xs text-[var(--court-accent)] lg:text-2xl">
                     {followerCount}
                   </p>
-                  <p className="mt-1 font-michroma text-[7px] uppercase leading-tight text-white/65 lg:text-[8px]">
+                  <p className="mt-0.5 font-michroma text-[6px] uppercase leading-tight text-white/65 lg:mt-1 lg:text-[8px]">
                     Followers
                   </p>
                 </div>
 
                 <div className="min-h-14 rounded border border-[#A855F7]/35 bg-[#A855F7]/12 p-1.5 text-center shadow-[inset_0_0_18px_rgba(168,85,247,0.08)] lg:min-h-24 lg:p-3">
-                  <p className="font-michroma text-sm text-[#A855F7] lg:text-2xl">
+                  <p className="font-michroma text-xs text-[#A855F7] lg:text-2xl">
                     {favoritePlayers.length}
                   </p>
-                  <p className="mt-1 font-michroma text-[7px] uppercase leading-tight text-white/65 lg:text-[8px]">
+                  <p className="mt-0.5 font-michroma text-[6px] uppercase leading-tight text-white/65 lg:mt-1 lg:text-[8px]">
                     Favorite Players
                   </p>
                 </div>
@@ -984,7 +984,7 @@ export default function PublicProfilePage() {
                         setIsTopArchetypeOpen(false);
                       }
                     }}
-                    className="mx-auto block max-w-18 font-michroma text-[7px] leading-tight text-white transition hover:text-[#A855F7] sm:max-w-30 sm:text-[8px] lg:max-w-36 lg:cursor-default lg:text-xs"
+                    className="mx-auto block max-w-18 font-michroma text-[6px] leading-tight text-white transition hover:text-[#A855F7] sm:max-w-30 sm:text-[7px] lg:max-w-36 lg:cursor-default lg:text-xs"
                     aria-controls={favoritePlayerArchetypeTooltipId}
                     aria-describedby={favoritePlayerArchetypeTooltipId}
                     aria-expanded={isTopArchetypeOpen}
@@ -1001,13 +1001,13 @@ export default function PublicProfilePage() {
                       role="tooltip"
                       className="absolute left-1/2 z-30 mt-1 w-28 -translate-x-1/2 rounded border border-white/15 bg-black/90 px-1.5 py-1 text-center shadow-[0_0_10px_rgba(168,85,247,0.35)] lg:hidden"
                     >
-                      <p className="font-michroma text-[8px] leading-snug text-white/85">
+                      <p className="font-michroma text-[7px] leading-snug text-white/85">
                         {favoritePlayerArchetype}
                       </p>
                     </div>
                   )}
 
-                  <p className="mt-1 font-michroma text-[7px] uppercase leading-tight text-white/60 lg:text-[8px]">
+                  <p className="mt-0.5 font-michroma text-[6px] uppercase leading-tight text-white/60 lg:mt-1 lg:text-[8px]">
                     Most Common
                     <br />
                     Favorite Archetype
@@ -1015,10 +1015,10 @@ export default function PublicProfilePage() {
                 </div>
 
                 <div className="min-h-14 rounded border border-[rgb(var(--court-accent-rgb)/0.32)] bg-[rgb(var(--court-accent-rgb)/0.12)] p-1.5 text-center shadow-[inset_0_0_18px_rgb(var(--court-accent-rgb)/0.08)] lg:min-h-24 lg:p-3">
-                  <p className="font-michroma text-sm text-[var(--court-accent)] lg:text-2xl">
+                  <p className="font-michroma text-xs text-[var(--court-accent)] lg:text-2xl">
                     {publicLineups.length}
                   </p>
-                  <p className="mt-1 font-michroma text-[7px] uppercase leading-tight text-white/60 lg:text-[8px]">
+                  <p className="mt-0.5 font-michroma text-[6px] uppercase leading-tight text-white/60 lg:mt-1 lg:text-[8px]">
                     Public Lineup{publicLineups.length === 1 ? "" : "s"}
                   </p>
                 </div>
@@ -1034,7 +1034,7 @@ export default function PublicProfilePage() {
                         setIsLineupStyleOpen(false);
                       }
                     }}
-                    className="mx-auto block max-w-18 font-michroma text-[7px] leading-tight text-white transition hover:text-[var(--court-accent)] sm:max-w-30 sm:text-[8px] lg:max-w-36 lg:cursor-default lg:text-xs"
+                    className="mx-auto block max-w-18 font-michroma text-[6px] leading-tight text-white transition hover:text-[var(--court-accent)] sm:max-w-30 sm:text-[7px] lg:max-w-36 lg:cursor-default lg:text-xs"
                     aria-controls={lineupStyleTooltipId}
                     aria-describedby={lineupStyleTooltipId}
                     aria-expanded={isLineupStyleOpen}
@@ -1051,13 +1051,13 @@ export default function PublicProfilePage() {
                       role="tooltip"
                       className="absolute left-1/2 z-30 mt-1 w-28 -translate-x-1/2 rounded border border-white/15 bg-black/90 px-1.5 py-1 text-center shadow-[0_0_10px_rgb(var(--court-accent-rgb)/0.35)] lg:hidden"
                     >
-                      <p className="font-michroma text-[8px] leading-snug text-white/85">
+                      <p className="font-michroma text-[7px] leading-snug text-white/85">
                         {publicLineupArchetype}
                       </p>
                     </div>
                   )}
 
-                  <p className="mt-1 font-michroma text-[7px] uppercase leading-tight text-white/60 lg:text-[8px]">
+                  <p className="mt-0.5 font-michroma text-[6px] uppercase leading-tight text-white/60 lg:mt-1 lg:text-[8px]">
                     Most-Used
                     <br />
                     Lineup Style
@@ -1066,7 +1066,7 @@ export default function PublicProfilePage() {
               </div>
 
               <div className="mt-3 rounded-lg border border-[rgb(var(--court-accent-rgb)/0.24)] bg-[color:color-mix(in_srgb,var(--court-panel)_91%,black)] p-2 shadow-[0_0_22px_rgb(var(--court-accent-rgb)/0.08)] lg:mt-5 lg:p-4">
-                <p className="font-michroma text-[7px] uppercase tracking-wide text-[var(--court-accent)] lg:text-[10px]">
+                <p className="font-michroma text-[6px] uppercase tracking-wide text-[var(--court-accent)] lg:text-[10px]">
                   Basketball Identity
                 </p>
 
@@ -1078,10 +1078,10 @@ export default function PublicProfilePage() {
                       </div>
 
                       <div className="min-w-0">
-                        <p className="font-michroma text-[7px] uppercase text-white/60 lg:text-[8px]">
+                        <p className="font-michroma text-[6px] uppercase text-white/60 lg:text-[8px]">
                           Preferred Style
                         </p>
-                        <p className="mt-0.5 line-clamp-2 font-michroma text-[8px] uppercase leading-tight text-[var(--court-accent)] [text-shadow:0_0_14px_rgb(var(--court-accent-rgb)/0.4)] lg:mt-1.5 lg:text-base lg:leading-relaxed">
+                        <p className="mt-0.5 line-clamp-2 font-michroma text-[7px] uppercase leading-tight text-[var(--court-accent)] [text-shadow:0_0_14px_rgb(var(--court-accent-rgb)/0.4)] lg:mt-1.5 lg:text-base lg:leading-relaxed">
                           {publicLineupArchetype}
                         </p>
                       </div>
@@ -1095,25 +1095,25 @@ export default function PublicProfilePage() {
 
                   <div className="grid grid-cols-3 gap-1.5 lg:grid-cols-1 lg:gap-1.5">
                     <div className="min-w-0 rounded-md border border-white/10 bg-black/25 p-1.5 lg:p-2.5">
-                      <p className="font-michroma text-[7px] uppercase text-white/60 lg:text-[8px]">
+                      <p className="font-michroma text-[6px] uppercase text-white/60 lg:text-[8px]">
                         Team-Building Priority
                       </p>
-                      <p className="mt-0.5 line-clamp-2 font-michroma text-[8px] uppercase leading-tight text-white lg:mt-1 lg:text-[9px] lg:leading-relaxed">
+                      <p className="mt-0.5 line-clamp-2 font-michroma text-[7px] uppercase leading-tight text-white lg:mt-1 lg:text-[9px] lg:leading-relaxed">
                         {teamBuildingPriority}
                       </p>
                     </div>
 
                     <div className="min-w-0 rounded-md border border-white/10 bg-black/25 p-1.5 lg:p-2.5">
-                      <p className="font-michroma text-[7px] uppercase text-white/60 lg:text-[8px]">
+                      <p className="font-michroma text-[6px] uppercase text-white/60 lg:text-[8px]">
                         Most Used Stat Profile
                       </p>
-                      <p className="mt-0.5 truncate font-michroma text-[8px] uppercase text-white lg:mt-1 lg:text-[9px]">
+                      <p className="mt-0.5 truncate font-michroma text-[7px] uppercase text-white lg:mt-1 lg:text-[9px]">
                         {formatStatProfile(preferredStatProfile)}
                       </p>
                     </div>
 
                     <div className="relative min-w-0 rounded-md border border-[#A855F7]/25 bg-[#A855F7]/8 p-1.5 lg:p-2.5">
-                      <p className="font-michroma text-[7px] uppercase text-white/60 lg:text-[8px]">
+                      <p className="font-michroma text-[6px] uppercase text-white/60 lg:text-[8px]">
                         Favorite Archetypes
                       </p>
 
@@ -1141,7 +1141,7 @@ export default function PublicProfilePage() {
                         ).map((archetype) => (
                           <span
                             key={archetype}
-                            className="max-w-full truncate rounded border border-[#A855F7]/30 bg-[#A855F7]/12 px-1 py-0.5 font-michroma text-[7px] uppercase text-white/85 lg:px-1.5 lg:text-[8px]"
+                            className="max-w-full truncate rounded border border-[#A855F7]/30 bg-[#A855F7]/12 px-1 py-0.5 font-michroma text-[6px] uppercase text-white/85 lg:px-1.5 lg:text-[8px]"
                           >
                             {archetype}
                           </span>
@@ -1154,10 +1154,10 @@ export default function PublicProfilePage() {
                           role="tooltip"
                           className="absolute right-0 z-30 mt-1 w-32 rounded border border-[#A855F7]/30 bg-black/90 px-1.5 py-1 text-left shadow-[0_0_10px_rgba(168,85,247,0.35)] lg:hidden"
                         >
-                          <p className="font-michroma text-[7px] uppercase text-white/60">
+                          <p className="font-michroma text-[6px] uppercase text-white/60">
                             Favorite Archetypes
                           </p>
-                          <p className="mt-1 font-michroma text-[8px] leading-snug text-white/85">
+                          <p className="mt-1 font-michroma text-[7px] leading-snug text-white/85">
                             {(favoriteIdentityArchetypes.length
                               ? favoriteIdentityArchetypes
                               : ["Not enough data"]

@@ -7,6 +7,11 @@ import {
   createIpRateLimitRules,
   createRateLimitResponse,
 } from "@/app/lib/rate-limit";
+import {
+  createSupabaseUserClient,
+  getBearerToken,
+  getSupabaseServerConfig,
+} from "@/app/lib/supabase-server";
 
 export type CommunityProfileRow = {
   id: string;
@@ -27,6 +32,7 @@ type CommunityBaseProfileRow = Pick<
 >;
 
 const COMMUNITY_PROFILE_LIMIT = 60;
+const COMMUNITY_PROFILE_SCOPES = new Set(["discover", "following"]);
 
 export const dynamic = "force-dynamic";
 
@@ -55,11 +61,21 @@ function getMostCommonValues(values: string[], limit: number) {
     .map(([value]) => value);
 }
 
-async function getCommunityProfiles() {
-  const { data, error } = await supabase
+async function getCommunityProfiles(profileIdFilter?: string[]) {
+  if (profileIdFilter && profileIdFilter.length === 0) {
+    return [];
+  }
+
+  let profileQuery = supabase
     .from("public_profiles")
     .select("id, display_name, username, avatar_url, created_at")
-    .not("username", "is", null)
+    .not("username", "is", null);
+
+  if (profileIdFilter) {
+    profileQuery = profileQuery.in("id", profileIdFilter);
+  }
+
+  const { data, error } = await profileQuery
     .order("created_at", { ascending: false })
     .limit(COMMUNITY_PROFILE_LIMIT);
 
@@ -149,6 +165,68 @@ async function getCommunityProfiles() {
   });
 }
 
+async function getFollowingProfileIds(request: Request) {
+  const config = getSupabaseServerConfig();
+
+  if (!config) {
+    return {
+      error: NextResponse.json(
+        { error: "Community profiles are not configured on the server." },
+        { status: 500 },
+      ),
+    };
+  }
+
+  const accessToken = getBearerToken(request);
+
+  if (!accessToken) {
+    return {
+      error: NextResponse.json(
+        { error: "Sign in to view followed profiles." },
+        { status: 401 },
+      ),
+    };
+  }
+
+  const userClient = createSupabaseUserClient(config, accessToken);
+  const {
+    data: { user },
+    error: userError,
+  } = await userClient.auth.getUser(accessToken);
+
+  if (userError || !user) {
+    return {
+      error: NextResponse.json(
+        { error: "Sign in to view followed profiles." },
+        { status: 401 },
+      ),
+    };
+  }
+
+  const { data, error } = await userClient
+    .from("user_follows")
+    .select("following_id")
+    .eq("follower_id", user.id)
+    .limit(COMMUNITY_PROFILE_LIMIT);
+
+  if (error) {
+    console.error("Failed to load followed profile ids", error);
+
+    return {
+      error: NextResponse.json(
+        { error: "Could not load followed profiles." },
+        { status: 500 },
+      ),
+    };
+  }
+
+  return {
+    profileIds: ((data ?? []) as { following_id: string }[]).map(
+      (follow) => follow.following_id,
+    ),
+  };
+}
+
 export async function GET(request: Request) {
   const rateLimit = await checkRateLimit(
     createIpRateLimitRules(request, "community-profiles-api", {
@@ -162,11 +240,26 @@ export async function GET(request: Request) {
   }
 
   try {
-    const profiles = await getCommunityProfiles();
+    const url = new URL(request.url);
+    const scopeParam = url.searchParams.get("scope") ?? "discover";
+    const scope = COMMUNITY_PROFILE_SCOPES.has(scopeParam)
+      ? scopeParam
+      : "discover";
+    const profileIdsResult =
+      scope === "following" ? await getFollowingProfileIds(request) : null;
+
+    if (profileIdsResult && "error" in profileIdsResult) {
+      return profileIdsResult.error;
+    }
+
+    const profiles = await getCommunityProfiles(
+      profileIdsResult?.profileIds,
+    );
 
     return NextResponse.json(
       {
         count: profiles.length,
+        scope,
         profiles,
       },
       {

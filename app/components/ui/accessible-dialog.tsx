@@ -16,6 +16,27 @@ const focusableSelector = [
   "[tabindex]:not([tabindex='-1'])",
 ].join(",");
 
+let activeScrollLocks = 0;
+let originalBodyOverflow = "";
+
+function lockBodyScroll() {
+  if (activeScrollLocks === 0) {
+    originalBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+  }
+
+  activeScrollLocks += 1;
+}
+
+function unlockBodyScroll() {
+  activeScrollLocks = Math.max(activeScrollLocks - 1, 0);
+
+  if (activeScrollLocks === 0) {
+    document.body.style.overflow = originalBodyOverflow;
+    originalBodyOverflow = "";
+  }
+}
+
 type AccessibleDialogProps = {
   titleId: string;
   descriptionId?: string;
@@ -77,11 +98,10 @@ export function AccessibleDialog({
   useEffect(() => {
     if (!preventScroll) return;
 
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    lockBodyScroll();
 
     return () => {
-      document.body.style.overflow = originalOverflow;
+      unlockBodyScroll();
     };
   }, [preventScroll]);
 

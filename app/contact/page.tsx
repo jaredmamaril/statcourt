@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { Mail, MessageSquare, Shield } from "lucide-react";
 
+const supportEmail = "statcourt.support@gmail.com";
+
 const contactItems = [
   {
     title: "General Contact",
     description:
       "Use this for product questions, feedback, account access issues, and general StatCourt questions.",
-    value: "contact@statcourt.com",
+    value: supportEmail,
   },
   {
     title: "Privacy Questions",
@@ -83,10 +85,10 @@ export default function ContactPage() {
                     <p className="mt-2 font-michroma text-[7px] leading-relaxed text-white/58 lg:text-[9px]">
                       If you still need assistance, contact us at{" "}
                       <a
-                        href="mailto:contact@statcourt.com"
+                        href={`mailto:${supportEmail}`}
                         className="text-[var(--court-accent)] transition hover:text-white"
                       >
-                        contact@statcourt.com
+                        {supportEmail}
                       </a>
                       .
                     </p>
@@ -96,9 +98,12 @@ export default function ContactPage() {
                     Report a Profile Issue
                   </p>
                 ) : (
-                  <p className="mt-3 font-michroma text-[7px] uppercase text-[var(--court-accent)] lg:text-[9px]">
+                  <a
+                    href={`mailto:${supportEmail}`}
+                    className="mt-3 inline-flex font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:text-white lg:text-[9px]"
+                  >
                     {item.value}
-                  </p>
+                  </a>
                 )}
               </section>
             );
