@@ -32,6 +32,10 @@ type AdminReportsResponse = {
   filter?: AdminReportFilter;
 };
 
+type AdminReportNotificationResponse = {
+  openReportCount?: number;
+};
+
 const reportFilters: { label: string; value: AdminReportFilter }[] = [
   { label: "Open", value: "open" },
   { label: "Reviewed", value: "reviewed" },
@@ -83,6 +87,7 @@ export function AdminReportsClient() {
   const [reports, setReports] = useState<AdminReport[]>([]);
   const [activeFilter, setActiveFilter] = useState<AdminReportFilter>("open");
   const [openCount, setOpenCount] = useState(0);
+  const [notificationCount, setNotificationCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [updatingReportId, setUpdatingReportId] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState("");
@@ -92,13 +97,35 @@ export function AdminReportsClient() {
   useEffect(() => {
     let isActive = true;
 
+    async function getAccessToken() {
+      const { data: sessionData } = await supabase.auth.getSession();
+
+      return sessionData.session?.access_token ?? null;
+    }
+
+    async function loadNotificationCount(accessToken: string) {
+      const response = await fetch("/api/admin/report-notifications", {
+        cache: "no-store",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) return;
+
+      const data = (await response.json()) as AdminReportNotificationResponse;
+
+      if (!isActive) return;
+
+      setNotificationCount(data.openReportCount ?? 0);
+    }
+
     async function loadReports() {
       setIsLoading(true);
       setErrorMessage("");
       setStatusMessage("");
 
-      const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData.session?.access_token;
+      const accessToken = await getAccessToken();
 
       if (!accessToken) {
         if (!isActive) return;
@@ -134,7 +161,9 @@ export function AdminReportsClient() {
 
       setReports(data.reports ?? []);
       setOpenCount(data.openCount ?? 0);
+      setNotificationCount(data.openCount ?? 0);
       setIsLoading(false);
+      void loadNotificationCount(accessToken);
     }
 
     loadReports().catch((error) => {
@@ -151,6 +180,47 @@ export function AdminReportsClient() {
       isActive = false;
     };
   }, [activeFilter, reloadKey]);
+
+  useEffect(() => {
+    let isActive = true;
+    let intervalId: number | null = null;
+
+    async function refreshNotificationCount() {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+
+      if (!accessToken) return;
+
+      const response = await fetch("/api/admin/report-notifications", {
+        cache: "no-store",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) return;
+
+      const data = (await response.json()) as AdminReportNotificationResponse;
+
+      if (!isActive) return;
+
+      setNotificationCount(data.openReportCount ?? 0);
+      setOpenCount(data.openReportCount ?? 0);
+    }
+
+    void refreshNotificationCount();
+    intervalId = window.setInterval(() => {
+      void refreshNotificationCount();
+    }, 30_000);
+
+    return () => {
+      isActive = false;
+
+      if (intervalId) {
+        window.clearInterval(intervalId);
+      }
+    };
+  }, []);
 
   const reportCountLabel = useMemo(() => {
     if (isLoading) return "Loading";
@@ -243,6 +313,11 @@ export function AdminReportsClient() {
 
               <h1 className="mt-3 font-michroma text-xl uppercase leading-tight text-white lg:text-3xl">
                 Report Review
+                {notificationCount > 0 && (
+                  <span className="ml-2 inline-flex align-middle rounded border border-yellow-300/35 bg-yellow-300/10 px-2 py-1 font-michroma text-[9px] uppercase text-yellow-200 lg:text-xs">
+                    {notificationCount}
+                  </span>
+                )}
               </h1>
 
               <p className="mt-2 max-w-2xl font-michroma text-[8px] leading-relaxed text-white/55 lg:text-[11px]">
@@ -255,7 +330,7 @@ export function AdminReportsClient() {
             <div className="grid grid-cols-2 gap-2 lg:w-72">
               <div className="rounded-md border border-yellow-300/25 bg-yellow-300/8 p-3">
                 <p className="font-michroma text-[7px] uppercase text-white/45 lg:text-[8px]">
-                  Open Reports
+                  New/Open Reports
                 </p>
                 <p className="mt-1 font-michroma text-lg text-yellow-200 lg:text-2xl">
                   {openCount}
@@ -277,6 +352,10 @@ export function AdminReportsClient() {
         <div className="mt-4 flex flex-wrap gap-2" aria-label="Report filters">
           {reportFilters.map((filter) => {
             const isActive = activeFilter === filter.value;
+            const label =
+              filter.value === "open" && notificationCount > 0
+                ? `${filter.label} (${notificationCount})`
+                : filter.label;
 
             return (
               <button
@@ -289,7 +368,7 @@ export function AdminReportsClient() {
                     : "border-white/12 bg-black/20 text-white/48 hover:border-white/24 hover:text-white"
                 }`}
               >
-                {filter.label}
+                {label}
               </button>
             );
           })}
@@ -327,7 +406,9 @@ export function AdminReportsClient() {
               No reports found.
             </p>
             <p className="mx-auto mt-2 max-w-md font-michroma text-[8px] leading-relaxed text-white/45 lg:text-[10px]">
-              There are no reports in this moderation filter.
+              {activeFilter === "open"
+                ? "There are no new reports waiting for review."
+                : "There are no reports in this moderation filter."}
             </p>
           </div>
         ) : (

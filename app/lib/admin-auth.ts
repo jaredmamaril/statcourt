@@ -36,6 +36,7 @@ type AdminContextOptions = {
   request?: Request;
   route: string;
   action: string;
+  unauthorizedEventName?: string;
 };
 
 function logUnauthorizedAdminAccess({
@@ -43,13 +44,14 @@ function logUnauthorizedAdminAccess({
   route,
   action,
   reason,
+  unauthorizedEventName = "unauthorized_admin_access",
   userId = null,
 }: AdminContextOptions & {
   reason: AdminAuthFailureReason;
   userId?: string | null;
 }) {
   void logSecurityEvent({
-    eventName: "unauthorized_admin_access",
+    eventName: unauthorizedEventName,
     severity: reason === "unauthorized" ? "high" : "medium",
     userId,
     route,
@@ -65,6 +67,7 @@ export async function getAdminContext({
   request,
   route,
   action,
+  unauthorizedEventName,
 }: AdminContextOptions): Promise<AdminContext | AdminAuthFailure> {
   const config = getSupabaseServerConfig();
 
@@ -73,6 +76,7 @@ export async function getAdminContext({
       request,
       route,
       action,
+      unauthorizedEventName,
       reason: "server_not_configured",
     });
 
@@ -93,6 +97,7 @@ export async function getAdminContext({
         request,
         route,
         action,
+        unauthorizedEventName,
         reason: "unauthenticated",
       });
 
@@ -114,6 +119,7 @@ export async function getAdminContext({
         request,
         route,
         action,
+        unauthorizedEventName,
         reason: "unauthenticated",
       });
 
@@ -136,6 +142,7 @@ export async function getAdminContext({
       logUnauthorizedAdminAccess({
         route,
         action,
+        unauthorizedEventName,
         reason: "unauthenticated",
       });
 
@@ -161,6 +168,7 @@ export async function getAdminContext({
       request,
       route,
       action,
+      unauthorizedEventName,
       reason: "unauthorized",
       userId: user.id,
     });
