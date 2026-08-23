@@ -2,11 +2,11 @@
 
 StatCourt is a full-stack basketball analytics platform for exploring NBA player data, comparing players, building custom lineups, and generating dynamic scouting reports.
 
-**Live App:** https://statcourt.app
+**Live App:** [https://statcourt.app](https://statcourt.app)
 
 ![StatCourt Preview](./public/readme/statcourt-preview.png)
 
-Built with Next.js, TypeScript, Supabase, PostgreSQL, and Redis, StatCourt combines historical and current NBA data with custom rating, archetype, lineup-fit, and scouting models. The platform includes authenticated accounts, public profiles, saved lineups, favorites, community discovery, and player comparison tools.
+Built with Next.js, TypeScript, Supabase, PostgreSQL, and Redis, StatCourt combines current and historical NBA data with custom player-rating, lineup-fit, archetype, and scouting models. The platform includes authentication, public profiles, community features, saved lineups, player comparisons, and production-focused security controls.
 
 ## Highlights
 
@@ -27,9 +27,6 @@ Built with Next.js, TypeScript, Supabase, PostgreSQL, and Redis, StatCourt combi
 - Favorite players and track recent activity
 - Create public profiles with public lineups, favorite players, and basketball identity
 - Follow and report public profiles
-- Use Supabase Auth with email/password and Google OAuth
-- Upload profile avatars through Supabase Storage
-- Support protected account pages, RLS, API validation, rate limiting, and security-event logging
 - Use fallback player data when Supabase player loading is disabled or unavailable
 
 ## Tech Stack
@@ -56,7 +53,7 @@ Built with Next.js, TypeScript, Supabase, PostgreSQL, and Redis, StatCourt combi
 
 - Vercel
 - Supabase
-- Resend or another SMTP provider for production auth email
+- Resend
 
 ## Architecture
 
@@ -169,7 +166,7 @@ The production build may need network access because `next/font` fetches Google 
 
 ## Deployment
 
-StatCourt is intended to deploy on Vercel.
+StatCourt is deployed on Vercel at [statcourt.app](https://statcourt.app).
 
 Before deploying:
 
@@ -186,45 +183,15 @@ Before deploying:
 Recommended production auth URLs:
 
 ```text
-https://your-domain.com/auth/callback
-https://your-domain.com/reset-password
+https://statcourt.app/auth/callback
+https://statcourt.app/reset-password
 ```
 
 Keep localhost redirect URLs available for development if needed.
 
 ## Supabase
 
-StatCourt uses Supabase for:
-
-- Authentication
-- User profiles
-- Public profiles
-- Saved lineups
-- Favorite players
-- Recent players
-- User activity
-- Compare slots
-- Follows
-- Reports
-- Devices
-- Sign-in history
-- Security events
-- Player data
-- Player stat profiles
-- Player awards
-- Avatar storage
-
-### Security Model
-
-- Public basketball data is read-only.
-- `user_profiles` is owner-only.
-- `public_profiles` exposes only public-safe profile fields.
-- Public saved lineups, favorites, and follows obey profile visibility.
-- Saved lineups are scoped by authenticated user ownership.
-- User activity, recent players, compare slots, settings, devices, and sign-ins are owner-scoped.
-- Reports are authenticated and do not expose other users' reports.
-- Security events are written server-side only.
-- Avatar writes are restricted to the authenticated user's storage folder.
+StatCourt uses Supabase for authentication, PostgreSQL data storage, public/private user profiles, saved user content, moderation/reporting data, player analytics data, and avatar storage.
 
 ## Authentication
 
@@ -237,30 +204,22 @@ Supported auth flows:
 - Google OAuth
 - Account deletion
 
-For production, configure custom SMTP in Supabase Auth. Supabase's built-in email sender is intended for testing and has strict limits.
-
-Recommended SMTP setup:
-
-- Resend or another SMTP provider
-- Verified sending domain
-- SPF, DKIM, and DMARC records
-- Sender such as `no-reply@your-domain.com`
+Production authentication emails are delivered through Resend using a verified custom sending domain.
 
 ## Security
 
 StatCourt includes:
 
-- Supabase RLS policies
-- Server-side API authorization
-- Shared input validation
+- Supabase Row Level Security for user-owned data
+- Server-side authorization and ownership validation
+- Redis-backed API rate limiting
+- Input validation and sanitization
 - Origin checks for mutation routes
-- Redis-backed rate limiting
 - IDOR protection on user-owned resources
-- Safe redirect validation
-- Generic user-facing server errors
-- Security headers and CSP
-- Persistent security-event logging
-- Server-only service-role usage
+- Content Security Policy and browser security headers
+- Safe error handling
+- Persistent server-side security-event logging
+- Server-only handling of service-role keys and other secrets
 
 Never expose or commit:
 
