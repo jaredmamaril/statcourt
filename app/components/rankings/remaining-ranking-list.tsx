@@ -199,8 +199,8 @@ function RankingPlayerRow({
       <PlayerImage
         src={getPlayerHeadshot(player)}
         alt={player.name}
-        width={120}
-        height={120}
+        width={96}
+        height={96}
         className="h-7.5 w-7.5 rounded-md object-cover sm:h-12 sm:w-12 lg:h-16 lg:w-16"
       />
 
@@ -279,8 +279,8 @@ function RankingPlayerCard({
       <PlayerImage
         src={getPlayerHeadshot(player)}
         alt={player.name}
-        width={120}
-        height={120}
+        width={96}
+        height={96}
         className="mx-auto mt-1.5 h-14 w-14 rounded-md object-cover lg:mt-2 lg:h-18 lg:w-18"
       />
 

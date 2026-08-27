@@ -85,8 +85,8 @@ export function PlayerCardFront({
         <Image
           src={teamLogo}
           alt={`${player.team} logo`}
-          width={240}
-          height={240}
+          width={128}
+          height={128}
           className="h-16 w-16 object-contain lg:h-24 lg:w-24"
         />
       </div>

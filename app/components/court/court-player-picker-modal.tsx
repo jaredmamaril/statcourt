@@ -119,8 +119,8 @@ export function CourtPlayerPickerModal({
                       <PlayerImage
                         src={getPlayerHeadshot(player)}
                         alt={player.name}
-                        width={240}
-                        height={240}
+                        width={96}
+                        height={96}
                         className="h-full w-full object-cover"
                       />
                     </div>

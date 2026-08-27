@@ -75,8 +75,8 @@ export function LineupMarker({
             <PlayerImage
               src={imageSrc}
               alt=""
-              width={72}
-              height={72}
+              width={96}
+              height={96}
               className="mx-auto h-12 w-12 rounded-full object-cover transition-all duration-200 lg:h-20 lg:w-20"
               style={{
                 boxShadow: isHighlighted

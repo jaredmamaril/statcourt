@@ -121,8 +121,8 @@ function BuilderPlayerCardComponent({
       <PlayerImage
         src={getPlayerHeadshot(player)}
         alt={player.name}
-        width={120}
-        height={120}
+        width={96}
+        height={96}
         className="mx-auto h-7.5 w-7.5 rounded-full object-cover lg:h-20 lg:w-20"
       />
 

@@ -95,8 +95,8 @@ export function TopRankingCards({
               <PlayerImage
                 src={getPlayerHeadshot(player)}
                 alt={player.name}
-                width={240}
-                height={240}
+                width={128}
+                height={128}
                 className="h-13 w-13 rounded-md object-cover lg:h-30 lg:w-30"
               />
             </div>

@@ -215,8 +215,8 @@ function PlayerListCard({
         <PlayerImage
           src={getPlayerHeadshot(player)}
           alt={player.name}
-          width={240}
-          height={240}
+          width={96}
+          height={96}
           className="h-13 w-13 rounded-full object-cover"
         />
 

@@ -304,8 +304,8 @@ function BuilderPlayerListRow({
       <PlayerImage
         src={getPlayerHeadshot(player)}
         alt={player.name}
-        width={120}
-        height={120}
+        width={64}
+        height={64}
         className="h-8.5 w-8.5 rounded-full object-cover lg:h-9 lg:w-9"
       />
 

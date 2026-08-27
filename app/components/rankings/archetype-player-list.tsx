@@ -73,8 +73,8 @@ export function ArchetypePlayerList({
                 <PlayerImage
                   src={getPlayerHeadshot(player)}
                   alt={player.name}
-                  width={120}
-                  height={120}
+                  width={96}
+                  height={96}
                   className="-ml-1 h-10 w-10 rounded-md object-cover lg:-ml-3 lg:h-16 lg:w-16"
                 />
 

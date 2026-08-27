@@ -17,8 +17,8 @@ export function PlayerCardBackHeader({
       <PlayerImage
         src={getPlayerHeadshot(player)}
         alt={player.name}
-        width={240}
-        height={240}
+        width={128}
+        height={128}
         className="h-10 w-10 rounded-md object-cover sm:h-14 sm:w-14 lg:h-24 lg:w-24"
       />
 

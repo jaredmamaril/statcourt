@@ -1343,7 +1343,7 @@ export default function PublicProfilePage() {
                                   }
                                   alt=""
                                   fill
-                                  sizes="144px"
+                                  sizes="(min-width: 1024px) 44px, 28px"
                                   className="object-cover"
                                 />
                               ) : (
@@ -1401,7 +1401,7 @@ export default function PublicProfilePage() {
                                 }
                                 alt=""
                                 fill
-                                sizes="144px"
+                                sizes="(min-width: 1024px) 34px, 24px"
                                 className="object-cover"
                               />
                             ) : (
@@ -1605,7 +1605,7 @@ export default function PublicProfilePage() {
                                     }
                                     alt=""
                                     fill
-                                    sizes="144px"
+                                    sizes="(min-width: 1024px) 64px, 48px"
                                     className="object-cover"
                                   />
                                 ) : (
