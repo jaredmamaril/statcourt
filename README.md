@@ -1,5 +1,7 @@
 # StatCourt
 
+[![CI](https://github.com/jaredmamaril/statcourt/actions/workflows/ci.yml/badge.svg)](https://github.com/jaredmamaril/statcourt/actions/workflows/ci.yml)
+
 StatCourt is a full-stack basketball analytics platform for exploring NBA player data, comparing players, building custom lineups, and generating dynamic scouting reports.
 
 **Live App:** [https://statcourt.app](https://statcourt.app)
