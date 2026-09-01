@@ -3,8 +3,7 @@
 --
 -- Privacy model:
 -- - feedback_items and feedback_votes store raw user ownership data.
--- - public_feedback_items exposes feedback without submitter UUIDs.
--- - public_feedback_vote_counts exposes aggregate vote counts only.
+-- - public feedback reads are served through GET /api/feedback.
 -- - individual voter rows are not publicly readable.
 
 begin;
@@ -120,23 +119,7 @@ before insert on public.feedback_votes
 for each row
 execute function public.set_feedback_vote_created_at();
 
-create or replace function public.is_feedback_item_votable(p_item_id uuid)
-returns boolean
-language sql
-security definer
-set search_path = ''
-as $$
-  select exists (
-    select 1
-    from public.feedback_items item
-    where item.id = p_item_id
-      and item.is_hidden = false
-      and item.status <> 'declined'
-  );
-$$;
-
-revoke all on function public.is_feedback_item_votable(uuid) from public;
-grant execute on function public.is_feedback_item_votable(uuid) to authenticated;
+drop function if exists public.is_feedback_item_votable(uuid);
 
 create index if not exists feedback_items_public_created_at_idx
 on public.feedback_items using btree (created_at desc)
@@ -158,39 +141,8 @@ alter table public.feedback_votes enable row level security;
 drop view if exists public.public_feedback_vote_counts;
 drop view if exists public.public_feedback_items;
 
--- Security-definer views expose only public-safe columns/aggregates while the
--- base tables remain protected by RLS and do not expose raw user UUIDs.
-create view public.public_feedback_items
-with (security_barrier = true)
-as
-select
-  item.id,
-  item.type,
-  item.title,
-  item.details,
-  item.status,
-  item.created_at,
-  item.updated_at
-from public.feedback_items item
-where item.is_hidden = false;
-
-create view public.public_feedback_vote_counts
-with (security_barrier = true)
-as
-select
-  vote.feedback_item_id,
-  count(*)::bigint as vote_count
-from public.feedback_votes vote
-join public.feedback_items item
-  on item.id = vote.feedback_item_id
-where item.is_hidden = false
-group by vote.feedback_item_id;
-
-revoke all on public.public_feedback_items from public;
-revoke all on public.public_feedback_vote_counts from public;
-
-grant select on public.public_feedback_items to anon, authenticated;
-grant select on public.public_feedback_vote_counts to anon, authenticated;
+-- Public feedback reads intentionally go through the trusted server API route
+-- instead of SECURITY DEFINER views, so raw UUID-bearing tables remain private.
 
 drop policy if exists "StatCourt read public feedback items"
 on public.feedback_items;
@@ -263,19 +215,7 @@ for select
 to authenticated
 using (auth.uid() = user_id);
 
-create policy "StatCourt insert own feedback votes"
-on public.feedback_votes
-for insert
-to authenticated
-with check (
-  auth.uid() = user_id
-  and public.is_feedback_item_votable(feedback_votes.feedback_item_id)
-);
-
-create policy "StatCourt delete own feedback votes"
-on public.feedback_votes
-for delete
-to authenticated
-using (auth.uid() = user_id);
+-- Vote mutations are performed only through /api/feedback/votes after
+-- authenticated server-side authorization and feedback visibility checks.
 
 commit;

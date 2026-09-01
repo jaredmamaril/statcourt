@@ -123,6 +123,31 @@ export async function POST(request: Request) {
     );
   }
 
+  const { data: feedbackItem, error: feedbackItemError } =
+    await context.adminClient
+      .from("feedback_items")
+      .select("id")
+      .eq("id", feedbackItemId)
+      .eq("is_hidden", false)
+      .neq("status", "declined")
+      .maybeSingle();
+
+  if (feedbackItemError) {
+    console.error("Failed to verify feedback vote target", feedbackItemError);
+
+    return Response.json(
+      { error: "Could not update feedback vote." },
+      { status: 500 },
+    );
+  }
+
+  if (!feedbackItem) {
+    return Response.json(
+      { error: "Could not update feedback vote." },
+      { status: 400 },
+    );
+  }
+
   const { error } = await context.adminClient.from("feedback_votes").upsert(
     {
       feedback_item_id: feedbackItemId,
