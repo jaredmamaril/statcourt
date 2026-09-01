@@ -22,6 +22,7 @@ const termsItems = [
       "Your saved content belongs to your account and can be managed through StatCourt settings.",
       "You control what information appears publicly, including profile visibility, favorite players, public saved lineups, and shared basketball activity.",
       "Private account information will not be displayed publicly unless you choose to share it.",
+      "StatCourt may use aggregated analytics and performance data to improve reliability, usability, and product quality.",
     ],
   },
   {

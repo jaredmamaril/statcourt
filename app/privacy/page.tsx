@@ -160,6 +160,17 @@ export default async function PrivacyPage() {
             .
           </p>
 
+          <p className="mt-2 font-michroma text-[7px] leading-relaxed text-white/68 lg:text-[9px]">
+            StatCourt uses privacy-friendly analytics and performance monitoring
+            to understand site traffic, improve page performance, and identify
+            which parts of the app are useful. This may include aggregated
+            information such as visited pages, referral source, device type,
+            browser, general region, and performance metrics like page load
+            speed and responsiveness. StatCourt does not use analytics to
+            collect passwords, authentication tokens, private account data, or
+            the contents of saved lineups, reports, or feedback messages.
+          </p>
+
           <div className="mt-3 flex flex-wrap gap-2 font-michroma text-[7px] uppercase lg:text-[8px]">
             <Link
               href="/privacy"
@@ -167,14 +178,14 @@ export default async function PrivacyPage() {
             >
               Privacy Policy
             </Link>
-            <span className="text-white/30">•</span>
+            <span className="text-white/30">|</span>
             <Link
               href="/terms"
               className="text-white/75 transition hover:text-white"
             >
               Terms of Service
             </Link>
-            <span className="text-white/30">•</span>
+            <span className="text-white/30">|</span>
             <Link
               href="/contact"
               className="text-white/75 transition hover:text-white"

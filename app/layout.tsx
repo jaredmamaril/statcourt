@@ -2,6 +2,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { Michroma } from "next/font/google";
 import { Habibi } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import Navbar from "./components/navbar";
 import { GlobalFooter } from "./components/global-footer";
@@ -109,6 +111,8 @@ export default function RootLayout({
         />
         {children}
         <GlobalFooter />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
