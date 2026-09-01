@@ -121,20 +121,15 @@ export async function GET(request: Request) {
   const adminClient = createSupabaseAdminClient(config);
   const userId = await getOptionalUserId(request);
 
-  const [{ data: items, error: itemsError }, { data: counts, error: countsError }] =
-    await Promise.all([
-      adminClient
-        .from("public_feedback_items")
-        .select("id,type,title,details,status,created_at,updated_at")
-        .order("created_at", { ascending: false })
-        .limit(MAX_ITEMS),
-      adminClient
-        .from("public_feedback_vote_counts")
-        .select("feedback_item_id,vote_count"),
-    ]);
+  const { data: items, error: itemsError } = await adminClient
+    .from("feedback_items")
+    .select("id,type,title,details,status,created_at,updated_at")
+    .eq("is_hidden", false)
+    .order("created_at", { ascending: false })
+    .limit(MAX_ITEMS);
 
-  if (itemsError || countsError) {
-    console.error("Failed to load feedback", itemsError ?? countsError);
+  if (itemsError) {
+    console.error("Failed to load feedback", itemsError);
 
     return Response.json(
       { error: "Could not load feedback." },
@@ -142,27 +137,48 @@ export async function GET(request: Request) {
     );
   }
 
-  const voteCounts = new Map(
-    (counts ?? []).map((count) => [
-      count.feedback_item_id as string,
-      Number(count.vote_count ?? 0),
-    ]),
-  );
+  const itemIds = (items ?? []).map((item) => item.id);
+  const voteCounts = new Map<string, number>();
   let votedFeedbackIds = new Set<string>();
 
-  if (userId && items?.length) {
-    const itemIds = items.map((item) => item.id);
-    const { data: votes, error: votesError } = await adminClient
-      .from("feedback_votes")
-      .select("feedback_item_id")
-      .eq("user_id", userId)
-      .in("feedback_item_id", itemIds);
+  if (itemIds.length) {
+    const [
+      { data: voteRows, error: voteCountsError },
+      { data: userVotes, error: userVotesError },
+    ] = await Promise.all([
+      adminClient
+        .from("feedback_votes")
+        .select("feedback_item_id")
+        .in("feedback_item_id", itemIds),
+      userId
+        ? adminClient
+            .from("feedback_votes")
+            .select("feedback_item_id")
+            .eq("user_id", userId)
+            .in("feedback_item_id", itemIds)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
 
-    if (votesError) {
-      console.error("Failed to load feedback vote state", votesError);
+    if (voteCountsError) {
+      console.error("Failed to load feedback vote counts", voteCountsError);
+
+      return Response.json(
+        { error: "Could not load feedback." },
+        { status: 500 },
+      );
+    }
+
+    for (const vote of voteRows ?? []) {
+      const feedbackItemId = vote.feedback_item_id as string;
+
+      voteCounts.set(feedbackItemId, (voteCounts.get(feedbackItemId) ?? 0) + 1);
+    }
+
+    if (userVotesError) {
+      console.error("Failed to load feedback vote state", userVotesError);
     } else {
       votedFeedbackIds = new Set(
-        (votes ?? []).map((vote) => vote.feedback_item_id as string),
+        (userVotes ?? []).map((vote) => vote.feedback_item_id as string),
       );
     }
   }
