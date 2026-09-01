@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "./supabase-client";
+import { FeedbackMenu } from "./feedback/feedback-menu";
 import { useUserProfile } from "../lib/use-user-profile";
 import { resetStatCourtTheme } from "../lib/themes";
 import {
@@ -185,6 +186,10 @@ export default function Navbar() {
             })}
           </nav>
           <div className="flex items-center justify-end justify-self-end gap-2">
+            {!isLoadingUser && !isLoadingProfile ? (
+              <FeedbackMenu isSignedIn={Boolean(user)} />
+            ) : null}
+
             <button
               ref={mobileMenuButtonRef}
               type="button"
