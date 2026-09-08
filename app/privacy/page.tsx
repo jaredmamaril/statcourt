@@ -171,6 +171,12 @@ export default async function PrivacyPage() {
             the contents of saved lineups, reports, or feedback messages.
           </p>
 
+          <p className="mt-2 font-michroma text-[7px] leading-relaxed text-white/68 lg:text-[9px]">
+            StatCourt may use cookies, local storage, or similar technologies
+            that are necessary for authentication, account security, user
+            preferences, and core site functionality.
+          </p>
+
           <div className="mt-3 flex flex-wrap gap-2 font-michroma text-[7px] uppercase lg:text-[8px]">
             <Link
               href="/privacy"
