@@ -57,6 +57,31 @@ export type SupabasePlayerStatProfileRow = {
   free_throw_attempts_per_game: number | null;
 };
 
+const PLAYER_SELECT_COLUMNS = [
+  "id",
+  "nba_id",
+  "name",
+  "team",
+  "fallback_image",
+  "position",
+  "jersey_number",
+  "ppg",
+  "rpg",
+  "apg",
+  "fg_percent",
+  "three_percent",
+  "ft_percent",
+  "defense_rating",
+  "star_power",
+  "spg",
+  "bpg",
+  "height_inches",
+  "weight_pounds",
+  "api_position",
+  "career_legacy",
+  "games",
+].join(", ");
+
 function toNumber(value: number | string | null | undefined, fallback = 0) {
   if (typeof value === "number" && Number.isFinite(value)) {
     return value;
@@ -97,7 +122,7 @@ export async function getSupabasePlayers() {
   while (true) {
     const { data, error } = await supabase
       .from("players")
-      .select("*")
+      .select(PLAYER_SELECT_COLUMNS)
       .neq("stats_source", "pending_import")
       .gt("ppg", 0)
       .not("fallback_image", "is", null)
@@ -112,7 +137,7 @@ export async function getSupabasePlayers() {
       break;
     }
 
-    allRows = [...allRows, ...(data as SupabasePlayerRow[])];
+    allRows = [...allRows, ...((data ?? []) as unknown as SupabasePlayerRow[])];
 
     if (data.length < pageSize) {
       break;
@@ -122,6 +147,51 @@ export async function getSupabasePlayers() {
   }
 
   return allRows;
+}
+
+async function getSupabasePlayersPage(page: number, limit: number) {
+  const from = (page - 1) * limit;
+  const to = from + limit;
+
+  const { data, error } = await supabase
+    .from("players")
+    .select(PLAYER_SELECT_COLUMNS)
+    .neq("stats_source", "pending_import")
+    .gt("ppg", 0)
+    .not("fallback_image", "is", null)
+    .order("name", { ascending: true })
+    .range(from, to);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const rows = (data ?? []) as unknown as SupabasePlayerRow[];
+
+  return {
+    rows: rows.slice(0, limit),
+    hasMore: rows.length > limit,
+  };
+}
+
+async function getSupabasePlayersByNames(names: string[]) {
+  if (names.length === 0) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("players")
+    .select(PLAYER_SELECT_COLUMNS)
+    .neq("stats_source", "pending_import")
+    .gt("ppg", 0)
+    .not("fallback_image", "is", null)
+    .in("name", names);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []) as unknown as SupabasePlayerRow[];
 }
 
 export function mapSupabasePlayerToPlayer(
@@ -193,6 +263,76 @@ export async function getPlayersFromSupabaseWithFallback(): Promise<Player[]> {
     return mappedPlayers.length > 0 ? mappedPlayers : fallbackPlayers;
   } catch {
     return fallbackPlayers;
+  }
+}
+
+export async function getPlayersFromSupabasePageWithFallback(
+  page: number,
+  limit: number,
+): Promise<{ players: Player[]; hasMore: boolean }> {
+  try {
+    const { rows, hasMore } = await getSupabasePlayersPage(page, limit);
+    const profileMap = await getSupabasePlayerProfiles(rows);
+    const mappedPlayers = rows.map((row) =>
+      mapSupabasePlayerToPlayer(row, profileMap.get(row.id)),
+    );
+
+    if (mappedPlayers.length > 0 || page > 1) {
+      return {
+        players: mappedPlayers,
+        hasMore,
+      };
+    }
+
+    return {
+      players: fallbackPlayers,
+      hasMore: false,
+    };
+  } catch {
+    return page === 1
+      ? {
+          players: fallbackPlayers,
+          hasMore: false,
+        }
+      : {
+          players: [],
+          hasMore: false,
+        };
+  }
+}
+
+export async function getPlayersByNamesFromSupabaseWithFallback(
+  names: string[],
+): Promise<Player[]> {
+  const uniqueNames = Array.from(new Set(names.filter(Boolean)));
+
+  if (uniqueNames.length === 0) {
+    return [];
+  }
+
+  if (process.env.NEXT_PUBLIC_USE_SUPABASE_PLAYERS !== "true") {
+    const nameSet = new Set(uniqueNames);
+
+    return fallbackPlayers.filter((player) => nameSet.has(player.name));
+  }
+
+  try {
+    const batchSize = 200;
+    const rows: SupabasePlayerRow[] = [];
+
+    for (let start = 0; start < uniqueNames.length; start += batchSize) {
+      rows.push(
+        ...(await getSupabasePlayersByNames(
+          uniqueNames.slice(start, start + batchSize),
+        )),
+      );
+    }
+
+    return rows.map((row) => mapSupabasePlayerToPlayer(row));
+  } catch {
+    const nameSet = new Set(uniqueNames);
+
+    return fallbackPlayers.filter((player) => nameSet.has(player.name));
   }
 }
 
