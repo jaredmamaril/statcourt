@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPlayerInsights } from "@/app/components/court-data";
-import { getAppPlayers } from "@/app/components/player-data-source";
+import { getPlayersByNamesFromSupabaseWithFallback } from "@/app/components/supabase-players";
 import { supabase } from "@/app/components/supabase-client";
 import {
   checkRateLimit,
@@ -32,6 +32,7 @@ type CommunityBaseProfileRow = Pick<
 >;
 
 const COMMUNITY_PROFILE_LIMIT = 60;
+const COMMUNITY_PROFILE_MAX_LIMIT = 60;
 const COMMUNITY_PROFILE_SCOPES = new Set(["discover", "following"]);
 
 export const dynamic = "force-dynamic";
@@ -61,7 +62,29 @@ function getMostCommonValues(values: string[], limit: number) {
     .map(([value]) => value);
 }
 
-async function getCommunityProfiles(profileIdFilter?: string[]) {
+function getPositiveIntegerParam(
+  value: string | null,
+  fallback: number,
+  max: number,
+) {
+  const parsedValue = Number(value);
+
+  if (!Number.isInteger(parsedValue) || parsedValue < 1) {
+    return fallback;
+  }
+
+  return Math.min(parsedValue, max);
+}
+
+async function getCommunityProfiles({
+  limit,
+  page,
+  profileIdFilter,
+}: {
+  limit: number;
+  page: number;
+  profileIdFilter?: string[];
+}) {
   if (profileIdFilter && profileIdFilter.length === 0) {
     return [];
   }
@@ -75,9 +98,12 @@ async function getCommunityProfiles(profileIdFilter?: string[]) {
     profileQuery = profileQuery.in("id", profileIdFilter);
   }
 
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
   const { data, error } = await profileQuery
     .order("created_at", { ascending: false })
-    .limit(COMMUNITY_PROFILE_LIMIT);
+    .range(from, to);
 
   if (error) {
     throw error;
@@ -121,27 +147,50 @@ async function getCommunityProfiles(profileIdFilter?: string[]) {
   const favoriteArchetypeByPlayerName = new Map<string, string | null>();
 
   if (favoritePlayerNames.size > 0) {
-    const players = await getAppPlayers();
+    const players = await getPlayersByNamesFromSupabaseWithFallback([
+      ...favoritePlayerNames,
+    ]);
 
-    players
-      .filter((player) => favoritePlayerNames.has(player.name))
-      .forEach((player) => {
-        favoriteArchetypeByPlayerName.set(
-          player.name,
-          getPlayerInsights(player, "career").archetype?.label ?? null,
-        );
-      });
+    players.forEach((player) => {
+      favoriteArchetypeByPlayerName.set(
+        player.name,
+        getPlayerInsights(player, "career").archetype?.label ?? null,
+      );
+    });
   }
 
+  const lineupsByProfileId = new Map<
+    string,
+    { archetype: string | null; strengths: string[] | null }[]
+  >();
+  const favoritesByProfileId = new Map<string, { player_name: string }[]>();
+
+  ((lineupRows ?? []) as {
+    user_id: string;
+    archetype: string | null;
+    strengths: string[] | null;
+  }[]).forEach((lineup) => {
+    const lineups = lineupsByProfileId.get(lineup.user_id) ?? [];
+
+    lineups.push({
+      archetype: lineup.archetype,
+      strengths: lineup.strengths,
+    });
+    lineupsByProfileId.set(lineup.user_id, lineups);
+  });
+
+  typedFavoriteRows.forEach((favorite) => {
+    const favorites = favoritesByProfileId.get(favorite.user_id) ?? [];
+
+    favorites.push({
+      player_name: favorite.player_name,
+    });
+    favoritesByProfileId.set(favorite.user_id, favorites);
+  });
+
   return baseProfiles.map((profile) => {
-    const publicLineups = ((lineupRows ?? []) as {
-      user_id: string;
-      archetype: string | null;
-      strengths: string[] | null;
-    }[]).filter((lineup) => lineup.user_id === profile.id);
-    const favorites = typedFavoriteRows.filter(
-      (favorite) => favorite.user_id === profile.id,
-    );
+    const publicLineups = lineupsByProfileId.get(profile.id) ?? [];
+    const favorites = favoritesByProfileId.get(profile.id) ?? [];
     const topStrengths = getMostCommonValues(
       publicLineups.flatMap((lineup) => lineup.strengths ?? []),
       2,
@@ -245,6 +294,12 @@ export async function GET(request: Request) {
     const scope = COMMUNITY_PROFILE_SCOPES.has(scopeParam)
       ? scopeParam
       : "discover";
+    const page = getPositiveIntegerParam(url.searchParams.get("page"), 1, 10_000);
+    const limit = getPositiveIntegerParam(
+      url.searchParams.get("limit"),
+      COMMUNITY_PROFILE_LIMIT,
+      COMMUNITY_PROFILE_MAX_LIMIT,
+    );
     const profileIdsResult =
       scope === "following" ? await getFollowingProfileIds(request) : null;
 
@@ -252,13 +307,18 @@ export async function GET(request: Request) {
       return profileIdsResult.error;
     }
 
-    const profiles = await getCommunityProfiles(
-      profileIdsResult?.profileIds,
-    );
+    const profiles = await getCommunityProfiles({
+      limit,
+      page,
+      profileIdFilter: profileIdsResult?.profileIds,
+    });
 
     return NextResponse.json(
       {
         count: profiles.length,
+        hasMore: profiles.length === limit,
+        limit,
+        page,
         scope,
         profiles,
       },
