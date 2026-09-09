@@ -574,19 +574,24 @@ export default function SettingsPage() {
       ] = await Promise.all([
         supabase
           .from("saved_lineups")
-          .select("id", { count: "exact", head: true }),
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id),
         supabase
           .from("favorite_players")
-          .select("id", { count: "exact", head: true }),
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id),
         supabase
           .from("recent_players")
-          .select("id", { count: "exact", head: true }),
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id),
         supabase
           .from("user_activity")
-          .select("id", { count: "exact", head: true }),
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id),
         supabase
           .from("user_signins")
           .select("id, signed_in_at, provider, user_agent", { count: "exact" })
+          .eq("user_id", user.id)
           .order("signed_in_at", { ascending: false })
           .limit(5),
         supabase
@@ -594,6 +599,7 @@ export default function SettingsPage() {
           .select(
             "id, device_id, device_label, browser_label, last_seen_at, signed_in_at",
           )
+          .eq("user_id", user.id)
           .is("signed_out_at", null)
           .order("last_seen_at", { ascending: false })
           .limit(5),

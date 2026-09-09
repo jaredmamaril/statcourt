@@ -61,6 +61,7 @@ export function useFavoritePlayers(user: User | null) {
       const { data, error } = await supabase
         .from("favorite_players")
         .select("player_name")
+        .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
       if (!isActive) return;

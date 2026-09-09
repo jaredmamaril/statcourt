@@ -348,18 +348,22 @@ export default function ProfilePage() {
       ] = await Promise.all([
         supabase
           .from("saved_lineups")
-          .select("id", { count: "exact", head: true }),
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id),
         supabase
           .from("favorite_players")
-          .select("player_name", { count: "exact" }),
+          .select("player_name", { count: "exact" })
+          .eq("user_id", user.id),
         supabase
           .from("recent_players")
-          .select("id", { count: "exact", head: true }),
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id),
         supabase
           .from("user_activity")
           .select("id, activity_type, label, href, created_at", {
             count: "exact",
           })
+          .eq("user_id", user.id)
           .order("created_at", { ascending: false })
           .limit(20),
         getCachedApiPlayerProfileLookups(),

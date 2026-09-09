@@ -103,6 +103,10 @@ function getCallbackErrorMessage(errorCode: string) {
 }
 
 function getSigninNoticeMessage(noticeCode: string) {
+  if (noticeCode === "email_confirmed_signin_required") {
+    return "Email confirmed. Sign in to continue.";
+  }
+
   if (noticeCode === "email_change_confirmed") {
     return "Email updated. Sign in with your new email to continue.";
   }
