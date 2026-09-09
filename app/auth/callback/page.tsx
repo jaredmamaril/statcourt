@@ -129,6 +129,12 @@ export default function AuthCallbackPage() {
             return;
           }
 
+          if (provider === "email") {
+            setStatus("Email confirmed. Redirecting...");
+            router.replace("/signin?notice=email_confirmed_signin_required");
+            return;
+          }
+
           setStatus("Could not complete sign in. Redirecting...");
           router.replace("/signin?error=auth_callback_failed");
           return;
