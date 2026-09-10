@@ -298,17 +298,9 @@ export default function Navbar() {
                 </div>
               </>
             ) : (
-              <>
-                <Link
-                  href="/signin"
-                  className="hidden min-h-11 items-center rounded-md border border-white/15 bg-white/5 px-2.5 py-2 font-michroma text-[7px] uppercase tracking-wide text-white/65 transition hover:border-white/30 hover:text-white min-[390px]:inline-flex lg:px-3 lg:text-[9px]"
-                >
-                  Sign In
-                </Link>
-
-                <Link
-                  href="/signin?mode=signup"
-                  className="
+              <Link
+                href="/signin?mode=signup"
+                className="
                   group inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-md
                   border border-[color:rgb(var(--court-accent-rgb)/0.6)] bg-[color:color-mix(in_srgb,var(--court-panel)_80%,transparent)]
                   px-2.5 py-2 font-michroma text-[7px] uppercase tracking-wide
@@ -319,11 +311,10 @@ export default function Navbar() {
                   active:scale-[0.97]
                   lg:gap-2 lg:px-3.5 lg:text-[9px]
                 "
-                >
-                  <User className="h-3 w-3 transition group-hover:brightness-125 lg:h-3.5 lg:w-3.5" />
-                  Create account
-                </Link>
-              </>
+              >
+                <User className="h-3 w-3 transition group-hover:brightness-125 lg:h-3.5 lg:w-3.5" />
+                Create account
+              </Link>
             )}
           </div>
         </div>
@@ -364,19 +355,11 @@ export default function Navbar() {
             })}
 
             {!isLoadingUser && !isLoadingProfile && !user && (
-              <div className="mt-1 grid grid-cols-2 gap-1.5 border-t border-white/10 pt-2">
-                <Link
-                  href="/signin"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="rounded-md border border-white/15 bg-white/5 px-2.5 py-2 text-center font-michroma text-[7px] uppercase tracking-wide text-white/65 transition hover:border-white/30 hover:text-white"
-                >
-                  Sign In
-                </Link>
-
+              <div className="mt-1 border-t border-white/10 pt-2">
                 <Link
                   href="/signin?mode=signup"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="rounded-md border border-[color:rgb(var(--court-accent-rgb)/0.55)] bg-[color:rgb(var(--court-accent-rgb)/0.1)] px-2.5 py-2 text-center font-michroma text-[7px] uppercase tracking-wide text-[var(--court-accent)] transition hover:bg-[color:rgb(var(--court-accent-rgb)/0.18)] hover:text-white"
+                  className="block rounded-md border border-[color:rgb(var(--court-accent-rgb)/0.55)] bg-[color:rgb(var(--court-accent-rgb)/0.1)] px-2.5 py-2 text-center font-michroma text-[7px] uppercase tracking-wide text-[var(--court-accent)] transition hover:bg-[color:rgb(var(--court-accent-rgb)/0.18)] hover:text-white"
                 >
                   Create account
                 </Link>
