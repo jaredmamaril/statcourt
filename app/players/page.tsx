@@ -63,7 +63,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const archetypeRarityRank = {
   gold: 5,
@@ -121,6 +121,7 @@ function Players() {
 
   // URL/navigation
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const router = useRouter();
 
   // Refs
@@ -165,8 +166,18 @@ function Players() {
 
   // Auth
   const [authPromptMessage, setAuthPromptMessage] = useState("");
+  const [authPromptDescription, setAuthPromptDescription] = useState(
+    "Sign in to sync favorites, saved comparisons, and player history.",
+  );
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [playerActionStatus, setPlayerActionStatus] = useState("");
+
+  const signinHref = useMemo(() => {
+    const currentSearch = searchParams.toString();
+    const currentUrl = currentSearch ? `${pathname}?${currentSearch}` : pathname;
+
+    return `/signin?next=${encodeURIComponent(currentUrl)}&mode=signup`;
+  }, [pathname, searchParams]);
 
   // Derived player data
   const selectedPlayer = players.find(
@@ -629,9 +640,14 @@ function Players() {
   }
 
   // Auth
-  function requireAuth(message: string, action: () => void) {
+  function requireAuth(
+    message: string,
+    action: () => void,
+    description = "Sign in to sync favorites, saved comparisons, and player history.",
+  ) {
     if (!user) {
       setAuthPromptMessage(message);
+      setAuthPromptDescription(description);
       setShowAuthPrompt(true);
       return;
     }
@@ -761,15 +777,19 @@ function Players() {
                   onSelectLoadMoreAmount={setPlayerListLoadMoreAmount}
                   onLoadMore={loadMorePlayers}
                   onToggleFavorite={(playerName) =>
-                    requireAuth("Sign in to save favorite players", () => {
-                      const wasFavorite = favorites.includes(playerName);
-                      setPlayerActionStatus(
-                        wasFavorite
-                          ? `${playerName} removed from favorites.`
-                          : `${playerName} added to favorites.`,
-                      );
-                      void toggleFavorite(playerName);
-                    })
+                    requireAuth(
+                      "Create account",
+                      () => {
+                        const wasFavorite = favorites.includes(playerName);
+                        setPlayerActionStatus(
+                          wasFavorite
+                            ? `${playerName} removed from favorites.`
+                            : `${playerName} added to favorites.`,
+                        );
+                        void toggleFavorite(playerName);
+                      },
+                      "Create a free account to save your favorite players.",
+                    )
                   }
                   onSelectPlayer={selectPlayerFromList}
                 />
@@ -810,7 +830,9 @@ function Players() {
           {showAuthPrompt && (
             <AuthPrompt
               title={authPromptMessage}
-              description="Sign in to sync favorites, saved comparisons, and player history."
+              description={authPromptDescription}
+              actionLabel="Create Account"
+              href={signinHref}
               onClose={() => setShowAuthPrompt(false)}
             />
           )}

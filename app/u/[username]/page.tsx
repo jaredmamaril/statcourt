@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { usePathname, useParams } from "next/navigation";
 import {
   Flag,
   Share2,
@@ -17,6 +17,7 @@ import { useEffect, useMemo, useState } from "react";
 import { SkeletonBlock } from "../../components/loading/skeleton";
 import { supabase } from "../../components/supabase-client";
 import { getCachedApiPlayerProfileLookups } from "../../lib/player-api-cache";
+import { AuthPrompt } from "../../components/auth/auth-prompt";
 import { AccessibleDialog } from "../../components/ui/accessible-dialog";
 
 type PublicProfile = {
@@ -308,6 +309,7 @@ function PublicProfileSkeleton() {
 
 export default function PublicProfilePage() {
   const params = useParams<{ username: string }>();
+  const pathname = usePathname();
   const username = useMemo(
     () => decodeURIComponent(params.username ?? "").replace(/^@+/, ""),
     [params.username],
@@ -339,6 +341,7 @@ export default function PublicProfilePage() {
     string | null
   >(null);
   const [profileActionStatus, setProfileActionStatus] = useState("");
+  const [isFollowAuthPromptOpen, setIsFollowAuthPromptOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isFollowingProfile, setIsFollowingProfile] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
@@ -557,6 +560,14 @@ export default function PublicProfilePage() {
   }, [username]);
 
   const displayName = profile?.display_name ?? profile?.username ?? "StatCourt";
+  function getSigninHref() {
+    const currentUrl =
+      typeof window === "undefined"
+        ? pathname
+        : `${window.location.pathname}${window.location.search}`;
+
+    return `/signin?next=${encodeURIComponent(currentUrl)}&mode=signup`;
+  }
   const accountInitial = displayName.trim().charAt(0).toUpperCase() || "S";
   const favoritePlayerArchetype =
     getMostCommonValue(
@@ -649,8 +660,7 @@ export default function PublicProfilePage() {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      setProfileActionStatus("Sign in to follow");
-      window.setTimeout(() => setProfileActionStatus(""), 1800);
+      setIsFollowAuthPromptOpen(true);
       return;
     }
 
@@ -1642,6 +1652,16 @@ export default function PublicProfilePage() {
           )}
         </div>
       </section>
+
+      {isFollowAuthPromptOpen && (
+        <AuthPrompt
+          title="Create account"
+          description="Create a free account to follow users and keep up with their profiles."
+          actionLabel="Create Account"
+          href={getSigninHref()}
+          onClose={() => setIsFollowAuthPromptOpen(false)}
+        />
+      )}
 
       {isReportOpen && profile && (
         <AccessibleDialog

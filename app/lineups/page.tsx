@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AuthPrompt } from "../components/auth/auth-prompt";
 import { getCachedApiPlayers } from "../lib/player-api-cache";
 import { useAuthUser } from "../lib/use-auth-user";
@@ -137,6 +137,7 @@ function LineupsContent() {
   // Refs and routing
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const initialTab = searchParams.get("tab");
   const initialBuilderPlayer = searchParams.get("player");
   const lineupSectionRef = useRef<HTMLDivElement>(null);
@@ -256,8 +257,17 @@ function LineupsContent() {
 
   // Auth
   const [authPromptMessage, setAuthPromptMessage] = useState("");
+  const [authPromptDescription, setAuthPromptDescription] = useState(
+    "Create an account to save lineups, rename builds, and access them later.",
+  );
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [lineupActionStatus, setLineupActionStatus] = useState("");
+  const signinHref = useMemo(() => {
+    const currentSearch = searchParams.toString();
+    const currentUrl = currentSearch ? `${pathname}?${currentSearch}` : pathname;
+
+    return `/signin?next=${encodeURIComponent(currentUrl)}&mode=signup`;
+  }, [pathname, searchParams]);
 
   // Builder state and derived data
   const {
@@ -556,9 +566,14 @@ function LineupsContent() {
   }
 
   // Auth
-  function requireAuth(message: string, action: () => void) {
+  function requireAuth(
+    message: string,
+    action: () => void,
+    description = "Create an account to save lineups, rename builds, and access them later.",
+  ) {
     if (!user) {
       setAuthPromptMessage(message);
+      setAuthPromptDescription(description);
       setShowAuthPrompt(true);
       return;
     }
@@ -988,7 +1003,7 @@ function LineupsContent() {
               </p>
 
               <p className="mt-2 font-michroma text-[7px] leading-relaxed text-white/45 lg:mt-3 lg:text-[10px]">
-                Your saved teams will appear here once you create an account.
+                Save your lineups and share them from your profile.
               </p>
 
               <button
@@ -1039,10 +1054,14 @@ function LineupsContent() {
             setScoutedSavedLineup(null);
           }}
           onSaveLineup={() => {
-            requireAuth("Sign in to save this lineup", () => {
-              setLineupNameInput("");
-              setIsNamingLineup(true);
-            });
+            requireAuth(
+              "Create account",
+              () => {
+                setLineupNameInput("");
+                setIsNamingLineup(true);
+              },
+              "Create a free account to save this lineup and access it later.",
+            );
           }}
         />
       )}
@@ -1061,7 +1080,9 @@ function LineupsContent() {
       {showAuthPrompt && (
         <AuthPrompt
           title={authPromptMessage}
-          description="Create an account to save lineups, rename builds, and access them later."
+          description={authPromptDescription}
+          actionLabel="Create Account"
+          href={signinHref}
           onClose={() => setShowAuthPrompt(false)}
         />
       )}

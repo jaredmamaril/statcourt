@@ -118,6 +118,10 @@ function getSigninNoticeMessage(noticeCode: string) {
   return "";
 }
 
+function getInitialAuthMode(mode: string | null) {
+  return mode === "signup" ? "signup" : "signin";
+}
+
 function trackSigninInBackground(
   user: Parameters<typeof trackUserSignin>[0],
   provider: Parameters<typeof trackUserSignin>[1],
@@ -136,7 +140,7 @@ function SignInPageContent() {
   );
   const [authMode, setAuthMode] = useState<
     "signin" | "signup" | "forgot-password"
-  >("signin");
+  >(getInitialAuthMode(searchParams.get("mode")));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authMessage, setAuthMessage] = useState("");

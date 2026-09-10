@@ -370,7 +370,7 @@ export default function CommunityPage() {
             </p>
 
             <p className="mx-auto mt-2 max-w-md font-michroma text-[7px] leading-relaxed text-white/45 lg:text-[10px]">
-              Your followed profiles are tied to your StatCourt account.
+              Create a profile to follow users and share your lineups.
             </p>
 
             <Link
