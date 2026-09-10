@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { usePathname, useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getCachedApiPlayers } from "../../lib/player-api-cache";
 import { useAuthUser } from "../../lib/use-auth-user";
@@ -92,6 +92,7 @@ function formatNumber(value: number | null | undefined, fallback = "--") {
 export default function PlayerProfilePage() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
+  const pathname = usePathname();
   const { user } = useAuthUser();
   const { settings, isLoadingSettings } = useUserSettings();
   const { compareSlots, updateCompareSlots } = useCompareSlots(user);
@@ -110,8 +111,19 @@ export default function PlayerProfilePage() {
   >(null);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [authPromptMessage, setAuthPromptMessage] = useState("");
+  const [authPromptDescription, setAuthPromptDescription] = useState(
+    "Sign in to sync favorites, saved comparisons, and player history.",
+  );
   const [playerActionStatus, setPlayerActionStatus] = useState("");
   const hasAppliedDefaultStatModeRef = useRef(false);
+  function getSigninHref() {
+    const currentUrl =
+      typeof window === "undefined"
+        ? pathname
+        : `${window.location.pathname}${window.location.search}`;
+
+    return `/signin?next=${encodeURIComponent(currentUrl)}&mode=signup`;
+  }
 
   useEffect(() => {
     if (isLoadingSettings || hasAppliedDefaultStatModeRef.current) return;
@@ -275,9 +287,14 @@ export default function PlayerProfilePage() {
     : [];
   const isFavorite = player ? favoritePlayers.includes(player.name) : false;
 
-  function requireAuth(message: string, action: () => void) {
+  function requireAuth(
+    message: string,
+    action: () => void,
+    description = "Sign in to sync favorites, saved comparisons, and player history.",
+  ) {
     if (!user) {
       setAuthPromptMessage(message);
+      setAuthPromptDescription(description);
       setShowAuthPrompt(true);
       return;
     }
@@ -302,16 +319,20 @@ export default function PlayerProfilePage() {
   }
 
   function toggleFavoritePlayer() {
-    requireAuth("Sign in to save favorite players", () => {
-      if (!player) return;
+    requireAuth(
+      "Create account",
+      () => {
+        if (!player) return;
 
-      setPlayerActionStatus(
-        isFavorite
-          ? `${player.name} removed from favorites.`
-          : `${player.name} added to favorites.`,
-      );
-      void toggleFavorite(player.name);
-    });
+        setPlayerActionStatus(
+          isFavorite
+            ? `${player.name} removed from favorites.`
+            : `${player.name} added to favorites.`,
+        );
+        void toggleFavorite(player.name);
+      },
+      "Create a free account to save your favorite players.",
+    );
   }
 
   function openBuildSlotModal() {
@@ -840,7 +861,9 @@ export default function PlayerProfilePage() {
       {showAuthPrompt && (
         <AuthPrompt
           title={authPromptMessage}
-          description="Sign in to sync favorites, saved comparisons, and player history."
+          description={authPromptDescription}
+          actionLabel="Create Account"
+          href={getSigninHref()}
           onClose={() => setShowAuthPrompt(false)}
         />
       )}
