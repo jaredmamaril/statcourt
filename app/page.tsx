@@ -1,12 +1,12 @@
 ﻿"use client";
 
+import { ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function Home() {
   const router = useRouter();
   const [isLeaving, setIsLeaving] = useState(false);
-  const [showEnterButton, setShowEnterButton] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -39,14 +39,6 @@ export default function Home() {
     router.replace(`/auth/callback${window.location.search}${window.location.hash}`);
   }, [router]);
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setShowEnterButton(true);
-    }, 3000);
-
-    return () => window.clearTimeout(timer);
-  }, []);
-
   return (
     <main
       className="relative min-h-screen overflow-hidden bg-background text-foreground"
@@ -73,33 +65,41 @@ export default function Home() {
         }`}
       />
 
-      <section className="relative z-10 flex min-h-screen -translate-y-10 items-center justify-center text-center">
-        <button
-          type="button"
-          onClick={() => {
-            if (isLeaving) return;
-
-            setIsLeaving(true);
-
-            const reducedMotion =
-              document.documentElement.classList.contains(
-                "statcourt-reduced-motion",
-              ) ||
-              window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-            setTimeout(() => {
-              router.push("/court");
-            }, reducedMotion ? 220 : 560);
-          }}
-          className={`mt-78 cursor-pointer rounded-md border border-[rgb(var(--court-accent-rgb)/0.45)] bg-[rgb(var(--court-accent-rgb)/0.16)] px-6 py-3 font-michroma text-base text-white shadow-md transition-all duration-500 hover:-translate-y-0.5 hover:border-[rgb(var(--court-accent-rgb)/0.75)] hover:bg-[rgb(var(--court-accent-rgb)/0.14)] active:scale-95 ${
-            showEnterButton
-              ? "translate-y-0 opacity-100"
-              : "pointer-events-none translate-y-3 opacity-0"
-          } ${isLeaving ? "pointer-events-none translate-y-1 opacity-0" : ""}
-          `}
+      <section className="relative z-10 flex min-h-screen -translate-y-10 items-center justify-center px-5 text-center">
+        <div
+          className={`page-enter mt-72 flex flex-col items-center transition-all duration-300 ${
+            isLeaving ? "pointer-events-none translate-y-1 opacity-0" : ""
+          }`}
         >
-          ENTER THE COURT
-        </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (isLeaving) return;
+
+              setIsLeaving(true);
+
+              const reducedMotion =
+                document.documentElement.classList.contains(
+                  "statcourt-reduced-motion",
+                ) ||
+                window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+              setTimeout(
+                () => {
+                  router.push("/court");
+                },
+                reducedMotion ? 0 : 320,
+              );
+            }}
+            className="home-cta inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-md border border-[rgb(var(--court-accent-rgb)/0.6)] bg-[rgb(var(--court-accent-rgb)/0.2)] px-8 py-3.5 font-michroma text-sm text-white shadow-[0_0_24px_rgb(var(--court-accent-rgb)/0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[rgb(var(--court-accent-rgb)/0.9)] hover:bg-[rgb(var(--court-accent-rgb)/0.28)] hover:shadow-[0_0_30px_rgb(var(--court-accent-rgb)/0.3)] active:scale-95 sm:text-base lg:px-10 lg:py-4 lg:text-lg"
+          >
+            <span>ENTER THE COURT</span>
+            <ArrowRight
+              className="home-cta-arrow h-4 w-4 lg:h-5 lg:w-5"
+              aria-hidden="true"
+            />
+          </button>
+        </div>
       </section>
     </main>
   );
