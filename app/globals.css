@@ -67,6 +67,47 @@ html[data-statcourt-theme="neon-violet"] {
   animation: pageEnter 360ms ease-out both;
 }
 
+@keyframes homeCtaPulse {
+  0%,
+  100% {
+    border-color: rgb(var(--court-accent-rgb) / 0.55);
+    box-shadow: 0 0 18px rgb(var(--court-accent-rgb) / 0.16);
+  }
+
+  50% {
+    border-color: rgb(var(--court-accent-rgb) / 0.95);
+    box-shadow:
+      0 0 0 4px rgb(var(--court-accent-rgb) / 0.12),
+      0 0 42px rgb(var(--court-accent-rgb) / 0.5);
+  }
+}
+
+@keyframes homeCtaArrowNudge {
+  0%,
+  72%,
+  88%,
+  100% {
+    transform: translateX(0);
+  }
+
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+.home-cta {
+  animation: homeCtaPulse 2.4s ease-in-out infinite;
+}
+
+.home-cta-arrow {
+  animation: homeCtaArrowNudge 2.4s ease-in-out infinite;
+}
+
+.home-cta:hover,
+.home-cta:hover .home-cta-arrow {
+  animation-play-state: paused;
+}
+
 @keyframes dropdownIn {
   from {
     opacity: 0;
