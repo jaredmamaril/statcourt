@@ -38,6 +38,7 @@ import {
   RankingArchetypesSkeleton,
   RankingLeaderboardSkeleton,
 } from "../components/rankings/ranking-skeletons";
+import { getPlayerHref } from "../lib/player-slug";
 
 type RankingStatProfile = "career" | "peak" | "current";
 type ArchetypeSort = "rarity" | "name";
@@ -337,7 +338,7 @@ export default function Rankings() {
 
   // Event handlers
   function viewPlayerCard(playerName: string) {
-    router.push(`/players/${encodeURIComponent(playerName)}`);
+    router.push(getPlayerHref(playerName));
   }
 
   function loadMoreRankings() {

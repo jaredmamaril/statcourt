@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "../supabase-client";
 import { logUserActivity } from "../user-activity";
+import { getPlayerHref } from "../../lib/player-slug";
 
 type FavoritePlayerRow = {
   player_name: string;
@@ -107,7 +108,7 @@ export function useFavoritePlayers(user: User | null) {
           user,
           activityType: wasFavorite ? "unfavorite_player" : "favorite_player",
           label: `${wasFavorite ? "Removed" : "Favorited"} ${playerName}`,
-          href: `/players/${encodeURIComponent(playerName)}`,
+          href: getPlayerHref(playerName),
           metadata: {
             playerName,
           },

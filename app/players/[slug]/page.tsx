@@ -41,6 +41,7 @@ import {
   type PlayerRatingCategory,
 } from "../../components/player-ratings";
 import { AccessibleDialog } from "../../components/ui/accessible-dialog";
+import { getPlayerHref, toPlayerSlug } from "../../lib/player-slug";
 
 const statModeLabels: Record<StatMode, string> = {
   career: "Career",
@@ -49,15 +50,6 @@ const statModeLabels: Record<StatMode, string> = {
 };
 
 const builderSlots: LineupSlot[] = ["PG", "SG", "SF", "PF", "C"];
-
-function normalizeSlug(value: string) {
-  return decodeURIComponent(value)
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
 
 function getStatsByMode(player: Player, statMode: StatMode) {
   if (statMode === "peak") {
@@ -179,11 +171,11 @@ export default function PlayerProfilePage() {
   }, []);
 
   const player = useMemo(() => {
-    const requestedSlug = normalizeSlug(params.slug);
+    const requestedSlug = toPlayerSlug(decodeURIComponent(params.slug));
 
     return players.find((candidate) => {
       return (
-        normalizeSlug(candidate.name) === requestedSlug ||
+        toPlayerSlug(candidate.name) === requestedSlug ||
         candidate.name.toLowerCase() ===
           decodeURIComponent(params.slug).toLowerCase()
       );
@@ -703,7 +695,7 @@ export default function PlayerProfilePage() {
                       return (
                         <Link
                           key={match.player.id}
-                          href={`/players/${encodeURIComponent(match.player.name)}`}
+                          href={getPlayerHref(match.player.name)}
                           className="flex items-center justify-between rounded-md border px-3 py-2 font-michroma text-[8px] transition brightness-150 hover:scale-[1.02] lg:text-[10px]"
                           style={{
                             borderColor: `${matchTeamColor}55`,
