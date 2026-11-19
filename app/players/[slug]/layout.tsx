@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
-import { getPlayerHref } from "../../lib/player-slug";
+import { getAppPlayerSlugSources } from "../../components/player-data-source";
+import {
+  findPlayerBySlug,
+  getDuplicatePlayerSlugs,
+  getPlayerHref,
+} from "../../lib/player-slug";
 import { createStatCourtMetadata } from "../../lib/seo";
 
 type PlayerProfileLayoutProps = Readonly<{
@@ -21,7 +26,9 @@ export async function generateMetadata({
   params,
 }: Pick<PlayerProfileLayoutProps, "params">): Promise<Metadata> {
   const { slug } = await params;
-  const playerName = formatPlayerSlug(slug);
+  const players = await getAppPlayerSlugSources();
+  const player = findPlayerBySlug(players, slug);
+  const playerName = player?.name ?? formatPlayerSlug(slug);
 
   return createStatCourtMetadata({
     title: playerName || "Player Profile",
@@ -29,7 +36,9 @@ export async function generateMetadata({
       playerName.length > 0
         ? `View ${playerName}'s StatCourt player profile, ratings, stat profiles, archetype, similar players, and best lineup fits.`
         : "View a StatCourt NBA player profile with ratings, stat profiles, archetype, similar players, and best lineup fits.",
-    path: getPlayerHref(decodeURIComponent(slug)),
+    path: player
+      ? getPlayerHref(player, getDuplicatePlayerSlugs(players))
+      : getPlayerHref(decodeURIComponent(slug)),
   });
 }
 

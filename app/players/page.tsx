@@ -64,6 +64,7 @@ import {
   useState,
 } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { getDuplicatePlayerSlugs } from "../lib/player-slug";
 
 const archetypeRarityRank = {
   gold: 5,
@@ -192,6 +193,11 @@ function Players() {
       : selectedRatingView === "currentOverall"
         ? "Latest Season"
         : "Career";
+
+  const duplicatePlayerSlugs = useMemo(
+    () => getDuplicatePlayerSlugs(players),
+    [players],
+  );
 
   const playerInsights = useMemo(
     () =>
@@ -822,6 +828,7 @@ function Players() {
                   onToggleFlip={toggleCardFlip}
                   onSelectSimilarPlayer={openPlayerCard}
                   onAddPlayerToCompare={addPlayerToCompare}
+                  duplicatePlayerSlugs={duplicatePlayerSlugs}
                 />
               </div>
             )}

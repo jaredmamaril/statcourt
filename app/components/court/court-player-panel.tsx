@@ -9,6 +9,7 @@ type CourtPlayerPanelProps = {
   fallbackColor: string;
   selectedPlayerName: string;
   onOpenPicker: () => void;
+  duplicatePlayerSlugs?: ReadonlySet<string>;
 };
 
 export function CourtPlayerPanel({
@@ -17,6 +18,7 @@ export function CourtPlayerPanel({
   fallbackColor,
   selectedPlayerName,
   onOpenPicker,
+  duplicatePlayerSlugs,
 }: CourtPlayerPanelProps) {
   const sideClass =
     side === "left"
@@ -50,7 +52,7 @@ export function CourtPlayerPanel({
 
         {selectedPlayer && (
           <Link
-            href={getPlayerHref(selectedPlayer.name)}
+            href={getPlayerHref(selectedPlayer, duplicatePlayerSlugs)}
             className="mt-2 rounded-md border border-[rgb(var(--court-accent-rgb)/0.7)] bg-[rgb(var(--court-accent-rgb)/0.16)] px-2.5 py-1.5 font-michroma text-[7px] uppercase text-[var(--court-accent)] shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.16)] transition hover:scale-[1.03] hover:bg-[rgb(var(--court-accent-rgb)/0.24)] sm:px-3 sm:text-[8px]"
           >
             Full Profile
