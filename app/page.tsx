@@ -1,8 +1,12 @@
 ﻿"use client";
 
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, TrendingUp, Users } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+
+const secondaryLinkClass =
+  "inline-flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.08)] px-3 py-2.5 font-michroma text-[11px] uppercase tracking-[0.04em] text-white/85 transition-all duration-300 hover:-translate-y-0.5 hover:border-[rgb(var(--court-accent-rgb)/0.6)] hover:bg-[rgb(var(--court-accent-rgb)/0.14)] hover:text-white hover:shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--court-accent-rgb)/0.75)] focus-visible:ring-offset-2 focus-visible:ring-offset-black active:scale-95 lg:text-xs";
 
 export default function Home() {
   const router = useRouter();
@@ -67,7 +71,7 @@ export default function Home() {
 
       <section className="relative z-10 flex min-h-screen -translate-y-10 items-center justify-center px-5 text-center">
         <div
-          className={`page-enter mt-72 flex flex-col items-center transition-all duration-300 ${
+          className={`page-enter relative mt-72 flex flex-col items-center transition-all duration-300 ${
             isLeaving ? "pointer-events-none translate-y-1 opacity-0" : ""
           }`}
         >
@@ -99,6 +103,22 @@ export default function Home() {
               aria-hidden="true"
             />
           </button>
+          <div className="absolute inset-x-0 top-full mt-3 flex flex-col gap-3 lg:flex-row">
+            <Link
+              href="/players"
+              className={secondaryLinkClass}
+            >
+              <TrendingUp className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <span>PLAYER PEAKS</span>
+            </Link>
+            <Link
+              href="/lineups"
+              className={secondaryLinkClass}
+            >
+              <Users className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <span>BUILD LINEUP</span>
+            </Link>
+          </div>
         </div>
       </section>
     </main>
