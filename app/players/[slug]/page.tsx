@@ -41,7 +41,11 @@ import {
   type PlayerRatingCategory,
 } from "../../components/player-ratings";
 import { AccessibleDialog } from "../../components/ui/accessible-dialog";
-import { getPlayerHref, toPlayerSlug } from "../../lib/player-slug";
+import {
+  findPlayerBySlug,
+  getDuplicatePlayerSlugs,
+  getPlayerHref,
+} from "../../lib/player-slug";
 
 const statModeLabels: Record<StatMode, string> = {
   career: "Career",
@@ -170,17 +174,14 @@ export default function PlayerProfilePage() {
     return () => cancelAnimationFrame(frameId);
   }, []);
 
-  const player = useMemo(() => {
-    const requestedSlug = toPlayerSlug(decodeURIComponent(params.slug));
-
-    return players.find((candidate) => {
-      return (
-        toPlayerSlug(candidate.name) === requestedSlug ||
-        candidate.name.toLowerCase() ===
-          decodeURIComponent(params.slug).toLowerCase()
-      );
-    });
-  }, [params.slug, players]);
+  const player = useMemo(
+    () => findPlayerBySlug(players, params.slug),
+    [params.slug, players],
+  );
+  const duplicatePlayerSlugs = useMemo(
+    () => getDuplicatePlayerSlugs(players),
+    [players],
+  );
 
   const stats = player ? getStatsByMode(player, statMode) : null;
   const teamColor = player ? getTeamColor(player.team) : "var(--court-accent)";
@@ -695,7 +696,7 @@ export default function PlayerProfilePage() {
                       return (
                         <Link
                           key={match.player.id}
-                          href={getPlayerHref(match.player.name)}
+                          href={getPlayerHref(match.player, duplicatePlayerSlugs)}
                           className="flex items-center justify-between rounded-md border px-3 py-2 font-michroma text-[8px] transition brightness-150 hover:scale-[1.02] lg:text-[10px]"
                           style={{
                             borderColor: `${matchTeamColor}55`,

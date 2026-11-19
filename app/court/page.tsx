@@ -1,6 +1,7 @@
 ﻿"use client";
 
-import { useDeferredValue, useEffect, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { getDuplicatePlayerSlugs } from "../lib/player-slug";
 
 import { useAuthUser } from "../lib/use-auth-user";
 import { getCachedApiPlayers } from "../lib/player-api-cache";
@@ -48,6 +49,10 @@ export default function Court() {
   const [compareStatus, setCompareStatus] = useState("");
   const hasAppliedDefaultStatModeRef = useRef(false);
 
+  const duplicatePlayerSlugs = useMemo(
+    () => getDuplicatePlayerSlugs(comparePlayers),
+    [comparePlayers],
+  );
   const selectedLeftPlayer = comparePlayers.find(
     (player) => player.name === leftPlayer,
   );
@@ -212,6 +217,7 @@ export default function Court() {
                   fallbackColor="#FFEA00"
                   selectedPlayerName={leftPlayer}
                   onOpenPicker={() => setActivePickerSide("left")}
+                  duplicatePlayerSlugs={duplicatePlayerSlugs}
                 />
               </div>
 
@@ -240,6 +246,7 @@ export default function Court() {
                   fallbackColor="var(--court-accent)"
                   selectedPlayerName={rightPlayer}
                   onOpenPicker={() => setActivePickerSide("right")}
+                  duplicatePlayerSlugs={duplicatePlayerSlugs}
                 />
               </div>
             </div>

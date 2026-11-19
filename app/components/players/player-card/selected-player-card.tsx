@@ -43,6 +43,7 @@ type SelectedPlayerCardProps = {
   onToggleFlip: () => void;
   onSelectSimilarPlayer: (playerName: string) => void;
   onAddPlayerToCompare: (slot: "left" | "right") => void;
+  duplicatePlayerSlugs?: ReadonlySet<string>;
 };
 
 export function SelectedPlayerCard({
@@ -63,6 +64,7 @@ export function SelectedPlayerCard({
   onToggleFlip,
   onSelectSimilarPlayer,
   onAddPlayerToCompare,
+  duplicatePlayerSlugs,
 }: SelectedPlayerCardProps) {
   const [openCardTooltip, setOpenCardTooltip] = useState<string | null>(null);
 
@@ -93,7 +95,7 @@ export function SelectedPlayerCard({
         </button>
 
         <Link
-          href={getPlayerHref(player.name)}
+          href={getPlayerHref(player, duplicatePlayerSlugs)}
           className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.7)] bg-[rgb(var(--court-accent-rgb)/0.16)] px-2.5 py-1.5 font-michroma text-[7px] uppercase text-[var(--court-accent)] shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.16)] transition hover:scale-[1.03] hover:bg-[rgb(var(--court-accent-rgb)/0.24)] sm:px-3 sm:text-[8px]"
         >
           Full Profile

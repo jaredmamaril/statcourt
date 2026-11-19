@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
-import { getAppPlayers } from "./components/player-data-source";
-import { getPlayerHref } from "./lib/player-slug";
+import { getAppPlayerSlugSources } from "./components/player-data-source";
+import { getDuplicatePlayerSlugs, getPlayerHref } from "./lib/player-slug";
 import { siteUrl } from "./lib/seo";
 
 export const revalidate = 3600;
@@ -21,9 +21,10 @@ const publicRoutes = [
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
-  const players = await getAppPlayers();
+  const players = await getAppPlayerSlugSources();
+  const duplicateSlugs = getDuplicatePlayerSlugs(players);
   const playerRoutes = Array.from(
-    new Set(players.map((player) => getPlayerHref(player.name))),
+    new Set(players.map((player) => getPlayerHref(player, duplicateSlugs))),
   );
 
   return [

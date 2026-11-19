@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { getPlayerHref, toPlayerSlug } from "./player-slug";
+import {
+  findPlayerBySlug,
+  getCanonicalPlayerSlug,
+  getDuplicatePlayerSlugs,
+  getPlayerHref,
+  toPlayerSlug,
+} from "./player-slug";
 
 describe("toPlayerSlug", () => {
   it("lowercases names and joins words with hyphens", () => {
@@ -40,5 +46,52 @@ describe("toPlayerSlug", () => {
 describe("getPlayerHref", () => {
   it("builds the canonical player profile path", () => {
     expect(getPlayerHref("Aaron Wiggins")).toBe("/players/aaron-wiggins");
+  });
+});
+
+describe("duplicate player names", () => {
+  const players = [
+    { name: "Mike James", nbaId: 2229 },
+    { name: "LeBron James", nbaId: 2544 },
+    { name: "Mike James", nbaId: 1628455 },
+  ];
+  const duplicateSlugs = getDuplicatePlayerSlugs(players);
+
+  it("only flags slugs shared by more than one player", () => {
+    expect([...duplicateSlugs]).toEqual(["mike-james"]);
+  });
+
+  it("adds the NBA ID suffix only for clashing names", () => {
+    expect(getPlayerHref(players[0], duplicateSlugs)).toBe(
+      "/players/mike-james-2229",
+    );
+    expect(getPlayerHref(players[2], duplicateSlugs)).toBe(
+      "/players/mike-james-1628455",
+    );
+    expect(getPlayerHref(players[1], duplicateSlugs)).toBe(
+      "/players/lebron-james",
+    );
+  });
+
+  it("falls back to the bare slug when a clashing player has no NBA ID", () => {
+    expect(
+      getCanonicalPlayerSlug({ name: "Mike James", nbaId: null }, duplicateSlugs),
+    ).toBe("mike-james");
+  });
+
+  it("resolves each ID URL to the matching player", () => {
+    expect(findPlayerBySlug(players, "mike-james-2229")).toBe(players[0]);
+    expect(findPlayerBySlug(players, "mike-james-1628455")).toBe(players[2]);
+  });
+
+  it("keeps the bare slug and encoded name resolving to the first match", () => {
+    expect(findPlayerBySlug(players, "mike-james")).toBe(players[0]);
+    expect(findPlayerBySlug(players, "Mike%20James")).toBe(players[0]);
+  });
+
+  it("still resolves unique players by slug or encoded name", () => {
+    expect(findPlayerBySlug(players, "lebron-james")).toBe(players[1]);
+    expect(findPlayerBySlug(players, "LeBron%20James")).toBe(players[1]);
+    expect(findPlayerBySlug(players, "unknown-player")).toBeUndefined();
   });
 });

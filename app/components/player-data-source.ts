@@ -58,3 +58,17 @@ export async function getAppPlayers() {
 
   return players;
 }
+
+// Lightweight name/ID list for canonical player URLs (layout metadata, sitemap).
+export const getAppPlayerSlugSources = unstable_cache(
+  async () =>
+    (await getAppPlayers()).map((player) => ({
+      name: player.name,
+      nbaId: player.nbaId ?? null,
+    })),
+  ["statcourt-player-slug-sources-v1"],
+  {
+    revalidate: 3600,
+    tags: ["statcourt-public-players"],
+  },
+);
