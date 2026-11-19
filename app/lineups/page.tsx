@@ -92,6 +92,7 @@ import {
   loadLineupSteps,
   scoutLineupSteps,
 } from "../components/lineups/scout/lineup-loading-steps";
+import { getPlayerHref } from "../lib/player-slug";
 
 const statProfileLabels: Record<PlayerStatProfileMode | "all", string> = {
   all: "All Profiles",
@@ -550,7 +551,7 @@ function LineupsContent() {
   }
 
   function viewPlayerCard(playerName: string) {
-    router.push(`/players/${encodeURIComponent(playerName)}`);
+    router.push(getPlayerHref(playerName));
   }
 
   // Builder actions

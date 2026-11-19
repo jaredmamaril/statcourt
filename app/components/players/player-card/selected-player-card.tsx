@@ -11,6 +11,7 @@ import { PlayerCardInsights } from "./player-card-insights";
 import { PlayerCardSimilarPanel } from "./player-card-similar-panel";
 import { PlayerCardAddToCompare } from "./player-card-add-to-compare";
 import { PlayerCardShell } from "./player-card-shell";
+import { getPlayerHref } from "../../../lib/player-slug";
 
 type SelectedPlayerCardProps = {
   player: Player;
@@ -92,7 +93,7 @@ export function SelectedPlayerCard({
         </button>
 
         <Link
-          href={`/players/${encodeURIComponent(player.name)}`}
+          href={getPlayerHref(player.name)}
           className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.7)] bg-[rgb(var(--court-accent-rgb)/0.16)] px-2.5 py-1.5 font-michroma text-[7px] uppercase text-[var(--court-accent)] shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.16)] transition hover:scale-[1.03] hover:bg-[rgb(var(--court-accent-rgb)/0.24)] sm:px-3 sm:text-[8px]"
         >
           Full Profile

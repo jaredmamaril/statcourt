@@ -9,6 +9,7 @@ import {
   getSavedRecentPlayers,
   saveRecentPlayers,
 } from "./player-storage";
+import { getPlayerHref } from "../../lib/player-slug";
 
 type RecentPlayerRow = {
   player_name: string;
@@ -123,7 +124,7 @@ export function useRecentPlayers(user: User | null) {
         user,
         activityType: "view_player",
         label: `Viewed ${playerName}`,
-        href: `/players/${encodeURIComponent(playerName)}`,
+        href: getPlayerHref(playerName),
         metadata: {
           playerName,
         },

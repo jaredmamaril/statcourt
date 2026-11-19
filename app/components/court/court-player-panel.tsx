@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Player } from "../court-data";
 import { CourtPlayerPreview } from "./court-player-preview";
+import { getPlayerHref } from "../../lib/player-slug";
 
 type CourtPlayerPanelProps = {
   side: "left" | "right";
@@ -49,7 +50,7 @@ export function CourtPlayerPanel({
 
         {selectedPlayer && (
           <Link
-            href={`/players/${encodeURIComponent(selectedPlayer.name)}`}
+            href={getPlayerHref(selectedPlayer.name)}
             className="mt-2 rounded-md border border-[rgb(var(--court-accent-rgb)/0.7)] bg-[rgb(var(--court-accent-rgb)/0.16)] px-2.5 py-1.5 font-michroma text-[7px] uppercase text-[var(--court-accent)] shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.16)] transition hover:scale-[1.03] hover:bg-[rgb(var(--court-accent-rgb)/0.24)] sm:px-3 sm:text-[8px]"
           >
             Full Profile
