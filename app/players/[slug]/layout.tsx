@@ -39,6 +39,7 @@ export async function generateMetadata({
     path: player
       ? getPlayerHref(player, getDuplicatePlayerSlugs(players))
       : getPlayerHref(decodeURIComponent(slug)),
+    includeDefaultImage: false,
   });
 }
 
