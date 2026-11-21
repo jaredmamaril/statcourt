@@ -1,6 +1,10 @@
 import { unstable_cache } from "next/cache";
 import { players as localPlayers, type Player } from "./court-data";
 import { getPlayersFromSupabasePageWithFallback } from "./supabase-players";
+import {
+  buildPlayerShareCardSources,
+  type PlayerShareCardMode,
+} from "../lib/player-share-card";
 
 const APP_PLAYER_CACHE_PAGE_SIZE = 500;
 
@@ -67,6 +71,19 @@ export const getAppPlayerSlugSources = unstable_cache(
       nbaId: player.nbaId ?? null,
     })),
   ["statcourt-player-slug-sources-v1"],
+  {
+    revalidate: 3600,
+    tags: ["statcourt-public-players"],
+  },
+);
+
+// Name, team, position, four stats, overall rating and all-time rank per player for
+// one stat mode, so each image request reads a small cached list instead of every
+// player's full stats. Cached per mode to keep each entry small.
+export const getAppPlayerShareCardSources = unstable_cache(
+  async (mode: PlayerShareCardMode = "peak") =>
+    buildPlayerShareCardSources(await getAppPlayers(), mode),
+  ["statcourt-player-share-cards-v2"],
   {
     revalidate: 3600,
     tags: ["statcourt-public-players"],

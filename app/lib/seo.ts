@@ -15,12 +15,15 @@ type StatCourtMetadataOptions = {
   title: string;
   description: string;
   path: string;
+  // Off for routes with their own opengraph-image / twitter-image files.
+  includeDefaultImage?: boolean;
 };
 
 export function createStatCourtMetadata({
   title,
   description,
   path,
+  includeDefaultImage = true,
 }: StatCourtMetadataOptions): Metadata {
   return {
     title,
@@ -33,14 +36,16 @@ export function createStatCourtMetadata({
       description,
       url: path,
       siteName,
-      images: [
-        {
-          url: defaultOgImage,
-          width: 2048,
-          height: 1024,
-          alt: "StatCourt NBA player comparison preview",
-        },
-      ],
+      ...(includeDefaultImage && {
+        images: [
+          {
+            url: defaultOgImage,
+            width: 2048,
+            height: 1024,
+            alt: "StatCourt NBA player comparison preview",
+          },
+        ],
+      }),
       locale: "en_US",
       type: "website",
     },
@@ -48,7 +53,7 @@ export function createStatCourtMetadata({
       card: "summary_large_image",
       title: `${title} | ${siteName}`,
       description,
-      images: [defaultOgImage],
+      ...(includeDefaultImage && { images: [defaultOgImage] }),
     },
   };
 }
