@@ -3,14 +3,74 @@
 import { ArrowRight, TrendingUp, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const secondaryLinkClass =
   "inline-flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border border-[rgb(var(--court-accent-rgb)/0.35)] bg-[rgb(var(--court-accent-rgb)/0.08)] px-3 py-2.5 font-michroma text-[11px] uppercase tracking-[0.04em] text-white/85 transition-all duration-300 hover:-translate-y-0.5 hover:border-[rgb(var(--court-accent-rgb)/0.6)] hover:bg-[rgb(var(--court-accent-rgb)/0.14)] hover:text-white hover:shadow-[0_0_18px_rgb(var(--court-accent-rgb)/0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--court-accent-rgb)/0.75)] focus-visible:ring-offset-2 focus-visible:ring-offset-black active:scale-95 lg:text-xs";
 
+function isReducedMotionOn(media: MediaQueryList) {
+  return (
+    media.matches ||
+    document.documentElement.classList.contains("statcourt-reduced-motion")
+  );
+}
+
 export default function Home() {
   const router = useRouter();
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [isLeaving, setIsLeaving] = useState(false);
+
+  // Background video playback. React doesn't reliably render the muted attribute,
+  // which iOS requires for autoplay, so set it on the element and start playback
+  // here instead of using autoPlay. With reduced motion on (OS preference or the
+  // app setting synced to <html> by ReducedMotionSync) the video stays on its
+  // first frame, which matches the poster.
+  useEffect(() => {
+    const video = videoRef.current;
+
+    if (!video) return;
+
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let isReduced: boolean | null = null;
+
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+
+    function syncPlayback() {
+      if (!video) return;
+
+      const nextIsReduced = isReducedMotionOn(media);
+
+      if (nextIsReduced === isReduced) return;
+
+      isReduced = nextIsReduced;
+
+      if (nextIsReduced) {
+        video.pause();
+        video.currentTime = 0;
+        return;
+      }
+
+      // Autoplay can still be blocked (e.g. iOS Low Power Mode); the poster stays visible.
+      video.play().catch(() => {});
+    }
+
+    syncPlayback();
+
+    const observer = new MutationObserver(syncPlayback);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    media.addEventListener("change", syncPlayback);
+
+    return () => {
+      observer.disconnect();
+      media.removeEventListener("change", syncPlayback);
+    };
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -48,14 +108,23 @@ export default function Home() {
       className="relative min-h-screen overflow-hidden bg-background text-foreground"
     >
       <video
+        ref={videoRef}
         className="absolute inset-0 h-full w-full object-cover object-center brightness-150"
-        src="/statcourt-home-bg.mp4"
-        autoPlay
+        poster="/statcourt-home-bg-poster.jpg"
         loop
         muted
         playsInline
         preload="metadata"
-      />
+        aria-hidden="true"
+      >
+        {/* The first matching source wins: 720p on phones, 1080p everywhere else. */}
+        <source
+          src="/statcourt-home-bg-720.mp4"
+          type="video/mp4"
+          media="(max-width: 767px)"
+        />
+        <source src="/statcourt-home-bg.mp4" type="video/mp4" />
+      </video>
 
       <div
         className={`absolute inset-0 bg-black transition-colors duration-200 ease-out ${
