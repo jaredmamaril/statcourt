@@ -22,6 +22,8 @@ npm run lint
 npm run build
 ```
 
+On Windows, run `npm test` from `C:\Users\...` with a capital drive letter. If the working directory is `c:\...`, Vitest can load two copies of itself and every test file fails with `TypeError: Cannot read properties of undefined (reading 'config')` before any test runs. That error comes from the path, not the code.
+
 ## UI Conventions
 
 - Use mobile-first styling.

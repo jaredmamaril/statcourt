@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { getAppPlayerSlugSources } from "../../components/player-data-source";
+import { getAppPlayerShareCardSources } from "../../components/player-data-source";
+import { getPlayerShareDescription } from "../../lib/player-share-card";
 import {
   findPlayerBySlug,
   getDuplicatePlayerSlugs,
@@ -26,16 +27,22 @@ export async function generateMetadata({
   params,
 }: Pick<PlayerProfileLayoutProps, "params">): Promise<Metadata> {
   const { slug } = await params;
-  const players = await getAppPlayerSlugSources();
+  // The share-card list also has every player's name and NBA ID, so one cached
+  // read covers the canonical URL and the stat-based description.
+  const players = await getAppPlayerShareCardSources("peak");
   const player = findPlayerBySlug(players, slug);
   const playerName = player?.name ?? formatPlayerSlug(slug);
+  const shareDescription = player
+    ? getPlayerShareDescription(players, slug)
+    : null;
 
   return createStatCourtMetadata({
     title: playerName || "Player Profile",
     description:
-      playerName.length > 0
+      shareDescription ??
+      (playerName.length > 0
         ? `View ${playerName}'s StatCourt player profile, ratings, stat profiles, archetype, similar players, and best lineup fits.`
-        : "View a StatCourt NBA player profile with ratings, stat profiles, archetype, similar players, and best lineup fits.",
+        : "View a StatCourt NBA player profile with ratings, stat profiles, archetype, similar players, and best lineup fits."),
     path: player
       ? getPlayerHref(player, getDuplicatePlayerSlugs(players))
       : getPlayerHref(decodeURIComponent(slug)),
