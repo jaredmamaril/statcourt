@@ -31,11 +31,44 @@ export default function Home() {
     if (!video) return;
 
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    // touchend and click both grant the user activation iOS needs to allow play().
+    const gestureEvents = ["touchend", "click"] as const;
     let isReduced: boolean | null = null;
+    let isWaitingForGesture = false;
 
     video.muted = true;
     video.defaultMuted = true;
     video.playsInline = true;
+
+    function stopWaitingForGesture() {
+      if (!isWaitingForGesture) return;
+
+      isWaitingForGesture = false;
+      gestureEvents.forEach((type) =>
+        document.removeEventListener(type, playOnGesture),
+      );
+    }
+
+    function playOnGesture() {
+      stopWaitingForGesture();
+
+      if (!isReduced) startPlayback();
+    }
+
+    function startPlayback() {
+      if (!video) return;
+
+      // Autoplay can still be blocked (e.g. iOS Low Power Mode). The poster stays
+      // visible and the video starts on the first tap or click anywhere.
+      video.play().catch(() => {
+        if (isReduced || isWaitingForGesture) return;
+
+        isWaitingForGesture = true;
+        gestureEvents.forEach((type) =>
+          document.addEventListener(type, playOnGesture, { passive: true }),
+        );
+      });
+    }
 
     function syncPlayback() {
       if (!video) return;
@@ -47,13 +80,13 @@ export default function Home() {
       isReduced = nextIsReduced;
 
       if (nextIsReduced) {
+        stopWaitingForGesture();
         video.pause();
         video.currentTime = 0;
         return;
       }
 
-      // Autoplay can still be blocked (e.g. iOS Low Power Mode); the poster stays visible.
-      video.play().catch(() => {});
+      startPlayback();
     }
 
     syncPlayback();
@@ -69,6 +102,7 @@ export default function Home() {
     return () => {
       observer.disconnect();
       media.removeEventListener("change", syncPlayback);
+      stopWaitingForGesture();
     };
   }, []);
 
