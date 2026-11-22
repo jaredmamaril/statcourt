@@ -150,13 +150,13 @@ function PlayerCard({ card }: { card: PlayerShareCard }) {
             style={{
               display: "flex",
               alignSelf: "flex-start",
-              padding: "8px 14px",
+              padding: "9px 16px",
               borderRadius: 8,
               border: `2px solid rgba(${accentRgb}, 0.45)`,
               background: `rgba(${accentRgb}, 0.12)`,
               color: theme.accent,
-              fontSize: 17,
-              letterSpacing: 2,
+              fontSize: 20,
+              letterSpacing: 1.5,
               textTransform: "uppercase",
             }}
           >
@@ -191,18 +191,20 @@ function PlayerCard({ card }: { card: PlayerShareCard }) {
               .filter(Boolean)
               .join(" · ")}
           </div>
-          <div
-            style={{
-              display: "flex",
-              marginTop: 10,
-              fontSize: 22,
-              letterSpacing: 1,
-              textTransform: "uppercase",
-              color: theme.accent,
-            }}
-          >
-            {card.rankLabel}
-          </div>
+          {card.rankLabel && (
+            <div
+              style={{
+                display: "flex",
+                marginTop: 10,
+                fontSize: 22,
+                letterSpacing: 1,
+                textTransform: "uppercase",
+                color: theme.accent,
+              }}
+            >
+              {card.rankLabel}
+            </div>
+          )}
         </div>
 
         <OverallBadge overall={card.overall} />
@@ -312,7 +314,7 @@ export async function renderPlayerShareImage(
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between",
+            justifyContent: "flex-end",
             alignItems: "center",
             marginBottom: 30,
             fontSize: 20,
@@ -320,7 +322,6 @@ export async function renderPlayerShareImage(
             textTransform: "uppercase",
           }}
         >
-          <div style={{ display: "flex", color: theme.accent }}>StatCourt</div>
           <div style={{ display: "flex", color: "rgba(248, 250, 252, 0.5)" }}>
             statcourt.app
           </div>

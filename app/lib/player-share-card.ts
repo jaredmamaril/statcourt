@@ -23,7 +23,10 @@ export type PlayerShareCardSource = {
   apg: number | null;
   fgPercent: number | null;
   overall: number;
-  rank: number;
+  // Null in current mode unless the player's latest season is the newest one in the data.
+  rank: number | null;
+  // Current mode only: the player's latest season is older than the newest season in the data.
+  isFinalSeason: boolean;
 };
 
 export type PlayerShareCard = {
@@ -34,7 +37,7 @@ export type PlayerShareCard = {
   position: string;
   profileLabel: string;
   overall: string;
-  rankLabel: string;
+  rankLabel: string | null;
   stats: { label: string; value: string }[];
 };
 
@@ -44,11 +47,23 @@ const modeLabels: Record<PlayerShareCardMode, string> = {
   current: "Current",
 };
 
-const rankLabels: Record<PlayerShareCardMode, string> = {
-  peak: "3-Year Peak All-Time",
-  career: "Career All-Time",
-  current: "Current Season",
+// Plain-language rank phrases, e.g. "#4 best peak ever".
+const rankPhrases: Record<PlayerShareCardMode, string> = {
+  peak: "best peak ever",
+  career: "best career ever",
+  current: "in the NBA this season",
 };
+
+const descriptionModeLabels: Record<PlayerShareCardMode, string> = {
+  peak: "3-year peak",
+  career: "career",
+  current: "current season",
+};
+
+const maxDescriptionLength = 160;
+// Ranks past this read as noise on a share card, so they're left out.
+const maxShownRank = 100;
+const descriptionCallToAction = "Compare players and build lineups on StatCourt.";
 
 const overallCategories = {
   peak: "peakOverall",
@@ -95,7 +110,17 @@ function getModeStats(
   return profiles?.career ?? player.stats;
 }
 
-// Ranks match the rankings page: every player sorted by the mode's overall rating.
+function getSeasonStartYear(seasonLabel: string | null | undefined) {
+  const match = seasonLabel?.match(/^(\d{4})/);
+
+  return match ? Number(match[1]) : null;
+}
+
+// Peak and career ranks match the rankings page: every player sorted by the mode's
+// overall rating. Current-mode ranks only compare players whose latest season is the
+// newest season in the data ("this season"). Retired players get no rank: a player's
+// current profile is only their last season, so grouping by it would compare a retiree
+// only with others who retired the same year, not with everyone who played that season.
 export function buildPlayerShareCardSources(
   players: readonly Player[],
   mode: PlayerShareCardMode = "peak",
@@ -103,15 +128,30 @@ export function buildPlayerShareCardSources(
   const overalls = players.map((player) =>
     getPlayerRating(player, overallCategories[mode], mode),
   );
+  const currentSeasons = players.map((player) =>
+    mode === "current"
+      ? (player.statProfiles?.current?.seasonLabel ?? null)
+      : null,
+  );
+  const latestSeasonStart = Math.max(
+    ...currentSeasons.map((season) => getSeasonStartYear(season) ?? -Infinity),
+  );
+  const rankedIndexes = players
+    .map((_, index) => index)
+    .filter(
+      (index) =>
+        mode !== "current" ||
+        getSeasonStartYear(currentSeasons[index]) === latestSeasonStart,
+    );
   const rankByIndex = new Map(
-    overalls
-      .map((overall, index) => ({ overall, index }))
-      .sort((a, b) => b.overall - a.overall)
-      .map(({ index }, position) => [index, position + 1]),
+    rankedIndexes
+      .sort((a, b) => overalls[b] - overalls[a])
+      .map((index, position) => [index, position + 1]),
   );
 
   return players.map((player, index) => {
     const stats = getModeStats(player, mode);
+    const seasonStart = getSeasonStartYear(currentSeasons[index]);
 
     return {
       name: player.name,
@@ -125,26 +165,33 @@ export function buildPlayerShareCardSources(
       apg: toNumberOrNull(stats.apg),
       fgPercent: toNumberOrNull(stats.fgPercent),
       overall: overalls[index],
-      rank: rankByIndex.get(index) ?? players.length,
+      rank: rankByIndex.get(index) ?? null,
+      isFinalSeason: seasonStart !== null && seasonStart < latestSeasonStart,
     };
   });
 }
 
-// Returns null when the slug doesn't match a player, so the image can render the fallback card.
-export function getPlayerShareCard(
+function findShareCardSource(
   players: readonly PlayerShareCardSource[],
   slug: string,
-  mode: PlayerShareCardMode = "peak",
-): PlayerShareCard | null {
-  let player: PlayerShareCardSource | undefined;
-
+) {
   try {
-    player = findPlayerBySlug(players, slug);
+    return findPlayerBySlug(players, slug) ?? null;
   } catch {
     return null;
   }
+}
 
-  if (!player) return null;
+function getRankText(player: PlayerShareCardSource, mode: PlayerShareCardMode) {
+  if (player.rank === null || player.rank > maxShownRank) return null;
+
+  return `#${player.rank} ${rankPhrases[mode]}`;
+}
+
+function getProfileLabel(player: PlayerShareCardSource, mode: PlayerShareCardMode) {
+  if (player.isFinalSeason && player.seasonLabel) {
+    return `Final Season · ${formatSeasonWindow(player.seasonLabel)}`;
+  }
 
   // Without the mode's own profile the stats come from career, so label them that way.
   const label = player.hasProfile ? modeLabels[mode] : modeLabels.career;
@@ -153,6 +200,30 @@ export function getPlayerShareCard(
       ? null
       : player.seasonLabel;
 
+  return seasonLabel ? `${label} · ${seasonLabel}` : label;
+}
+
+// "2007-08 to 2009-10" -> "2007–10", "2017-18" -> "2017–18"; other labels are left as-is.
+export function formatSeasonWindow(seasonLabel: string) {
+  const match = seasonLabel.match(
+    /^(\d{4})-(\d{2})(?: to \d{4}-(\d{2}))?$/,
+  );
+
+  if (!match) return seasonLabel;
+
+  return `${match[1]}–${match[3] ?? match[2]}`;
+}
+
+// Returns null when the slug doesn't match a player, so the image can render the fallback card.
+export function getPlayerShareCard(
+  players: readonly PlayerShareCardSource[],
+  slug: string,
+  mode: PlayerShareCardMode = "peak",
+): PlayerShareCard | null {
+  const player = findShareCardSource(players, slug);
+
+  if (!player) return null;
+
   return {
     name: player.name,
     initials: getPlayerInitials(player.name),
@@ -160,9 +231,10 @@ export function getPlayerShareCard(
     // would be wrong for peak/career windows, so only current-season cards show it.
     team: mode === "current" ? player.team : null,
     position: player.position,
-    profileLabel: seasonLabel ? `${label} · ${seasonLabel}` : label,
-    overall: player.overall.toFixed(1),
-    rankLabel: `#${player.rank} ${rankLabels[mode]}`,
+    profileLabel: getProfileLabel(player, mode),
+    // Whole number on the card; the rankings page keeps its one-decimal ratings.
+    overall: Math.round(player.overall).toString(),
+    rankLabel: getRankText(player, mode)?.toUpperCase() ?? null,
     stats: [
       { label: "PPG", value: formatStat(player.ppg) },
       { label: "RPG", value: formatStat(player.rpg) },
@@ -170,4 +242,53 @@ export function getPlayerShareCard(
       { label: "FG PCT", value: formatStat(player.fgPercent) },
     ],
   };
+}
+
+// Meta description for the player page, e.g. "LeBron James's 3-year peak (2007–10):
+// 29.3 PPG, 7.6 RPG, 7.7 APG, and the #4 best peak ever. Compare players ...".
+// Returns null when the player isn't found so the page can use its generic copy.
+export function getPlayerShareDescription(
+  players: readonly PlayerShareCardSource[],
+  slug: string,
+  mode: PlayerShareCardMode = "peak",
+) {
+  const player = findShareCardSource(players, slug);
+
+  if (!player) return null;
+
+  // Matches the card: without the mode's own profile the stats come from career.
+  const modeLabel = player.isFinalSeason
+    ? "final season"
+    : player.hasProfile
+      ? descriptionModeLabels[mode]
+      : descriptionModeLabels.career;
+  const seasonWindow =
+    player.hasProfile && player.seasonLabel
+      ? formatSeasonWindow(player.seasonLabel)
+      : null;
+  const subject = seasonWindow
+    ? `${player.name}'s ${modeLabel} (${seasonWindow})`
+    : `${player.name}'s ${modeLabel}`;
+  const stats = [
+    [player.ppg, "PPG"],
+    [player.rpg, "RPG"],
+    [player.apg, "APG"],
+  ]
+    .filter((stat): stat is [number, string] => stat[0] !== null)
+    .map(([value, label]) => `${value.toFixed(1)} ${label}`);
+  const rank = getRankText(player, mode);
+  const rankText = rank
+    ? mode === "current"
+      ? `ranked ${rank}`
+      : `the ${rank}`
+    : null;
+  const details = rankText
+    ? stats.length > 0
+      ? `${stats.join(", ")}, and ${rankText}`
+      : rankText
+    : stats.join(", ");
+  const summary = details ? `${subject}: ${details}.` : `${subject}.`;
+  const description = `${summary} ${descriptionCallToAction}`;
+
+  return description.length <= maxDescriptionLength ? description : summary;
 }
