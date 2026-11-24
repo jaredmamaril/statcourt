@@ -8,6 +8,12 @@ StatCourt is a full-stack basketball analytics platform for exploring NBA player
 
 ![StatCourt Preview](./public/readme/statcourt-preview.png)
 
+## Video Demonstration
+
+Watch a walkthrough of StatCourt, where I demonstrate the application's features, including exploring NBA players, comparing players, and building custom lineups.
+
+🎥 [Watch the StatCourt Video Demo](https://drive.google.com/file/d/1ZV2-7XIcnmFG3Ip5ehUtKn79TnKF2ZYh/view?usp=sharing)
+
 Built with Next.js, TypeScript, Supabase, PostgreSQL, and Redis, StatCourt combines current and historical NBA data with custom player-rating, lineup-fit, archetype, and scouting models. The platform includes authentication, public profiles, community features, saved lineups, player comparisons, and production-focused security controls.
 
 ## Highlights
