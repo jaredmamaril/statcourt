@@ -25,7 +25,7 @@ type RemainingRankingListProps = {
   onSelectDisplayLimit: (limit: number) => void;
   onSelectLoadMoreAmount: (amount: number) => void;
   onLoadMore: () => void;
-  onViewPlayer: (playerName: string) => void;
+  onViewPlayer: (player: Player) => void;
 };
 
 export function RemainingRankingList({
@@ -172,7 +172,7 @@ type RankingPlayerItemProps = {
   > | null;
   statProfileFilter: PlayerStatProfileMode;
   animationDelay: number;
-  onViewPlayer: (playerName: string) => void;
+  onViewPlayer: (player: Player) => void;
 };
 
 function RankingPlayerRow({

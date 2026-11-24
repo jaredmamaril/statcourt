@@ -6,7 +6,7 @@ type RankingPlayerTooltipProps = {
   ratingLabel: string;
   rating: string;
   statProfileFilter: PlayerStatProfileMode;
-  onViewPlayer: (playerName: string) => void;
+  onViewPlayer: (player: Player) => void;
 };
 
 export function RankingPlayerTooltip({
@@ -49,7 +49,7 @@ export function RankingPlayerTooltip({
 
       <button
         type="button"
-        onClick={() => onViewPlayer(player.name)}
+        onClick={() => onViewPlayer(player)}
         className="mt-2 w-full cursor-pointer rounded border border-[rgb(var(--court-accent-rgb)/0.5)] bg-[rgb(var(--court-accent-rgb)/0.1)] px-2 py-1.5 font-michroma text-[8px] font-bold uppercase tracking-wide text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.2)] sm:mt-3 sm:px-3 sm:py-2 sm:text-[12px]"
       >
         Full Profile

@@ -92,7 +92,7 @@ import {
   loadLineupSteps,
   scoutLineupSteps,
 } from "../components/lineups/scout/lineup-loading-steps";
-import { getPlayerHref } from "../lib/player-slug";
+import { createPlayerHrefResolver, getPlayerHref } from "../lib/player-slug";
 
 const statProfileLabels: Record<PlayerStatProfileMode | "all", string> = {
   all: "All Profiles",
@@ -550,8 +550,17 @@ function LineupsContent() {
     setShouldScrollToFeaturedDetail(true);
   }
 
+  // Lineups store player names, so open the player the lineup shows for that name
+  // (the first match) at their canonical URL (NBA ID suffix for duplicate names).
+  const getPlayerProfileHref = useMemo(
+    () => createPlayerHrefResolver(players),
+    [players],
+  );
+
   function viewPlayerCard(playerName: string) {
-    router.push(getPlayerHref(playerName));
+    const player = players.find((candidate) => candidate.name === playerName);
+
+    router.push(player ? getPlayerProfileHref(player) : getPlayerHref(playerName));
   }
 
   // Builder actions
