@@ -1,9 +1,12 @@
 from nba_api.stats.endpoints import commonallplayers
 
+from pipeline_common import current_nba_season
+
+# Roster status is relative to the season requested, so always ask for the current one.
 all_players = commonallplayers.CommonAllPlayers(
     is_only_current_season=0,
     league_id="00",
-    season="2023-24",
+    season=current_nba_season(),
 )
 
 df = all_players.common_all_players.get_data_frame()

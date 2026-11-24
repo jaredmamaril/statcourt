@@ -5,19 +5,31 @@ type RankingStatProfileFilterProps = {
   selectedProfile: PlayerStatProfileMode;
   onToggle: () => void;
   onSelectProfile: (profile: PlayerStatProfileMode) => void;
+  // Newest season in the loaded data, e.g. "2026-27".
+  currentSeasonLabel?: string | null;
 };
 
 const statProfileLabels: Record<PlayerStatProfileMode, string> = {
   career: "Career",
   peak: "3-Year Peak",
-  current: "Latest Season",
+  current: "Current Season",
 };
+
+function getProfileLabel(
+  profile: PlayerStatProfileMode,
+  currentSeasonLabel?: string | null,
+) {
+  return profile === "current" && currentSeasonLabel
+    ? `${statProfileLabels.current} · ${currentSeasonLabel}`
+    : statProfileLabels[profile];
+}
 
 export function RankingStatProfileFilter({
   isOpen,
   selectedProfile,
   onToggle,
   onSelectProfile,
+  currentSeasonLabel,
 }: RankingStatProfileFilterProps) {
   const dropdownId = "ranking-stat-profile-menu";
 
@@ -32,7 +44,9 @@ export function RankingStatProfileFilter({
         aria-haspopup="true"
         className="flex min-h-9 min-w-28 scale-[1.02] cursor-pointer items-center justify-between rounded-md border border-[rgb(var(--court-accent-rgb)/0.95)] bg-[color:color-mix(in_srgb,var(--court-accent)_38%,var(--court-panel-alt))] px-2 font-michroma text-[9px] text-[var(--court-accent)] ring-1 ring-[rgb(var(--court-accent-rgb)/0.45)] transition hover:border-[rgb(var(--court-accent-rgb)/0.95)] sm:min-h-8 sm:min-w-36 sm:px-3 sm:py-1 sm:text-xs"
       >
-        <span className="truncate">{statProfileLabels[selectedProfile]}</span>
+        <span className="truncate">
+          {getProfileLabel(selectedProfile, currentSeasonLabel)}
+        </span>
 
         <span className="shrink-0 text-[8px] text-[var(--court-accent)] sm:text-xs">
           {"\u25BE"}
@@ -40,7 +54,7 @@ export function RankingStatProfileFilter({
       </button>
 
       {isOpen && (
-        <div id={dropdownId} className="absolute left-0 top-full z-80 mt-1.5 w-32 rounded-md border border-white/20 bg-[var(--court-panel-alt)] py-1 animate-[dropdownIn_140ms_ease-out_both] sm:mt-2 sm:w-full">
+        <div id={dropdownId} className="absolute left-0 top-full z-80 mt-1.5 w-max min-w-32 rounded-md border border-white/20 bg-[var(--court-panel-alt)] py-1 animate-[dropdownIn_140ms_ease-out_both] sm:mt-2 sm:min-w-full">
           {(["career", "peak", "current"] as const).map((profile) => (
             <button
               key={profile}
@@ -52,7 +66,7 @@ export function RankingStatProfileFilter({
                   : "text-white/70 hover:bg-white/10"
               }`}
             >
-              {statProfileLabels[profile]}
+              {getProfileLabel(profile, currentSeasonLabel)}
             </button>
           ))}
         </div>

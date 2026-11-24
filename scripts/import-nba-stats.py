@@ -8,6 +8,8 @@ from supabase import create_client
 from curl_cffi import requests as cr
 from nba_api.stats.library.http import NBAStatsHTTP
 from nba_api.stats.static import players
+
+from pipeline_common import get_service_supabase_client, recent_seasons
 from nba_api.stats.endpoints import (
     playercareerstats,
     commonplayerinfo,
@@ -38,15 +40,8 @@ def load_env_file():
 
 
 def get_supabase_client():
-    load_env_file()
-
-    url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
-    key = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
-
-    if not url or not key:
-        raise ValueError("Missing Supabase URL or anon key")
-
-    return create_client(url, key)
+    # Player tables are read-only for the anon key, so use the server-only key.
+    return get_service_supabase_client()
 
 
 NBA_HEADERS = {
@@ -69,7 +64,8 @@ IMPORT_MODE = "directory"  # "pending", "all", "directory", or "selected"
 SELECTED_PLAYERS = []
 DIRECTORY_LIMIT = 1000
 DIRECTORY_START_AFTER = "Scottie Pippen"
-DEFENSE_SEASONS = ["2022-23", "2023-24", "2024-25"]
+# The three most recent completed seasons, derived from today's date.
+DEFENSE_SEASONS = recent_seasons(4)[:-1]
 ONLY_IMPORT = set()
 
 MANUAL_PLAYER_STATS = {

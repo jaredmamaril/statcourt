@@ -12,7 +12,7 @@ const APP_PLAYER_CACHE_PAGE_SIZE = 500;
 const getCachedSupabasePlayerPage = unstable_cache(
   async (page: number, limit: number) =>
     getPlayersFromSupabasePageWithFallback(page, limit),
-  ["statcourt-public-players-v2"],
+  ["statcourt-public-players-v3"],
   {
     revalidate: 3600,
     tags: ["statcourt-public-players"],
@@ -69,7 +69,7 @@ export async function getAppPlayers() {
 // active and retired players can never be served for this scope.
 const getCachedCurrentSeasonPlayers = unstable_cache(
   async () => filterCurrentSeasonPlayers(await getAppPlayers()),
-  ["statcourt-current-season-players-v1"],
+  ["statcourt-current-season-players-v2"],
   {
     revalidate: 3600,
     tags: ["statcourt-public-players"],
@@ -107,7 +107,7 @@ export const getAppPlayerSlugSources = unstable_cache(
 export const getAppPlayerShareCardSources = unstable_cache(
   async (mode: PlayerShareCardMode = "peak") =>
     buildPlayerShareCardSources(await getAppPlayers(), mode),
-  ["statcourt-player-share-cards-v2"],
+  ["statcourt-player-share-cards-v3"],
   {
     revalidate: 3600,
     tags: ["statcourt-public-players"],

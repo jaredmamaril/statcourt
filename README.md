@@ -260,6 +260,25 @@ Run a script from the project root:
 python scripts/<script-name>.py
 ```
 
+### In-season refresh
+
+The player tables are read-only for the anon key, so the import scripts write with `SUPABASE_SERVICE_ROLE_KEY` from `.env.local` (server-only; never expose it to the browser). The season is derived from today's date and rolls over in October (`scripts/pipeline_common.py`).
+
+There is no scheduled job yet. Run these in order, about once a week during the season:
+
+```bash
+python -u scripts/import-player-directory.py          # current rosters (roster_status)
+python -u scripts/import-missing-roster-players.py    # add new players, e.g. rookies
+python -u scripts/import-player-season-stats.py --active
+python -u scripts/calculate-player-stat-profiles.py
+```
+
+The app's cached player lists refresh within an hour of a run. Python tests for the season logic:
+
+```bash
+python -m unittest discover -s scripts -p "test_*.py"
+```
+
 ## Fallback Data
 
 StatCourt can use local fallback player data when Supabase player loading is disabled or unavailable.

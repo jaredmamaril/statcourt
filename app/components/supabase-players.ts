@@ -194,9 +194,12 @@ async function getSupabasePlayersByNames(names: string[]) {
   return (data ?? []) as unknown as SupabasePlayerRow[];
 }
 
+type PlayerRosterInfo = Pick<Player, "rosterStatus" | "rosterStatusImportedAt">;
+
 export function mapSupabasePlayerToPlayer(
   row: SupabasePlayerRow,
   statProfiles?: Player["statProfiles"],
+  roster?: PlayerRosterInfo,
 ): Player {
   return {
     id: row.id,
@@ -215,6 +218,8 @@ export function mapSupabasePlayerToPlayer(
       careerLegacy: toNumber(row.career_legacy, 30),
     },
     statProfiles,
+    rosterStatus: roster?.rosterStatus ?? null,
+    rosterStatusImportedAt: roster?.rosterStatusImportedAt ?? null,
     stats: {
       games: row.games ?? 0,
       ppg: toNumber(row.ppg),
@@ -254,10 +259,17 @@ function mapSupabaseProfileToPlayerProfile(
 export async function getPlayersFromSupabaseWithFallback(): Promise<Player[]> {
   try {
     const rows = await getSupabasePlayers();
-    const profileMap = await getSupabasePlayerProfiles(rows);
+    const [profileMap, rosterMap] = await Promise.all([
+      getSupabasePlayerProfiles(rows),
+      getSupabaseRosterStatuses(rows),
+    ]);
 
     const mappedPlayers = rows.map((row) =>
-      mapSupabasePlayerToPlayer(row, profileMap.get(row.id)),
+      mapSupabasePlayerToPlayer(
+        row,
+        profileMap.get(row.id),
+        row.nba_id != null ? rosterMap.get(row.nba_id) : undefined,
+      ),
     );
 
     return mappedPlayers.length > 0 ? mappedPlayers : fallbackPlayers;
@@ -272,9 +284,16 @@ export async function getPlayersFromSupabasePageWithFallback(
 ): Promise<{ players: Player[]; hasMore: boolean }> {
   try {
     const { rows, hasMore } = await getSupabasePlayersPage(page, limit);
-    const profileMap = await getSupabasePlayerProfiles(rows);
+    const [profileMap, rosterMap] = await Promise.all([
+      getSupabasePlayerProfiles(rows),
+      getSupabaseRosterStatuses(rows),
+    ]);
     const mappedPlayers = rows.map((row) =>
-      mapSupabasePlayerToPlayer(row, profileMap.get(row.id)),
+      mapSupabasePlayerToPlayer(
+        row,
+        profileMap.get(row.id),
+        row.nba_id != null ? rosterMap.get(row.nba_id) : undefined,
+      ),
     );
 
     if (mappedPlayers.length > 0 || page > 1) {
@@ -334,6 +353,43 @@ export async function getPlayersByNamesFromSupabaseWithFallback(
 
     return fallbackPlayers.filter((player) => nameSet.has(player.name));
   }
+}
+
+// roster_status from player_directory (public read-only): "1" means on an active
+// roster for the season scripts/import-player-directory.py last imported.
+async function getSupabaseRosterStatuses(players: SupabasePlayerRow[]) {
+  const rosterByNbaId = new Map<number, PlayerRosterInfo>();
+  const nbaIds = players
+    .map((player) => player.nba_id)
+    .filter((nbaId): nbaId is number => nbaId != null);
+  const batchSize = 500;
+
+  for (let start = 0; start < nbaIds.length; start += batchSize) {
+    const { data, error } = await supabase
+      .from("player_directory")
+      .select("nba_id, roster_status, imported_at")
+      .in("nba_id", nbaIds.slice(start, start + batchSize));
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    for (const row of (data ?? []) as {
+      nba_id: number;
+      roster_status: string | number | null;
+      imported_at: string | null;
+    }[]) {
+      const status = row.roster_status == null ? null : String(row.roster_status);
+
+      rosterByNbaId.set(row.nba_id, {
+        rosterStatus:
+          status === "1" ? "active" : status === "0" ? "inactive" : null,
+        rosterStatusImportedAt: row.imported_at,
+      });
+    }
+  }
+
+  return rosterByNbaId;
 }
 
 async function getSupabasePlayerProfiles(players: SupabasePlayerRow[]) {

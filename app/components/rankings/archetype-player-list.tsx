@@ -22,7 +22,7 @@ export function ArchetypePlayerList({
   const statProfileLabels = {
     career: "Career",
     peak: "3-Year Peak",
-    current: "Latest Season",
+    current: "Current Season",
   };
 
   const overallCategoryByProfile: Record<

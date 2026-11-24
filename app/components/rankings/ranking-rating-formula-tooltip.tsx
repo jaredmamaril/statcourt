@@ -15,7 +15,7 @@ type RankingRatingFormulaTooltipProps = {
 const statProfileLabels: Record<PlayerStatProfileMode, string> = {
   career: "Career",
   peak: "3-Year Peak",
-  current: "Latest Season",
+  current: "Current Season",
 };
 
 function getFormulaText(
@@ -42,9 +42,9 @@ function getFormulaText(
 
   if (ratingCategory === "currentOverall") {
     return {
-      title: "Latest Season Overall",
+      title: "Current Season Overall",
       description:
-        "Latest Season OVR uses the most recent season profile. It focuses on current scoring, defense, playmaking, efficiency, shooting, rebounding, and star power with only a small career legacy influence.",
+        "Current Season OVR covers players on active NBA rosters, using their most recent season profile. It focuses on current scoring, defense, playmaking, efficiency, shooting, rebounding, and star power with only a small career legacy influence.",
     };
   }
 
@@ -84,7 +84,7 @@ function getFormulaText(
     return {
       title: "Defense",
       description:
-        "Defense uses the player's stored defensive rating. It does not change by Career, Peak, or Latest Season yet.",
+        "Defense uses the player's stored defensive rating. It does not change by Career, Peak, or Current Season yet.",
     };
   }
 

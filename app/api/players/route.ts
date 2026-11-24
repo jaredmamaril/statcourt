@@ -87,6 +87,8 @@ function serializePlayer(player: Player): Player {
       starPower: player.ratings.starPower,
       careerLegacy: player.ratings.careerLegacy,
     },
+    rosterStatus: player.rosterStatus ?? null,
+    rosterStatusImportedAt: player.rosterStatusImportedAt ?? null,
     statProfiles: {
       career: serializeStatProfile(player.statProfiles?.career),
       peak: serializeStatProfile(player.statProfiles?.peak),

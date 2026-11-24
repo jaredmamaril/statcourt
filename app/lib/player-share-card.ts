@@ -10,7 +10,7 @@ import {
 import {
   getCurrentSeasonStartYear,
   getLatestSeasonStartYear,
-  isPlayerInLatestSeason,
+  isPlayerActive,
 } from "./player-season";
 import { findPlayerBySlug } from "./player-slug";
 
@@ -116,10 +116,9 @@ function getModeStats(
 }
 
 // Peak and career ranks match the rankings page: every player sorted by the mode's
-// overall rating. Current-mode ranks only compare players whose latest season is the
-// newest season in the data ("this season"). Retired players get no rank: a player's
-// current profile is only their last season, so grouping by it would compare a retiree
-// only with others who retired the same year, not with everyone who played that season.
+// overall rating. Current-mode ranks only compare active players, using the same rule
+// as Current-mode rankings (isPlayerActive). Inactive players get no rank: their
+// current profile is just their final season, so there is no fair group to rank in.
 export function buildPlayerShareCardSources(
   players: readonly Player[],
   mode: PlayerShareCardMode = "peak",
@@ -127,15 +126,17 @@ export function buildPlayerShareCardSources(
   const overalls = players.map((player) =>
     getPlayerRating(player, overallCategories[mode], mode),
   );
+  const now = new Date();
   const latestSeasonStart =
     mode === "current" ? getLatestSeasonStartYear(players) : null;
+  // Same active-player rule as Current-mode rankings (app/lib/player-season.ts).
+  const isActive = players.map(
+    (player) =>
+      mode === "current" && isPlayerActive(player, latestSeasonStart, now),
+  );
   const rankedIndexes = players
     .map((_, index) => index)
-    .filter(
-      (index) =>
-        mode !== "current" ||
-        isPlayerInLatestSeason(players[index], latestSeasonStart),
-    );
+    .filter((index) => mode !== "current" || isActive[index]);
   const rankByIndex = new Map(
     rankedIndexes
       .sort((a, b) => overalls[b] - overalls[a])
@@ -160,10 +161,9 @@ export function buildPlayerShareCardSources(
       fgPercent: toNumberOrNull(stats.fgPercent),
       overall: overalls[index],
       rank: rankByIndex.get(index) ?? null,
-      isFinalSeason:
-        seasonStart !== null &&
-        latestSeasonStart !== null &&
-        seasonStart < latestSeasonStart,
+      // Not on an active roster (or, without roster data, didn't play this season):
+      // their current profile is their final season.
+      isFinalSeason: mode === "current" && seasonStart !== null && !isActive[index],
     };
   });
 }
