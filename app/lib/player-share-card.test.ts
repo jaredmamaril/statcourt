@@ -86,7 +86,7 @@ describe("getPlayerShareCard", () => {
     expect(getPlayerShareCard(players, "%E0%A4%A")).toBeNull();
   });
 
-  it("defaults to the 3-Year Peak profile with rating, rank and FG PCT", () => {
+  it("defaults to the Peak profile with rating, rank and FG PCT", () => {
     const players = buildPlayerShareCardSources([rolePlayer, lebron]);
 
     expect(getPlayerShareCard(players, "lebron-james")).toEqual({
@@ -94,7 +94,7 @@ describe("getPlayerShareCard", () => {
       initials: "LJ",
       team: null,
       position: "F",
-      profileLabel: "3-Year Peak · 2007-08 to 2009-10",
+      profileLabel: "Peak · 2007-08 to 2009-10",
       overall: Math.round(
         getPlayerRating(lebron, "peakOverall", "peak"),
       ).toString(),
@@ -189,15 +189,16 @@ describe("formatSeasonWindow", () => {
 describe("getPlayerShareDescription", () => {
   const players = buildPlayerShareCardSources([rolePlayer, lebron]);
 
-  it("summarises the 3-year peak with stats and rank", () => {
+  it("summarises the peak with stats and rank", () => {
     expect(getPlayerShareDescription(players, "lebron-james")).toBe(
-      "LeBron James's 3-year peak (2007–10): 29.3 PPG, 7.6 RPG, 7.7 APG, and the #1 best peak ever. Compare players and build lineups on StatCourt.",
+      "LeBron James's peak (2007–10): 29.3 PPG, 7.6 RPG, 7.7 APG, and the #1 best peak ever. Compare players and build lineups on StatCourt.",
     );
   });
 
-  it("describes career stats without a season window when the peak profile is missing", () => {
+  it("describes career stats without a season window or rank when the peak profile is missing", () => {
     expect(getPlayerShareDescription(players, "role-player-jr")).toBe(
-      "Role Player Jr.'s career: 6.1 PPG, 2.2 RPG, 1.4 APG, and the #2 best peak ever. Compare players and build lineups on StatCourt.",
+      // No two-season peak, so no Peak rank (and no "best peak ever" claim).
+      "Role Player Jr.'s career: 6.1 PPG, 2.2 RPG, 1.4 APG. Compare players and build lineups on StatCourt.",
     );
   });
 
@@ -316,7 +317,7 @@ describe("rank visibility", () => {
 
     expect(getPlayerShareCard(players, "lebron-james")?.rankLabel).toBeNull();
     expect(getPlayerShareDescription(players, "lebron-james")).toBe(
-      "LeBron James's 3-year peak (2007–10): 29.3 PPG, 7.6 RPG, 7.7 APG. Compare players and build lineups on StatCourt.",
+      "LeBron James's peak (2007–10): 29.3 PPG, 7.6 RPG, 7.7 APG. Compare players and build lineups on StatCourt.",
     );
   });
 });

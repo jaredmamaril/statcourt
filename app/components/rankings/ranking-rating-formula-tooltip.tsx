@@ -14,7 +14,7 @@ type RankingRatingFormulaTooltipProps = {
 
 const statProfileLabels: Record<PlayerStatProfileMode, string> = {
   career: "Career",
-  peak: "3-Year Peak",
+  peak: "Peak",
   current: "Current Season",
 };
 
@@ -34,9 +34,9 @@ function getFormulaText(
 
   if (ratingCategory === "peakOverall") {
     return {
-      title: "3-Year Peak Overall",
+      title: "Peak Overall",
       description:
-        "Peak OVR uses the player's best three-year profile. It weights scoring and playmaking more heavily, keeps defense important, adds a small star/legacy influence, and rewards the player's best standout skill.",
+        "Peak OVR uses the player's best 2 consecutive qualifying seasons (one missed season allowed), combined with games-weighted averages. It weights scoring and playmaking more heavily, keeps defense important, adds a small star/legacy influence, and rewards the player's best standout skill.",
     };
   }
 

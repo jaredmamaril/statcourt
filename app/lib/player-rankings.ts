@@ -4,6 +4,7 @@ import {
   type PlayerRatingCategory,
   type PlayerStatProfileMode,
 } from "../components/player-ratings";
+import { filterPeakPlayers } from "./player-peak";
 import {
   filterCurrentSeasonPlayers,
   type CurrentSeasonRankingOptions,
@@ -11,15 +12,18 @@ import {
 
 // Current mode ranks only players eligible for Current Season rankings: active and
 // with enough games in the newest season (isEligibleForCurrentRankings).
-// Career and Peak rank every player, retired players included.
+// Peak ranks players with a two-season peak (app/lib/player-peak.ts), retired included.
+// Career ranks every player.
 export function getRankingPool<T extends Player>(
   players: readonly T[],
   statProfileMode: PlayerStatProfileMode,
   options: CurrentSeasonRankingOptions = {},
 ): T[] {
-  return statProfileMode === "current"
-    ? filterCurrentSeasonPlayers(players, options)
-    : [...players];
+  if (statProfileMode === "current") {
+    return filterCurrentSeasonPlayers(players, options);
+  }
+
+  return statProfileMode === "peak" ? filterPeakPlayers(players) : [...players];
 }
 
 // Highest rating first. A player's rank is their position in the result (index + 1).

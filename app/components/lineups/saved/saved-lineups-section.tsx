@@ -54,7 +54,7 @@ export function SavedLineupsSection({
 }: SavedLineupsSectionProps) {
   const emptyFilteredMessage =
     savedLineupProfileFilter === "peak"
-      ? "No 3-Year Peak lineups saved yet."
+      ? "No Peak lineups saved yet."
       : savedLineupProfileFilter === "current"
         ? "No Latest Season lineups saved yet."
         : savedLineupProfileFilter === "career"

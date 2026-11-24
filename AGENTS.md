@@ -116,6 +116,7 @@ Preserve:
 - Preserve public/private profile behavior.
 - Avoid broad refactors unless requested.
 - Do not invent database fields, routes, or configuration that are not present in the repo.
+- Never merge PRs. Open the PR, make sure CI and the Vercel preview pass, and stop. The user merges.
 
 ## After Changes
 

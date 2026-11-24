@@ -1,9 +1,12 @@
 import { unstable_cache } from "next/cache";
 import { players as localPlayers, type Player } from "./court-data";
 import {
+  getMaxTeamGamesBySeasonFromSupabase,
   getMaxTeamGamesFromSupabase,
   getPlayersFromSupabasePageWithFallback,
+  getSeasonStatRowsForPlayers,
 } from "./supabase-players";
+import { createPeakContext, withTwoSeasonPeak } from "../lib/player-peak";
 import {
   filterCurrentSeasonPlayers,
   getCurrentRankingMinGames,
@@ -17,10 +20,43 @@ import {
 
 const APP_PLAYER_CACHE_PAGE_SIZE = 500;
 
+// Most games any team played in each season, for the peak's qualifying-season rule.
+const getCachedMaxTeamGamesBySeason = unstable_cache(
+  async () => getMaxTeamGamesBySeasonFromSupabase(),
+  ["statcourt-max-team-games-by-season-v1"],
+  {
+    revalidate: 3600,
+    tags: ["statcourt-public-players"],
+  },
+);
+
+// Each player's peak is the two-season peak from app/lib/player-peak.ts, computed from
+// their season rows (the stored "3-Year Peak" profile is replaced). If the season data
+// can't load, this throws so a page without correct peaks is never cached.
+async function applyTwoSeasonPeaks(players: Player[]) {
+  if (players.length === 0) return players;
+
+  const [maxTeamGames, rowsByPlayerId] = await Promise.all([
+    getCachedMaxTeamGamesBySeason(),
+    getSeasonStatRowsForPlayers(players.map((player) => player.id)),
+  ]);
+  const context = createPeakContext(maxTeamGames);
+
+  return players.map((player) =>
+    withTwoSeasonPeak(player, rowsByPlayerId.get(player.id) ?? [], context),
+  );
+}
+
 const getCachedSupabasePlayerPage = unstable_cache(
-  async (page: number, limit: number) =>
-    getPlayersFromSupabasePageWithFallback(page, limit),
-  ["statcourt-public-players-v3"],
+  async (page: number, limit: number) => {
+    const result = await getPlayersFromSupabasePageWithFallback(page, limit);
+
+    // Built-in fallback players (Supabase unavailable) have no season rows.
+    if (result.players === localPlayers) return result;
+
+    return { ...result, players: await applyTwoSeasonPeaks(result.players) };
+  },
+  ["statcourt-public-players-v4"],
   {
     revalidate: 3600,
     tags: ["statcourt-public-players"],
@@ -113,7 +149,7 @@ const getCachedCurrentSeasonPlayers = unstable_cache(
       maxTeamGames: rules.maxTeamGames,
     });
   },
-  ["statcourt-current-season-players-v4"],
+  ["statcourt-current-season-players-v5"],
   {
     revalidate: 3600,
     tags: ["statcourt-public-players"],
@@ -159,7 +195,7 @@ export const getAppPlayerShareCardSources = unstable_cache(
       maxTeamGames: rules.maxTeamGames,
     });
   },
-  ["statcourt-player-share-cards-v5"],
+  ["statcourt-player-share-cards-v6"],
   {
     revalidate: 3600,
     tags: ["statcourt-public-players"],

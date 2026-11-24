@@ -97,7 +97,7 @@ import { createPlayerHrefResolver, getPlayerHref } from "../lib/player-slug";
 const statProfileLabels: Record<PlayerStatProfileMode | "all", string> = {
   all: "All Profiles",
   career: "Career",
-  peak: "3-Year Peak",
+  peak: "Peak",
   current: "Latest Season",
 };
 

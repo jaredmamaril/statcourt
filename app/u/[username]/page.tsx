@@ -97,7 +97,7 @@ function formatMemberSince(createdAt: string | null) {
 }
 
 function formatStatProfile(profile: string | null) {
-  if (profile === "peak") return "3-Year Peak";
+  if (profile === "peak") return "Peak";
   if (profile === "current") return "Latest Season";
   return "Career";
 }

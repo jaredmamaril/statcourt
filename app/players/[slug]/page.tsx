@@ -41,6 +41,7 @@ import {
   type PlayerRatingCategory,
 } from "../../components/player-ratings";
 import { AccessibleDialog } from "../../components/ui/accessible-dialog";
+import { hasTwoSeasonPeak, PEAK_RULE_TEXT } from "../../lib/player-peak";
 import {
   findPlayerBySlug,
   getDuplicatePlayerSlugs,
@@ -49,7 +50,7 @@ import {
 
 const statModeLabels: Record<StatMode, string> = {
   career: "Career",
-  peak: "3-Year Peak",
+  peak: "Peak",
   current: "Latest Season",
 };
 
@@ -489,8 +490,16 @@ export default function PlayerProfilePage() {
                   </div>
 
                   <p className="mt-1.5 font-michroma text-[7px] uppercase text-white/35 sm:text-[8px] lg:mt-2 lg:text-[10px]">
-                    {profileLabel ?? `${statModeLabels[statMode]} Profile`}
+                    {statMode === "peak" && !hasTwoSeasonPeak(player)
+                      ? "Needs 2 qualifying seasons · showing career stats"
+                      : (profileLabel ?? `${statModeLabels[statMode]} Profile`)}
                   </p>
+
+                  {statMode === "peak" && (
+                    <p className="mt-1 font-michroma text-[7px] text-white/45 sm:text-[8px] lg:text-[10px]">
+                      {PEAK_RULE_TEXT}
+                    </p>
+                  )}
 
                   <div className="mt-2 flex flex-wrap gap-1.5 lg:mt-3 lg:gap-2">
                     <div className="flex overflow-hidden rounded-md border border-[rgb(var(--court-accent-rgb)/0.7)] bg-[rgb(var(--court-accent-rgb)/0.16)] shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.16)]">

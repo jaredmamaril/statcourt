@@ -1,4 +1,8 @@
 import { supabase } from "./supabase-client";
+import {
+  getMaxTeamGamesBySeason,
+  type SeasonStatRow,
+} from "../lib/player-peak";
 import { players as fallbackPlayers } from "./court-data";
 import type {
   Player,
@@ -510,4 +514,112 @@ export async function getMaxTeamGamesFromSupabase(seasonLabel: string) {
   } catch {
     return null;
   }
+}
+
+type SupabaseSeasonStatRow = {
+  id: number;
+  player_id: number;
+  season: string;
+  team: string | null;
+  games: number | null;
+  minutes_per_game: number | null;
+  ppg: number | null;
+  rpg: number | null;
+  apg: number | null;
+  spg: number | null;
+  bpg: number | null;
+  fg_percent: number | null;
+  three_percent: number | null;
+  ft_percent: number | null;
+  three_made_per_game: number | null;
+  three_attempts_per_game: number | null;
+  free_throw_attempts_per_game: number | null;
+};
+
+const SEASON_STAT_COLUMNS =
+  "id, player_id, season, team, games, minutes_per_game, ppg, rpg, apg, spg, bpg, fg_percent, three_percent, ft_percent, three_made_per_game, three_attempts_per_game, free_throw_attempts_per_game";
+const SUPABASE_ROW_LIMIT = 1000;
+
+// Per-season rows (one per team stint, plus "TOT" for traded seasons) for the
+// two-season peak in app/lib/player-peak.ts, keyed by players.id.
+export async function getSeasonStatRowsForPlayers(playerIds: number[]) {
+  const rowsByPlayerId = new Map<number, SeasonStatRow[]>();
+  const batchSize = 100;
+
+  for (let start = 0; start < playerIds.length; start += batchSize) {
+    const batchIds = playerIds.slice(start, start + batchSize);
+
+    for (let from = 0; ; from += SUPABASE_ROW_LIMIT) {
+      const { data, error } = await supabase
+        .from("player_season_stats")
+        .select(SEASON_STAT_COLUMNS)
+        .in("player_id", batchIds)
+        .order("id", { ascending: true })
+        .range(from, from + SUPABASE_ROW_LIMIT - 1);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      const rows = (data ?? []) as SupabaseSeasonStatRow[];
+
+      for (const row of rows) {
+        rowsByPlayerId.set(row.player_id, [
+          ...(rowsByPlayerId.get(row.player_id) ?? []),
+          {
+            season: row.season,
+            team: row.team,
+            games: toNullableNumber(row.games),
+            minutesPerGame: toNullableNumber(row.minutes_per_game),
+            ppg: toNullableNumber(row.ppg),
+            rpg: toNullableNumber(row.rpg),
+            apg: toNullableNumber(row.apg),
+            spg: toNullableNumber(row.spg),
+            bpg: toNullableNumber(row.bpg),
+            fgPercent: toNullableNumber(row.fg_percent),
+            threePercent: toNullableNumber(row.three_percent),
+            ftPercent: toNullableNumber(row.ft_percent),
+            threeMadePerGame: toNullableNumber(row.three_made_per_game),
+            threeAttemptsPerGame: toNullableNumber(row.three_attempts_per_game),
+            freeThrowAttemptsPerGame: toNullableNumber(
+              row.free_throw_attempts_per_game,
+            ),
+          },
+        ]);
+      }
+
+      if (rows.length < SUPABASE_ROW_LIMIT) break;
+    }
+  }
+
+  return rowsByPlayerId;
+}
+
+// Most games any team played in each season, as [season, games] pairs (serializable
+// for caching). Reads every season row's season, team and games once.
+export async function getMaxTeamGamesBySeasonFromSupabase() {
+  const rows: SeasonStatRow[] = [];
+
+  for (let from = 0; ; from += SUPABASE_ROW_LIMIT) {
+    const { data, error } = await supabase
+      .from("player_season_stats")
+      .select("id, season, team, games")
+      .order("id", { ascending: true })
+      .range(from, from + SUPABASE_ROW_LIMIT - 1);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const page = (data ?? []) as Pick<
+      SupabaseSeasonStatRow,
+      "season" | "team" | "games"
+    >[];
+
+    rows.push(...page);
+
+    if (page.length < SUPABASE_ROW_LIMIT) break;
+  }
+
+  return [...getMaxTeamGamesBySeason(rows)];
 }

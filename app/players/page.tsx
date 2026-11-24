@@ -189,7 +189,7 @@ function Players() {
 
   const selectedStatModeLabel =
     selectedRatingView === "peakOverall"
-      ? "3-Year Peak"
+      ? "Peak"
       : selectedRatingView === "currentOverall"
         ? "Latest Season"
         : "Career";
