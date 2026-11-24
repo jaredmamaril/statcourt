@@ -6,6 +6,7 @@ import {
 } from "@/app/components/court-data";
 import {
   getAppCurrentSeasonPlayerPage,
+  getAppCurrentSeasonRules,
   getAppPlayerPage,
 } from "@/app/components/player-data-source";
 import {
@@ -136,6 +137,10 @@ export async function GET(request: Request) {
         }))
       : playerPage.players.map(serializePlayer);
 
+  // The ranking rule behind scope=current-season, so the page can show it.
+  const currentSeason =
+    scope === "current-season" ? await getAppCurrentSeasonRules() : undefined;
+
   return NextResponse.json(
     {
       count: responsePlayers.length,
@@ -143,6 +148,7 @@ export async function GET(request: Request) {
       page,
       limit,
       hasMore: playerPage.hasMore,
+      ...(currentSeason && { currentSeason }),
       players: responsePlayers,
     },
     {

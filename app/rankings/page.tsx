@@ -4,9 +4,13 @@ import { DatabaseErrorState } from "../components/loading/database-error-state";
 import {
   getCachedApiCurrentSeasonPlayers,
   getCachedApiPlayers,
+  type CurrentSeasonPlayers,
 } from "../lib/player-api-cache";
 import { getRankingPool, rankPlayers } from "../lib/player-rankings";
-import { getLatestSeasonLabel } from "../lib/player-season";
+import {
+  getCurrentRankingMinGames,
+  getLatestSeasonLabel,
+} from "../lib/player-season";
 
 import { type PlayerRatingCategory } from "../components/player-ratings";
 
@@ -14,7 +18,7 @@ import {
   players as fallbackPlayers,
   getPlayerInsights,
 } from "../components/court-data";
-import type { Player, Team, Position, StatMode } from "../components/court-data";
+import type { Team, Position, StatMode } from "../components/court-data";
 
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -84,10 +88,10 @@ export default function Rankings() {
     setShouldScrollToArchetypeDescription,
   ] = useState(false);
   const [players, setPlayers] = useState(fallbackPlayers);
-  // Current mode: active players only, filtered by /api/players?scope=current-season.
-  const [currentSeasonPlayers, setCurrentSeasonPlayers] = useState<
-    Player[] | null
-  >(null);
+  // Current Season mode: eligible players and the rule, from
+  // /api/players?scope=current-season.
+  const [currentSeason, setCurrentSeason] =
+    useState<CurrentSeasonPlayers | null>(null);
   const [isLoadingPlayers, setIsLoadingPlayers] = useState(true);
   const [playerLoadError, setPlayerLoadError] = useState("");
   const deferredPlayerSearch = useDeferredValue(playerSearch);
@@ -157,14 +161,14 @@ export default function Rankings() {
   }, []);
 
   useEffect(() => {
-    if (statProfileFilter !== "current" || currentSeasonPlayers) return;
+    if (statProfileFilter !== "current" || currentSeason) return;
 
     let isMounted = true;
 
     getCachedApiCurrentSeasonPlayers()
-      .then((loadedPlayers) => {
-        if (isMounted && loadedPlayers.length > 0) {
-          setCurrentSeasonPlayers(loadedPlayers);
+      .then((loaded) => {
+        if (isMounted && loaded.players.length > 0) {
+          setCurrentSeason(loaded);
         }
       })
       .catch((error) => {
@@ -175,17 +179,24 @@ export default function Rankings() {
     return () => {
       isMounted = false;
     };
-  }, [currentSeasonPlayers, statProfileFilter]);
+  }, [currentSeason, statProfileFilter]);
 
   // Players eligible for the selected profile. Current mode never shows retired
   // players: until the API list arrives (or if it fails), the full list is filtered
   // on the client with the same rule.
   const rankingPlayers = useMemo(
     () =>
-      statProfileFilter === "current" && currentSeasonPlayers
-        ? currentSeasonPlayers
+      statProfileFilter === "current" && currentSeason
+        ? currentSeason.players
         : getRankingPool(players, statProfileFilter),
-    [currentSeasonPlayers, players, statProfileFilter],
+    [currentSeason, players, statProfileFilter],
+  );
+
+  // Minimum games for Current Season rankings, from the API's rule (based on team
+  // games). Until it arrives, the value the client-side fallback filter applies.
+  const currentSeasonMinGames = useMemo(
+    () => currentSeason?.rules?.minGames ?? getCurrentRankingMinGames(players),
+    [currentSeason, players],
   );
 
   // Newest season in the data (e.g. "2026-27") for the Current Season label.
@@ -495,6 +506,7 @@ export default function Rankings() {
                     players={rankingPlayers}
                     statProfileFilter={statProfileFilter}
                     currentSeasonLabel={currentSeasonLabel}
+                    currentSeasonMinGames={currentSeasonMinGames}
                     statMode={statMode}
                     isProfileFilterOpen={openFilter === "profile"}
                     onToggleProfileFilter={() =>
@@ -533,6 +545,7 @@ export default function Rankings() {
                 openFilter={openFilter}
                 statProfileFilter={statProfileFilter}
                 currentSeasonLabel={currentSeasonLabel}
+                currentSeasonMinGames={currentSeasonMinGames}
                 positionFilter={positionFilter}
                 teamFilter={teamFilter}
                 playerSearch={playerSearch}

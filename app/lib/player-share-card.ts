@@ -8,8 +8,11 @@ import {
   type PlayerStatProfileMode,
 } from "../components/player-ratings";
 import {
+  type CurrentSeasonRankingOptions,
+  getCurrentRankingMinGames,
   getCurrentSeasonStartYear,
   getLatestSeasonStartYear,
+  isEligibleForCurrentRankings,
   isPlayerActive,
 } from "./player-season";
 import { findPlayerBySlug } from "./player-slug";
@@ -116,27 +119,42 @@ function getModeStats(
 }
 
 // Peak and career ranks match the rankings page: every player sorted by the mode's
-// overall rating. Current-mode ranks only compare active players, using the same rule
-// as Current-mode rankings (isPlayerActive). Inactive players get no rank: their
-// current profile is just their final season, so there is no fair group to rank in.
+// overall rating. Current-mode ranks only compare players eligible for Current Season
+// rankings (isEligibleForCurrentRankings). Inactive players get no rank: their current
+// profile is just their final season, so there is no fair group to rank in.
 export function buildPlayerShareCardSources(
   players: readonly Player[],
   mode: PlayerShareCardMode = "peak",
+  { now = new Date(), maxTeamGames = null }: CurrentSeasonRankingOptions = {},
 ): PlayerShareCardSource[] {
   const overalls = players.map((player) =>
     getPlayerRating(player, overallCategories[mode], mode),
   );
-  const now = new Date();
   const latestSeasonStart =
     mode === "current" ? getLatestSeasonStartYear(players) : null;
-  // Same active-player rule as Current-mode rankings (app/lib/player-season.ts).
+  const minGames =
+    mode === "current"
+      ? getCurrentRankingMinGames(players, latestSeasonStart, maxTeamGames)
+      : 0;
+  // Active decides the Final Season label; ranking eligibility (active plus enough
+  // newest-season games) is the same rule Current Season rankings use, so the ranks
+  // match. Injured active players are active but unranked.
   const isActive = players.map(
     (player) =>
       mode === "current" && isPlayerActive(player, latestSeasonStart, now),
   );
   const rankedIndexes = players
     .map((_, index) => index)
-    .filter((index) => mode !== "current" || isActive[index]);
+    .filter(
+      (index) =>
+        mode !== "current" ||
+        isEligibleForCurrentRankings(
+          players[index],
+          latestSeasonStart,
+          minGames,
+          now,
+        ),
+    );
   const rankByIndex = new Map(
     rankedIndexes
       .sort((a, b) => overalls[b] - overalls[a])

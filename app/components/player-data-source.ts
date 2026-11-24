@@ -1,7 +1,15 @@
 import { unstable_cache } from "next/cache";
 import { players as localPlayers, type Player } from "./court-data";
-import { getPlayersFromSupabasePageWithFallback } from "./supabase-players";
-import { filterCurrentSeasonPlayers } from "../lib/player-season";
+import {
+  getMaxTeamGamesFromSupabase,
+  getPlayersFromSupabasePageWithFallback,
+} from "./supabase-players";
+import {
+  filterCurrentSeasonPlayers,
+  getCurrentRankingMinGames,
+  getLatestSeasonLabel,
+  getLatestSeasonStartYear,
+} from "../lib/player-season";
 import {
   buildPlayerShareCardSources,
   type PlayerShareCardMode,
@@ -67,9 +75,45 @@ export async function getAppPlayers() {
 // Players whose latest season is the newest one in the data, for Current-mode
 // rankings. Separate cache key from the all-players pages, so a cached mixed list of
 // active and retired players can never be served for this scope.
+// Current Season ranking rules from the data: the newest season, the most games any
+// team has played in it, and the resulting minimum games to be ranked.
+export const getAppCurrentSeasonRules = unstable_cache(
+  async () => {
+    const players = await getAppPlayers();
+    const seasonLabel = getLatestSeasonLabel(players);
+    const maxTeamGames = seasonLabel
+      ? await getMaxTeamGamesFromSupabase(seasonLabel)
+      : null;
+
+    return {
+      seasonLabel,
+      maxTeamGames,
+      minGames: getCurrentRankingMinGames(
+        players,
+        getLatestSeasonStartYear(players),
+        maxTeamGames,
+      ),
+    };
+  },
+  ["statcourt-current-season-rules-v1"],
+  {
+    revalidate: 3600,
+    tags: ["statcourt-public-players"],
+  },
+);
+
 const getCachedCurrentSeasonPlayers = unstable_cache(
-  async () => filterCurrentSeasonPlayers(await getAppPlayers()),
-  ["statcourt-current-season-players-v2"],
+  async () => {
+    const [players, rules] = await Promise.all([
+      getAppPlayers(),
+      getAppCurrentSeasonRules(),
+    ]);
+
+    return filterCurrentSeasonPlayers(players, {
+      maxTeamGames: rules.maxTeamGames,
+    });
+  },
+  ["statcourt-current-season-players-v4"],
   {
     revalidate: 3600,
     tags: ["statcourt-public-players"],
@@ -105,9 +149,17 @@ export const getAppPlayerSlugSources = unstable_cache(
 // one stat mode, so each image request reads a small cached list instead of every
 // player's full stats. Cached per mode to keep each entry small.
 export const getAppPlayerShareCardSources = unstable_cache(
-  async (mode: PlayerShareCardMode = "peak") =>
-    buildPlayerShareCardSources(await getAppPlayers(), mode),
-  ["statcourt-player-share-cards-v3"],
+  async (mode: PlayerShareCardMode = "peak") => {
+    const [players, rules] = await Promise.all([
+      getAppPlayers(),
+      getAppCurrentSeasonRules(),
+    ]);
+
+    return buildPlayerShareCardSources(players, mode, {
+      maxTeamGames: rules.maxTeamGames,
+    });
+  },
+  ["statcourt-player-share-cards-v5"],
   {
     revalidate: 3600,
     tags: ["statcourt-public-players"],

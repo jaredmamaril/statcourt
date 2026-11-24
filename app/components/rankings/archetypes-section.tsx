@@ -31,6 +31,7 @@ type ArchetypesSectionProps = {
   archetypeDescriptionRef: RefObject<HTMLDivElement | null>;
   statProfileFilter: PlayerStatProfileMode;
   currentSeasonLabel?: string | null;
+  currentSeasonMinGames?: number | null;
   statMode: StatMode;
   isProfileFilterOpen: boolean;
   onToggleProfileFilter: () => void;
@@ -51,6 +52,7 @@ export function ArchetypesSection({
   archetypeDescriptionRef,
   statProfileFilter,
   currentSeasonLabel,
+  currentSeasonMinGames,
   statMode,
   isProfileFilterOpen,
   onToggleProfileFilter,
@@ -68,6 +70,7 @@ export function ArchetypesSection({
           isOpen={isProfileFilterOpen}
           selectedProfile={statProfileFilter}
           currentSeasonLabel={currentSeasonLabel}
+          currentSeasonMinGames={currentSeasonMinGames}
           onToggle={onToggleProfileFilter}
           onSelectProfile={onSelectProfileFilter}
         />

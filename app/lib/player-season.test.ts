@@ -3,8 +3,12 @@ import type { Player, PlayerStatProfile } from "../components/court-data";
 import { buildPlayerShareCardSources } from "./player-share-card";
 import { getRankingPool, rankPlayers } from "./player-rankings";
 import {
+  filterActivePlayers,
   filterCurrentSeasonPlayers,
   getCurrentNbaSeason,
+  getCurrentRankingMinGames,
+  getMinGamesForTeamGames,
+  isEligibleForCurrentRankings,
   getLatestSeasonLabel,
   hasFreshRosterStatus,
   isPlayerActive,
@@ -174,9 +178,9 @@ describe("active player rule", () => {
     ).toBe(false);
   });
 
-  it("filters the Current-mode pool with the rule", () => {
+  it("filters active players with the rule", () => {
     expect(
-      filterCurrentSeasonPlayers(players, now).map((player) => player.name),
+      filterActivePlayers(players, now).map((player) => player.name),
     ).toEqual([
       "Injured Active",
       "Active Star",
@@ -192,49 +196,118 @@ describe("active player rule", () => {
   });
 });
 
-describe("share cards and rankings agree with roster data", () => {
-  it("ranks the same active players in the same order", () => {
-    const realNow = new Date().toISOString();
-    const players = [
-      createPlayer("Retired Legend", {
-        ppg: 32,
-        rosterStatus: "inactive",
-        importedAt: realNow,
-        current: { seasonLabel: "2002-03" },
-      }),
-      createPlayer("Injured Starter", {
-        ppg: 24,
-        rosterStatus: "active",
-        importedAt: realNow,
-        current: { seasonLabel: "2025-26" },
-      }),
-      createPlayer("Healthy Star", {
-        ppg: 29,
-        rosterStatus: "active",
-        importedAt: realNow,
-      }),
-      createPlayer("Bench Guard", {
-        ppg: 6,
-        rosterStatus: "active",
-        importedAt: realNow,
-      }),
-    ];
-    const sources = buildPlayerShareCardSources(players, "current");
+describe("Current Season rankings eligibility", () => {
+  // Fresh roster status relative to the real clock, because the share cards and the
+  // ranking pool use the current time.
+  const realNow = new Date().toISOString();
+  const onRoster = (name: string, ppg: number, current?: Partial<PlayerStatProfile> | null) =>
+    createPlayer(name, { ppg, rosterStatus: "active", importedAt: realNow, current });
+
+  // The season leader has 20 games, so the minimum is ceil(20 * 0.25) = 5.
+  const leader = onRoster("Season Leader", 29, { games: 20 });
+  const atMinimum = onRoster("At Minimum", 18, { games: 5 });
+  const belowMinimum = onRoster("Below Minimum", 26, { games: 4 });
+  // On an active roster but hasn't played this season: current profile is last season.
+  const injuredStar = onRoster("Injured Star", 31, { seasonLabel: "2025-26", games: 70 });
+  const rookieNoGames = onRoster("Rookie No Games", 10, { games: 0 });
+  const rookieNoProfile = onRoster("Rookie No Profile", 10, null);
+  const retiredLegend = createPlayer("Retired Legend", {
+    ppg: 32,
+    rosterStatus: "inactive",
+    importedAt: realNow,
+    current: { seasonLabel: "2002-03", games: 82 },
+  });
+  const players = [
+    retiredLegend,
+    injuredStar,
+    belowMinimum,
+    leader,
+    rookieNoGames,
+    atMinimum,
+    rookieNoProfile,
+  ];
+
+  it("bases the minimum on the most games any team has played, rounded up", () => {
+    expect(getMinGamesForTeamGames(0)).toBe(1);
+    expect(getMinGamesForTeamGames(1)).toBe(1);
+    expect(getMinGamesForTeamGames(3)).toBe(1);
+    expect(getMinGamesForTeamGames(4)).toBe(1);
+    expect(getMinGamesForTeamGames(5)).toBe(2);
+    expect(getMinGamesForTeamGames(19)).toBe(5);
+    expect(getMinGamesForTeamGames(20)).toBe(5);
+    expect(getMinGamesForTeamGames(21)).toBe(6);
+    expect(getMinGamesForTeamGames(82)).toBe(21);
+  });
+
+  it("uses team games, not a traded player's higher total", () => {
+    // Traded mid-season: 26 games across two teams, more than any team's 20.
+    const traded = onRoster("Traded Player", 20, { games: 26 });
+    const withTraded = [...players, traded];
+
+    expect(getCurrentRankingMinGames(withTraded, 2026, 20)).toBe(5);
+    // Without team games, the player maximum is the fallback (and overstates it).
+    expect(getCurrentRankingMinGames(withTraded, 2026)).toBe(7);
+    expect(
+      filterCurrentSeasonPlayers(withTraded, { maxTeamGames: 20 }).map(
+        (player) => player.name,
+      ),
+    ).toEqual(["Season Leader", "At Minimum", "Traded Player"]);
+  });
+
+  it("falls back to the most games any player has without team games", () => {
+    expect(getCurrentRankingMinGames(players)).toBe(5);
+    expect(getCurrentRankingMinGames([onRoster("Opening Night", 20, { games: 1 })])).toBe(1);
+  });
+
+  it("includes players at the minimum and excludes players one game below it", () => {
+    expect(isEligibleForCurrentRankings(atMinimum, 2026, 5)).toBe(true);
+    expect(isEligibleForCurrentRankings(belowMinimum, 2026, 5)).toBe(false);
+  });
+
+  it("excludes an injured active player from rankings but keeps them active", () => {
+    expect(isPlayerActive(injuredStar, 2026)).toBe(true);
+    expect(isEligibleForCurrentRankings(injuredStar, 2026, 5)).toBe(false);
+
+    const card = buildPlayerShareCardSources(players, "current").find(
+      (source) => source.name === "Injured Star",
+    );
+
+    expect(card).toMatchObject({ rank: null, isFinalSeason: false });
+  });
+
+  it("excludes rookies who haven't played", () => {
+    expect(isPlayerActive(rookieNoGames, 2026)).toBe(true);
+    expect(isEligibleForCurrentRankings(rookieNoGames, 2026, 1)).toBe(false);
+    expect(isEligibleForCurrentRankings(rookieNoProfile, 2026, 1)).toBe(false);
+  });
+
+  it("never ranks stats from an older season", () => {
+    const pool = filterCurrentSeasonPlayers(players);
+
+    expect(pool.map((player) => player.name)).toEqual(["Season Leader", "At Minimum"]);
+    expect(
+      pool.every((player) => player.statProfiles?.current?.seasonLabel === "2026-27"),
+    ).toBe(true);
+  });
+
+  it("gives share cards the same ranks as the rankings", () => {
+    const sources = buildPlayerShareCardSources(players, "current", {
+      maxTeamGames: 20,
+    });
     const cardOrder = sources
       .filter((source) => source.rank !== null)
       .sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
       .map((source) => source.name);
     const rankingOrder = rankPlayers(
-      getRankingPool(players, "current"),
+      getRankingPool(players, "current", { maxTeamGames: 20 }),
       "currentOverall",
       "current",
     ).map((player) => player.name);
 
     expect(cardOrder).toEqual(rankingOrder);
-    expect(rankingOrder).toEqual(["Healthy Star", "Injured Starter", "Bench Guard"]);
-    expect(sources.find((source) => source.name === "Retired Legend")).toMatchObject({
-      rank: null,
-      isFinalSeason: true,
-    });
+    expect(rankingOrder).toEqual(["Season Leader", "At Minimum"]);
+    expect(
+      sources.find((source) => source.name === "Retired Legend"),
+    ).toMatchObject({ rank: null, isFinalSeason: true });
   });
 });

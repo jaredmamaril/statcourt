@@ -115,9 +115,9 @@ export function isPlayerActive(
   return playedInSeason(player, latestSeasonStartYear);
 }
 
-// Active players for Current mode. Without any roster or season data (the built-in
-// fallback players) there is nothing to go on, so the list is returned unchanged.
-export function filterCurrentSeasonPlayers<T extends SeasonSource>(
+// Active players. Without any roster or season data (the built-in fallback players)
+// there is nothing to go on, so the list is returned unchanged.
+export function filterActivePlayers<T extends SeasonSource>(
   players: readonly T[],
   now: Date = new Date(),
 ): T[] {
@@ -130,5 +130,102 @@ export function filterCurrentSeasonPlayers<T extends SeasonSource>(
 
   return players.filter((player) =>
     isPlayerActive(player, latestSeasonStartYear, now),
+  );
+}
+
+// Current Season rankings eligibility, separate from "active": an active player also
+// needs a minimum number of games in the newest season, so rankings never use stats
+// from an older season or a tiny sample. Injured active players stay active (share
+// cards, Final Season labels) but aren't ranked until they've played enough.
+//
+// The minimum scales with the season: 25% of the most games any TEAM has played in the
+// newest season, rounded up, and at least 1 (e.g. 19 team games so far -> 5). A traded
+// player can have more games than any single team, so team games are passed in when
+// known (see getAppCurrentSeasonRules); without them the most games any player has in
+// the newest season is used instead.
+const CURRENT_RANKING_MIN_GAMES_SHARE = 0.25;
+
+export type CurrentSeasonRankingOptions = {
+  now?: Date;
+  // Most games any team has played in the newest season, when known.
+  maxTeamGames?: number | null;
+};
+
+function getNewestSeasonGames(
+  player: SeasonSource,
+  latestSeasonStartYear: number | null,
+) {
+  const current = player.statProfiles?.current;
+
+  if (
+    latestSeasonStartYear === null ||
+    !current ||
+    getSeasonStartYear(current.seasonLabel) !== latestSeasonStartYear
+  ) {
+    return null;
+  }
+
+  return current.games ?? 0;
+}
+
+export function getMinGamesForTeamGames(maxTeamGames: number) {
+  return Math.max(
+    1,
+    Math.ceil(Math.max(0, maxTeamGames) * CURRENT_RANKING_MIN_GAMES_SHARE),
+  );
+}
+
+export function getCurrentRankingMinGames(
+  players: readonly SeasonSource[],
+  latestSeasonStartYear: number | null = getLatestSeasonStartYear(players),
+  maxTeamGames: number | null = null,
+) {
+  if (maxTeamGames != null) return getMinGamesForTeamGames(maxTeamGames);
+
+  let maxPlayerGames = 0;
+
+  for (const player of players) {
+    maxPlayerGames = Math.max(
+      maxPlayerGames,
+      getNewestSeasonGames(player, latestSeasonStartYear) ?? 0,
+    );
+  }
+
+  return getMinGamesForTeamGames(maxPlayerGames);
+}
+
+export function isEligibleForCurrentRankings(
+  player: SeasonSource,
+  latestSeasonStartYear: number | null,
+  minGames: number,
+  now: Date = new Date(),
+) {
+  const games = getNewestSeasonGames(player, latestSeasonStartYear);
+
+  return (
+    games !== null &&
+    games >= minGames &&
+    isPlayerActive(player, latestSeasonStartYear, now)
+  );
+}
+
+// Players ranked in Current Season mode. Without season data (the built-in fallback
+// players) the list is returned unchanged.
+export function filterCurrentSeasonPlayers<T extends SeasonSource>(
+  players: readonly T[],
+  { now = new Date(), maxTeamGames = null }: CurrentSeasonRankingOptions = {},
+): T[] {
+  const latestSeasonStartYear = getLatestSeasonStartYear(players);
+
+  if (latestSeasonStartYear === null) return [...players];
+
+  const minGames = getCurrentRankingMinGames(
+    players,
+    latestSeasonStartYear,
+    maxTeamGames,
+  );
+
+  return players.filter((player) =>
+    isEligibleForCurrentRankings(player, latestSeasonStartYear, minGames, now),
   );
 }

@@ -29,6 +29,7 @@ type RankingFilterBarProps = {
   openFilter: OpenFilter;
   statProfileFilter: "career" | "peak" | "current";
   currentSeasonLabel?: string | null;
+  currentSeasonMinGames?: number | null;
   positionFilter: Position | "";
   teamFilter: Team | "";
   playerSearch: string;
@@ -50,6 +51,7 @@ export function RankingFilterBar({
   openFilter,
   statProfileFilter,
   currentSeasonLabel,
+  currentSeasonMinGames,
   positionFilter,
   teamFilter,
   playerSearch,
@@ -77,6 +79,7 @@ export function RankingFilterBar({
         isOpen={openFilter === "profile"}
         selectedProfile={statProfileFilter}
         currentSeasonLabel={currentSeasonLabel}
+          currentSeasonMinGames={currentSeasonMinGames}
         onToggle={() =>
           onOpenFilter(openFilter === "profile" ? null : "profile")
         }

@@ -7,6 +7,8 @@ type RankingStatProfileFilterProps = {
   onSelectProfile: (profile: PlayerStatProfileMode) => void;
   // Newest season in the loaded data, e.g. "2026-27".
   currentSeasonLabel?: string | null;
+  // Minimum games to be ranked in Current Season mode (computed from the data).
+  currentSeasonMinGames?: number | null;
 };
 
 const statProfileLabels: Record<PlayerStatProfileMode, string> = {
@@ -30,11 +32,16 @@ export function RankingStatProfileFilter({
   onToggle,
   onSelectProfile,
   currentSeasonLabel,
+  currentSeasonMinGames,
 }: RankingStatProfileFilterProps) {
   const dropdownId = "ranking-stat-profile-menu";
+  const minGamesLabel =
+    selectedProfile === "current" && currentSeasonMinGames
+      ? `Min. ${currentSeasonMinGames} ${currentSeasonMinGames === 1 ? "game" : "games"} played`
+      : null;
 
   return (
-    <div className="relative">
+    <div className="relative flex items-center gap-2">
       <button
         type="button"
         onClick={onToggle}
@@ -52,6 +59,12 @@ export function RankingStatProfileFilter({
           {"\u25BE"}
         </span>
       </button>
+
+      {minGamesLabel && (
+        <span className="whitespace-nowrap font-michroma text-[8px] text-white/55 sm:text-[10px]">
+          {minGamesLabel}
+        </span>
+      )}
 
       {isOpen && (
         <div id={dropdownId} className="absolute left-0 top-full z-80 mt-1.5 w-max min-w-32 rounded-md border border-white/20 bg-[var(--court-panel-alt)] py-1 animate-[dropdownIn_140ms_ease-out_both] sm:mt-2 sm:min-w-full">
