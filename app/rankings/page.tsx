@@ -1,18 +1,19 @@
 ﻿"use client";
 
 import { DatabaseErrorState } from "../components/loading/database-error-state";
-import { getCachedApiPlayers } from "../lib/player-api-cache";
-
 import {
-  getPlayerRating,
-  type PlayerRatingCategory,
-} from "../components/player-ratings";
+  getCachedApiCurrentSeasonPlayers,
+  getCachedApiPlayers,
+} from "../lib/player-api-cache";
+import { getRankingPool, rankPlayers } from "../lib/player-rankings";
+
+import { type PlayerRatingCategory } from "../components/player-ratings";
 
 import {
   players as fallbackPlayers,
   getPlayerInsights,
 } from "../components/court-data";
-import type { Team, Position, StatMode } from "../components/court-data";
+import type { Player, Team, Position, StatMode } from "../components/court-data";
 
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -82,6 +83,10 @@ export default function Rankings() {
     setShouldScrollToArchetypeDescription,
   ] = useState(false);
   const [players, setPlayers] = useState(fallbackPlayers);
+  // Current mode: active players only, filtered by /api/players?scope=current-season.
+  const [currentSeasonPlayers, setCurrentSeasonPlayers] = useState<
+    Player[] | null
+  >(null);
   const [isLoadingPlayers, setIsLoadingPlayers] = useState(true);
   const [playerLoadError, setPlayerLoadError] = useState("");
   const deferredPlayerSearch = useDeferredValue(playerSearch);
@@ -150,26 +155,58 @@ export default function Rankings() {
     };
   }, []);
 
+  useEffect(() => {
+    if (statProfileFilter !== "current" || currentSeasonPlayers) return;
+
+    let isMounted = true;
+
+    getCachedApiCurrentSeasonPlayers()
+      .then((loadedPlayers) => {
+        if (isMounted && loadedPlayers.length > 0) {
+          setCurrentSeasonPlayers(loadedPlayers);
+        }
+      })
+      .catch((error) => {
+        // rankingPlayers falls back to filtering the full list with the same rule.
+        console.error("Failed to load current-season ranking players", error);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentSeasonPlayers, statProfileFilter]);
+
+  // Players eligible for the selected profile. Current mode never shows retired
+  // players: until the API list arrives (or if it fails), the full list is filtered
+  // on the client with the same rule.
+  const rankingPlayers = useMemo(
+    () =>
+      statProfileFilter === "current" && currentSeasonPlayers
+        ? currentSeasonPlayers
+        : getRankingPool(players, statProfileFilter),
+    [currentSeasonPlayers, players, statProfileFilter],
+  );
+
   // Archetype data
   const archetypeOptions = useMemo(
     () =>
       Array.from(
         new Set(
-          players
+          rankingPlayers
             .map(
               (player) => getPlayerInsights(player, statMode).archetype?.label,
             )
             .filter((label): label is string => Boolean(label)),
         ),
       ).sort(),
-    [players, statMode],
+    [rankingPlayers, statMode],
   );
 
   const archetypeOptionDetails = useMemo(
     () =>
       archetypeOptions
         .map((archetypeLabel) => {
-          const matchingPlayer = players.find(
+          const matchingPlayer = rankingPlayers.find(
             (player) =>
               getPlayerInsights(player, statMode).archetype?.label ===
               archetypeLabel,
@@ -196,7 +233,7 @@ export default function Rankings() {
 
           return aRank - bRank || a.label.localeCompare(b.label);
         }),
-    [archetypeOptions, archetypeSort, players, statMode],
+    [archetypeOptions, archetypeSort, rankingPlayers, statMode],
   );
 
   const selectedArchetypeOption = archetypeOptionDetails.find(
@@ -221,21 +258,19 @@ export default function Rankings() {
   const selectedArchetypePlayers = useMemo(
     () =>
       archetypeFilter
-        ? players
-            .filter(
+        ? rankPlayers(
+            rankingPlayers.filter(
               (player) =>
                 getPlayerInsights(player, statMode).archetype?.label ===
                 archetypeFilter,
-            )
-            .sort(
-              (a, b) =>
-                getPlayerRating(b, selectedOverallCategory, statProfileFilter) -
-                getPlayerRating(a, selectedOverallCategory, statProfileFilter),
-            )
+            ),
+            selectedOverallCategory,
+            statProfileFilter,
+          )
         : [],
     [
       archetypeFilter,
-      players,
+      rankingPlayers,
       selectedOverallCategory,
       statMode,
       statProfileFilter,
@@ -259,7 +294,7 @@ export default function Rankings() {
 
   const filteredPlayers = useMemo(
     () =>
-      players.filter((player) => {
+      rankingPlayers.filter((player) => {
         const archetype = getPlayerInsights(player, statMode).archetype;
 
         const matchesSearch = player.name
@@ -281,7 +316,7 @@ export default function Rankings() {
         );
       }),
     [
-      players,
+      rankingPlayers,
       statMode,
       deferredPlayerSearch,
       positionFilter,
@@ -291,26 +326,7 @@ export default function Rankings() {
   );
 
   const rankedPlayers = useMemo(
-    () =>
-      filteredPlayers
-        .filter((player) => {
-          const rating = getPlayerRating(
-            player,
-            ratingCategory,
-            statProfileFilter,
-          );
-
-          if (ratingCategory === "shooting" || ratingCategory === "efficiency") {
-            return rating > 0;
-          }
-
-          return true;
-        })
-        .sort(
-          (a, b) =>
-            getPlayerRating(b, ratingCategory, statProfileFilter) -
-            getPlayerRating(a, ratingCategory, statProfileFilter),
-        ),
+    () => rankPlayers(filteredPlayers, ratingCategory, statProfileFilter),
     [filteredPlayers, ratingCategory, statProfileFilter],
   );
 
@@ -469,7 +485,7 @@ export default function Rankings() {
                   )}
 
                   <ArchetypesSection
-                    players={players}
+                    players={rankingPlayers}
                     statProfileFilter={statProfileFilter}
                     statMode={statMode}
                     isProfileFilterOpen={openFilter === "profile"}

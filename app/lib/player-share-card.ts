@@ -7,6 +7,11 @@ import {
   getPlayerRating,
   type PlayerStatProfileMode,
 } from "../components/player-ratings";
+import {
+  getCurrentSeasonStartYear,
+  getLatestSeasonStartYear,
+  isPlayerInLatestSeason,
+} from "./player-season";
 import { findPlayerBySlug } from "./player-slug";
 
 export type PlayerShareCardMode = PlayerStatProfileMode;
@@ -110,12 +115,6 @@ function getModeStats(
   return profiles?.career ?? player.stats;
 }
 
-function getSeasonStartYear(seasonLabel: string | null | undefined) {
-  const match = seasonLabel?.match(/^(\d{4})/);
-
-  return match ? Number(match[1]) : null;
-}
-
 // Peak and career ranks match the rankings page: every player sorted by the mode's
 // overall rating. Current-mode ranks only compare players whose latest season is the
 // newest season in the data ("this season"). Retired players get no rank: a player's
@@ -128,20 +127,14 @@ export function buildPlayerShareCardSources(
   const overalls = players.map((player) =>
     getPlayerRating(player, overallCategories[mode], mode),
   );
-  const currentSeasons = players.map((player) =>
-    mode === "current"
-      ? (player.statProfiles?.current?.seasonLabel ?? null)
-      : null,
-  );
-  const latestSeasonStart = Math.max(
-    ...currentSeasons.map((season) => getSeasonStartYear(season) ?? -Infinity),
-  );
+  const latestSeasonStart =
+    mode === "current" ? getLatestSeasonStartYear(players) : null;
   const rankedIndexes = players
     .map((_, index) => index)
     .filter(
       (index) =>
         mode !== "current" ||
-        getSeasonStartYear(currentSeasons[index]) === latestSeasonStart,
+        isPlayerInLatestSeason(players[index], latestSeasonStart),
     );
   const rankByIndex = new Map(
     rankedIndexes
@@ -151,7 +144,8 @@ export function buildPlayerShareCardSources(
 
   return players.map((player, index) => {
     const stats = getModeStats(player, mode);
-    const seasonStart = getSeasonStartYear(currentSeasons[index]);
+    const seasonStart =
+      mode === "current" ? getCurrentSeasonStartYear(player) : null;
 
     return {
       name: player.name,
@@ -166,7 +160,10 @@ export function buildPlayerShareCardSources(
       fgPercent: toNumberOrNull(stats.fgPercent),
       overall: overalls[index],
       rank: rankByIndex.get(index) ?? null,
-      isFinalSeason: seasonStart !== null && seasonStart < latestSeasonStart,
+      isFinalSeason:
+        seasonStart !== null &&
+        latestSeasonStart !== null &&
+        seasonStart < latestSeasonStart,
     };
   });
 }

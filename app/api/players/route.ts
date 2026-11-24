@@ -4,7 +4,10 @@ import {
   type Player,
   type PlayerStatProfile,
 } from "@/app/components/court-data";
-import { getAppPlayerPage } from "@/app/components/player-data-source";
+import {
+  getAppCurrentSeasonPlayerPage,
+  getAppPlayerPage,
+} from "@/app/components/player-data-source";
 import {
   checkRateLimit,
   createIpRateLimitRules,
@@ -106,13 +109,19 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const view = cleanText(searchParams.get("view"), 40);
+  // scope=current-season returns only players whose latest season is the newest one
+  // in the data (Current-mode rankings). Any other value returns every player.
+  const scope = cleanText(searchParams.get("scope"), 40);
   const page = getPositiveIntegerParam(searchParams.get("page"), 1, 10_000);
   const limit = getPositiveIntegerParam(
     searchParams.get("limit"),
     DEFAULT_PLAYER_PAGE_SIZE,
     MAX_PLAYER_PAGE_SIZE,
   );
-  const playerPage = await getAppPlayerPage(page, limit);
+  const playerPage =
+    scope === "current-season"
+      ? await getAppCurrentSeasonPlayerPage(page, limit)
+      : await getAppPlayerPage(page, limit);
   const responsePlayers =
     view === "profile-lookup"
       ? playerPage.players.map((player) => ({
