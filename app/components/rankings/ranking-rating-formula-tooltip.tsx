@@ -44,7 +44,7 @@ function getFormulaText(
     return {
       title: "Current Season Overall",
       description:
-        "Current Season OVR covers players on active NBA rosters, using their most recent season profile. It focuses on current scoring, defense, playmaking, efficiency, shooting, rebounding, and star power with only a small career legacy influence.",
+        "Current Season OVR ranks players on active NBA rosters who have played at least a quarter of the games of this season's leader, using this season's stats only. It focuses on current scoring, defense, playmaking, efficiency, shooting, rebounding, and star power with only a small career legacy influence.",
     };
   }
 

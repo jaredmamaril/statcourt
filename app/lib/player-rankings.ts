@@ -6,7 +6,8 @@ import {
 } from "../components/player-ratings";
 import { filterCurrentSeasonPlayers } from "./player-season";
 
-// Current mode ranks only players from the newest season (active players).
+// Current mode ranks only players eligible for Current Season rankings: active and
+// with enough games in the newest season (isEligibleForCurrentRankings).
 // Career and Peak rank every player, retired players included.
 export function getRankingPool<T extends Player>(
   players: readonly T[],

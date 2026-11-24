@@ -69,7 +69,7 @@ export async function getAppPlayers() {
 // active and retired players can never be served for this scope.
 const getCachedCurrentSeasonPlayers = unstable_cache(
   async () => filterCurrentSeasonPlayers(await getAppPlayers()),
-  ["statcourt-current-season-players-v2"],
+  ["statcourt-current-season-players-v3"],
   {
     revalidate: 3600,
     tags: ["statcourt-public-players"],
@@ -107,7 +107,7 @@ export const getAppPlayerSlugSources = unstable_cache(
 export const getAppPlayerShareCardSources = unstable_cache(
   async (mode: PlayerShareCardMode = "peak") =>
     buildPlayerShareCardSources(await getAppPlayers(), mode),
-  ["statcourt-player-share-cards-v3"],
+  ["statcourt-player-share-cards-v4"],
   {
     revalidate: 3600,
     tags: ["statcourt-public-players"],

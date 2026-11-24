@@ -115,9 +115,9 @@ export function isPlayerActive(
   return playedInSeason(player, latestSeasonStartYear);
 }
 
-// Active players for Current mode. Without any roster or season data (the built-in
-// fallback players) there is nothing to go on, so the list is returned unchanged.
-export function filterCurrentSeasonPlayers<T extends SeasonSource>(
+// Active players. Without any roster or season data (the built-in fallback players)
+// there is nothing to go on, so the list is returned unchanged.
+export function filterActivePlayers<T extends SeasonSource>(
   players: readonly T[],
   now: Date = new Date(),
 ): T[] {
@@ -130,5 +130,79 @@ export function filterCurrentSeasonPlayers<T extends SeasonSource>(
 
   return players.filter((player) =>
     isPlayerActive(player, latestSeasonStartYear, now),
+  );
+}
+
+// Current Season rankings eligibility, separate from "active": an active player also
+// needs a minimum number of games in the newest season, so rankings never use stats
+// from an older season or a tiny sample. Injured active players stay active (share
+// cards, Final Season labels) but aren't ranked until they've played enough.
+//
+// The minimum scales with the season: 25% of the most games anyone has played in the
+// newest season, rounded up, and at least 1 (e.g. 19 games played so far -> 5).
+const CURRENT_RANKING_MIN_GAMES_SHARE = 0.25;
+
+function getNewestSeasonGames(
+  player: SeasonSource,
+  latestSeasonStartYear: number | null,
+) {
+  const current = player.statProfiles?.current;
+
+  if (
+    latestSeasonStartYear === null ||
+    !current ||
+    getSeasonStartYear(current.seasonLabel) !== latestSeasonStartYear
+  ) {
+    return null;
+  }
+
+  return current.games ?? 0;
+}
+
+export function getCurrentRankingMinGames(
+  players: readonly SeasonSource[],
+  latestSeasonStartYear: number | null = getLatestSeasonStartYear(players),
+) {
+  let maxGames = 0;
+
+  for (const player of players) {
+    maxGames = Math.max(
+      maxGames,
+      getNewestSeasonGames(player, latestSeasonStartYear) ?? 0,
+    );
+  }
+
+  return Math.max(1, Math.ceil(maxGames * CURRENT_RANKING_MIN_GAMES_SHARE));
+}
+
+export function isEligibleForCurrentRankings(
+  player: SeasonSource,
+  latestSeasonStartYear: number | null,
+  minGames: number,
+  now: Date = new Date(),
+) {
+  const games = getNewestSeasonGames(player, latestSeasonStartYear);
+
+  return (
+    games !== null &&
+    games >= minGames &&
+    isPlayerActive(player, latestSeasonStartYear, now)
+  );
+}
+
+// Players ranked in Current Season mode. Without season data (the built-in fallback
+// players) the list is returned unchanged.
+export function filterCurrentSeasonPlayers<T extends SeasonSource>(
+  players: readonly T[],
+  now: Date = new Date(),
+): T[] {
+  const latestSeasonStartYear = getLatestSeasonStartYear(players);
+
+  if (latestSeasonStartYear === null) return [...players];
+
+  const minGames = getCurrentRankingMinGames(players, latestSeasonStartYear);
+
+  return players.filter((player) =>
+    isEligibleForCurrentRankings(player, latestSeasonStartYear, minGames, now),
   );
 }
