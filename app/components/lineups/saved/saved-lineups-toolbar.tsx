@@ -27,7 +27,7 @@ const savedProfileOptions: { label: string; value: PlayerStatProfileMode | "all"
   [
     { label: "All Profiles", value: "all" },
     { label: "Career", value: "career" },
-    { label: "3-Year Peak", value: "peak" },
+    { label: "Peak", value: "peak" },
     { label: "Latest Season", value: "current" },
   ];
 

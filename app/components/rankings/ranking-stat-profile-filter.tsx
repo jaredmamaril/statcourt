@@ -1,4 +1,5 @@
 import type { PlayerStatProfileMode } from "../player-ratings";
+import { PEAK_RULE_TEXT } from "../../lib/player-peak";
 
 type RankingStatProfileFilterProps = {
   isOpen: boolean;
@@ -13,7 +14,7 @@ type RankingStatProfileFilterProps = {
 
 const statProfileLabels: Record<PlayerStatProfileMode, string> = {
   career: "Career",
-  peak: "3-Year Peak",
+  peak: "Peak",
   current: "Current Season",
 };
 
@@ -63,6 +64,12 @@ export function RankingStatProfileFilter({
       {minGamesLabel && (
         <span className="whitespace-nowrap font-michroma text-[8px] text-white/55 sm:text-[10px]">
           {minGamesLabel}
+        </span>
+      )}
+
+      {selectedProfile === "peak" && (
+        <span className="max-w-44 font-michroma text-[8px] leading-snug text-white/55 sm:max-w-72 sm:text-[10px]">
+          {PEAK_RULE_TEXT}
         </span>
       )}
 

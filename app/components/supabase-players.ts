@@ -1,4 +1,5 @@
 import { supabase } from "./supabase-client";
+import type { SeasonStatRow } from "../lib/player-peak";
 import { players as fallbackPlayers } from "./court-data";
 import type {
   Player,
@@ -510,4 +511,111 @@ export async function getMaxTeamGamesFromSupabase(seasonLabel: string) {
   } catch {
     return null;
   }
+}
+
+type SupabaseSeasonStatRow = {
+  id: number;
+  player_id: number;
+  season: string;
+  team: string | null;
+  games: number | null;
+  minutes_per_game: number | null;
+  ppg: number | null;
+  rpg: number | null;
+  apg: number | null;
+  spg: number | null;
+  bpg: number | null;
+  fg_percent: number | null;
+  three_percent: number | null;
+  ft_percent: number | null;
+  three_made_per_game: number | null;
+  three_attempts_per_game: number | null;
+  free_throw_attempts_per_game: number | null;
+};
+
+const SEASON_STAT_COLUMNS =
+  "id, player_id, season, team, games, minutes_per_game, ppg, rpg, apg, spg, bpg, fg_percent, three_percent, ft_percent, three_made_per_game, three_attempts_per_game, free_throw_attempts_per_game";
+const SUPABASE_ROW_LIMIT = 1000;
+
+function toSeasonStatRow(row: SupabaseSeasonStatRow): SeasonStatRow {
+  return {
+    season: row.season,
+    team: row.team,
+    games: toNullableNumber(row.games),
+    minutesPerGame: toNullableNumber(row.minutes_per_game),
+    ppg: toNullableNumber(row.ppg),
+    rpg: toNullableNumber(row.rpg),
+    apg: toNullableNumber(row.apg),
+    spg: toNullableNumber(row.spg),
+    bpg: toNullableNumber(row.bpg),
+    fgPercent: toNullableNumber(row.fg_percent),
+    threePercent: toNullableNumber(row.three_percent),
+    ftPercent: toNullableNumber(row.ft_percent),
+    threeMadePerGame: toNullableNumber(row.three_made_per_game),
+    threeAttemptsPerGame: toNullableNumber(row.three_attempts_per_game),
+    freeThrowAttemptsPerGame: toNullableNumber(row.free_throw_attempts_per_game),
+  };
+}
+
+// Every player_season_stats row (one per team stint, plus "TOT" for traded seasons),
+// keyed by players.id, for the two-season peak in app/lib/player-peak.ts. Pages are
+// requested in parallel once the row count is known.
+export async function getAllSeasonStatRowsByPlayerId() {
+  const { count, error: countError } = await supabase
+    .from("player_season_stats")
+    .select("id", { count: "exact", head: true });
+
+  if (countError) {
+    throw new Error(countError.message);
+  }
+
+  const pageStarts = Array.from(
+    { length: Math.ceil((count ?? 0) / SUPABASE_ROW_LIMIT) },
+    (_, index) => index * SUPABASE_ROW_LIMIT,
+  );
+  const pages = await Promise.all(
+    pageStarts.map(async (from) => {
+      const { data, error } = await supabase
+        .from("player_season_stats")
+        .select(SEASON_STAT_COLUMNS)
+        .order("id", { ascending: true })
+        .range(from, from + SUPABASE_ROW_LIMIT - 1);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      return (data ?? []) as SupabaseSeasonStatRow[];
+    }),
+  );
+  const rowsByPlayerId = new Map<number, SeasonStatRow[]>();
+  const allRows: SeasonStatRow[] = [];
+
+  for (const row of pages.flat()) {
+    const seasonRow = toSeasonStatRow(row);
+
+    allRows.push(seasonRow);
+    rowsByPlayerId.set(row.player_id, [
+      ...(rowsByPlayerId.get(row.player_id) ?? []),
+      seasonRow,
+    ]);
+  }
+
+  return { rowsByPlayerId, allRows };
+}
+
+// Number of players the app shows (same filters as the player pages).
+export async function getSupabasePlayerCount() {
+  const { count, error } = await supabase
+    .from("players")
+    .select("id", { count: "exact", head: true })
+    .neq("stats_source", "pending_import")
+    .gt("ppg", 0)
+    .not("fallback_image", "is", null);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return count ?? 0;
 }

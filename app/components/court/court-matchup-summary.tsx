@@ -11,7 +11,7 @@ function formatCategoryList(categories: string[]) {
 }
 
 function getStatModeLabel(statMode: StatMode) {
-  if (statMode === "peak") return "3-Year Peak Profile";
+  if (statMode === "peak") return "Peak Profile";
   if (statMode === "current") return "Latest Season Profile";
   return "Career Profile";
 }

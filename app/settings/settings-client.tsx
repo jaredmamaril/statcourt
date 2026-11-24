@@ -139,7 +139,7 @@ function isErrorLikeStatus(status: string) {
 
 const statModeOptions: { label: string; value: DefaultStatMode }[] = [
   { label: "Career", value: "career" },
-  { label: "3-Year Peak", value: "peak" },
+  { label: "Peak", value: "peak" },
   { label: "Latest Season", value: "current" },
 ];
 

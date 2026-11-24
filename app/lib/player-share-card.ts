@@ -15,6 +15,7 @@ import {
   isEligibleForCurrentRankings,
   isPlayerActive,
 } from "./player-season";
+import { filterPeakPlayers } from "./player-peak";
 import { findPlayerBySlug } from "./player-slug";
 
 export type PlayerShareCardMode = PlayerStatProfileMode;
@@ -50,7 +51,7 @@ export type PlayerShareCard = {
 };
 
 const modeLabels: Record<PlayerShareCardMode, string> = {
-  peak: "3-Year Peak",
+  peak: "Peak",
   career: "Career",
   current: "Current",
 };
@@ -63,7 +64,7 @@ const rankPhrases: Record<PlayerShareCardMode, string> = {
 };
 
 const descriptionModeLabels: Record<PlayerShareCardMode, string> = {
-  peak: "3-year peak",
+  peak: "peak",
   career: "career",
   current: "current season",
 };
@@ -143,18 +144,22 @@ export function buildPlayerShareCardSources(
     (player) =>
       mode === "current" && isPlayerActive(player, latestSeasonStart, now),
   );
+  // Peak mode ranks the same players as Peak rankings (two-season peak required).
+  const peakPool = mode === "peak" ? new Set(filterPeakPlayers(players)) : null;
   const rankedIndexes = players
     .map((_, index) => index)
-    .filter(
-      (index) =>
-        mode !== "current" ||
-        isEligibleForCurrentRankings(
+    .filter((index) => {
+      if (mode === "current") {
+        return isEligibleForCurrentRankings(
           players[index],
           latestSeasonStart,
           minGames,
           now,
-        ),
-    );
+        );
+      }
+
+      return peakPool ? peakPool.has(players[index]) : true;
+    });
   const rankByIndex = new Map(
     rankedIndexes
       .sort((a, b) => overalls[b] - overalls[a])
@@ -259,7 +264,7 @@ export function getPlayerShareCard(
   };
 }
 
-// Meta description for the player page, e.g. "LeBron James's 3-year peak (2007–10):
+// Meta description for the player page, e.g. "LeBron James's peak (2007–10):
 // 29.3 PPG, 7.6 RPG, 7.7 APG, and the #4 best peak ever. Compare players ...".
 // Returns null when the player isn't found so the page can use its generic copy.
 export function getPlayerShareDescription(

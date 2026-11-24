@@ -21,7 +21,7 @@ export function ArchetypePlayerList({
 }: ArchetypePlayerListProps) {
   const statProfileLabels = {
     career: "Career",
-    peak: "3-Year Peak",
+    peak: "Peak",
     current: "Current Season",
   };
 
