@@ -38,7 +38,7 @@ type ArchetypesSectionProps = {
   onSelectProfileFilter: (profile: PlayerStatProfileMode) => void;
   onToggleArchetypeSort: () => void;
   onSelectArchetype: (label: string) => void;
-  onViewPlayer: (playerName: string) => void;
+  onViewPlayer: (player: Player) => void;
 };
 
 export function ArchetypesSection({

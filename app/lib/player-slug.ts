@@ -55,6 +55,22 @@ export function getPlayerHref(
   return `/players/${getCanonicalPlayerSlug(source, duplicateSlugs)}`;
 }
 
+// Canonical profile links for a set of players: names shared by more than one player
+// in the set get the NBA ID suffix. Pass the full player list (not a filtered view)
+// so links match the sitemap.
+export function createPlayerHrefResolver(players: readonly PlayerSlugSource[]) {
+  const duplicateSlugs = getDuplicatePlayerSlugs(players);
+
+  return (player: PlayerSlugSource) => getPlayerHref(player, duplicateSlugs);
+}
+
+// Every canonical player profile path, as listed in the sitemap.
+export function getCanonicalPlayerPaths(players: readonly PlayerSlugSource[]) {
+  const toHref = createPlayerHrefResolver(players);
+
+  return Array.from(new Set(players.map(toHref)));
+}
+
 // Accepts /players/{slug}-{nbaId}, /players/{slug}, and /players/{Encoded Name}.
 // A bare slug shared by several players resolves to the first one, as before.
 export function findPlayerBySlug<T extends PlayerSlugSource>(

@@ -18,7 +18,7 @@ import {
   players as fallbackPlayers,
   getPlayerInsights,
 } from "../components/court-data";
-import type { Team, Position, StatMode } from "../components/court-data";
+import type { Player, Team, Position, StatMode } from "../components/court-data";
 
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -44,7 +44,7 @@ import {
   RankingArchetypesSkeleton,
   RankingLeaderboardSkeleton,
 } from "../components/rankings/ranking-skeletons";
-import { getPlayerHref } from "../lib/player-slug";
+import { createPlayerHrefResolver } from "../lib/player-slug";
 
 type RankingStatProfile = "career" | "peak" | "current";
 type ArchetypeSort = "rarity" | "name";
@@ -197,6 +197,13 @@ export default function Rankings() {
   const currentSeasonMinGames = useMemo(
     () => currentSeason?.rules?.minGames ?? getCurrentRankingMinGames(players),
     [currentSeason, players],
+  );
+
+  // Canonical profile links (NBA ID suffix for duplicate names), from the full player
+  // list in every mode so they match the sitemap even when Current mode is filtered.
+  const getPlayerProfileHref = useMemo(
+    () => createPlayerHrefResolver(players),
+    [players],
   );
 
   // Newest season in the data (e.g. "2026-27") for the Current Season label.
@@ -371,8 +378,8 @@ export default function Rankings() {
       : `${activeTabLabel} Rating`;
 
   // Event handlers
-  function viewPlayerCard(playerName: string) {
-    router.push(getPlayerHref(playerName));
+  function viewPlayerCard(player: Player) {
+    router.push(getPlayerProfileHref(player));
   }
 
   function loadMoreRankings() {

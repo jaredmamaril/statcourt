@@ -15,7 +15,7 @@ type TopRankingCardsProps = {
   ratingCategory: PlayerRatingCategory;
   ratingLabel: string;
   statProfileFilter: PlayerStatProfileMode;
-  onViewPlayer: (playerName: string) => void;
+  onViewPlayer: (player: Player) => void;
 };
 
 export function TopRankingCards({

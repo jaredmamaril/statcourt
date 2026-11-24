@@ -45,7 +45,7 @@ type RankingLeaderboardSectionProps = {
   onArchetypeFilterChange: Dispatch<SetStateAction<string>>;
   onDisplayViewChange: (value: DefaultPlayerView) => void;
   onPlayerSearchChange: Dispatch<SetStateAction<string>>;
-  onViewPlayer: (playerName: string) => void;
+  onViewPlayer: (player: Player) => void;
 };
 
 export function RankingLeaderboardSection({

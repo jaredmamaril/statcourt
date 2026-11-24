@@ -10,7 +10,7 @@ import { RankingPlayerTooltip } from "./ranking-player-tooltip";
 
 type ArchetypePlayerListProps = {
   players: Player[];
-  onViewPlayer: (playerName: string) => void;
+  onViewPlayer: (player: Player) => void;
   statProfileFilter: PlayerStatProfileMode;
 };
 
