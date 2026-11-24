@@ -245,14 +245,12 @@ export function createPeakContext(
   };
 }
 
-// Replaces the player's stored peak profile with the two-season peak, or removes it
-// when they have fewer than two qualifying seasons.
-export function withTwoSeasonPeak<T extends Player>(
+// Sets the player's peak profile (replacing any stored one), or removes it when there
+// is no two-season peak.
+export function withPeakProfile<T extends Player>(
   player: T,
-  rows: readonly SeasonStatRow[],
-  context: PeakContext,
+  peak: PlayerStatProfile | null,
 ): T {
-  const peak = findTwoSeasonPeak(player, rows, context);
   const statProfiles = { ...player.statProfiles };
 
   if (peak) {
@@ -262,6 +260,16 @@ export function withTwoSeasonPeak<T extends Player>(
   }
 
   return { ...player, statProfiles };
+}
+
+// Replaces the player's stored peak profile with the two-season peak, or removes it
+// when they have fewer than two qualifying seasons.
+export function withTwoSeasonPeak<T extends Player>(
+  player: T,
+  rows: readonly SeasonStatRow[],
+  context: PeakContext,
+): T {
+  return withPeakProfile(player, findTwoSeasonPeak(player, rows, context));
 }
 
 export function hasTwoSeasonPeak(player: Pick<Player, "statProfiles">) {
