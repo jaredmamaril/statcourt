@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { players as localPlayers, type Player } from "./court-data";
 import { getPlayersFromSupabasePageWithFallback } from "./supabase-players";
+import { filterCurrentSeasonPlayers } from "../lib/player-season";
 import {
   buildPlayerShareCardSources,
   type PlayerShareCardMode,
@@ -61,6 +62,29 @@ export async function getAppPlayers() {
   }
 
   return players;
+}
+
+// Players whose latest season is the newest one in the data, for Current-mode
+// rankings. Separate cache key from the all-players pages, so a cached mixed list of
+// active and retired players can never be served for this scope.
+const getCachedCurrentSeasonPlayers = unstable_cache(
+  async () => filterCurrentSeasonPlayers(await getAppPlayers()),
+  ["statcourt-current-season-players-v1"],
+  {
+    revalidate: 3600,
+    tags: ["statcourt-public-players"],
+  },
+);
+
+export async function getAppCurrentSeasonPlayerPage(page: number, limit: number) {
+  const players = await getCachedCurrentSeasonPlayers();
+  const start = (page - 1) * limit;
+
+  return {
+    players: players.slice(start, start + limit),
+    total: players.length,
+    hasMore: start + limit < players.length,
+  };
 }
 
 // Lightweight name/ID list for canonical player URLs (layout metadata, sitemap).

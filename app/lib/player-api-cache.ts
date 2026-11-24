@@ -13,6 +13,8 @@ export type PlayerProfileLookup = {
 
 let cachedPlayers: Player[] | null = null;
 let pendingPlayersRequest: Promise<Player[]> | null = null;
+let cachedCurrentSeasonPlayers: Player[] | null = null;
+let pendingCurrentSeasonPlayersRequest: Promise<Player[]> | null = null;
 let cachedPlayerProfileLookups: PlayerProfileLookup[] | null = null;
 let pendingPlayerProfileLookupsRequest: Promise<PlayerProfileLookup[]> | null =
   null;
@@ -72,6 +74,33 @@ export async function getCachedApiPlayers() {
     });
 
   return pendingPlayersRequest;
+}
+
+// Only players from the newest season, filtered by the API (Current-mode rankings).
+export async function getCachedApiCurrentSeasonPlayers() {
+  if (cachedCurrentSeasonPlayers) {
+    return cachedCurrentSeasonPlayers;
+  }
+
+  if (pendingCurrentSeasonPlayersRequest) {
+    return pendingCurrentSeasonPlayersRequest;
+  }
+
+  pendingCurrentSeasonPlayersRequest = fetchPlayerApiPages<Player>(
+    "/api/players?scope=current-season",
+  )
+    .then((players) => {
+      if (players.length > 0) {
+        cachedCurrentSeasonPlayers = players;
+      }
+
+      return players;
+    })
+    .finally(() => {
+      pendingCurrentSeasonPlayersRequest = null;
+    });
+
+  return pendingCurrentSeasonPlayersRequest;
 }
 
 export async function getCachedApiPlayerProfileLookups() {
