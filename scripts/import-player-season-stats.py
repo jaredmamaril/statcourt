@@ -1,56 +1,38 @@
-import os
 import sys
 import time
 import random
 import math
-from pathlib import Path
 
-from supabase import create_client
-from curl_cffi import requests as cr
-from nba_api.stats.library.http import NBAStatsHTTP
 from nba_api.stats.endpoints import playercareerstats, playerprofilev2
+
+from pipeline_common import (
+    configure_nba_session,
+    current_nba_season,
+    format_season,
+    get_service_supabase_client,
+    season_start_year,
+)
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-session = cr.Session(impersonate="chrome120")
-session.get("https://www.nba.com/stats/", timeout=20)
-
-NBAStatsHTTP.get_session = lambda self: session
+configure_nba_session()
 
 
 ONLY_IMPORT = set()
 IMPORT_LIMIT = 1000
 START_AFTER = ""
 REFRESH_EXISTING = False
+# --active refreshes every player on an active roster (player_directory.roster_status
+# = "1") or with a season row in the current or previous season, even if they
+# already have rows. Use it for in-season updates; run import-player-directory.py first.
+REFRESH_ACTIVE = "--active" in sys.argv
 #$env:PYTHONIOENCODING="utf-8"
-#python -u scripts/import-player-season-stats.py > scripts/player-season-stats-output.txt
-
-
-def load_env_file():
-    env_path = Path(".env.local")
-
-    if not env_path.exists():
-        return
-
-    for line in env_path.read_text().splitlines():
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-
-        key, value = line.split("=", 1)
-        os.environ.setdefault(key, value)
+#python -u scripts/import-player-season-stats.py --active > scripts/player-season-stats-output.txt
 
 
 def get_supabase_client():
-    load_env_file()
-
-    url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
-    key = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
-
-    if not url or not key:
-        raise ValueError("Missing Supabase URL or anon key")
-
-    return create_client(url, key)
+    return get_service_supabase_client()
 
 
 def pause_between_nba_calls():
@@ -200,8 +182,61 @@ def get_existing_nba_ids(supabase):
     return existing_nba_ids
 
 
+def fetch_all(query_fn, page_size=1000):
+    rows = []
+    start = 0
+
+    while True:
+        page = query_fn().range(start, start + page_size - 1).execute().data or []
+        rows.extend(page)
+
+        if len(page) < page_size:
+            return rows
+
+        start += page_size
+
+
+def get_active_players_to_import(supabase):
+    current = current_nba_season()
+    previous = format_season(season_start_year(current) - 1)
+
+    roster_ids = {
+        row["nba_id"]
+        for row in fetch_all(
+            lambda: supabase.table("player_directory")
+            .select("nba_id")
+            .eq("roster_status", "1")
+        )
+    }
+    recent_ids = {
+        row["nba_id"]
+        for row in fetch_all(
+            lambda: supabase.table("player_season_stats")
+            .select("nba_id")
+            .in_("season", [previous, current])
+        )
+    }
+    wanted_ids = roster_ids | recent_ids
+    players = fetch_all(
+        lambda: supabase.table("players")
+        .select("id, nba_id, name")
+        .not_.is_("nba_id", "null")
+        .order("name")
+    )
+
+    print(
+        f"-- Active refresh for {current}: {len(roster_ids)} on active rosters, "
+        f"{len(recent_ids)} with {previous} or {current} rows"
+    )
+
+    return [player for player in players if player["nba_id"] in wanted_ids]
+
+
 def get_players_to_import():
     supabase = get_supabase_client()
+
+    if REFRESH_ACTIVE:
+        return get_active_players_to_import(supabase)
 
     if ONLY_IMPORT:
         response = (

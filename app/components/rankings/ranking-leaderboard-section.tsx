@@ -23,6 +23,7 @@ type RankingLeaderboardSectionProps = {
 
   openFilter: "profile" | "position" | "team" | "archetype" | "view" | null;
   statProfileFilter: "career" | "peak" | "current";
+  currentSeasonLabel?: string | null;
   positionFilter: Position | "";
   teamFilter: Team | "";
   playerSearch: string;
@@ -53,6 +54,7 @@ export function RankingLeaderboardSection({
   ratingLabel,
   openFilter,
   statProfileFilter,
+  currentSeasonLabel,
   positionFilter,
   teamFilter,
   playerSearch,
@@ -86,6 +88,7 @@ export function RankingLeaderboardSection({
       <RankingFilterBar
         openFilter={openFilter}
         statProfileFilter={statProfileFilter}
+        currentSeasonLabel={currentSeasonLabel}
         positionFilter={positionFilter}
         teamFilter={teamFilter}
         playerSearch={playerSearch}

@@ -28,6 +28,7 @@ type ArchetypeOptionDetail = {
 type RankingFilterBarProps = {
   openFilter: OpenFilter;
   statProfileFilter: "career" | "peak" | "current";
+  currentSeasonLabel?: string | null;
   positionFilter: Position | "";
   teamFilter: Team | "";
   playerSearch: string;
@@ -48,6 +49,7 @@ type RankingFilterBarProps = {
 export function RankingFilterBar({
   openFilter,
   statProfileFilter,
+  currentSeasonLabel,
   positionFilter,
   teamFilter,
   playerSearch,
@@ -74,6 +76,7 @@ export function RankingFilterBar({
       <RankingStatProfileFilter
         isOpen={openFilter === "profile"}
         selectedProfile={statProfileFilter}
+        currentSeasonLabel={currentSeasonLabel}
         onToggle={() =>
           onOpenFilter(openFilter === "profile" ? null : "profile")
         }

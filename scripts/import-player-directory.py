@@ -1,68 +1,106 @@
+"""Refresh public.player_directory from nba_api CommonAllPlayers.
+
+ROSTERSTATUS is relative to the season requested, so this always asks for the
+current season (derived from today's date). Writes directly to Supabase with the
+service role key from .env.local.
+
+    python -u scripts/import-player-directory.py
+"""
+
+import math
+import sys
+from datetime import datetime, timezone
+
 from nba_api.stats.endpoints import commonallplayers
 
+from pipeline_common import (
+    configure_nba_session,
+    current_nba_season,
+    get_service_supabase_client,
+)
 
-def sql_string(value):
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
+BATCH_SIZE = 500
+
+
+def clean_text(value):
     if value is None:
-        return "null"
+        return None
 
-    value = str(value)
+    if isinstance(value, float) and math.isnan(value):
+        return None
 
-    if value == "" or value.lower() == "nan":
-        return "null"
+    text = str(value).strip()
 
-    return "'" + value.replace("'", "''") + "'"
-
-
-def sql_int(value):
-    if value is None:
-        return "null"
-
-    value = str(value)
-
-    if value == "" or value.lower() == "nan":
-        return "null"
-
-    return value
+    return None if text == "" or text.lower() == "nan" else text
 
 
-all_players = commonallplayers.CommonAllPlayers(
-    is_only_current_season=0,
-    league_id="00",
-    season="2023-24",
-)
+def clean_int(value):
+    text = clean_text(value)
 
-df = all_players.common_all_players.get_data_frame()
+    if text is None:
+        return None
+
+    try:
+        return int(float(text))
+    except ValueError:
+        return None
 
 
-for _, row in df.iterrows():
-    print(f"""
-insert into public.player_directory (
-  nba_id,
-  name,
-  from_year,
-  to_year,
-  roster_status,
-  team,
-  player_code,
-  imported_at
-)
-values (
-  {sql_int(row["PERSON_ID"])},
-  {sql_string(row["DISPLAY_FIRST_LAST"])},
-  {sql_int(row["FROM_YEAR"])},
-  {sql_int(row["TO_YEAR"])},
-  {sql_string(row["ROSTERSTATUS"])},
-  {sql_string(row["TEAM_ABBREVIATION"])},
-  {sql_string(row["PLAYERCODE"])},
-  now()
-)
-on conflict (nba_id)
-do update set
-  name = excluded.name,
-  from_year = excluded.from_year,
-  to_year = excluded.to_year,
-  roster_status = excluded.roster_status,
-  team = excluded.team,
-  player_code = excluded.player_code,
-  imported_at = now();
-""")
+def fetch_directory_rows(season):
+    all_players = commonallplayers.CommonAllPlayers(
+        is_only_current_season=0,
+        league_id="00",
+        season=season,
+        timeout=60,
+    )
+    frame = all_players.common_all_players.get_data_frame()
+    imported_at = datetime.now(timezone.utc).isoformat()
+
+    rows = []
+
+    for _, row in frame.iterrows():
+        nba_id = clean_int(row["PERSON_ID"])
+
+        if nba_id is None:
+            continue
+
+        rows.append(
+            {
+                "nba_id": nba_id,
+                "name": clean_text(row["DISPLAY_FIRST_LAST"]),
+                "from_year": clean_int(row["FROM_YEAR"]),
+                "to_year": clean_int(row["TO_YEAR"]),
+                # Stored as text "1" (on an active roster) or "0", as before.
+                "roster_status": clean_text(clean_int(row["ROSTERSTATUS"])),
+                "team": clean_text(row["TEAM_ABBREVIATION"]),
+                "player_code": clean_text(row["PLAYERCODE"]),
+                "imported_at": imported_at,
+            }
+        )
+
+    return rows
+
+
+def main():
+    season = current_nba_season()
+    configure_nba_session()
+    rows = fetch_directory_rows(season)
+    active = sum(1 for row in rows if row["roster_status"] == "1")
+
+    print(f"-- Fetched {len(rows)} players for {season} ({active} on active rosters)")
+
+    supabase = get_service_supabase_client()
+
+    for start in range(0, len(rows), BATCH_SIZE):
+        batch = rows[start:start + BATCH_SIZE]
+        supabase.table("player_directory").upsert(batch, on_conflict="nba_id").execute()
+        print(f"-- Upserted {start + len(batch)}/{len(rows)}")
+
+    print("-- Done.")
+
+
+if __name__ == "__main__":
+    main()

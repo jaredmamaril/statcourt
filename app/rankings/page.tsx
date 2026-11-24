@@ -6,6 +6,7 @@ import {
   getCachedApiPlayers,
 } from "../lib/player-api-cache";
 import { getRankingPool, rankPlayers } from "../lib/player-rankings";
+import { getLatestSeasonLabel } from "../lib/player-season";
 
 import { type PlayerRatingCategory } from "../components/player-ratings";
 
@@ -187,6 +188,12 @@ export default function Rankings() {
     [currentSeasonPlayers, players, statProfileFilter],
   );
 
+  // Newest season in the data (e.g. "2026-27") for the Current Season label.
+  const currentSeasonLabel = useMemo(
+    () => getLatestSeasonLabel(players),
+    [players],
+  );
+
   // Archetype data
   const archetypeOptions = useMemo(
     () =>
@@ -340,7 +347,7 @@ export default function Rankings() {
       ? "Career"
       : statProfileFilter === "peak"
         ? "Peak"
-        : "Current";
+        : "Current Season";
 
   const rankingHeading =
     activeTab === "careerOverall"
@@ -487,6 +494,7 @@ export default function Rankings() {
                   <ArchetypesSection
                     players={rankingPlayers}
                     statProfileFilter={statProfileFilter}
+                    currentSeasonLabel={currentSeasonLabel}
                     statMode={statMode}
                     isProfileFilterOpen={openFilter === "profile"}
                     onToggleProfileFilter={() =>
@@ -524,6 +532,7 @@ export default function Rankings() {
                 ratingLabel={ratingLabel}
                 openFilter={openFilter}
                 statProfileFilter={statProfileFilter}
+                currentSeasonLabel={currentSeasonLabel}
                 positionFilter={positionFilter}
                 teamFilter={teamFilter}
                 playerSearch={playerSearch}

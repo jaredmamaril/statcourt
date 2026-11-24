@@ -1,39 +1,15 @@
-import os
 import sys
 import math
-from pathlib import Path
 from collections import defaultdict
 
-from supabase import create_client
+from pipeline_common import get_service_supabase_client
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 
-def load_env_file():
-    env_path = Path(".env.local")
-
-    if not env_path.exists():
-        return
-
-    for line in env_path.read_text().splitlines():
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-
-        key, value = line.split("=", 1)
-        os.environ.setdefault(key, value)
-
-
 def get_supabase_client():
-    load_env_file()
-
-    url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
-    key = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
-
-    if not url or not key:
-        raise ValueError("Missing Supabase URL or service role key")
-
-    return create_client(url, key)
+    return get_service_supabase_client()
 
 
 ONLY_PLAYERS = set()
@@ -92,6 +68,8 @@ def fetch_all_rows(supabase, table, select_columns, page_size=1000):
         response = (
             supabase.table(table)
             .select(select_columns)
+            # Stable order so pages don't skip or repeat rows.
+            .order("id")
             .range(start, start + page_size - 1)
             .execute()
         )

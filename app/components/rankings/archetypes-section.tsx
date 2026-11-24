@@ -30,6 +30,7 @@ type ArchetypesSectionProps = {
   selectedArchetypePlayers: Player[];
   archetypeDescriptionRef: RefObject<HTMLDivElement | null>;
   statProfileFilter: PlayerStatProfileMode;
+  currentSeasonLabel?: string | null;
   statMode: StatMode;
   isProfileFilterOpen: boolean;
   onToggleProfileFilter: () => void;
@@ -49,6 +50,7 @@ export function ArchetypesSection({
   selectedArchetypePlayers,
   archetypeDescriptionRef,
   statProfileFilter,
+  currentSeasonLabel,
   statMode,
   isProfileFilterOpen,
   onToggleProfileFilter,
@@ -65,6 +67,7 @@ export function ArchetypesSection({
         <RankingStatProfileFilter
           isOpen={isProfileFilterOpen}
           selectedProfile={statProfileFilter}
+          currentSeasonLabel={currentSeasonLabel}
           onToggle={onToggleProfileFilter}
           onSelectProfile={onSelectProfileFilter}
         />

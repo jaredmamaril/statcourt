@@ -329,7 +329,13 @@ export type Player = {
   stats: PlayerStats;
   statProfiles?: PlayerStatProfiles;
   ratings: PlayerRatings;
+  // From player_directory.roster_status; see app/lib/player-season.ts.
+  rosterStatus?: PlayerRosterStatus | null;
+  // When that roster status was imported (ISO timestamp), to tell if it's stale.
+  rosterStatusImportedAt?: string | null;
 };
+
+export type PlayerRosterStatus = "active" | "inactive";
 
 // Fallback player dataset. Stats should use career averages, not peak season or current-season stats.
 export const players: Player[] = [
