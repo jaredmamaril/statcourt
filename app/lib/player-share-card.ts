@@ -8,6 +8,7 @@ import {
   type PlayerStatProfileMode,
 } from "../components/player-ratings";
 import {
+  type CurrentSeasonRankingOptions,
   getCurrentRankingMinGames,
   getCurrentSeasonStartYear,
   getLatestSeasonStartYear,
@@ -124,16 +125,16 @@ function getModeStats(
 export function buildPlayerShareCardSources(
   players: readonly Player[],
   mode: PlayerShareCardMode = "peak",
+  { now = new Date(), maxTeamGames = null }: CurrentSeasonRankingOptions = {},
 ): PlayerShareCardSource[] {
   const overalls = players.map((player) =>
     getPlayerRating(player, overallCategories[mode], mode),
   );
-  const now = new Date();
   const latestSeasonStart =
     mode === "current" ? getLatestSeasonStartYear(players) : null;
   const minGames =
     mode === "current"
-      ? getCurrentRankingMinGames(players, latestSeasonStart)
+      ? getCurrentRankingMinGames(players, latestSeasonStart, maxTeamGames)
       : 0;
   // Active decides the Final Season label; ranking eligibility (active plus enough
   // newest-season games) is the same rule Current Season rankings use, so the ranks

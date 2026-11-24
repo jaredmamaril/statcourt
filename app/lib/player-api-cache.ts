@@ -13,15 +13,30 @@ export type PlayerProfileLookup = {
 
 let cachedPlayers: Player[] | null = null;
 let pendingPlayersRequest: Promise<Player[]> | null = null;
-let cachedCurrentSeasonPlayers: Player[] | null = null;
-let pendingCurrentSeasonPlayersRequest: Promise<Player[]> | null = null;
+export type CurrentSeasonRules = {
+  seasonLabel: string | null;
+  maxTeamGames: number | null;
+  minGames: number;
+};
+
+export type CurrentSeasonPlayers = {
+  players: Player[];
+  rules: CurrentSeasonRules | null;
+};
+
+let cachedCurrentSeasonPlayers: CurrentSeasonPlayers | null = null;
+let pendingCurrentSeasonPlayersRequest: Promise<CurrentSeasonPlayers> | null =
+  null;
 let cachedPlayerProfileLookups: PlayerProfileLookup[] | null = null;
 let pendingPlayerProfileLookupsRequest: Promise<PlayerProfileLookup[]> | null =
   null;
 
 const PLAYER_API_PAGE_SIZE = 500;
 
-async function fetchPlayerApiPages<T>(path: string) {
+async function fetchPlayerApiPages<T>(
+  path: string,
+  onFirstPage?: (data: Record<string, unknown>) => void,
+) {
   const loadedPlayers: T[] = [];
   let page = 1;
 
@@ -39,6 +54,10 @@ async function fetchPlayerApiPages<T>(path: string) {
       players?: T[];
       hasMore?: boolean;
     };
+
+    if (page === 1) {
+      onFirstPage?.(data as Record<string, unknown>);
+    }
 
     loadedPlayers.push(...(data.players ?? []));
 
@@ -76,7 +95,8 @@ export async function getCachedApiPlayers() {
   return pendingPlayersRequest;
 }
 
-// Only players from the newest season, filtered by the API (Current-mode rankings).
+// Players eligible for Current Season rankings, filtered by the API, plus the rule
+// it used (newest season and minimum games).
 export async function getCachedApiCurrentSeasonPlayers() {
   if (cachedCurrentSeasonPlayers) {
     return cachedCurrentSeasonPlayers;
@@ -86,15 +106,22 @@ export async function getCachedApiCurrentSeasonPlayers() {
     return pendingCurrentSeasonPlayersRequest;
   }
 
+  let rules: CurrentSeasonRules | null = null;
+
   pendingCurrentSeasonPlayersRequest = fetchPlayerApiPages<Player>(
     "/api/players?scope=current-season",
+    (data) => {
+      rules = (data.currentSeason as CurrentSeasonRules | undefined) ?? null;
+    },
   )
     .then((players) => {
+      const result = { players, rules };
+
       if (players.length > 0) {
-        cachedCurrentSeasonPlayers = players;
+        cachedCurrentSeasonPlayers = result;
       }
 
-      return players;
+      return result;
     })
     .finally(() => {
       pendingCurrentSeasonPlayersRequest = null;

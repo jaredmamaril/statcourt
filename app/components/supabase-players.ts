@@ -481,3 +481,33 @@ async function getSupabasePlayerProfiles(players: SupabasePlayerRow[]) {
 
   return profilesByPlayerId;
 }
+
+// Most games any team has played in a season: the longest single-team stint in
+// player_season_stats ("TOT" rows are traded players' totals across teams, which can
+// exceed any one team's games). A stint can't be longer than its team's schedule, so
+// this never overstates; it matches whenever someone on that team has played every game.
+export async function getMaxTeamGamesFromSupabase(seasonLabel: string) {
+  if (process.env.NEXT_PUBLIC_USE_SUPABASE_PLAYERS !== "true") {
+    return null;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("player_season_stats")
+      .select("games")
+      .eq("season", seasonLabel)
+      .neq("team", "TOT")
+      .order("games", { ascending: false })
+      .limit(1);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const games = (data?.[0] as { games: number | null } | undefined)?.games;
+
+    return typeof games === "number" && games > 0 ? games : null;
+  } catch {
+    return null;
+  }
+}

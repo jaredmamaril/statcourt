@@ -7,6 +7,7 @@ import {
   filterCurrentSeasonPlayers,
   getCurrentNbaSeason,
   getCurrentRankingMinGames,
+  getMinGamesForTeamGames,
   isEligibleForCurrentRankings,
   getLatestSeasonLabel,
   hasFreshRosterStatus,
@@ -226,12 +227,36 @@ describe("Current Season rankings eligibility", () => {
     rookieNoProfile,
   ];
 
-  it("scales the minimum with the season leader's games", () => {
+  it("bases the minimum on the most games any team has played, rounded up", () => {
+    expect(getMinGamesForTeamGames(0)).toBe(1);
+    expect(getMinGamesForTeamGames(1)).toBe(1);
+    expect(getMinGamesForTeamGames(3)).toBe(1);
+    expect(getMinGamesForTeamGames(4)).toBe(1);
+    expect(getMinGamesForTeamGames(5)).toBe(2);
+    expect(getMinGamesForTeamGames(19)).toBe(5);
+    expect(getMinGamesForTeamGames(20)).toBe(5);
+    expect(getMinGamesForTeamGames(21)).toBe(6);
+    expect(getMinGamesForTeamGames(82)).toBe(21);
+  });
+
+  it("uses team games, not a traded player's higher total", () => {
+    // Traded mid-season: 26 games across two teams, more than any team's 20.
+    const traded = onRoster("Traded Player", 20, { games: 26 });
+    const withTraded = [...players, traded];
+
+    expect(getCurrentRankingMinGames(withTraded, 2026, 20)).toBe(5);
+    // Without team games, the player maximum is the fallback (and overstates it).
+    expect(getCurrentRankingMinGames(withTraded, 2026)).toBe(7);
+    expect(
+      filterCurrentSeasonPlayers(withTraded, { maxTeamGames: 20 }).map(
+        (player) => player.name,
+      ),
+    ).toEqual(["Season Leader", "At Minimum", "Traded Player"]);
+  });
+
+  it("falls back to the most games any player has without team games", () => {
     expect(getCurrentRankingMinGames(players)).toBe(5);
     expect(getCurrentRankingMinGames([onRoster("Opening Night", 20, { games: 1 })])).toBe(1);
-    expect(getCurrentRankingMinGames([onRoster("Week Two", 20, { games: 3 })])).toBe(1);
-    expect(getCurrentRankingMinGames([onRoster("Week Three", 20, { games: 5 })])).toBe(2);
-    expect(getCurrentRankingMinGames([onRoster("Season End", 20, { games: 82 })])).toBe(21);
   });
 
   it("includes players at the minimum and excludes players one game below it", () => {
@@ -266,13 +291,15 @@ describe("Current Season rankings eligibility", () => {
   });
 
   it("gives share cards the same ranks as the rankings", () => {
-    const sources = buildPlayerShareCardSources(players, "current");
+    const sources = buildPlayerShareCardSources(players, "current", {
+      maxTeamGames: 20,
+    });
     const cardOrder = sources
       .filter((source) => source.rank !== null)
       .sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
       .map((source) => source.name);
     const rankingOrder = rankPlayers(
-      getRankingPool(players, "current"),
+      getRankingPool(players, "current", { maxTeamGames: 20 }),
       "currentOverall",
       "current",
     ).map((player) => player.name);

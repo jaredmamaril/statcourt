@@ -138,9 +138,18 @@ export function filterActivePlayers<T extends SeasonSource>(
 // from an older season or a tiny sample. Injured active players stay active (share
 // cards, Final Season labels) but aren't ranked until they've played enough.
 //
-// The minimum scales with the season: 25% of the most games anyone has played in the
-// newest season, rounded up, and at least 1 (e.g. 19 games played so far -> 5).
+// The minimum scales with the season: 25% of the most games any TEAM has played in the
+// newest season, rounded up, and at least 1 (e.g. 19 team games so far -> 5). A traded
+// player can have more games than any single team, so team games are passed in when
+// known (see getAppCurrentSeasonRules); without them the most games any player has in
+// the newest season is used instead.
 const CURRENT_RANKING_MIN_GAMES_SHARE = 0.25;
+
+export type CurrentSeasonRankingOptions = {
+  now?: Date;
+  // Most games any team has played in the newest season, when known.
+  maxTeamGames?: number | null;
+};
 
 function getNewestSeasonGames(
   player: SeasonSource,
@@ -159,20 +168,30 @@ function getNewestSeasonGames(
   return current.games ?? 0;
 }
 
+export function getMinGamesForTeamGames(maxTeamGames: number) {
+  return Math.max(
+    1,
+    Math.ceil(Math.max(0, maxTeamGames) * CURRENT_RANKING_MIN_GAMES_SHARE),
+  );
+}
+
 export function getCurrentRankingMinGames(
   players: readonly SeasonSource[],
   latestSeasonStartYear: number | null = getLatestSeasonStartYear(players),
+  maxTeamGames: number | null = null,
 ) {
-  let maxGames = 0;
+  if (maxTeamGames != null) return getMinGamesForTeamGames(maxTeamGames);
+
+  let maxPlayerGames = 0;
 
   for (const player of players) {
-    maxGames = Math.max(
-      maxGames,
+    maxPlayerGames = Math.max(
+      maxPlayerGames,
       getNewestSeasonGames(player, latestSeasonStartYear) ?? 0,
     );
   }
 
-  return Math.max(1, Math.ceil(maxGames * CURRENT_RANKING_MIN_GAMES_SHARE));
+  return getMinGamesForTeamGames(maxPlayerGames);
 }
 
 export function isEligibleForCurrentRankings(
@@ -194,13 +213,17 @@ export function isEligibleForCurrentRankings(
 // players) the list is returned unchanged.
 export function filterCurrentSeasonPlayers<T extends SeasonSource>(
   players: readonly T[],
-  now: Date = new Date(),
+  { now = new Date(), maxTeamGames = null }: CurrentSeasonRankingOptions = {},
 ): T[] {
   const latestSeasonStartYear = getLatestSeasonStartYear(players);
 
   if (latestSeasonStartYear === null) return [...players];
 
-  const minGames = getCurrentRankingMinGames(players, latestSeasonStartYear);
+  const minGames = getCurrentRankingMinGames(
+    players,
+    latestSeasonStartYear,
+    maxTeamGames,
+  );
 
   return players.filter((player) =>
     isEligibleForCurrentRankings(player, latestSeasonStartYear, minGames, now),
