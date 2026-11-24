@@ -619,3 +619,133 @@ export async function getSupabasePlayerCount() {
 
   return count ?? 0;
 }
+
+export type PlayerSlugIndexEntry = {
+  id: number;
+  name: string;
+  nbaId: number | null;
+};
+
+// id, name and NBA ID of every player the app shows (same filters and order as the
+// player pages), for resolving a /players/{slug} URL without loading full stats.
+// Reads several pages at once without counting first (one round trip for the current
+// ~4,600 players), then keeps going if the last page was full.
+const SLUG_INDEX_PARALLEL_PAGES = 5;
+
+export async function getSupabasePlayerSlugIndex(): Promise<PlayerSlugIndexEntry[]> {
+  const fetchPage = async (from: number) => {
+      const { data, error } = await supabase
+        .from("players")
+        .select("id, name, nba_id")
+        .neq("stats_source", "pending_import")
+        .gt("ppg", 0)
+        .not("fallback_image", "is", null)
+        .order("name", { ascending: true })
+        .order("id", { ascending: true })
+        .range(from, from + SUPABASE_ROW_LIMIT - 1);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return (data ?? []) as { id: number; name: string; nba_id: number | null }[];
+  };
+  const pages = await Promise.all(
+    Array.from({ length: SLUG_INDEX_PARALLEL_PAGES }, (_, index) =>
+      fetchPage(index * SUPABASE_ROW_LIMIT),
+    ),
+  );
+
+  while (pages.at(-1)?.length === SUPABASE_ROW_LIMIT) {
+    pages.push(await fetchPage(pages.length * SUPABASE_ROW_LIMIT));
+  }
+
+  return pages.flat().map((row) => ({
+    id: row.id,
+    name: row.name,
+    nbaId: row.nba_id ?? null,
+  }));
+}
+
+// One player, mapped exactly like the player pages (stored stat profiles and roster
+// status, same filters). Null when the player isn't shown in the app. With the NBA ID
+// already known (from the slug index), the row, profiles and roster load in parallel.
+export async function getSupabasePlayerById(playerId: number, nbaId: number | null) {
+  const idRow = { id: playerId, nba_id: nbaId } as SupabasePlayerRow;
+  const [rowResult, profileMap, rosterMap] = await Promise.all([
+    supabase
+      .from("players")
+      .select(PLAYER_SELECT_COLUMNS)
+      .eq("id", playerId)
+      .neq("stats_source", "pending_import")
+      .gt("ppg", 0)
+      .not("fallback_image", "is", null)
+      .limit(1),
+    getSupabasePlayerProfiles([idRow]),
+    getSupabaseRosterStatuses([idRow]),
+  ]);
+
+  if (rowResult.error) {
+    throw new Error(rowResult.error.message);
+  }
+
+  const [row] = (rowResult.data ?? []) as unknown as SupabasePlayerRow[];
+
+  if (!row) return null;
+
+  return mapSupabasePlayerToPlayer(
+    row,
+    profileMap.get(row.id),
+    row.nba_id != null ? rosterMap.get(row.nba_id) : undefined,
+  );
+}
+
+// One player's season rows (one per team stint, plus "TOT" for traded seasons).
+export async function getSeasonStatRowsForPlayer(playerId: number) {
+  const { data, error } = await supabase
+    .from("player_season_stats")
+    .select(SEASON_STAT_COLUMNS)
+    .eq("player_id", playerId)
+    .order("id", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return ((data ?? []) as SupabaseSeasonStatRow[]).map(toSeasonStatRow);
+}
+
+// The newest season in player_season_stats (labels like "2026-27" sort by year).
+export async function getNewestSeasonFromSupabase() {
+  const { data, error } = await supabase
+    .from("player_season_stats")
+    .select("season")
+    .order("season", { ascending: false })
+    .limit(1);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data?.[0] as { season: string } | undefined)?.season ?? null;
+}
+
+// Most games any team played in a season (longest single-team stint; "TOT" rows are
+// traded players' totals). Throws on errors, so a peak is never built on a missing
+// minimum. Matches getMaxTeamGamesBySeason over all rows.
+export async function getSeasonMaxTeamGamesStrict(season: string) {
+  const { data, error } = await supabase
+    .from("player_season_stats")
+    .select("games")
+    .eq("season", season)
+    .neq("team", "TOT")
+    .gt("games", 0)
+    .order("games", { ascending: false })
+    .limit(1);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data?.[0] as { games: number } | undefined)?.games ?? 0;
+}

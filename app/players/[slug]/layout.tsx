@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import type { Player } from "../../components/court-data";
 import { getAppPlayerShareCardSources } from "../../components/player-data-source";
-import { getPlayerShareDescription } from "../../lib/player-share-card";
+import { getPlayerForSlug } from "../../components/player-profile-source";
 import {
-  findPlayerBySlug,
-  getDuplicatePlayerSlugs,
-  getPlayerHref,
-} from "../../lib/player-slug";
+  buildPlayerShareCardSources,
+  getPlayerShareDescription,
+  type PlayerShareCardSource,
+} from "../../lib/player-share-card";
+import { getDuplicatePlayerSlugs, getPlayerHref } from "../../lib/player-slug";
 import { createStatCourtMetadata } from "../../lib/seo";
 
 type PlayerProfileLayoutProps = Readonly<{
@@ -14,6 +16,31 @@ type PlayerProfileLayoutProps = Readonly<{
     slug: string;
   }>;
 }>;
+
+// The "#N best peak ever" rank needs every player's peak. Use it only if that cached
+// list answers quickly (it's warm); otherwise describe the player without the rank
+// instead of waiting for the full build. A cold build keeps going in the background.
+const RANKED_DESCRIPTION_WAIT_MS = 150;
+
+async function getWarmPeakSources() {
+  const sources = getAppPlayerShareCardSources("peak");
+
+  sources.catch(() => {});
+
+  return Promise.race([
+    sources,
+    new Promise<null>((resolve) =>
+      setTimeout(() => resolve(null), RANKED_DESCRIPTION_WAIT_MS),
+    ),
+  ]).catch(() => null);
+}
+
+function getUnrankedSources(player: Player): PlayerShareCardSource[] {
+  return buildPlayerShareCardSources([player], "peak").map((source) => ({
+    ...source,
+    rank: null,
+  }));
+}
 
 function formatPlayerSlug(slug: string) {
   return decodeURIComponent(slug)
@@ -27,13 +54,13 @@ export async function generateMetadata({
   params,
 }: Pick<PlayerProfileLayoutProps, "params">): Promise<Metadata> {
   const { slug } = await params;
-  // The share-card list also has every player's name and NBA ID, so one cached
-  // read covers the canonical URL and the stat-based description.
-  const players = await getAppPlayerShareCardSources("peak");
-  const player = findPlayerBySlug(players, slug);
+  // Same one-player lookup as the page (shared per request).
+  const { player, slugIndex } = await getPlayerForSlug(slug);
   const playerName = player?.name ?? formatPlayerSlug(slug);
+  const peakSources = player ? await getWarmPeakSources() : null;
   const shareDescription = player
-    ? getPlayerShareDescription(players, slug)
+    ? (peakSources && getPlayerShareDescription(peakSources, slug)) ??
+      getPlayerShareDescription(getUnrankedSources(player), slug)
     : null;
 
   return createStatCourtMetadata({
@@ -44,7 +71,7 @@ export async function generateMetadata({
         ? `View ${playerName}'s StatCourt player profile, ratings, stat profiles, archetype, similar players, and best lineup fits.`
         : "View a StatCourt NBA player profile with ratings, stat profiles, archetype, similar players, and best lineup fits."),
     path: player
-      ? getPlayerHref(player, getDuplicatePlayerSlugs(players))
+      ? getPlayerHref(player, getDuplicatePlayerSlugs(slugIndex))
       : getPlayerHref(decodeURIComponent(slug)),
     includeDefaultImage: false,
   });

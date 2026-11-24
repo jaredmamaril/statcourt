@@ -11,6 +11,9 @@ type PlayerImageProps = {
   height: number;
   className?: string;
   style?: CSSProperties;
+  // Above-the-fold images (e.g. the player page headshot, its largest paint): load
+  // immediately at high priority instead of lazily.
+  priority?: boolean;
 };
 
 export default function PlayerImage({
@@ -20,6 +23,7 @@ export default function PlayerImage({
   height,
   className = "",
   style,
+  priority = false,
 }: PlayerImageProps) {
   const fallbackSrc = "/blank-player.svg";
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
@@ -33,6 +37,8 @@ export default function PlayerImage({
       height={height}
       className={className}
       style={style}
+      loading={priority ? "eager" : undefined}
+      fetchPriority={priority ? "high" : undefined}
       onError={() => {
         if (src) {
           setFailedSrc(src);
