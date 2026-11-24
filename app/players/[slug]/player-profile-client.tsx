@@ -1,0 +1,880 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useAuthUser } from "../../lib/use-auth-user";
+import { useUserSettings } from "../../lib/use-user-settings";
+import { AuthPrompt } from "../../components/auth/auth-prompt";
+import { DatabaseErrorState } from "../../components/loading/database-error-state";
+import {
+  getSavedBuilderDraft,
+} from "../../components/players/player-storage";
+import { useCompareSlots } from "../../components/players/use-compare-slots";
+import { useFavoritePlayers } from "../../components/players/use-favorite-players";
+import { getBestLineupFits } from "../../components/players/player-lineup-fits";
+import { lineupFitDescriptions } from "../../components/players/player-card/player-card-similar-panel";
+import {
+  getInsightRarityStyles,
+  getLineupFitStyles,
+  getPlayerNameTextClass,
+} from "../../components/players/player-style-helpers";
+import {
+  getPlayerInsights,
+  getReadableTeamColor,
+  getTeamColor,
+  type LineupSlot,
+  type Player,
+  type PlayerStatProfile,
+  type StatMode,
+} from "../../components/court-data";
+import PlayerImage from "../../components/player-image";
+import { getPlayerHeadshot } from "../../components/player-images";
+import {
+  getCareerLegacyTier,
+  getPlayerRating,
+  getStarPowerTier,
+  type PlayerRatingCategory,
+} from "../../components/player-ratings";
+import { AccessibleDialog } from "../../components/ui/accessible-dialog";
+import { hasTwoSeasonPeak, PEAK_RULE_TEXT } from "../../lib/player-peak";
+import { StatModeContext } from "./stat-mode-context";
+
+const statModeLabels: Record<StatMode, string> = {
+  career: "Career",
+  peak: "Peak",
+  current: "Latest Season",
+};
+
+const builderSlots: LineupSlot[] = ["PG", "SG", "SF", "PF", "C"];
+
+function getStatsByMode(player: Player, statMode: StatMode) {
+  if (statMode === "peak") {
+    return (
+      player.statProfiles?.peak ?? player.statProfiles?.career ?? player.stats
+    );
+  }
+
+  if (statMode === "current") {
+    return (
+      player.statProfiles?.current ??
+      player.statProfiles?.career ??
+      player.stats
+    );
+  }
+
+  return player.statProfiles?.career ?? player.stats;
+}
+
+function getProfileLabel(profile?: PlayerStatProfile | null) {
+  if (!profile?.seasonLabel) return null;
+
+  return profile.seasonLabel;
+}
+
+function formatNumber(value: number | null | undefined, fallback = "--") {
+  if (typeof value !== "number" || !Number.isFinite(value)) return fallback;
+
+  return value.toFixed(1);
+}
+
+type PlayerProfileClientProps = {
+  // Resolved and server-rendered by page.tsx; null when the slug matches no player.
+  player: Player | null;
+  // Set when the database couldn't be reached and fallback data is shown.
+  loadError: string | null;
+  // Streamed from the server (similar-players.tsx) so it never blocks the profile.
+  similarPlayers: ReactNode;
+};
+
+export function PlayerProfileClient({
+  player,
+  loadError,
+  similarPlayers,
+}: PlayerProfileClientProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { user } = useAuthUser();
+  const { settings, isLoadingSettings } = useUserSettings();
+  const { compareSlots, updateCompareSlots } = useCompareSlots(user);
+  const { favorites: favoritePlayers, toggleFavorite } =
+    useFavoritePlayers(user);
+  const [statMode, setStatMode] = useState<StatMode>("career");
+  const [isBuildSlotModalOpen, setIsBuildSlotModalOpen] = useState(false);
+  const [builderDraft, setBuilderDraft] = useState<Record<LineupSlot, string>>(
+    getSavedBuilderDraft,
+  );
+  const [openLineupFitTooltip, setOpenLineupFitTooltip] = useState<
+    string | null
+  >(null);
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const [authPromptMessage, setAuthPromptMessage] = useState("");
+  const [authPromptDescription, setAuthPromptDescription] = useState(
+    "Sign in to sync favorites, saved comparisons, and player history.",
+  );
+  const [playerActionStatus, setPlayerActionStatus] = useState("");
+  const hasAppliedDefaultStatModeRef = useRef(false);
+  function getSigninHref() {
+    const currentUrl =
+      typeof window === "undefined"
+        ? pathname
+        : `${window.location.pathname}${window.location.search}`;
+
+    return `/signin?next=${encodeURIComponent(currentUrl)}&mode=signup`;
+  }
+
+  useEffect(() => {
+    if (isLoadingSettings || hasAppliedDefaultStatModeRef.current) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setStatMode(settings.defaultStatMode);
+      hasAppliedDefaultStatModeRef.current = true;
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [isLoadingSettings, settings.defaultStatMode]);
+
+  useEffect(() => {
+    const frameId = requestAnimationFrame(() => {
+      setBuilderDraft(getSavedBuilderDraft());
+    });
+
+    return () => cancelAnimationFrame(frameId);
+  }, []);
+
+  const stats = player ? getStatsByMode(player, statMode) : null;
+  const teamColor = player ? getTeamColor(player.team) : "var(--court-accent)";
+  const readableTeamColor = player
+    ? getReadableTeamColor(player.team)
+    : "var(--court-accent)";
+  const profileLabel =
+    player && statMode === "peak"
+      ? getProfileLabel(player.statProfiles?.peak)
+      : player && statMode === "current"
+        ? getProfileLabel(player.statProfiles?.current)
+        : player
+          ? getProfileLabel(player.statProfiles?.career)
+          : null;
+
+  const insights = player ? getPlayerInsights(player, statMode) : null;
+  const bestLineupFits = player ? getBestLineupFits(player, statMode) : [];
+
+  const ratingCategory =
+    statMode === "peak"
+      ? "peakOverall"
+      : statMode === "current"
+        ? "currentOverall"
+        : "careerOverall";
+
+  const overall = player
+    ? getPlayerRating(player, ratingCategory, statMode)
+    : 0;
+  const careerLegacy = player?.ratings.careerLegacy ?? 0;
+  const starPower = player?.ratings.starPower ?? 0;
+  const ratingBreakdown: {
+    label: string;
+    category: PlayerRatingCategory;
+    value: number;
+    color: string;
+  }[] = player
+    ? [
+        {
+          label: `${statModeLabels[statMode]} OVR`,
+          category: ratingCategory,
+          value: overall,
+          color: teamColor,
+        },
+        {
+          label: "Scoring",
+          category: "scoring",
+          value: getPlayerRating(player, "scoring", statMode),
+          color: "#F97316",
+        },
+        {
+          label: "Shooting",
+          category: "shooting",
+          value: getPlayerRating(player, "shooting", statMode),
+          color: "#A855F7",
+        },
+        {
+          label: "Playmaking",
+          category: "playmaking",
+          value: getPlayerRating(player, "playmaking", statMode),
+          color: "var(--court-accent)",
+        },
+        {
+          label: "Rebounding",
+          category: "rebounding",
+          value: getPlayerRating(player, "rebounding", statMode),
+          color: "#22C55E",
+        },
+        {
+          label: "Efficiency",
+          category: "efficiency",
+          value: getPlayerRating(player, "efficiency", statMode),
+          color: "#38BDF8",
+        },
+        {
+          label: "Defense",
+          category: "defense",
+          value: getPlayerRating(player, "defense", statMode),
+          color: "#EFBF04",
+        },
+        {
+          label: "Star Power",
+          category: "starPower",
+          value: getPlayerRating(player, "starPower", statMode),
+          color: "#F43F5E",
+        },
+        {
+          label: "Career Legacy",
+          category: "careerLegacy",
+          value: getPlayerRating(player, "careerLegacy", statMode),
+          color: "#EFBF04",
+        },
+      ]
+    : [];
+  const isFavorite = player ? favoritePlayers.includes(player.name) : false;
+
+  function requireAuth(
+    message: string,
+    action: () => void,
+    description = "Sign in to sync favorites, saved comparisons, and player history.",
+  ) {
+    if (!user) {
+      setAuthPromptMessage(message);
+      setAuthPromptDescription(description);
+      setShowAuthPrompt(true);
+      return;
+    }
+
+    action();
+  }
+
+  function comparePlayer(slot: "left" | "right") {
+    requireAuth("Sign in to save player comparisons", () => {
+      if (!player) return;
+
+      void updateCompareSlots({
+        ...compareSlots,
+        [slot]: player.name,
+      });
+      setPlayerActionStatus(
+        `${player.name} added as ${slot} compare player.`,
+      );
+
+      router.push("/court");
+    });
+  }
+
+  function toggleFavoritePlayer() {
+    requireAuth(
+      "Create account",
+      () => {
+        if (!player) return;
+
+        setPlayerActionStatus(
+          isFavorite
+            ? `${player.name} removed from favorites.`
+            : `${player.name} added to favorites.`,
+        );
+        void toggleFavorite(player.name);
+      },
+      "Create a free account to save your favorite players.",
+    );
+  }
+
+  function openBuildSlotModal() {
+    if (!player) return;
+
+    setBuilderDraft(getSavedBuilderDraft());
+    setIsBuildSlotModalOpen(true);
+  }
+
+  function buildWithPlayer(slot: LineupSlot) {
+    if (!player) return;
+
+    router.push(
+      `/lineups?tab=builder&player=${encodeURIComponent(player.name)}&slot=${slot}&profile=${statMode}`,
+    );
+  }
+
+  return (
+    <StatModeContext.Provider value={statMode}>
+    <main className="page-enter relative min-h-screen overflow-x-hidden bg-background px-3 pb-10 pt-3 text-white lg:px-6 lg:pt-10">
+      <div
+        className="pointer-events-none fixed inset-0 z-0 bg-center bg-repeat opacity-100"
+        style={{
+          backgroundImage: "var(--court-pattern)",
+          backgroundSize: "900px auto",
+        }}
+      />
+
+      <section className="relative z-10 mx-auto max-w-6xl">
+        <p
+          aria-atomic="true"
+          aria-live="polite"
+          className="sr-only"
+          role="status"
+        >
+          {playerActionStatus}
+        </p>
+
+        <div className="mb-3 flex items-center justify-between gap-3 lg:mb-6">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="rounded-md border border-white/25 bg-white/8 px-3 py-2 font-michroma text-[8px] uppercase text-white/75 shadow-[0_0_12px_rgba(255,255,255,0.08)] transition hover:scale-[1.02] hover:border-white/45 hover:bg-white/12 hover:text-white lg:px-4 lg:text-[10px]"
+          >
+            Back
+          </button>
+
+          <Link
+            href="/players"
+            className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.7)] bg-[rgb(var(--court-accent-rgb)/0.16)] px-3 py-2 font-michroma text-[8px] uppercase text-[var(--court-accent)] shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.16)] transition hover:scale-[1.02] hover:bg-[rgb(var(--court-accent-rgb)/0.24)] lg:px-4 lg:text-[10px]"
+          >
+            Browse Players
+          </Link>
+        </div>
+
+        {!player ? (
+          <div className="mx-auto mt-8 max-w-md rounded-lg border border-red-500/30 bg-red-500/10 p-5 text-center">
+            <p className="font-michroma text-sm uppercase text-red-200">
+              Player Not Found
+            </p>
+            <p className="mt-3 font-michroma text-[9px] leading-relaxed text-white/45">
+              This player is not available in the current StatCourt database.
+            </p>
+          </div>
+        ) : (
+          <>
+            {loadError && (
+              <DatabaseErrorState
+                title="Profile Data Limited"
+                description="Showing fallback player data."
+              />
+            )}
+
+            <div
+              className="rounded-lg border bg-[color:color-mix(in_srgb,var(--court-panel)_86%,transparent)] p-2.5 shadow-[0_0_22px_rgb(var(--court-accent-rgb)/0.12)] lg:p-6"
+              style={{
+                borderColor: `${teamColor}55`,
+              }}
+            >
+              <div className="grid gap-3 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-8">
+                <div className="text-center lg:text-left">
+                  <div
+                    className="mx-auto h-34 w-34 overflow-hidden rounded-lg border bg-black/30 sm:h-42 sm:w-42 lg:mx-0 lg:h-64 lg:w-64"
+                    style={{
+                      borderColor: `${teamColor}99`,
+                    }}
+                  >
+                    <PlayerImage
+                      src={getPlayerHeadshot(player)}
+                      alt={player.name}
+                      width={360}
+                      height={360}
+                      className="h-full w-full object-cover"
+                      priority
+                    />
+                  </div>
+
+                  <div className="mt-2 flex flex-wrap justify-center gap-1.5 font-michroma text-[7px] uppercase sm:text-[8px] lg:mt-4 lg:justify-start lg:gap-2 lg:text-xs">
+                    <span
+                      className="rounded border px-2 py-1 text-white lg:px-3 lg:py-1.5"
+                      style={{
+                        backgroundColor: readableTeamColor,
+                        borderColor: readableTeamColor,
+                      }}
+                    >
+                      {player.team}
+                    </span>
+                    <span className="rounded border border-white/10 bg-white/5 px-2 py-1 text-white/60 lg:px-3 lg:py-1.5">
+                      {player.position}
+                    </span>
+                    <span className="rounded border border-white/10 bg-white/5 px-2 py-1 text-white/60 lg:px-3 lg:py-1.5">
+                      #{player.jerseyNumber}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="font-michroma text-[7px] uppercase tracking-wide text-[var(--court-accent)] sm:text-[8px] lg:text-[10px]">
+                    Player Profile
+                  </p>
+
+                  <h1
+                    className={`mt-1.5 font-michroma text-[17px] uppercase leading-tight sm:text-3xl lg:mt-2 lg:text-6xl ${getPlayerNameTextClass(
+                      player.name,
+                    )}`}
+                    style={{
+                      color: teamColor,
+                      textShadow: `0 0 18px ${teamColor}55`,
+                    }}
+                  >
+                    {player.name}
+                  </h1>
+
+                  <div
+                    aria-label="Player stat profile"
+                    className="mt-2 inline-flex rounded-md border border-white/10 bg-black/25 p-0.5 lg:mt-3"
+                    role="group"
+                  >
+                    {(["career", "peak", "current"] as const).map((mode) => {
+                      const isActive = statMode === mode;
+
+                      return (
+                        <button
+                          key={mode}
+                          aria-pressed={isActive}
+                          type="button"
+                          onClick={() => setStatMode(mode)}
+                          className={`rounded px-2 py-1 font-michroma text-[7px] uppercase transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--court-accent)] lg:px-3 lg:text-[9px] ${
+                            isActive
+                              ? "bg-[rgb(var(--court-accent-rgb)/0.2)] text-[var(--court-accent)]"
+                              : "text-white/35 hover:bg-white/5 hover:text-white/70"
+                          }`}
+                        >
+                          {statModeLabels[mode]}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <p className="mt-1.5 font-michroma text-[7px] uppercase text-white/35 sm:text-[8px] lg:mt-2 lg:text-[10px]">
+                    {statMode === "peak" && !hasTwoSeasonPeak(player)
+                      ? "Needs 2 qualifying seasons · showing career stats"
+                      : (profileLabel ?? `${statModeLabels[statMode]} Profile`)}
+                  </p>
+
+                  {/* Always one line, in every mode, so switching modes (e.g. to the
+                      user's saved default after load) doesn't shift the layout. */}
+                  <p className="mt-1 font-michroma text-[7px] text-white/45 sm:text-[8px] lg:text-[10px]">
+                    {statMode === "peak"
+                      ? PEAK_RULE_TEXT
+                      : player.statProfiles?.peak?.seasonLabel
+                        ? `Peak seasons: ${player.statProfiles.peak.seasonLabel}`
+                        : "Peak: needs 2 qualifying seasons"}
+                  </p>
+
+                  <div className="mt-2 flex flex-wrap gap-1.5 lg:mt-3 lg:gap-2">
+                    <div className="flex overflow-hidden rounded-md border border-[rgb(var(--court-accent-rgb)/0.7)] bg-[rgb(var(--court-accent-rgb)/0.16)] shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.16)]">
+                      <button
+                        type="button"
+                        onClick={() => comparePlayer("left")}
+                        aria-pressed={compareSlots.left === player.name}
+                        className="px-2.5 py-1.5 font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.24)] lg:px-3 lg:text-[9px]"
+                      >
+                        Left Compare
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => comparePlayer("right")}
+                        aria-pressed={compareSlots.right === player.name}
+                        className="border-l border-[rgb(var(--court-accent-rgb)/0.35)] px-2.5 py-1.5 font-michroma text-[7px] uppercase text-[var(--court-accent)] transition hover:bg-[rgb(var(--court-accent-rgb)/0.24)] lg:px-3 lg:text-[9px]"
+                      >
+                        Right Compare
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={toggleFavoritePlayer}
+                      aria-pressed={isFavorite}
+                      aria-label={
+                        isFavorite
+                          ? `Remove ${player.name} from favorites`
+                          : `Add ${player.name} to favorites`
+                      }
+                      className="rounded-md border border-[#EFBF04]/55 bg-[#EFBF04]/12 px-2.5 py-1.5 font-michroma text-[7px] uppercase text-[#EFBF04] shadow-[0_0_14px_rgba(239,191,4,0.12)] transition hover:scale-[1.03] hover:bg-[#EFBF04]/20 lg:px-3 lg:text-[9px]"
+                    >
+                      {isFavorite ? "Favorited" : "Add Favorite"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={openBuildSlotModal}
+                      className="rounded-md border border-white/20 bg-white/8 px-2.5 py-1.5 font-michroma text-[7px] uppercase text-white/70 transition hover:scale-[1.03] hover:border-white/35 hover:bg-white/12 hover:text-white lg:px-3 lg:text-[9px]"
+                    >
+                      Build With Player
+                    </button>
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-3 gap-1.5 lg:mt-4 lg:max-w-2xl lg:gap-3">
+                    <StatBox
+                      label="OVR"
+                      value={overall.toFixed(1)}
+                      color={teamColor}
+                    />
+                    <StatBox
+                      label="Legacy"
+                      value={careerLegacy.toFixed(1)}
+                      color="#EFBF04"
+                    />
+                    <StatBox
+                      label="Star"
+                      value={starPower.toFixed(0)}
+                      color="var(--court-accent)"
+                    />
+                  </div>
+
+                  <div className="mt-2 grid grid-cols-3 gap-1.5 lg:mt-3 lg:max-w-2xl lg:gap-3">
+                    <StatBox label="PPG" value={formatNumber(stats?.ppg)} />
+                    <StatBox label="RPG" value={formatNumber(stats?.rpg)} />
+                    <StatBox label="APG" value={formatNumber(stats?.apg)} />
+                    <StatBox
+                      label="FG%"
+                      value={formatNumber(stats?.fgPercent)}
+                    />
+                    <StatBox
+                      label="3PT%"
+                      value={formatNumber(stats?.threePercent)}
+                    />
+                    <StatBox
+                      label="FT%"
+                      value={formatNumber(stats?.ftPercent)}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+              <div className="grid gap-4">
+                <section className="rounded-lg border border-white/10 bg-black/25 p-3 lg:p-5">
+                  <p className="font-michroma text-[9px] uppercase text-[var(--court-accent)] lg:text-xs">
+                    Ratings Breakdown
+                  </p>
+
+                  <div className="mt-3 grid grid-cols-2 gap-1.5 lg:grid-cols-3 lg:gap-2">
+                    {ratingBreakdown.map((rating) => {
+                      const displayValue =
+                        rating.value > 0 ? rating.value.toFixed(1) : "--";
+                      const barWidth = Math.max(0, Math.min(rating.value, 100));
+
+                      return (
+                        <div
+                          key={rating.category}
+                          className="rounded-md border border-white/10 bg-black/25 p-1.5 lg:p-3"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="truncate font-michroma text-[6px] uppercase text-white/45 lg:text-[9px]">
+                              {rating.label}
+                            </p>
+                            <p
+                              className="font-michroma text-[8px] lg:text-xs"
+                              style={{ color: rating.color }}
+                            >
+                              {displayValue}
+                            </p>
+                          </div>
+
+                          <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/10 lg:mt-2 lg:h-1.5">
+                            <div
+                              className="h-full rounded-full"
+                              style={{
+                                width: `${barWidth}%`,
+                                backgroundColor: rating.color,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+
+                <section className="rounded-lg border border-white/10 bg-black/25 p-2.5 lg:p-5">
+                  <p className="font-michroma text-[8px] uppercase text-[var(--court-accent)] lg:text-xs">
+                    Scouting Identity
+                  </p>
+
+                  <div className="mt-2 grid gap-1.5 lg:mt-3 lg:grid-cols-2 lg:gap-2">
+                    <InfoCard
+                      title="Career Legacy"
+                      value={getCareerLegacyTier(careerLegacy)}
+                      description={`${careerLegacy.toFixed(1)} legacy score`}
+                      color="#EFBF04"
+                    />
+                    <InfoCard
+                      title="Star Power"
+                      value={getStarPowerTier(starPower)}
+                      description={`${starPower.toFixed(0)} star score`}
+                      color="var(--court-accent)"
+                    />
+                  </div>
+
+                  {insights?.archetype && (
+                    <div className="mt-2.5 lg:mt-3">
+                      <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[9px]">
+                        Archetype
+                      </p>
+                      <div
+                        className="mt-1.5 rounded-md border bg-black/25 p-2 lg:mt-2 lg:p-3"
+                        style={getInsightRarityStyles(insights.archetype, true)}
+                      >
+                        <p className="font-michroma text-xs uppercase lg:text-lg">
+                          {insights.archetype.label}
+                        </p>
+                        <p className="mt-1.5 font-michroma text-[7px] leading-relaxed text-white/60 lg:mt-2 lg:text-[10px]">
+                          {insights.archetype.description}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {insights && insights.traits.length > 0 && (
+                    <div className="mt-3 lg:mt-4">
+                      <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[9px]">
+                        Traits
+                      </p>
+                      <div className="mt-1.5 grid gap-1.5 lg:mt-2 lg:grid-cols-2 lg:gap-2">
+                        {insights.traits.slice(0, 4).map((trait) => (
+                          <div
+                            key={trait.label}
+                            className="rounded-md border bg-black/25 p-1.5 lg:p-2"
+                            style={getInsightRarityStyles(trait)}
+                          >
+                            <p className="font-michroma text-[8px] uppercase lg:text-xs">
+                              {trait.label}
+                            </p>
+                            <p className="mt-1 font-michroma text-[6px] leading-relaxed text-white/55 lg:text-[9px]">
+                              {trait.description}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </section>
+              </div>
+
+              <aside className="grid gap-4">
+                <section className="rounded-lg border border-white/10 bg-black/25 p-3 lg:p-5">
+                  <p className="font-michroma text-[9px] uppercase text-[var(--court-accent)] lg:text-xs">
+                    Similar Players
+                  </p>
+                  {similarPlayers}
+                </section>
+
+                <section className="rounded-lg border border-white/10 bg-black/25 p-3 lg:p-5">
+                  <p className="font-michroma text-[9px] uppercase text-[var(--court-accent)] lg:text-xs">
+                    Best Lineup Fits
+                  </p>
+                  <div className="mt-3 grid gap-2">
+                    {bestLineupFits.map((fit) => {
+                      const isTooltipOpen = openLineupFitTooltip === fit;
+                      const tooltipId = `player-profile-lineup-fit-${fit
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, "-")}`;
+
+                      return (
+                        <div
+                          key={fit}
+                          className={`group/lineupFit relative ${
+                            isTooltipOpen ? "z-40" : "z-10"
+                          }`}
+                        >
+                          <button
+                            type="button"
+                            aria-controls={tooltipId}
+                            aria-describedby={tooltipId}
+                            aria-expanded={isTooltipOpen}
+                            onClick={() =>
+                              setOpenLineupFitTooltip((current) =>
+                                current === fit ? null : fit,
+                              )
+                            }
+                            onFocus={() => setOpenLineupFitTooltip(fit)}
+                            onBlur={() => setOpenLineupFitTooltip(null)}
+                            onKeyDown={(event) => {
+                              if (event.key === "Escape") {
+                                setOpenLineupFitTooltip(null);
+                              }
+                            }}
+                            className="w-full cursor-help rounded-md border bg-black/20 px-3 py-2 text-left font-michroma text-[8px] transition hover:scale-[1.02] lg:text-[10px]"
+                            style={getLineupFitStyles(fit)}
+                          >
+                            {fit}
+                          </button>
+
+                          <div
+                            id={tooltipId}
+                            role="tooltip"
+                            className={`pointer-events-none absolute bottom-full right-10 z-50 mb-1 w-44 max-w-[calc(100vw-2rem)] rounded-md border border-white/15 bg-black/95 p-2 text-left font-michroma text-[6px] leading-relaxed text-white/80 shadow-[0_0_18px_rgba(0,0,0,0.55)] transition-opacity duration-200 lg:w-60 lg:p-3 lg:text-[8px] ${
+                              isTooltipOpen
+                                ? "opacity-100"
+                                : "opacity-0 group-hover/lineupFit:opacity-100"
+                            }`}
+                          >
+                            {lineupFitDescriptions[fit] ??
+                              "Recommended lineup fit based on this player's selected statistical profile."}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              </aside>
+            </div>
+          </>
+        )}
+      </section>
+
+      {player && isBuildSlotModalOpen && (
+        <AccessibleDialog
+          titleId="build-with-player-dialog-title"
+          descriptionId="build-with-player-dialog-description"
+          onClose={() => setIsBuildSlotModalOpen(false)}
+          overlayClassName="fixed inset-0 z-50 flex items-start justify-center bg-black/70 px-3 pt-16 lg:pt-24"
+          dialogClassName="w-full max-w-82 rounded-lg border border-[rgb(var(--court-accent-rgb)/0.4)] bg-[var(--court-panel)] p-3 shadow-[0_0_26px_rgb(var(--court-accent-rgb)/0.16)] lg:max-w-md lg:p-5"
+        >
+            <p className="font-michroma text-[9px] uppercase text-[var(--court-accent)] lg:text-xs">
+              Build With Player
+            </p>
+
+            <p
+              id="build-with-player-dialog-title"
+              className="mt-1 font-michroma text-sm uppercase text-white lg:text-xl"
+            >
+              {player.name}
+            </p>
+
+            <p
+              id="build-with-player-dialog-description"
+              className="mt-2 font-michroma text-[7px] leading-relaxed text-white/45 lg:text-[9px]"
+            >
+              Choose where to place this player. If a slot already has someone,
+              that player will be replaced.
+            </p>
+
+            <div className="mt-3 grid gap-2">
+              {builderSlots.map((slot) => {
+                const currentSlotPlayer = builderDraft[slot];
+                const isRecommended =
+                  (player.position === "G" && (slot === "PG" || slot === "SG")) ||
+                  (player.position === "F" && (slot === "SF" || slot === "PF")) ||
+                  (player.position === "C" && (slot === "C" || slot === "PF"));
+
+                return (
+                  <button
+                    key={slot}
+                    type="button"
+                    onClick={() => buildWithPlayer(slot)}
+                    className="grid grid-cols-[34px_minmax(0,1fr)_auto] items-center gap-2 rounded-md border border-white/10 bg-black/25 px-2.5 py-2 text-left transition hover:scale-[1.02] hover:border-[rgb(var(--court-accent-rgb)/0.55)] hover:bg-[rgb(var(--court-accent-rgb)/0.1)] lg:grid-cols-[44px_minmax(0,1fr)_auto] lg:px-3"
+                  >
+                    <span className="font-michroma text-[9px] text-[var(--court-accent)] lg:text-xs">
+                      {slot}
+                    </span>
+
+                    <span className="min-w-0">
+                      <span className="block truncate font-michroma text-[8px] text-white lg:text-[10px]">
+                        {currentSlotPlayer || "Empty Slot"}
+                      </span>
+                      <span className="block font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+                        {currentSlotPlayer ? "Replace current player" : "Add here"}
+                      </span>
+                    </span>
+
+                    {isRecommended && (
+                      <span className="rounded border border-[#EFBF04]/45 bg-[#EFBF04]/10 px-1.5 py-1 font-michroma text-[6px] uppercase text-[#EFBF04] lg:text-[7px]">
+                        Fit
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsBuildSlotModalOpen(false)}
+              className="mt-3 w-full rounded-md border border-white/15 bg-white/5 px-3 py-2 font-michroma text-[8px] uppercase text-white/55 transition hover:border-white/30 hover:bg-white/10 hover:text-white lg:text-[10px]"
+            >
+              Cancel
+            </button>
+        </AccessibleDialog>
+      )}
+
+      {showAuthPrompt && (
+        <AuthPrompt
+          title={authPromptMessage}
+          description={authPromptDescription}
+          actionLabel="Create Account"
+          href={getSigninHref()}
+          onClose={() => setShowAuthPrompt(false)}
+        />
+      )}
+    </main>
+    </StatModeContext.Provider>
+  );
+}
+
+function StatBox({
+  label,
+  value,
+  color = "#FFFFFF",
+}: {
+  label: string;
+  value: string;
+  color?: string;
+}) {
+  const borderColor =
+    color === "var(--court-accent)"
+      ? "rgb(var(--court-accent-rgb) / 0.35)"
+      : color === "#FFFFFF"
+        ? undefined
+        : `${color}55`;
+
+  return (
+    <div
+      className="rounded-md border border-white/10 bg-black/25 p-2 text-center lg:p-3"
+      style={{ borderColor }}
+    >
+      <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[8px]">
+        {label}
+      </p>
+      <p className="mt-1 font-michroma text-sm lg:text-xl" style={{ color }}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function InfoCard({
+  title,
+  value,
+  description,
+  color,
+}: {
+  title: string;
+  value: string;
+  description: string;
+  color: string;
+}) {
+  const borderColor =
+    color === "var(--court-accent)"
+      ? "rgb(var(--court-accent-rgb) / 0.35)"
+      : `${color}55`;
+
+  return (
+    <div
+      className="rounded-md border bg-black/25 p-2 lg:p-3"
+      style={{ borderColor }}
+    >
+      <p className="font-michroma text-[6px] uppercase text-white/35 lg:text-[9px]">
+        {title}
+      </p>
+      <p
+        className="mt-1 font-michroma text-[10px] uppercase lg:text-sm"
+        style={{ color }}
+      >
+        {value}
+      </p>
+      <p className="mt-1 font-michroma text-[6px] text-white/45 lg:text-[9px]">
+        {description}
+      </p>
+    </div>
+  );
+}
+

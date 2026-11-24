@@ -234,14 +234,18 @@ export function findTwoSeasonPeak(
   return best;
 }
 
+// The current season defaults to the newest season in the maxima. Pass it explicitly
+// when the maxima only cover some seasons (e.g. one player's seasons).
 export function createPeakContext(
   maxTeamGamesBySeason: Iterable<readonly [string, number]>,
+  currentSeason?: string | null,
 ): PeakContext {
   const maxGames = new Map(maxTeamGamesBySeason);
 
   return {
     maxTeamGamesBySeason: maxGames,
-    currentSeason: getNewestSeason(maxGames.keys()),
+    currentSeason:
+      currentSeason === undefined ? getNewestSeason(maxGames.keys()) : currentSeason,
   };
 }
 
