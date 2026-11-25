@@ -72,6 +72,8 @@ export type PlayerForSlug = {
   slugIndex: PlayerSlugIndex;
   // Set when the database couldn't be reached and fallback data is shown.
   loadError: string | null;
+  // The newest season in the data (e.g. "2026-27"), null without season data.
+  newestSeason: string | null;
 };
 
 function getFallbackPlayerForSlug(slug: string, loadError: string | null): PlayerForSlug {
@@ -83,6 +85,7 @@ function getFallbackPlayerForSlug(slug: string, loadError: string | null): Playe
       nbaId: player.nbaId ?? null,
     })),
     loadError,
+    newestSeason: null,
   };
 }
 
@@ -94,13 +97,17 @@ export const getPlayerForSlug = cache(async (slug: string): Promise<PlayerForSlu
   }
 
   try {
-    const slugIndex = await getCachedPlayerSlugIndex();
+    const [slugIndex, newestSeason] = await Promise.all([
+      getCachedPlayerSlugIndex(),
+      getCachedNewestSeason(),
+    ]);
     const entry = findPlayerBySlug(slugIndex, slug);
 
     return {
       player: entry ? await getCachedPlayerProfile(entry.id, entry.nbaId) : null,
       slugIndex,
       loadError: null,
+      newestSeason,
     };
   } catch (error) {
     console.error("Failed to load player profile", error);

@@ -191,7 +191,7 @@ function PlayerCard({ card }: { card: PlayerShareCard }) {
               .filter(Boolean)
               .join(" · ")}
           </div>
-          {card.rankLabel && (
+          {(card.rankLabel ?? card.note) && (
             <div
               style={{
                 display: "flex",
@@ -202,7 +202,7 @@ function PlayerCard({ card }: { card: PlayerShareCard }) {
                 color: theme.accent,
               }}
             >
-              {card.rankLabel}
+              {card.rankLabel ?? card.note}
             </div>
           )}
         </div>
@@ -291,6 +291,7 @@ function FallbackCard() {
 export async function renderPlayerShareImage(
   slug: string,
   mode: PlayerShareCardMode = "peak",
+  headers?: HeadersInit,
 ) {
   const [card, michroma] = await Promise.all([
     loadPlayerCard(slug, mode),
@@ -332,6 +333,7 @@ export async function renderPlayerShareImage(
     ),
     {
       ...playerShareImageSize,
+      headers,
       fonts: michroma
         ? [{ name: "Michroma", data: michroma, style: "normal", weight: 400 }]
         : undefined,

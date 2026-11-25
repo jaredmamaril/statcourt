@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Player } from "../../components/court-data";
 import { getPlayerRating } from "../../components/player-ratings";
@@ -117,6 +117,25 @@ const FIXTURES: FixturePlayer[] = [
   fixturePlayer(5, "One Season Rookie", 1005, 14.2, [seasonRow("2026-27", 15, 14)]),
 ];
 
+// Latest-season profiles, as the pipeline stores them (an active player's is 2026-27,
+// a retired player's is their final season).
+FIXTURES[0].player.statProfiles!.current = {
+  profileType: "current",
+  seasonLabel: "2026-27",
+  games: 15,
+  ppg: 22,
+  rpg: 5,
+  apg: 5,
+};
+FIXTURES[3].player.statProfiles!.current = {
+  profileType: "current",
+  seasonLabel: "1992-93",
+  games: 60,
+  ppg: 24,
+  rpg: 5,
+  apg: 5,
+};
+
 const ALL_ROWS = [...LEAGUE_FILLER, ...FIXTURES.flatMap((fixture) => fixture.seasons)];
 
 vi.mock("next/cache", () => ({
@@ -147,13 +166,23 @@ vi.mock("next/navigation", () => ({
 vi.mock("../../lib/use-auth-user", () => ({
   useAuthUser: () => ({ user: null, isLoadingUser: false }),
 }));
+// Controllable per test: the user's saved default stat mode, and whether it has loaded.
+const userSettings = vi.hoisted(() => ({
+  defaultStatMode: "career" as string,
+  isLoadingSettings: true,
+}));
+
 vi.mock("../../lib/use-user-settings", () => ({
   useUserSettings: () => ({
-    settings: { defaultStatMode: "career" },
-    isLoadingSettings: true,
+    settings: { defaultStatMode: userSettings.defaultStatMode },
+    isLoadingSettings: userSettings.isLoadingSettings,
     user: null,
     isLoadingUser: false,
   }),
+}));
+// The ranked description needs every player; treat that list as cold (unavailable).
+vi.mock("../../components/player-data-source", () => ({
+  getAppPlayerShareCardSources: () => Promise.reject(new Error("cold")),
 }));
 vi.mock("../../components/players/use-compare-slots", () => ({
   useCompareSlots: () => ({
@@ -170,6 +199,8 @@ vi.mock("../../components/player-image", () => ({
 
 beforeEach(() => {
   vi.stubEnv("NEXT_PUBLIC_USE_SUPABASE_PLAYERS", "true");
+  userSettings.defaultStatMode = "career";
+  userSettings.isLoadingSettings = true;
 });
 
 const mapContext = createPeakContext(getMaxTeamGamesBySeason(ALL_ROWS));
@@ -189,10 +220,21 @@ describe("per-player peak", () => {
   });
 });
 
-async function renderPlayerPage(slug: string) {
+async function renderPlayerPage(slug: string, mode?: string) {
   const { default: PlayerProfilePage } = await import("./page");
 
-  render(await PlayerProfilePage({ params: Promise.resolve({ slug }) }));
+  render(
+    await PlayerProfilePage({
+      params: Promise.resolve({ slug }),
+      searchParams: Promise.resolve(mode === undefined ? {} : { mode }),
+    }),
+  );
+}
+
+function selectedModeButton() {
+  return screen
+    .getAllByRole("button", { pressed: true })
+    .find((button) => ["Career", "Peak", "Latest Season"].includes(button.textContent ?? ""));
 }
 
 function careerOvr(id: number) {
@@ -249,5 +291,118 @@ describe("server-rendered player page", () => {
     await renderPlayerPage("not-a-real-player");
 
     expect(screen.getByText("Player Not Found")).toBeTruthy();
+  });
+});
+
+describe("stat mode links (?mode=)", () => {
+  it("renders the link's mode on the server", async () => {
+    await renderPlayerPage("normal-guard", "peak");
+
+    expect(selectedModeButton()?.textContent).toBe("Peak");
+    // Peak mode shows the rule in the reserved line.
+    expect(screen.getByText(/Peak = best 2 consecutive qualifying seasons/)).toBeTruthy();
+  });
+
+  it("lets the link's mode override the user's saved default", async () => {
+    userSettings.defaultStatMode = "current";
+    userSettings.isLoadingSettings = false;
+
+    await renderPlayerPage("normal-guard", "peak");
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(selectedModeButton()?.textContent).toBe("Peak");
+  });
+
+  it("applies the saved default when the link has no mode", async () => {
+    userSettings.defaultStatMode = "current";
+    userSettings.isLoadingSettings = false;
+
+    await renderPlayerPage("normal-guard");
+
+    await waitFor(() => expect(selectedModeButton()?.textContent).toBe("Latest Season"));
+  });
+
+  it("falls back to the usual behavior for an invalid mode", async () => {
+    await renderPlayerPage("normal-guard", "PEAK");
+
+    expect(selectedModeButton()?.textContent).toBe("Career");
+  });
+
+  it("writes the mode into the address bar without a navigation", async () => {
+    const replaceState = vi.spyOn(window.history, "replaceState");
+
+    await renderPlayerPage("normal-guard");
+    screen.getByRole("button", { name: "Peak" }).click();
+
+    await waitFor(() => expect(selectedModeButton()?.textContent).toBe("Peak"));
+    expect(replaceState).toHaveBeenCalledWith(window.history.state, "", expect.stringContaining("mode=peak"));
+    replaceState.mockRestore();
+  });
+});
+
+describe("player page metadata", () => {
+  async function metadataFor(slug: string, mode?: string) {
+    const { generateMetadata } = await import("./page");
+
+    return generateMetadata({
+      params: Promise.resolve({ slug }),
+      searchParams: Promise.resolve(mode === undefined ? {} : { mode }),
+    });
+  }
+
+  function imageUrl(images: unknown) {
+    const [image] = images as ({ url: string } | string)[];
+
+    return typeof image === "string" ? image : image.url;
+  }
+
+  it("never puts ?mode in the canonical URL", async () => {
+    for (const mode of [undefined, "career", "peak", "current", "bogus"]) {
+      const metadata = await metadataFor("normal-guard", mode);
+
+      expect(metadata.alternates?.canonical).toBe("/players/normal-guard");
+    }
+
+    expect((await metadataFor("mike-james-1628455", "peak")).alternates?.canonical).toBe(
+      "/players/mike-james-1628455",
+    );
+  });
+
+  it("points og:image, twitter:image and og:url at the shared mode", async () => {
+    for (const mode of ["career", "peak", "current"]) {
+      const metadata = await metadataFor("normal-guard", mode);
+
+      expect(imageUrl(metadata.openGraph?.images)).toBe(
+        `/players/normal-guard/share-image?mode=${mode}`,
+      );
+      expect(imageUrl(metadata.twitter?.images)).toBe(
+        `/players/normal-guard/share-image?mode=${mode}`,
+      );
+      expect(metadata.openGraph?.url).toBe(`/players/normal-guard?mode=${mode}`);
+    }
+  });
+
+  it("uses the Peak card and the clean URL without a valid mode", async () => {
+    for (const mode of [undefined, "Peak", "nope"]) {
+      const metadata = await metadataFor("normal-guard", mode);
+
+      expect(imageUrl(metadata.openGraph?.images)).toBe(
+        "/players/normal-guard/share-image?mode=peak",
+      );
+      expect(metadata.openGraph?.url).toBe("/players/normal-guard");
+    }
+  });
+
+  it("describes the shared mode", async () => {
+    expect((await metadataFor("normal-guard", "peak")).description).toContain("peak (2024–26)");
+    expect((await metadataFor("normal-guard", "current")).description).toContain(
+      "current season (2026–27)",
+    );
+    expect((await metadataFor("retired-legend", "current")).description).toContain(
+      "final season (1992–93)",
+    );
+    expect((await metadataFor("normal-guard", "career")).description).toMatch(
+      /^Normal Guard's career: 21\.4 PPG/,
+    );
   });
 });

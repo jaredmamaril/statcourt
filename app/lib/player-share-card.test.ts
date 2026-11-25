@@ -73,6 +73,16 @@ const rolePlayer = createTestPlayer({
 });
 
 describe("getPlayerShareCard", () => {
+  it("labels a Peak card for a player without a two-season peak and notes career stats", () => {
+    const players = buildPlayerShareCardSources([rolePlayer, lebron], "peak");
+    const card = getPlayerShareCard(players, "role-player-jr", "peak");
+
+    expect(card?.profileLabel).toBe("Peak · Needs 2 qualifying seasons");
+    expect(card?.note).toBe("Career stats shown");
+    expect(card?.rankLabel).toBeNull();
+    expect(card?.stats[0].value).toBe("6.1");
+  });
+
   it("returns null for an unknown slug so the image renders the fallback card", () => {
     const players = buildPlayerShareCardSources([lebron]);
 
@@ -99,6 +109,7 @@ describe("getPlayerShareCard", () => {
         getPlayerRating(lebron, "peakOverall", "peak"),
       ).toString(),
       rankLabel: "#1 BEST PEAK EVER",
+      note: null,
       stats: [
         { label: "PPG", value: "29.3" },
         { label: "RPG", value: "7.6" },

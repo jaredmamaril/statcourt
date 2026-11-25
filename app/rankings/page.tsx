@@ -7,6 +7,7 @@ import {
   type CurrentSeasonPlayers,
 } from "../lib/player-api-cache";
 import { getRankingPool, rankPlayers } from "../lib/player-rankings";
+import { parseStatMode, replaceModeInAddressBar } from "../lib/share";
 import {
   getCurrentRankingMinGames,
   getLatestSeasonLabel,
@@ -102,6 +103,28 @@ export default function Rankings() {
   const router = useRouter();
   const hasAppliedDefaultStatProfileRef = useRef(false);
   const hasAppliedDefaultPlayerViewRef = useRef(false);
+
+  // A shared link's mode (?mode=career|peak|current) wins over the saved default.
+  // Read on mount so the page can stay statically prerendered.
+  useEffect(() => {
+    const linkMode = parseStatMode(
+      new URLSearchParams(window.location.search).get("mode"),
+    );
+
+    if (!linkMode) return;
+
+    hasAppliedDefaultStatProfileRef.current = true;
+
+    const timeoutId = window.setTimeout(() => setStatProfileFilter(linkMode), 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, []);
+
+  // Changing the mode updates ?mode in the address bar (no navigation, no history entry).
+  function selectStatProfile(profile: RankingStatProfile) {
+    setStatProfileFilter(profile);
+    replaceModeInAddressBar(profile);
+  }
 
   useEffect(() => {
     if (isLoadingSettings || hasAppliedDefaultStatProfileRef.current) return;
@@ -520,7 +543,7 @@ export default function Rankings() {
                       setOpenFilter(openFilter === "profile" ? null : "profile")
                     }
                     onSelectProfileFilter={(profile) => {
-                      setStatProfileFilter(profile);
+                      selectStatProfile(profile);
                       setArchetypeFilter("");
                       setOpenFilter(null);
                     }}
@@ -562,7 +585,7 @@ export default function Rankings() {
                 selectedArchetypeOption={selectedArchetypeOption}
                 archetypeOptionDetails={archetypeOptionDetails}
                 onOpenFilter={setOpenFilter}
-                onStatProfileFilterChange={setStatProfileFilter}
+                onStatProfileFilterChange={selectStatProfile}
                 onPositionFilterChange={setPositionFilter}
                 onTeamFilterChange={setTeamFilter}
                 onArchetypeFilterChange={setArchetypeFilter}
