@@ -5,6 +5,7 @@ import { RankingFilterBar } from "./ranking-filter-bar";
 import { TopRankingCards } from "./top-ranking-cards";
 import type { DefaultPlayerView } from "../../lib/use-user-settings";
 import { RankingRatingFormulaTooltip } from "./ranking-rating-formula-tooltip";
+import { ShareButton } from "../share/share-button";
 
 type ArchetypeOptionDetail = {
   label: string;
@@ -84,6 +85,14 @@ export function RankingLeaderboardSection({
         <RankingRatingFormulaTooltip
           ratingCategory={ratingCategory}
           statProfileFilter={statProfileFilter}
+        />
+
+        <ShareButton
+          path="/rankings"
+          mode={statProfileFilter}
+          slug={null}
+          title="StatCourt Rankings"
+          text={`${rankingHeading} on StatCourt`}
         />
       </div>
 

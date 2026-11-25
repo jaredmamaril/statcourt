@@ -17,6 +17,11 @@ type StatCourtMetadataOptions = {
   path: string;
   // Off for routes with their own opengraph-image / twitter-image files.
   includeDefaultImage?: boolean;
+  // Preview image for og:image and twitter:image (replaces the default image).
+  image?: { url: string; width: number; height: number; alt: string };
+  // og:url when the shared link differs from the canonical path (e.g. ?mode=peak);
+  // the canonical tag always stays `path`.
+  shareUrl?: string;
 };
 
 export function createStatCourtMetadata({
@@ -24,7 +29,20 @@ export function createStatCourtMetadata({
   description,
   path,
   includeDefaultImage = true,
+  image,
+  shareUrl,
 }: StatCourtMetadataOptions): Metadata {
+  const ogImage =
+    image ??
+    (includeDefaultImage
+      ? {
+          url: defaultOgImage,
+          width: 2048,
+          height: 1024,
+          alt: "StatCourt NBA player comparison preview",
+        }
+      : null);
+
   return {
     title,
     description,
@@ -34,18 +52,9 @@ export function createStatCourtMetadata({
     openGraph: {
       title: `${title} | ${siteName}`,
       description,
-      url: path,
+      url: shareUrl ?? path,
       siteName,
-      ...(includeDefaultImage && {
-        images: [
-          {
-            url: defaultOgImage,
-            width: 2048,
-            height: 1024,
-            alt: "StatCourt NBA player comparison preview",
-          },
-        ],
-      }),
+      ...(ogImage && { images: [ogImage] }),
       locale: "en_US",
       type: "website",
     },
@@ -53,7 +62,7 @@ export function createStatCourtMetadata({
       card: "summary_large_image",
       title: `${title} | ${siteName}`,
       description,
-      ...(includeDefaultImage && { images: [defaultOgImage] }),
+      ...(ogImage && { images: [ogImage.url] }),
     },
   };
 }

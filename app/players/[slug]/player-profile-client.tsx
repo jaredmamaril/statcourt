@@ -39,6 +39,8 @@ import {
 import { AccessibleDialog } from "../../components/ui/accessible-dialog";
 import { hasTwoSeasonPeak, PEAK_RULE_TEXT } from "../../lib/player-peak";
 import { StatModeContext } from "./stat-mode-context";
+import { ShareButton } from "../../components/share/share-button";
+import { getShareImagePath, replaceModeInAddressBar } from "../../lib/share";
 
 const statModeLabels: Record<StatMode, string> = {
   career: "Career",
@@ -85,12 +87,19 @@ type PlayerProfileClientProps = {
   loadError: string | null;
   // Streamed from the server (similar-players.tsx) so it never blocks the profile.
   similarPlayers: ReactNode;
+  // Stat mode from a shared link (?mode=...). It's rendered on the server and wins over
+  // the user's saved default. Null keeps the usual behavior.
+  linkMode: StatMode | null;
+  // The player's canonical URL path (NBA ID suffix for duplicate names), for sharing.
+  canonicalPath: string | null;
 };
 
 export function PlayerProfileClient({
   player,
   loadError,
   similarPlayers,
+  linkMode,
+  canonicalPath,
 }: PlayerProfileClientProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -99,7 +108,7 @@ export function PlayerProfileClient({
   const { compareSlots, updateCompareSlots } = useCompareSlots(user);
   const { favorites: favoritePlayers, toggleFavorite } =
     useFavoritePlayers(user);
-  const [statMode, setStatMode] = useState<StatMode>("career");
+  const [statMode, setStatMode] = useState<StatMode>(linkMode ?? "career");
   const [isBuildSlotModalOpen, setIsBuildSlotModalOpen] = useState(false);
   const [builderDraft, setBuilderDraft] = useState<Record<LineupSlot, string>>(
     getSavedBuilderDraft,
@@ -113,7 +122,8 @@ export function PlayerProfileClient({
     "Sign in to sync favorites, saved comparisons, and player history.",
   );
   const [playerActionStatus, setPlayerActionStatus] = useState("");
-  const hasAppliedDefaultStatModeRef = useRef(false);
+  // A shared link's mode counts as already applied, so the saved default can't replace it.
+  const hasAppliedDefaultStatModeRef = useRef(linkMode !== null);
   function getSigninHref() {
     const currentUrl =
       typeof window === "undefined"
@@ -428,7 +438,10 @@ export function PlayerProfileClient({
                           key={mode}
                           aria-pressed={isActive}
                           type="button"
-                          onClick={() => setStatMode(mode)}
+                          onClick={() => {
+                            setStatMode(mode);
+                            replaceModeInAddressBar(mode);
+                          }}
                           className={`rounded px-2 py-1 font-michroma text-[7px] uppercase transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--court-accent)] lg:px-3 lg:text-[9px] ${
                             isActive
                               ? "bg-[rgb(var(--court-accent-rgb)/0.2)] text-[var(--court-accent)]"
@@ -498,6 +511,17 @@ export function PlayerProfileClient({
                     >
                       Build With Player
                     </button>
+
+                    {canonicalPath && (
+                      <ShareButton
+                        path={canonicalPath}
+                        mode={statMode}
+                        slug={canonicalPath.replace(/^\/players\//, "")}
+                        title={`${player.name} | StatCourt`}
+                        text={`${player.name}'s ${statModeLabels[statMode]} profile on StatCourt`}
+                        imagePath={getShareImagePath(canonicalPath, statMode)}
+                      />
+                    )}
                   </div>
 
                   <div className="mt-3 grid grid-cols-3 gap-1.5 lg:mt-4 lg:max-w-2xl lg:gap-3">

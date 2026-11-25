@@ -47,6 +47,9 @@ export type PlayerShareCard = {
   profileLabel: string;
   overall: string;
   rankLabel: string | null;
+  // Shown instead of a rank when the stats aren't the card's mode (e.g. a Peak card
+  // for a player without two qualifying seasons shows career stats).
+  note: string | null;
   stats: { label: string; value: string }[];
 };
 
@@ -126,13 +129,23 @@ function getModeStats(
 export function buildPlayerShareCardSources(
   players: readonly Player[],
   mode: PlayerShareCardMode = "peak",
-  { now = new Date(), maxTeamGames = null }: CurrentSeasonRankingOptions = {},
+  {
+    now = new Date(),
+    maxTeamGames = null,
+    latestSeasonStartYear,
+  }: CurrentSeasonRankingOptions & {
+    // The newest season overall, when `players` isn't the whole league (e.g. one
+    // player's card), so "final season" vs active is still judged correctly.
+    latestSeasonStartYear?: number | null;
+  } = {},
 ): PlayerShareCardSource[] {
   const overalls = players.map((player) =>
     getPlayerRating(player, overallCategories[mode], mode),
   );
   const latestSeasonStart =
-    mode === "current" ? getLatestSeasonStartYear(players) : null;
+    mode === "current"
+      ? (latestSeasonStartYear ?? getLatestSeasonStartYear(players))
+      : null;
   const minGames =
     mode === "current"
       ? getCurrentRankingMinGames(players, latestSeasonStart, maxTeamGames)
@@ -209,6 +222,11 @@ function getRankText(player: PlayerShareCardSource, mode: PlayerShareCardMode) {
 }
 
 function getProfileLabel(player: PlayerShareCardSource, mode: PlayerShareCardMode) {
+  // Peak card for a player without a two-season peak: say so, show career stats.
+  if (mode === "peak" && !player.hasProfile) {
+    return "Peak · Needs 2 qualifying seasons";
+  }
+
   if (player.isFinalSeason && player.seasonLabel) {
     return `Final Season · ${formatSeasonWindow(player.seasonLabel)}`;
   }
@@ -255,6 +273,7 @@ export function getPlayerShareCard(
     // Whole number on the card; the rankings page keeps its one-decimal ratings.
     overall: Math.round(player.overall).toString(),
     rankLabel: getRankText(player, mode)?.toUpperCase() ?? null,
+    note: mode === "peak" && !player.hasProfile ? "Career stats shown" : null,
     stats: [
       { label: "PPG", value: formatStat(player.ppg) },
       { label: "RPG", value: formatStat(player.rpg) },
@@ -282,8 +301,11 @@ export function getPlayerShareDescription(
     : player.hasProfile
       ? descriptionModeLabels[mode]
       : descriptionModeLabels.career;
+  // The career profile's label is just "Career", which isn't a season window.
   const seasonWindow =
-    player.hasProfile && player.seasonLabel
+    player.hasProfile &&
+    player.seasonLabel &&
+    player.seasonLabel.toLowerCase() !== "career"
       ? formatSeasonWindow(player.seasonLabel)
       : null;
   const subject = seasonWindow
