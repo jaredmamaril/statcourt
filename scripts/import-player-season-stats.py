@@ -1,10 +1,39 @@
+"""Import per-season regular-season stats (one row per team stint, plus "TOT" for
+traded seasons) into player_season_stats, from nba_api PlayerCareerStats (Totals).
+
+Each row stores the season totals (points, rebounds, made/attempted shots, ...) and the
+per-game stats and percentages computed from them (scripts/career_totals.py). Stats that
+weren't tracked yet (steals/blocks before 1973-74, threes before 1979-80) are null.
+
+Run from the repo root with the service role key in .env.local:
+
+    $env:PYTHONIOENCODING="utf-8"
+    # Players with no season rows yet (the default):
+    python -u scripts/import-player-season-stats.py
+    # In-season refresh of active players (run import-player-directory.py first):
+    python -u scripts/import-player-season-stats.py --active
+    # Issue #37 backfill: every player whose rows don't have totals yet. Resumable and
+    # idempotent: stop any time (Ctrl+C) and run it again to continue.
+    python -u scripts/import-player-season-stats.py --backfill-totals *> scripts/season-totals-backfill.txt
+    # Try without writing anything:
+    python -u scripts/import-player-season-stats.py --backfill-totals --dry-run --limit 5
+    # Write only the new total columns of existing rows (per-game and percentage
+    # columns untouched, no new rows), e.g. before the app reads the totals:
+    python -u scripts/import-player-season-stats.py --backfill-totals --totals-only
+
+Needs scripts/player-season-totals.sql to have been run for the totals columns; before
+that, the default and --active modes still write the per-game columns.
+"""
+
+import argparse
+import random
 import sys
 import time
-import random
-import math
+from datetime import datetime, timedelta, timezone
 
 from nba_api.stats.endpoints import playercareerstats, playerprofilev2
 
+from career_totals import TOTAL_COLUMNS, season_row_from_api
 from pipeline_common import (
     configure_nba_session,
     current_nba_season,
@@ -16,23 +45,34 @@ from pipeline_common import (
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-configure_nba_session()
+TOTALS_EXTRA_COLUMNS = (*TOTAL_COLUMNS, "totals_imported_at")
 
 
-ONLY_IMPORT = set()
-IMPORT_LIMIT = 1000
-START_AFTER = ""
-REFRESH_EXISTING = False
-# --active refreshes every player on an active roster (player_directory.roster_status
-# = "1") or with a season row in the current or previous season, even if they
-# already have rows. Use it for in-season updates; run import-player-directory.py first.
-REFRESH_ACTIVE = "--active" in sys.argv
-#$env:PYTHONIOENCODING="utf-8"
-#python -u scripts/import-player-season-stats.py --active > scripts/player-season-stats-output.txt
+def parse_args(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument(
+        "--active",
+        action="store_true",
+        help="refresh every player on an active roster or with a current/previous-season row",
+    )
+    mode.add_argument(
+        "--backfill-totals",
+        action="store_true",
+        help="re-import every player whose season rows don't have totals yet (resumable)",
+    )
+    parser.add_argument("--only", action="append", default=[], metavar="NAME", help="only this player (repeatable)")
+    parser.add_argument("--limit", type=int, default=None, help="at most this many players")
+    parser.add_argument("--start-after", default="", metavar="NAME", help="skip players up to this name")
+    parser.add_argument("--dry-run", action="store_true", help="fetch and build rows, but write nothing")
+    parser.add_argument(
+        "--totals-only",
+        action="store_true",
+        help="only fill the total columns (and totals_imported_at) of rows that already exist; "
+        "never changes per-game or percentage columns and never inserts rows",
+    )
 
-
-def get_supabase_client():
-    return get_service_supabase_client()
+    return parser.parse_args(argv)
 
 
 def pause_between_nba_calls():
@@ -55,133 +95,6 @@ def run_nba_request(label, request_fn, max_retries=5):
             delay *= 2
 
 
-def json_safe_number(value, fallback=None):
-    if value is None:
-        return fallback
-
-    try:
-        number = float(value)
-    except (TypeError, ValueError):
-        return fallback
-
-    if not math.isfinite(number):
-        return fallback
-
-    return number
-
-
-def json_safe_text(value, fallback=None):
-    if value is None:
-        return fallback
-
-    try:
-        if value != value:
-            return fallback
-    except TypeError:
-        pass
-
-    text = str(value).strip()
-
-    if text.lower() in {"", "nan", "none", "null"}:
-        return fallback
-
-    return text
-
-
-def json_safe_int(value, fallback=None):
-    number = json_safe_number(value, fallback=None)
-
-    if number is None:
-        return fallback
-
-    return int(number)
-
-
-def safe_round(value, digits=1, fallback=None):
-    number = json_safe_number(value, fallback=None)
-
-    if number is None:
-        return fallback
-
-    return round(number, digits)
-
-
-def safe_per_game(total, games, fallback=None):
-    total_number = json_safe_number(total, fallback=None)
-    games_number = json_safe_number(games, fallback=None)
-
-    if total_number is None or games_number is None or games_number <= 0:
-        return fallback
-
-    return safe_round(total_number / games_number, 1, fallback)
-
-
-def safe_percent(made, attempted, fallback=None):
-    made_number = json_safe_number(made, fallback=None)
-    attempted_number = json_safe_number(attempted, fallback=None)
-
-    if made_number is None or attempted_number is None or attempted_number <= 0:
-        return fallback
-
-    return safe_round((made_number / attempted_number) * 100, 1, fallback)
-
-
-def safe_number(value, fallback=None):
-    if value is None:
-        return fallback
-
-    try:
-        number = float(value)
-    except (TypeError, ValueError):
-        return fallback
-
-    if not math.isfinite(number):
-        return fallback
-
-    return number
-
-
-def safe_int(value, fallback=None):
-    if value is None:
-        return fallback
-
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return fallback
-
-
-def get_existing_nba_ids(supabase):
-    existing_nba_ids = set()
-    page_size = 1000
-    start = 0
-
-    while True:
-        response = (
-            supabase.table("player_season_stats")
-            .select("nba_id")
-            .range(start, start + page_size - 1)
-            .execute()
-        )
-
-        rows = response.data or []
-
-        if not rows:
-            break
-
-        for row in rows:
-            nba_id = row.get("nba_id")
-            if nba_id is not None:
-                existing_nba_ids.add(nba_id)
-
-        if len(rows) < page_size:
-            break
-
-        start += page_size
-
-    return existing_nba_ids
-
-
 def fetch_all(query_fn, page_size=1000):
     rows = []
     start = 0
@@ -196,32 +109,43 @@ def fetch_all(query_fn, page_size=1000):
         start += page_size
 
 
-def get_active_players_to_import(supabase):
-    current = current_nba_season()
-    previous = format_season(season_start_year(current) - 1)
+def has_totals_columns(supabase):
+    """Whether scripts/player-season-totals.sql has been run."""
+    try:
+        supabase.table("player_season_stats").select("totals_imported_at").limit(1).execute()
+        return True
+    except Exception:
+        return False
 
-    roster_ids = {
-        row["nba_id"]
-        for row in fetch_all(
-            lambda: supabase.table("player_directory")
-            .select("nba_id")
-            .eq("roster_status", "1")
-        )
-    }
-    recent_ids = {
-        row["nba_id"]
-        for row in fetch_all(
-            lambda: supabase.table("player_season_stats")
-            .select("nba_id")
-            .in_("season", [previous, current])
-        )
-    }
-    wanted_ids = roster_ids | recent_ids
-    players = fetch_all(
+
+def get_all_players(supabase):
+    return fetch_all(
         lambda: supabase.table("players")
         .select("id, nba_id, name")
         .not_.is_("nba_id", "null")
         .order("name")
+        .order("id")
+    )
+
+
+def get_nba_ids(supabase, query_fn):
+    return {row["nba_id"] for row in fetch_all(query_fn) if row.get("nba_id") is not None}
+
+
+def get_active_players(supabase):
+    current = current_nba_season()
+    previous = format_season(season_start_year(current) - 1)
+
+    roster_ids = get_nba_ids(
+        supabase,
+        lambda: supabase.table("player_directory").select("nba_id").eq("roster_status", "1"),
+    )
+    recent_ids = get_nba_ids(
+        supabase,
+        lambda: supabase.table("player_season_stats")
+        .select("nba_id")
+        .in_("season", [previous, current])
+        .order("id"),
     )
 
     print(
@@ -229,64 +153,57 @@ def get_active_players_to_import(supabase):
         f"{len(recent_ids)} with {previous} or {current} rows"
     )
 
-    return [player for player in players if player["nba_id"] in wanted_ids]
+    wanted = roster_ids | recent_ids
+
+    return [player for player in get_all_players(supabase) if player["nba_id"] in wanted]
 
 
-def get_players_to_import():
-    supabase = get_supabase_client()
+def get_backfill_players(supabase):
+    """Players with season rows still missing totals (uses the partial index). Players
+    finished by an earlier run drop out, which is what makes the backfill resumable."""
+    pending_ids = get_nba_ids(
+        supabase,
+        lambda: supabase.table("player_season_stats")
+        .select("nba_id")
+        .is_("totals_imported_at", "null")
+        .order("id"),
+    )
 
-    if REFRESH_ACTIVE:
-        return get_active_players_to_import(supabase)
+    print(f"-- Backfill: {len(pending_ids)} players have season rows without totals")
 
-    if ONLY_IMPORT:
-        response = (
-            supabase.table("players")
-            .select("id, nba_id, name")
-            .not_.is_("nba_id", "null")
-            .in_("name", list(ONLY_IMPORT))
-            .order("name")
-            .execute()
-        )
+    return [player for player in get_all_players(supabase) if player["nba_id"] in pending_ids]
 
-        return response.data
 
-    existing_nba_ids = set() if REFRESH_EXISTING else get_existing_nba_ids(supabase)
+def get_new_players(supabase):
+    existing_ids = get_nba_ids(
+        supabase, lambda: supabase.table("player_season_stats").select("nba_id").order("id")
+    )
 
-    rows_to_import = []
-    page_size = 1000
-    start = 0
+    return [player for player in get_all_players(supabase) if player["nba_id"] not in existing_ids]
 
-    while len(rows_to_import) < IMPORT_LIMIT:
-        query = (
-            supabase.table("players")
-            .select("id, nba_id, name")
-            .not_.is_("nba_id", "null")
-            .order("name")
-            .range(start, start + page_size - 1)
-        )
 
-        if START_AFTER:
-            query = query.gt("name", START_AFTER)
+def get_players_to_import(supabase, args):
+    if args.active:
+        players = get_active_players(supabase)
+    elif args.backfill_totals:
+        players = get_backfill_players(supabase)
+    else:
+        players = get_new_players(supabase)
 
-        response = query.execute()
-        rows = response.data or []
+    if args.only:
+        wanted = set(args.only)
+        # --only also finds players that aren't pending (e.g. to re-check one player).
+        players = [player for player in get_all_players(supabase) if player["name"] in wanted]
 
-        if not rows:
-            break
+    if args.start_after:
+        players = [player for player in players if player["name"] > args.start_after]
 
-        for row in rows:
-            if row["nba_id"] not in existing_nba_ids:
-                rows_to_import.append(row)
+    if args.limit is not None:
+        players = players[: args.limit]
+    elif not (args.active or args.backfill_totals or args.only):
+        players = players[:1000]
 
-                if len(rows_to_import) >= IMPORT_LIMIT:
-                    break
-
-        if len(rows) < page_size:
-            break
-
-        start += page_size
-
-    return rows_to_import
+    return players
 
 
 def get_season_dataframe(player):
@@ -297,18 +214,15 @@ def get_season_dataframe(player):
         f"career stats for {name}",
         lambda: playercareerstats.PlayerCareerStats(
             player_id=nba_id,
+            per_mode36="Totals",
             timeout=30,
         ),
     )
 
     data_frames = career.get_data_frames()
 
-    if data_frames:
-        season_df = data_frames[0]
-
-        if not season_df.empty:
-            print(f"-- Using PlayerCareerStats for {name}")
-            return season_df
+    if data_frames and not data_frames[0].empty:
+        return data_frames[0]
 
     print(f"-- PlayerCareerStats empty for {name}, trying PlayerProfileV2")
 
@@ -316,22 +230,14 @@ def get_season_dataframe(player):
         f"profile stats for {name}",
         lambda: playerprofilev2.PlayerProfileV2(
             player_id=nba_id,
+            per_mode36="Totals",
             timeout=30,
         ),
     )
 
-    profile_frames = profile.get_data_frames()
+    required_columns = {"SEASON_ID", "TEAM_ABBREVIATION", "GP", "PTS", "REB", "AST"}
 
-    for frame in profile_frames:
-        required_columns = {
-            "SEASON_ID",
-            "TEAM_ABBREVIATION",
-            "GP",
-            "PTS",
-            "REB",
-            "AST",
-        }
-
+    for frame in profile.get_data_frames():
         if required_columns.issubset(set(frame.columns)) and not frame.empty:
             print(f"-- Using PlayerProfileV2 fallback for {name}")
             return frame
@@ -339,10 +245,7 @@ def get_season_dataframe(player):
     return None
 
 
-def get_player_season_rows(player):
-    nba_id = player["nba_id"]
-    print(f"-- NBA ID for {player['name']}: {nba_id}")
-
+def get_player_season_rows(player, imported_at, include_totals):
     season_df = get_season_dataframe(player)
 
     if season_df is None or season_df.empty:
@@ -350,93 +253,171 @@ def get_player_season_rows(player):
 
     rows = []
 
-    for _, row in season_df.iterrows():
-        games = json_safe_int(row.get("GP"), 0)
+    for _, api_row in season_df.iterrows():
+        row = season_row_from_api(api_row, player["id"], player["nba_id"], imported_at)
 
-        if games <= 0:
+        if row is None:
             continue
 
-        minutes = safe_number(row.get("MIN"), 0)
-        points = safe_number(row.get("PTS"), 0)
-        rebounds = safe_number(row.get("REB"), 0)
-        assists = safe_number(row.get("AST"), 0)
-        steals = safe_number(row.get("STL"), 0)
-        blocks = safe_number(row.get("BLK"), 0)
+        if not include_totals:
+            for column in TOTALS_EXTRA_COLUMNS:
+                row.pop(column, None)
 
-        fgm = safe_number(row.get("FGM"), 0)
-        fga = safe_number(row.get("FGA"), 0)
-        fg3m = safe_number(row.get("FG3M"), 0)
-        fg3a = safe_number(row.get("FG3A"), 0)
-        ftm = safe_number(row.get("FTM"), 0)
-        fta = safe_number(row.get("FTA"), 0)
-
-        rows.append(
-            {
-                "player_id": player["id"],
-                "nba_id": nba_id,
-                "season": json_safe_text(row.get("SEASON_ID")),
-                "team_id": json_safe_int(row.get("TEAM_ID")),
-                "team": json_safe_text(row.get("TEAM_ABBREVIATION"), "TOT"),
-                "games": games,
-                "minutes_per_game": safe_per_game(minutes, games),
-                "ppg": safe_per_game(points, games),
-                "rpg": safe_per_game(rebounds, games),
-                "apg": safe_per_game(assists, games),
-                "spg": safe_per_game(steals, games),
-                "bpg": safe_per_game(blocks, games),
-                "fg_percent": safe_percent(fgm, fga),
-                "three_percent": safe_percent(fg3m, fg3a),
-                "ft_percent": safe_percent(ftm, fta),
-                "three_made_per_game": safe_per_game(fg3m, games),
-                "three_attempts_per_game": safe_per_game(fg3a, games),
-                "free_throw_attempts_per_game": safe_per_game(fta, games),
-            }
-        )
+        rows.append(row)
 
     return rows
 
 
-def import_player_season_stats():
-    supabase = get_supabase_client()
-    players = get_players_to_import()
+def write_totals_only(supabase, player, rows, dry_run):
+    """Updates the total columns of this player's existing rows, matched by (season,
+    team), one row at a time by id. Returns (updated, new rows skipped)."""
+    existing = {
+        (row["season"], row["team"]): row["id"]
+        for row in (
+            supabase.table("player_season_stats")
+            .select("id, season, team")
+            .eq("nba_id", player["nba_id"])
+            .execute()
+            .data
+            or []
+        )
+    }
+    updated = skipped_new = 0
 
-    print(f"-- Found {len(players)} players to import season stats for")
+    for row in rows:
+        row_id = existing.get((row["season"], row["team"]))
 
-    total_rows = 0
+        if row_id is None:
+            skipped_new += 1
+            continue
 
-    for index, player in enumerate(players, start=1):
-        name = player["name"]
+        if not dry_run:
+            supabase.table("player_season_stats").update(
+                {column: row[column] for column in TOTALS_EXTRA_COLUMNS}
+            ).eq("id", row_id).execute()
 
-        try:
-            print(f"-- [{index}/{len(players)}] Importing season stats for {name}")
+        updated += 1
 
-            season_rows = get_player_season_rows(player)
+    return updated, skipped_new
 
-            if not season_rows:
-                print(f"-- Skipped {name}: no season rows found")
-                continue
 
-            response = (
-                supabase.table("player_season_stats")
-                .upsert(
-                    season_rows,
-                    on_conflict="nba_id,season,team",
-                )
-                .execute()
+def find_orphan_rows(supabase, player, written_rows):
+    """Rows in the database the NBA API no longer returns for this player (e.g. an
+    old team code). They keep the player pending; listed for review, never deleted."""
+    written = {(row["season"], row["team"]) for row in written_rows}
+    pending = (
+        supabase.table("player_season_stats")
+        .select("season, team")
+        .eq("nba_id", player["nba_id"])
+        .is_("totals_imported_at", "null")
+        .execute()
+        .data
+        or []
+    )
+
+    return [f"{row['season']} {row['team']}" for row in pending if (row["season"], row["team"]) not in written]
+
+
+def format_duration(seconds):
+    return str(timedelta(seconds=int(seconds)))
+
+
+def import_player_season_stats(args):
+    configure_nba_session()
+    supabase = get_service_supabase_client()
+    include_totals = has_totals_columns(supabase)
+
+    if not include_totals:
+        if args.backfill_totals or args.totals_only:
+            raise SystemExit("-- Run scripts/player-season-totals.sql first (totals columns are missing).")
+
+        print("-- Totals columns are missing; writing per-game columns only.")
+
+    players = get_players_to_import(supabase, args)
+    total = len(players)
+
+    print(f"-- {total} players to import{' (dry run: nothing is written)' if args.dry_run else ''}")
+
+    if args.totals_only:
+        print("-- Totals only: existing rows get the total columns; nothing else changes.")
+
+    started = time.monotonic()
+    imported_rows = 0
+    done = skipped = failed = new_rows_skipped = 0
+    orphans = {}
+
+    try:
+        for index, player in enumerate(players, start=1):
+            name = player["name"]
+            imported_at = datetime.now(timezone.utc).isoformat()
+
+            try:
+                rows = get_player_season_rows(player, imported_at, include_totals)
+
+                if not rows:
+                    skipped += 1
+                    status = "no season rows from the NBA API"
+                elif args.totals_only:
+                    updated, skipped_new = write_totals_only(supabase, player, rows, args.dry_run)
+                    imported_rows += 0 if args.dry_run else updated
+                    new_rows_skipped += skipped_new
+                    done += 1
+                    status = f"{updated} rows' totals{' (dry run)' if args.dry_run else ''}"
+
+                    if skipped_new:
+                        status += f", {skipped_new} new rows not added (totals only)"
+
+                    if not args.dry_run:
+                        player_orphans = find_orphan_rows(supabase, player, rows)
+
+                        if player_orphans:
+                            orphans[name] = player_orphans
+                            status += f", {len(player_orphans)} orphan rows: {', '.join(player_orphans)}"
+                elif args.dry_run:
+                    done += 1
+                    status = f"{len(rows)} rows (dry run)"
+                else:
+                    supabase.table("player_season_stats").upsert(
+                        rows, on_conflict="nba_id,season,team"
+                    ).execute()
+                    imported_rows += len(rows)
+                    done += 1
+                    status = f"{len(rows)} rows"
+
+                    if args.backfill_totals:
+                        player_orphans = find_orphan_rows(supabase, player, rows)
+
+                        if player_orphans:
+                            orphans[name] = player_orphans
+                            status += f", {len(player_orphans)} orphan rows: {', '.join(player_orphans)}"
+            except Exception as error:
+                failed += 1
+                status = f"FAILED: {error}"
+
+            elapsed = time.monotonic() - started
+            average = elapsed / index
+            eta = average * (total - index)
+            print(
+                f"-- [{index}/{total}] {name}: {status} | elapsed {format_duration(elapsed)}"
+                f" | {average:.1f}s/player | ETA {format_duration(eta)}",
+                flush=True,
             )
+    except KeyboardInterrupt:
+        print("-- Stopped. Run the same command again to continue where it left off.")
 
-            if not response.data:
-                print(f"-- Warning: no returned data for {name}")
+    print(
+        f"-- Done: {done} players, {imported_rows} rows written, {skipped} without rows, "
+        f"{failed} failed (failed players stay pending and are retried next run)."
+    )
 
-            total_rows += len(season_rows)
+    if new_rows_skipped:
+        print(f"-- {new_rows_skipped} API rows had no existing row and were not added (totals only).")
 
-            print(f"-- Imported {len(season_rows)} season rows for {name}")
-
-        except Exception as error:
-            print(f"-- Skipped {name}: {error}")
-
-    print(f"-- Done. Imported/updated {total_rows} total season rows.")
+    if orphans:
+        print(f"-- {len(orphans)} players have rows the NBA API no longer returns (not changed):")
+        for name, rows in orphans.items():
+            print(f"--   {name}: {', '.join(rows)}")
 
 
 if __name__ == "__main__":
-    import_player_season_stats()
+    import_player_season_stats(parse_args())

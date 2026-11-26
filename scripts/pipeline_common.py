@@ -71,6 +71,22 @@ def get_service_supabase_client():
     return create_client(url, key)
 
 
+def get_public_supabase_client():
+    """Read-only Supabase client (the public anon key, like the app). RLS blocks anon
+    writes to the player tables, so dry runs that use it can't change anything."""
+    from supabase import create_client
+
+    load_env_file()
+
+    url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
+    key = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+
+    if not url or not key:
+        raise ValueError("Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local")
+
+    return create_client(url, key)
+
+
 def configure_nba_session():
     """Route nba_api requests through a browser-like session (same as the other scripts)."""
     from curl_cffi import requests as cr
