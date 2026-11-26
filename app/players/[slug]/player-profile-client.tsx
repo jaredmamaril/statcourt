@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useAuthUser } from "../../lib/use-auth-user";
@@ -38,6 +37,7 @@ import {
 } from "../../components/player-ratings";
 import { AccessibleDialog } from "../../components/ui/accessible-dialog";
 import { hasTwoSeasonPeak, PEAK_RULE_TEXT } from "../../lib/player-peak";
+import { PlayerNotFoundMessage, PlayerPageNav } from "./player-page-nav";
 import { StatModeContext } from "./stat-mode-context";
 import { ShareButton } from "../../components/share/share-button";
 import { getShareImagePath, replaceModeInAddressBar } from "../../lib/share";
@@ -343,32 +343,10 @@ export function PlayerProfileClient({
           {playerActionStatus}
         </p>
 
-        <div className="mb-3 flex items-center justify-between gap-3 lg:mb-6">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="rounded-md border border-white/25 bg-white/8 px-3 py-2 font-michroma text-[8px] uppercase text-white/75 shadow-[0_0_12px_rgba(255,255,255,0.08)] transition hover:scale-[1.02] hover:border-white/45 hover:bg-white/12 hover:text-white lg:px-4 lg:text-[10px]"
-          >
-            Back
-          </button>
-
-          <Link
-            href="/players"
-            className="rounded-md border border-[rgb(var(--court-accent-rgb)/0.7)] bg-[rgb(var(--court-accent-rgb)/0.16)] px-3 py-2 font-michroma text-[8px] uppercase text-[var(--court-accent)] shadow-[0_0_14px_rgb(var(--court-accent-rgb)/0.16)] transition hover:scale-[1.02] hover:bg-[rgb(var(--court-accent-rgb)/0.24)] lg:px-4 lg:text-[10px]"
-          >
-            Browse Players
-          </Link>
-        </div>
+        <PlayerPageNav />
 
         {!player ? (
-          <div className="mx-auto mt-8 max-w-md rounded-lg border border-red-500/30 bg-red-500/10 p-5 text-center">
-            <p className="font-michroma text-sm uppercase text-red-200">
-              Player Not Found
-            </p>
-            <p className="mt-3 font-michroma text-[9px] leading-relaxed text-white/45">
-              This player is not available in the current StatCourt database.
-            </p>
-          </div>
+          <PlayerNotFoundMessage />
         ) : (
           <>
             {loadError && (

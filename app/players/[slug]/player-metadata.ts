@@ -42,14 +42,6 @@ function getUnrankedSources(
   }).map((source) => ({ ...source, rank: null }));
 }
 
-function formatPlayerSlug(slug: string) {
-  return decodeURIComponent(slug)
-    .split("-")
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
-
 // Metadata for /players/{slug}, optionally for a shared stat mode (?mode=...).
 // - The canonical URL never includes ?mode (one page per player for search engines).
 // - og:url, og:image, twitter:image and the description follow the shared mode; with
@@ -59,35 +51,50 @@ export async function buildPlayerMetadata(
   linkMode: StatMode | null,
 ): Promise<Metadata> {
   const mode = linkMode ?? DEFAULT_SHARE_MODE;
-  const { player, slugIndex, newestSeason } = await getPlayerForSlug(slug);
-  const playerName = player?.name ?? formatPlayerSlug(slug);
-  const canonicalPath = player
-    ? getPlayerHref(player, getDuplicatePlayerSlugs(slugIndex))
-    : getPlayerHref(decodeURIComponent(slug));
-  const warmSources = player ? await getWarmShareSources(mode) : null;
-  const shareDescription = player
-    ? (warmSources && getPlayerShareDescription(warmSources, slug, mode)) ??
-      getPlayerShareDescription(getUnrankedSources(player, mode, newestSeason), slug, mode)
-    : null;
+  const { player, match, slugIndex, newestSeason } = await getPlayerForSlug(slug);
+
+  // A bare name shared by several players: the "Which Mike James?" page. Not in the
+  // sitemap and not indexed; its links to each profile are followed.
+  if (match.status === "ambiguous") {
+    const name = match.players[0].name;
+
+    return {
+      ...createStatCourtMetadata({
+        title: `Which ${name}?`,
+        description: `More than one NBA player is named ${name}. Choose a StatCourt player profile.`,
+        path: `/players/${match.canonicalSlug}`,
+      }),
+      robots: { index: false, follow: true },
+    };
+  }
+
+  // The page answers with a 404 (not-found.tsx); never throw from metadata.
+  if (!player) {
+    return {
+      title: "Player Not Found",
+      robots: { index: false, follow: true },
+    };
+  }
+
+  const canonicalPath = getPlayerHref(player, getDuplicatePlayerSlugs(slugIndex));
+  const warmSources = await getWarmShareSources(mode);
+  const shareDescription =
+    (warmSources && getPlayerShareDescription(warmSources, slug, mode)) ??
+    getPlayerShareDescription(getUnrankedSources(player, mode, newestSeason), slug, mode);
 
   return createStatCourtMetadata({
-    title: playerName || "Player Profile",
+    title: player.name,
     description:
       shareDescription ??
-      (playerName.length > 0
-        ? `View ${playerName}'s StatCourt player profile, ratings, stat profiles, archetype, similar players, and best lineup fits.`
-        : "View a StatCourt NBA player profile with ratings, stat profiles, archetype, similar players, and best lineup fits."),
+      `View ${player.name}'s StatCourt player profile, ratings, stat profiles, archetype, similar players, and best lineup fits.`,
     path: canonicalPath,
     shareUrl: linkMode ? withModeParam(canonicalPath, linkMode) : canonicalPath,
-    // Unknown players keep the default site preview image.
-    includeDefaultImage: !player,
-    image: player
-      ? {
-          url: getShareImagePath(canonicalPath, mode),
-          width: 1200,
-          height: 630,
-          alt: `${player.name} StatCourt player card`,
-        }
-      : undefined,
+    includeDefaultImage: false,
+    image: {
+      url: getShareImagePath(canonicalPath, mode),
+      width: 1200,
+      height: 630,
+      alt: `${player.name} StatCourt player card`,
+    },
   });
 }
