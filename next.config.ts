@@ -36,6 +36,9 @@ const contentSecurityPolicy = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  // Stop `next dev` from appending its agent-rules block to AGENTS.md (our AGENTS.md
+  // is maintained by hand).
+  agentRules: false,
   // PostHog reverse proxy (US Cloud): events go to statcourt.app/ingest, so ad blockers
   // don't drop them, and the CSP's connect-src 'self' already allows them.
   async rewrites() {
