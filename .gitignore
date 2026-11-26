@@ -49,3 +49,8 @@ scripts/player-directory.csv
 scripts/players-doesnt-work
 scripts/__pycache__/
 *.pyc
+
+# issue #37 backfill: local table backups and run logs
+backups/
+scripts/season-totals-backfill*.txt
+scripts/player-stat-profiles-output.txt
