@@ -159,6 +159,10 @@ vi.mock("../../components/supabase-players", () => ({
     ),
 }));
 vi.mock("./similar-players", () => ({ SimilarPlayers: () => null }));
+const trackedEvents = vi.hoisted(() => [] as [string, unknown][]);
+vi.mock("../../lib/analytics", () => ({
+  track: (event: string, properties: unknown) => trackedEvents.push([event, properties]),
+}));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), back: vi.fn(), replace: vi.fn() }),
   usePathname: () => "/players/test",
@@ -326,6 +330,20 @@ describe("stat mode links (?mode=)", () => {
     await renderPlayerPage("normal-guard", "PEAK");
 
     expect(selectedModeButton()?.textContent).toBe("Career");
+  });
+
+  it("tracks stat_mode_changed for a real change and never a $pageview", async () => {
+    trackedEvents.length = 0;
+    await renderPlayerPage("normal-guard");
+
+    screen.getByRole("button", { name: "Career" }).click(); // already Career: no event
+    screen.getByRole("button", { name: "Peak" }).click();
+    await waitFor(() => expect(selectedModeButton()?.textContent).toBe("Peak"));
+
+    expect(trackedEvents).toEqual([
+      ["stat_mode_changed", { from: "career", to: "peak", page: "player", slug: "normal-guard" }],
+    ]);
+    expect(trackedEvents.some(([event]) => event === "$pageview")).toBe(false);
   });
 
   it("writes the mode into the address bar without a navigation", async () => {

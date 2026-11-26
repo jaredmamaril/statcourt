@@ -64,7 +64,13 @@ import {
   useState,
 } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { getDuplicatePlayerSlugs } from "../lib/player-slug";
+import {
+  getCanonicalPlayerSlug,
+  getDuplicatePlayerSlugs,
+  toPlayerSlug,
+} from "../lib/player-slug";
+import { track } from "../lib/analytics";
+import { usePlayerSearchTracking } from "../lib/use-player-search-tracking";
 
 const archetypeRarityRank = {
   gold: 5,
@@ -285,6 +291,8 @@ function Players() {
       selectedRatingView,
     ],
   );
+
+  usePlayerSearchTracking("players", deferredPlayerSearch, filteredPlayers.length);
 
   const visiblePlayers = filteredPlayers.slice(0, visiblePlayerCount);
 
@@ -564,6 +572,11 @@ function Players() {
       };
 
       void updateCompareSlots(nextSlots);
+      track("compare_added", {
+        slot,
+        slug: getCanonicalPlayerSlug(selectedPlayer, duplicatePlayerSlugs),
+        page: "players",
+      });
       setPlayerActionStatus(
         `${selectedPlayer.name} added as ${slot} compare player.`,
       );
@@ -793,6 +806,11 @@ function Players() {
                             : `${playerName} added to favorites.`,
                         );
                         void toggleFavorite(playerName);
+                        track("favorite_toggled", {
+                          slug: toPlayerSlug(playerName),
+                          favorited: !wasFavorite,
+                          page: "players",
+                        });
                       },
                       "Create a free account to save your favorite players.",
                     )

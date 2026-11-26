@@ -41,6 +41,8 @@ import { hasTwoSeasonPeak, PEAK_RULE_TEXT } from "../../lib/player-peak";
 import { StatModeContext } from "./stat-mode-context";
 import { ShareButton } from "../../components/share/share-button";
 import { getShareImagePath, replaceModeInAddressBar } from "../../lib/share";
+import { track } from "../../lib/analytics";
+import { toPlayerSlug } from "../../lib/player-slug";
 
 const statModeLabels: Record<StatMode, string> = {
   career: "Career",
@@ -261,6 +263,11 @@ export function PlayerProfileClient({
     action();
   }
 
+  // Players are identified in analytics by their canonical slug, never internal IDs.
+  const analyticsSlug =
+    canonicalPath?.replace(/^\/players\//, "") ??
+    (player ? toPlayerSlug(player.name) : "");
+
   function comparePlayer(slot: "left" | "right") {
     requireAuth("Sign in to save player comparisons", () => {
       if (!player) return;
@@ -269,6 +276,7 @@ export function PlayerProfileClient({
         ...compareSlots,
         [slot]: player.name,
       });
+      track("compare_added", { slot, slug: analyticsSlug, page: "player" });
       setPlayerActionStatus(
         `${player.name} added as ${slot} compare player.`,
       );
@@ -289,6 +297,11 @@ export function PlayerProfileClient({
             : `${player.name} added to favorites.`,
         );
         void toggleFavorite(player.name);
+        track("favorite_toggled", {
+          slug: analyticsSlug,
+          favorited: !isFavorite,
+          page: "player",
+        });
       },
       "Create a free account to save your favorite players.",
     );
@@ -439,6 +452,14 @@ export function PlayerProfileClient({
                           aria-pressed={isActive}
                           type="button"
                           onClick={() => {
+                            if (mode !== statMode) {
+                              track("stat_mode_changed", {
+                                from: statMode,
+                                to: mode,
+                                page: "player",
+                                slug: analyticsSlug,
+                              });
+                            }
                             setStatMode(mode);
                             replaceModeInAddressBar(mode);
                           }}

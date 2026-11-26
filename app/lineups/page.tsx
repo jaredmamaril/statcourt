@@ -93,6 +93,8 @@ import {
   scoutLineupSteps,
 } from "../components/lineups/scout/lineup-loading-steps";
 import { createPlayerHrefResolver, getPlayerHref } from "../lib/player-slug";
+import { track } from "../lib/analytics";
+import { usePlayerSearchTracking } from "../lib/use-player-search-tracking";
 
 const statProfileLabels: Record<PlayerStatProfileMode | "all", string> = {
   all: "All Profiles",
@@ -305,6 +307,8 @@ function LineupsContent() {
     initialHasStartedBuilder:
       initialTab === "builder" && Boolean(initialBuilderPlayer),
   });
+
+  usePlayerSearchTracking("lineup_picker", buildPlayerSearch, availableBuildPlayers.length);
 
   const builderPlayerName = searchParams.get("player");
   const requestedBuilderSlot = searchParams.get("slot") as LineupSlot | null;
@@ -628,6 +632,11 @@ function LineupsContent() {
     updateSavedLineups(
       getLineupsAfterSave(savedLineups, newLineup, overwriteLineupId),
     );
+    track("lineup_built", {
+      source: overwriteLineupId ? "updated" : "saved",
+      mode: builderStatProfile,
+      player_count: selectedLineupCount,
+    });
     void logUserActivity({
       user,
       activityType: "save_lineup",

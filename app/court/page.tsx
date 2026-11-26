@@ -30,6 +30,9 @@ import {
 } from "../components/court/court-comparison-skeleton";
 
 import { CourtPlayerPickerModal } from "../components/court/court-player-picker-modal";
+import { track } from "../lib/analytics";
+import { toPlayerSlug } from "../lib/player-slug";
+import { usePlayerSearchTracking } from "../lib/use-player-search-tracking";
 
 const COURT_PLAYER_PICKER_LIMIT = 20;
 
@@ -139,7 +142,21 @@ export default function Court() {
     COURT_PLAYER_PICKER_LIMIT,
   );
 
+  usePlayerSearchTracking(
+    "court_picker",
+    deferredPickerSearch,
+    filteredPickerPlayers.length,
+  );
+
   function selectModalPlayer(playerName: string) {
+    if (activePickerSide) {
+      track("compare_added", {
+        slot: activePickerSide,
+        slug: toPlayerSlug(playerName),
+        page: "court",
+      });
+    }
+
     if (activePickerSide === "left") {
       setLeftPlayer(playerName);
       setCompareStatus(`${playerName} selected as left compare player.`);
