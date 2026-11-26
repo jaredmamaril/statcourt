@@ -52,6 +52,17 @@ const nextConfig: NextConfig = {
   },
   // PostHog's API paths end in a trailing slash; don't redirect them.
   skipTrailingSlashRedirect: true,
+  // That also turns off Next's /path/ -> /path redirect everywhere, so restore it for
+  // every route except /ingest (otherwise /players/x/ and /players/x are duplicates).
+  async redirects() {
+    return [
+      {
+        source: "/:path((?!ingest(?:/|$)).+)/",
+        destination: "/:path",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
