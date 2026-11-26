@@ -6,6 +6,7 @@ calculate-player-stat-profiles.py against an in-memory stand-in for Supabase.
 import importlib.util
 import io
 import json
+import tempfile
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
@@ -88,12 +89,20 @@ def make_db():
         "player_season_stats": green_rows
         + [{"id": 100, "player_id": 2, "nba_id": 999, "season": "2001-02", "team": "BOS", "games": 10,
             "totals_imported_at": None}],
+        "player_stat_profiles": [
+            {"id": 1, "player_id": 1, "nba_id": green["nba_id"], "profile_type": "career", "games": 1278,
+             "fg_percent": 49.0, "three_percent": 16.6, "ft_percent": 71.9},
+        ],
         "writes": [],
     }
 
 
-def run(db, *argv):
-    with mock.patch.object(calculate, "get_service_supabase_client", return_value=FakeSupabase(db)):
+def run(db, *argv, public_db=None):
+    # The dry run must use the read-only (anon) client; anything else fails the test.
+    service = FakeSupabase(db) if public_db is None else mock.Mock(side_effect=AssertionError("service client used"))
+    with mock.patch.object(calculate, "get_service_supabase_client", return_value=service), mock.patch.object(
+        calculate, "get_public_supabase_client", return_value=FakeSupabase(public_db or db)
+    ):
         with redirect_stdout(io.StringIO()) as output:
             calculate.calculate_profiles(calculate.parse_args(list(argv)))
 
@@ -125,12 +134,24 @@ class CalculateProfilesTest(unittest.TestCase):
         self.assertNotIn(999, written_ids)
         self.assertIn("1 not backfilled yet", output)
 
-    def test_dry_run_writes_nothing(self):
+    def test_dry_run_writes_nothing_and_saves_before_and_after_locally(self):
         db = make_db()
-        output = run(db, "--dry-run")
+
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "dry-run.json"
+            output = run(db, "--dry-run", "--output", str(path), public_db=db)
+            result = json.loads(path.read_text(encoding="utf-8"))
 
         self.assertEqual(db["writes"], [])
         self.assertIn("1 players' career columns change", output)
+        self.assertEqual(result["summary"]["not_backfilled"], ["Old Rows"])
+
+        [green] = result["players"]
+        self.assertEqual(green["before"]["players"]["three_percent"], 16.6)
+        self.assertEqual(green["before"]["career"]["three_percent"], 16.6)
+        self.assertEqual(green["after"]["players"]["three_percent"], 25.4)
+        self.assertEqual(green["after"]["career"]["three_percent"], 25.4)
+        self.assertEqual(sorted(k for k in green["after"] if k != "players"), ["career", "current", "peak"])
 
 
 if __name__ == "__main__":

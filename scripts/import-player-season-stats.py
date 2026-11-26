@@ -17,6 +17,9 @@ Run from the repo root with the service role key in .env.local:
     python -u scripts/import-player-season-stats.py --backfill-totals *> scripts/season-totals-backfill.txt
     # Try without writing anything:
     python -u scripts/import-player-season-stats.py --backfill-totals --dry-run --limit 5
+    # Write only the new total columns of existing rows (per-game and percentage
+    # columns untouched, no new rows), e.g. before the app reads the totals:
+    python -u scripts/import-player-season-stats.py --backfill-totals --totals-only
 
 Needs scripts/player-season-totals.sql to have been run for the totals columns; before
 that, the default and --active modes still write the per-game columns.
@@ -62,6 +65,12 @@ def parse_args(argv=None):
     parser.add_argument("--limit", type=int, default=None, help="at most this many players")
     parser.add_argument("--start-after", default="", metavar="NAME", help="skip players up to this name")
     parser.add_argument("--dry-run", action="store_true", help="fetch and build rows, but write nothing")
+    parser.add_argument(
+        "--totals-only",
+        action="store_true",
+        help="only fill the total columns (and totals_imported_at) of rows that already exist; "
+        "never changes per-game or percentage columns and never inserts rows",
+    )
 
     return parser.parse_args(argv)
 
@@ -259,6 +268,39 @@ def get_player_season_rows(player, imported_at, include_totals):
     return rows
 
 
+def write_totals_only(supabase, player, rows, dry_run):
+    """Updates the total columns of this player's existing rows, matched by (season,
+    team), one row at a time by id. Returns (updated, new rows skipped)."""
+    existing = {
+        (row["season"], row["team"]): row["id"]
+        for row in (
+            supabase.table("player_season_stats")
+            .select("id, season, team")
+            .eq("nba_id", player["nba_id"])
+            .execute()
+            .data
+            or []
+        )
+    }
+    updated = skipped_new = 0
+
+    for row in rows:
+        row_id = existing.get((row["season"], row["team"]))
+
+        if row_id is None:
+            skipped_new += 1
+            continue
+
+        if not dry_run:
+            supabase.table("player_season_stats").update(
+                {column: row[column] for column in TOTALS_EXTRA_COLUMNS}
+            ).eq("id", row_id).execute()
+
+        updated += 1
+
+    return updated, skipped_new
+
+
 def find_orphan_rows(supabase, player, written_rows):
     """Rows in the database the NBA API no longer returns for this player (e.g. an
     old team code). They keep the player pending; listed for review, never deleted."""
@@ -286,7 +328,7 @@ def import_player_season_stats(args):
     include_totals = has_totals_columns(supabase)
 
     if not include_totals:
-        if args.backfill_totals:
+        if args.backfill_totals or args.totals_only:
             raise SystemExit("-- Run scripts/player-season-totals.sql first (totals columns are missing).")
 
         print("-- Totals columns are missing; writing per-game columns only.")
@@ -296,9 +338,12 @@ def import_player_season_stats(args):
 
     print(f"-- {total} players to import{' (dry run: nothing is written)' if args.dry_run else ''}")
 
+    if args.totals_only:
+        print("-- Totals only: existing rows get the total columns; nothing else changes.")
+
     started = time.monotonic()
     imported_rows = 0
-    done = skipped = failed = 0
+    done = skipped = failed = new_rows_skipped = 0
     orphans = {}
 
     try:
@@ -312,6 +357,22 @@ def import_player_season_stats(args):
                 if not rows:
                     skipped += 1
                     status = "no season rows from the NBA API"
+                elif args.totals_only:
+                    updated, skipped_new = write_totals_only(supabase, player, rows, args.dry_run)
+                    imported_rows += 0 if args.dry_run else updated
+                    new_rows_skipped += skipped_new
+                    done += 1
+                    status = f"{updated} rows' totals{' (dry run)' if args.dry_run else ''}"
+
+                    if skipped_new:
+                        status += f", {skipped_new} new rows not added (totals only)"
+
+                    if not args.dry_run:
+                        player_orphans = find_orphan_rows(supabase, player, rows)
+
+                        if player_orphans:
+                            orphans[name] = player_orphans
+                            status += f", {len(player_orphans)} orphan rows: {', '.join(player_orphans)}"
                 elif args.dry_run:
                     done += 1
                     status = f"{len(rows)} rows (dry run)"
@@ -348,6 +409,9 @@ def import_player_season_stats(args):
         f"-- Done: {done} players, {imported_rows} rows written, {skipped} without rows, "
         f"{failed} failed (failed players stay pending and are retried next run)."
     )
+
+    if new_rows_skipped:
+        print(f"-- {new_rows_skipped} API rows had no existing row and were not added (totals only).")
 
     if orphans:
         print(f"-- {len(orphans)} players have rows the NBA API no longer returns (not changed):")
