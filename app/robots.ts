@@ -8,6 +8,8 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: [
         "/api/",
+        // PostHog's analytics proxy (next.config.ts rewrites); nothing to index.
+        "/ingest/",
         "/admin/",
         "/auth/",
         "/profile",

@@ -4,6 +4,7 @@ import {
   getCanonicalPlayerSlug,
   getDuplicatePlayerSlugs,
   getPlayerHref,
+  matchPlayerSlug,
   toPlayerSlug,
 } from "./player-slug";
 
@@ -93,5 +94,51 @@ describe("duplicate player names", () => {
     expect(findPlayerBySlug(players, "lebron-james")).toBe(players[1]);
     expect(findPlayerBySlug(players, "LeBron%20James")).toBe(players[1]);
     expect(findPlayerBySlug(players, "unknown-player")).toBeUndefined();
+  });
+});
+
+describe("matchPlayerSlug", () => {
+  const players = [
+    { name: "Mike James", nbaId: 2229 },
+    { name: "LeBron James", nbaId: 2544 },
+    { name: "Mike James", nbaId: 1628455 },
+    { name: "Nikola Jokić", nbaId: 203999 },
+  ];
+
+  it("gives the canonical slug for old and non-canonical forms of one player", () => {
+    for (const slug of ["lebron-james", "LeBron-James", "LeBron%20James", "lebron-james-2544"]) {
+      expect(matchPlayerSlug(players, slug)).toEqual({
+        status: "found",
+        player: players[1],
+        canonicalSlug: "lebron-james",
+      });
+    }
+
+    expect(matchPlayerSlug(players, "Nikola%20Joki%C4%87")).toMatchObject({
+      status: "found",
+      canonicalSlug: "nikola-jokic",
+    });
+  });
+
+  it("keeps the ID suffix for a shared name", () => {
+    expect(matchPlayerSlug(players, "Mike-James-1628455")).toEqual({
+      status: "found",
+      player: players[2],
+      canonicalSlug: "mike-james-1628455",
+    });
+  });
+
+  it("reports every player behind a bare shared name", () => {
+    expect(matchPlayerSlug(players, "mike-james")).toEqual({
+      status: "ambiguous",
+      players: [players[0], players[2]],
+      canonicalSlug: "mike-james",
+    });
+  });
+
+  it("matches nothing for unknown, empty or malformed slugs", () => {
+    for (const slug of ["unknown-player", "mike-james-9999", "---", "%E0%A4%A"]) {
+      expect(matchPlayerSlug(players, slug)).toEqual({ status: "not-found" });
+    }
   });
 });

@@ -136,6 +136,10 @@ FIXTURES[3].player.statProfiles!.current = {
   apg: 5,
 };
 
+// Last seasons for the two Mike Jameses ("Which Mike James?" lists the newest first).
+FIXTURES[1].player.statProfiles!.current = { profileType: "current", seasonLabel: "1991-92" };
+FIXTURES[2].player.statProfiles!.current = { profileType: "current", seasonLabel: "2023-24" };
+
 const ALL_ROWS = [...LEAGUE_FILLER, ...FIXTURES.flatMap((fixture) => fixture.seasons)];
 
 vi.mock("next/cache", () => ({
@@ -163,9 +167,26 @@ const trackedEvents = vi.hoisted(() => [] as [string, unknown][]);
 vi.mock("../../lib/analytics", () => ({
   track: (event: string, properties: unknown) => trackedEvents.push([event, properties]),
 }));
+// notFound() and permanentRedirect() throw in Next.js too; record where they'd send.
+const { NotFoundSignal, RedirectSignal } = vi.hoisted(() => {
+  class NotFoundSignal extends Error {}
+  class RedirectSignal extends Error {
+    constructor(readonly url: string) {
+      super(`redirect ${url}`);
+    }
+  }
+
+  return { NotFoundSignal, RedirectSignal };
+});
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), back: vi.fn(), replace: vi.fn() }),
   usePathname: () => "/players/test",
+  notFound: () => {
+    throw new NotFoundSignal();
+  },
+  permanentRedirect: (url: string) => {
+    throw new RedirectSignal(url);
+  },
 }));
 vi.mock("../../lib/use-auth-user", () => ({
   useAuthUser: () => ({ user: null, isLoadingUser: false }),
@@ -291,10 +312,66 @@ describe("server-rendered player page", () => {
     expect(screen.queryByText(/2001-02 to 2003-04/)).toBeNull();
   });
 
-  it("shows Player Not Found for an unknown slug", async () => {
-    await renderPlayerPage("not-a-real-player");
+});
 
-    expect(screen.getByText("Player Not Found")).toBeTruthy();
+describe("player slug routing", () => {
+  async function renderOutcome(slug: string, query: Record<string, string> = {}) {
+    const { default: PlayerProfilePage } = await import("./page");
+
+    try {
+      render(
+        await PlayerProfilePage({
+          params: Promise.resolve({ slug }),
+          searchParams: Promise.resolve(query),
+        }),
+      );
+
+      return "rendered";
+    } catch (error) {
+      if (error instanceof NotFoundSignal) return "not-found";
+      if (error instanceof RedirectSignal) return `redirect ${error.url}`;
+      throw error;
+    }
+  }
+
+  it.each(["not-a-real-player", "%E0%A4%A", "---", "mike-james-9999"])(
+    "calls notFound() for an unknown slug (%s)",
+    async (slug) => {
+      expect(await renderOutcome(slug)).toBe("not-found");
+    },
+  );
+
+  it.each([
+    ["Normal-Guard", "/players/normal-guard"],
+    ["NORMAL-GUARD", "/players/normal-guard"],
+    ["Normal%20Guard", "/players/normal-guard"],
+    ["Normal Guard", "/players/normal-guard"],
+    // ID suffix on a name nobody else has.
+    ["normal-guard-1001", "/players/normal-guard"],
+    ["Mike-James-2229", "/players/mike-james-2229"],
+    ["MIKE-JAMES", "/players/mike-james"],
+  ])("redirects %s to %s", async (slug, target) => {
+    expect(await renderOutcome(slug)).toBe(`redirect ${target}`);
+  });
+
+  it("keeps the query string on the redirect", async () => {
+    expect(
+      await renderOutcome("Normal-Guard", { mode: "peak", utm_source: "reddit" }),
+    ).toBe("redirect /players/normal-guard?mode=peak&utm_source=reddit");
+  });
+
+  it("renders canonical slugs without redirecting", async () => {
+    expect(await renderOutcome("normal-guard")).toBe("rendered");
+    expect(await renderOutcome("mike-james-1628455")).toBe("rendered");
+  });
+
+  it("lists every player for a shared name, newest first", async () => {
+    expect(await renderOutcome("mike-james")).toBe("rendered");
+
+    expect(screen.getByRole("heading", { name: "Which Mike James?" })).toBeTruthy();
+    expect(
+      screen.getAllByRole("link", { name: /Mike James/ }).map((link) => link.getAttribute("href")),
+    ).toEqual(["/players/mike-james-1628455", "/players/mike-james-2229"]);
   });
 });
 
@@ -373,6 +450,24 @@ describe("player page metadata", () => {
 
     return typeof image === "string" ? image : image.url;
   }
+
+  it("doesn't throw for unknown slugs and marks them noindex", async () => {
+    for (const slug of ["not-a-real-player", "%E0%A4%A", "---"]) {
+      const metadata = await metadataFor(slug, "peak");
+
+      expect(metadata.title).toBe("Player Not Found");
+      expect(metadata.robots).toEqual({ index: false, follow: true });
+      expect(metadata.openGraph).toBeUndefined();
+    }
+  });
+
+  it("marks the shared-name page noindex", async () => {
+    const metadata = await metadataFor("mike-james");
+
+    expect(metadata.title).toBe("Which Mike James?");
+    expect(metadata.robots).toEqual({ index: false, follow: true });
+    expect(metadata.alternates?.canonical).toBe("/players/mike-james");
+  });
 
   it("never puts ?mode in the canonical URL", async () => {
     for (const mode of [undefined, "career", "peak", "current", "bogus"]) {

@@ -71,22 +71,69 @@ export function getCanonicalPlayerPaths(players: readonly PlayerSlugSource[]) {
   return Array.from(new Set(players.map(toHref)));
 }
 
+function safeDecode(value: string) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    // Malformed escapes (e.g. "%E0%A4%A") match no player.
+    return null;
+  }
+}
+
+export type PlayerSlugMatch<T> =
+  // One player. `canonicalSlug` may differ from the URL (wrong case, encoded name,
+  // ID suffix on a unique name); the page redirects there.
+  | { status: "found"; player: T; canonicalSlug: string }
+  // A bare name slug shared by several players, e.g. /players/mike-james.
+  | { status: "ambiguous"; players: T[]; canonicalSlug: string }
+  | { status: "not-found" };
+
 // Accepts /players/{slug}-{nbaId}, /players/{slug}, and /players/{Encoded Name}.
-// A bare slug shared by several players resolves to the first one, as before.
+export function matchPlayerSlug<T extends PlayerSlugSource>(
+  players: readonly T[],
+  slugParam: string,
+  duplicateSlugs: ReadonlySet<string> = getDuplicatePlayerSlugs(players),
+): PlayerSlugMatch<T> {
+  const decodedParam = safeDecode(slugParam);
+
+  if (decodedParam === null) return { status: "not-found" };
+
+  const requestedSlug = toPlayerSlug(decodedParam);
+
+  if (!requestedSlug) return { status: "not-found" };
+
+  const idMatch = players.find((candidate) => getPlayerIdSlug(candidate) === requestedSlug);
+  const matches = idMatch
+    ? [idMatch]
+    : players.filter(
+        (candidate) =>
+          toPlayerSlug(candidate.name) === requestedSlug ||
+          candidate.name.toLowerCase() === decodedParam.toLowerCase(),
+      );
+
+  if (matches.length === 0) return { status: "not-found" };
+
+  if (matches.length > 1) {
+    return { status: "ambiguous", players: matches, canonicalSlug: requestedSlug };
+  }
+
+  return {
+    status: "found",
+    player: matches[0],
+    canonicalSlug: getCanonicalPlayerSlug(matches[0], duplicateSlugs),
+  };
+}
+
+// Like matchPlayerSlug, but a bare slug shared by several players resolves to the
+// first one, as before (share cards, which always need a single player).
 export function findPlayerBySlug<T extends PlayerSlugSource>(
   players: readonly T[],
   slugParam: string,
 ) {
-  const decodedParam = decodeURIComponent(slugParam);
-  const requestedSlug = toPlayerSlug(decodedParam);
+  const match = matchPlayerSlug(players, slugParam);
 
-  return (
-    players.find((candidate) => getPlayerIdSlug(candidate) === requestedSlug) ??
-    players.find((candidate) => {
-      return (
-        toPlayerSlug(candidate.name) === requestedSlug ||
-        candidate.name.toLowerCase() === decodedParam.toLowerCase()
-      );
-    })
-  );
+  if (match.status === "found") return match.player;
+  if (match.status === "ambiguous") return match.players[0];
+
+  return undefined;
 }
