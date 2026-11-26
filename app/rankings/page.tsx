@@ -8,6 +8,8 @@ import {
 } from "../lib/player-api-cache";
 import { getRankingPool, rankPlayers } from "../lib/player-rankings";
 import { parseStatMode, replaceModeInAddressBar } from "../lib/share";
+import { track } from "../lib/analytics";
+import { usePlayerSearchTracking } from "../lib/use-player-search-tracking";
 import {
   getCurrentRankingMinGames,
   getLatestSeasonLabel,
@@ -122,6 +124,10 @@ export default function Rankings() {
 
   // Changing the mode updates ?mode in the address bar (no navigation, no history entry).
   function selectStatProfile(profile: RankingStatProfile) {
+    if (profile !== statProfileFilter) {
+      track("stat_mode_changed", { from: statProfileFilter, to: profile, page: "rankings" });
+    }
+
     setStatProfileFilter(profile);
     replaceModeInAddressBar(profile);
   }
@@ -377,6 +383,8 @@ export default function Rankings() {
     () => rankPlayers(filteredPlayers, ratingCategory, statProfileFilter),
     [filteredPlayers, ratingCategory, statProfileFilter],
   );
+
+  usePlayerSearchTracking("rankings", deferredPlayerSearch, rankedPlayers.length);
 
   const topThreePlayers = useMemo(() => rankedPlayers.slice(0, 3), [rankedPlayers]);
 

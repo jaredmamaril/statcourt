@@ -8,6 +8,7 @@ import "./globals.css";
 import Navbar from "./components/navbar";
 import { GlobalFooter } from "./components/global-footer";
 import { ReducedMotionSync } from "./components/settings/reduced-motion-sync";
+import { AnalyticsProvider } from "./components/analytics/analytics-provider";
 import { ThemeSync } from "./components/settings/theme-sync";
 import { defaultStatCourtTheme } from "./lib/themes";
 import {
@@ -113,6 +114,7 @@ export default function RootLayout({
         <GlobalFooter />
         <Analytics />
         <SpeedInsights />
+        <AnalyticsProvider />
       </body>
     </html>
   );

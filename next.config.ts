@@ -36,6 +36,22 @@ const contentSecurityPolicy = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  // PostHog reverse proxy (US Cloud): events go to statcourt.app/ingest, so ad blockers
+  // don't drop them, and the CSP's connect-src 'self' already allows them.
+  async rewrites() {
+    return [
+      {
+        source: "/ingest/static/:path*",
+        destination: "https://us-assets.i.posthog.com/static/:path*",
+      },
+      {
+        source: "/ingest/:path*",
+        destination: "https://us.i.posthog.com/:path*",
+      },
+    ];
+  },
+  // PostHog's API paths end in a trailing slash; don't redirect them.
+  skipTrailingSlashRedirect: true,
   async headers() {
     return [
       {

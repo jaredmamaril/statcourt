@@ -6,6 +6,7 @@ import { Search, Shield, UserCircle, Users } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { SkeletonBlock } from "../components/loading/skeleton";
 import { supabase } from "../components/supabase-client";
+import { usePlayerSearchTracking } from "../lib/use-player-search-tracking";
 
 type CommunityProfileRow = {
   id: string;
@@ -199,6 +200,11 @@ export default function CommunityPage() {
       return displayName.includes(search) || username.includes(search);
     });
   }, [profiles, searchValue]);
+
+  // Searches users, not players, so the query text is never sent.
+  usePlayerSearchTracking("community", searchValue, filteredProfiles.length, {
+    includeQuery: false,
+  });
 
   const hasActiveSearch = searchValue.trim().length > 0;
   const isFollowingTab = activeTab === "following";

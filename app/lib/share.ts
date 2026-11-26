@@ -1,4 +1,5 @@
 import type { StatMode } from "../components/court-data";
+import { track } from "./analytics";
 
 // Shareable stat-mode links: ?mode=career|peak|current on player pages and /rankings.
 
@@ -46,11 +47,13 @@ export function buildRedditShareUrl({ url, title }: { url: string; title: string
 
 export type ShareMethod = "native" | "copy" | "x" | "reddit" | "download";
 
-// Single hook point for share analytics (e.g. PostHog later). Does nothing yet.
+// Single hook point for share analytics (PostHog, see app/lib/analytics.ts).
 export function trackShare(method: ShareMethod, mode: StatMode, slug: string | null) {
-  void method;
-  void mode;
-  void slug;
+  track("share", { method, mode, slug, page: slug ? "player" : "rankings" });
+
+  if (method === "download") {
+    track("share_image_downloaded", { mode, slug });
+  }
 }
 
 // Writes the URL into the address bar without a navigation, a new history entry, or
