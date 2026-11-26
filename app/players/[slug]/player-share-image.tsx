@@ -1,13 +1,13 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
-import { getTeamColor } from "../../components/court-data";
 import { getAppPlayerShareCardSources } from "../../components/player-data-source";
 import {
   getPlayerShareCard,
   type PlayerShareCard,
   type PlayerShareCardMode,
 } from "../../lib/player-share-card";
+import { getMonogramColors } from "../../lib/share-card-colors";
 import { statcourtThemes } from "../../lib/themes";
 
 export const playerShareImageSize = { width: 1200, height: 630 };
@@ -55,20 +55,6 @@ function getTeamLabel(team: string) {
   return team === "FA" ? "Free Agent" : team;
 }
 
-// Dark initials on light team colors, white on dark ones.
-function getMonogramTextColor(hexColor: string) {
-  const hex = hexColor.replace("#", "");
-
-  if (!/^[0-9a-f]{6}$/i.test(hex)) return "#ffffff";
-
-  const [r, g, b] = [0, 2, 4].map((offset) =>
-    parseInt(hex.slice(offset, offset + 2), 16),
-  );
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-
-  return luminance > 0.6 ? "#08111f" : "#ffffff";
-}
-
 function Monogram({
   initials,
   team,
@@ -76,7 +62,11 @@ function Monogram({
   initials: string;
   team: string | null;
 }) {
-  const teamColor = (team && getTeamColor(team)) || theme.accent;
+  // Team color with enough contrast on the dark card (see share-card-colors.ts).
+  const colors = getMonogramColors(team, {
+    background: theme.background,
+    accent: theme.accent,
+  });
 
   return (
     <div
@@ -88,10 +78,10 @@ function Monogram({
         height: 148,
         flexShrink: 0,
         borderRadius: 74,
-        background: teamColor,
+        background: colors.fill,
         border: "6px solid rgba(248, 250, 252, 0.85)",
-        boxShadow: `0 0 0 6px ${teamColor}`,
-        color: getMonogramTextColor(teamColor),
+        boxShadow: `0 0 0 6px ${colors.ring}`,
+        color: colors.text,
         fontSize: initials.length > 1 ? 50 : 60,
       }}
     >
